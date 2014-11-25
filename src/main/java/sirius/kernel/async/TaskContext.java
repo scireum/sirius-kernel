@@ -1,0 +1,370 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+package sirius.kernel.async;
+
+
+import sirius.kernel.commons.RateLimit;
+import sirius.kernel.commons.Strings;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+/**
+ * Provides an interface between a running task and a monitoring system.
+ * <p>
+ * Any task or background job can access its <tt>TaskContext</tt> using either {@link TaskContext#get()} or
+ * {@link sirius.kernel.async.CallContext#get(Class)}. This provides an interface to a monitoring system which
+ * might be present (by calling {@link sirius.kernel.async.TaskContext#setAdapter(TaskContextAdapter)}. If no
+ * monitoring is available, the default mechanisms of the platform are used.
+ * </p>
+ *
+ * @author Andreas Haufler (aha@scireum.de)
+ * @since 2014/07
+ */
+public class TaskContext {
+    /**
+     * Forms the default value used to specify the system string which identifies the currently active module.
+     *
+     * @see #getSystemString()
+     */
+    private static final String GENERIC = "GENERIC";
+
+    /**
+     * One the system string is changed, it will be updated in the mapped diagnostic context (MDC) using this name.
+     *
+     * @see #setSystem(String)
+     * @see #setSubSystem(String)
+     * @see #setJob(String)
+     */
+    private static final String MDC_SYSTEM = "system";
+
+    private TaskContextAdapter adapter;
+    private String system = GENERIC;
+    private String subSystem = GENERIC;
+    private String job = GENERIC;
+    private String jobTitle = "";
+    private volatile boolean cancelled = false;
+    private RateLimit stateUpdate = RateLimit.timeInterval(5, TimeUnit.SECONDS);
+
+    /**
+     * Provides access to the <tt>TaskContext</tt> for the current thread.
+     * <p>
+     * This is boilerplate for <code>CallContext.getCurrent().get(TaskContext.class)</code>
+     * </p>
+     *
+     * @return the task context for the current thread
+     */
+    public static TaskContext get() {
+        return CallContext.getCurrent().get(TaskContext.class);
+    }
+
+    /**
+     * Writes a log message to the monitor.
+     * <p>
+     * If no monitor is available, the <tt>async</tt> logger will be used.
+     * </p>
+     *
+     * @param message the message to log
+     * @param args    the parameters used to format the message (see {@link Strings#apply(String, Object...)})
+     */
+    public void log(String message, Object... args) {
+        if (adapter != null) {
+            adapter.log(Strings.apply(message, args));
+        } else {
+            Async.LOG.INFO(getSystemString() + ": " + Strings.apply(message, args));
+        }
+    }
+
+    /**
+     * Writes a debug message to the monitor.
+     * <p>
+     * If no monitor is available, the <tt>async</tt> logger will be used.
+     * </p>
+     *
+     * @param message the message to log
+     * @param args    the parameters used to format the message (see {@link Strings#apply(String, Object...)})
+     */
+    public void trace(String message, Object... args) {
+        if (adapter != null) {
+            adapter.trace(Strings.apply(message, args));
+        } else {
+            Async.LOG.INFO(getSystemString() + ": " + Strings.apply(message, args));
+        }
+    }
+
+    /**
+     * Logs the given message and sets it as current state.
+     *
+     * @param message the message to log
+     * @param args    the parameters used to format the message (see {@link Strings#apply(String, Object...)})
+     */
+    public void logAsCurrentState(String message, Object... args) {
+        log(message, args);
+        setState(message, args);
+    }
+
+    /**
+     * Sets the new state of the current task.
+     *
+     * @param newState the message to set as state
+     * @param args     the parameters used to format the state message (see {@link Strings#apply(String, Object...)})
+     */
+    public void setState(String newState, Object... args) {
+        if (adapter != null) {
+            adapter.setState(Strings.apply(newState, args));
+        }
+    }
+
+    /**
+     * Can be used to determine if the state should be refreshed.
+     * <p>
+     * By calling <code>shouldUpdateState().check()</code> an inner loop can detect if a state update should be
+     * performed. This will limit the number of updates to a reasonable value.
+     * </p>
+     *
+     * @return a rate limit which limits the number of updates to a reasonable value
+     */
+    public RateLimit shouldUpdateState() {
+        return stateUpdate;
+    }
+
+    /**
+     * Increments the given performance counter and adds the given duration to its average.
+     * <p>
+     * Updates the named performance counter of the monitor. Also the duration given in milliseconds is added to
+     * compute the average duration. Use {@link sirius.kernel.commons.Watch#elapsedMillis()} to obtain such a value.
+     * </p>
+     *
+     * @param counter  the counter to update
+     * @param duration the duration the measured section took to execute. Use <tt>0d</tt> if no duration is available
+     */
+    public void inc(String counter, long duration) {
+        if (adapter != null) {
+            adapter.inc(counter, duration);
+        }
+    }
+
+    /**
+     * Signals the monitor that the execution had an error.
+     * <p>
+     * Although an error is signaled, this will not cancel or interrupt the execution of the task. This is merely
+     * a signal for an user or administrator that an unexpected or non-anticipated event occurred.
+     * </p>
+     */
+    public void markErroneous() {
+        if (adapter != null) {
+            adapter.markErroneous();
+        }
+    }
+
+    /**
+     * Determines if the execution of this task is still active.
+     * <p>
+     * A task can be either stopped via the {@link #cancel()} method or due to a system shutdown. In any case it is
+     * wise for a task to check this flag every once in a while to keep the overall app responsive.
+     * </p>
+     *
+     * @return <tt>true</tt> as long as the task is expected to be executed, <tt>false</tt> otherwise
+     */
+    public boolean isActive() {
+        return !cancelled && Async.isRunning();
+    }
+
+    /**
+     * Cancels the execution of this task.
+     * <p>
+     * Note that this will not kill the underlying thread. This will merely toggle the canceled flag. It is
+     * however the task programmers job to check this flag and interrupt / terminate all computations.
+     * </p>
+     */
+    public void cancel() {
+        cancelled = true;
+        if (adapter != null) {
+            adapter.cancel();
+        }
+    }
+
+    /**
+     * Utility to iterate through a collection while checking the cancelled flag.
+     *
+     * @param iterable the collection to iterate through
+     * @param consumer the processor invoked for each element
+     */
+    public <T> void iterateWhileActive(Iterable<T> iterable, Consumer<T> consumer) {
+        for (T obj : iterable) {
+            if (!isActive()) {
+                return;
+            }
+            consumer.accept(obj);
+        }
+    }
+
+    /**
+     * Returns the <tt>System String</tt>.
+     * <p>
+     * This will consist of three parts: System, Sub-System and Job. It is used to provide information which
+     * module is currently active. Therefore the <tt>System</tt> will provide a raw information which module is
+     * active. This might be <b>HTTP</b> for the web server or the category of an executor in {@link Async}.
+     * </p>
+     * <p>
+     * The <tt>Sub-System</tt> will provide a more detailed information, like the class name or the name of
+     * a component which is currently active.
+     * </p>
+     * <p>
+     * Finally the <tt>Job</tt> will provide a detailed information what's being currently processed. This might be
+     * the effective URI of the request being processed by the web server or the name of a file currently being
+     * imported.
+     * </p>
+     *
+     * @return the <tt>System String</tt> with a format like <i>System::Sub-System::Job</i>
+     */
+    public String getSystemString() {
+        return system + "::" + subSystem + "::" + job;
+    }
+
+    /**
+     * Returns the <tt>System</tt> component of the <tt>System String</tt>
+     *
+     * @return the system component of the system string
+     * @see #getSystemString()
+     */
+    public String getSystem() {
+        return system;
+    }
+
+    /**
+     * Sets the <tt>System</tt> component of the <tt>System String</tt>
+     *
+     * @param system the new system component to set
+     * @return the task context itself for fluent method calls
+     * @see #getSystemString()
+     */
+    public TaskContext setSystem(String system) {
+        if (Strings.isEmpty(system)) {
+            this.system = GENERIC;
+        } else {
+            this.system = system;
+        }
+        CallContext.getCurrent().addToMDC(MDC_SYSTEM, getSystemString());
+        return this;
+    }
+
+    /**
+     * Returns the <tt>Sub-System</tt> component of the <tt>System String</tt>
+     *
+     * @return the sub system component of the system string
+     * @see #getSystemString()
+     */
+    public String getSubSystem() {
+        return subSystem;
+    }
+
+
+    /**
+     * Sets the <tt>Sub-System</tt> component of the <tt>System String</tt>
+     *
+     * @param subSystem the new sub system component to set
+     * @return the task context itself for fluent method calls
+     * @see #getSystemString()
+     */
+    public TaskContext setSubSystem(String subSystem) {
+        if (Strings.isEmpty(subSystem)) {
+            this.subSystem = GENERIC;
+        } else {
+            this.subSystem = subSystem;
+        }
+        CallContext.getCurrent().addToMDC(MDC_SYSTEM, getSystemString());
+        return this;
+    }
+
+    /**
+     * Returns the <tt>Job</tt> component of the <tt>System String</tt>
+     *
+     * @return the job component of the system string
+     * @see #getSystemString()
+     */
+    public String getJob() {
+        return job;
+    }
+
+    /**
+     * Sets the <tt>Job</tt> component of the <tt>System String</tt>
+     *
+     * @param job the new job component to set
+     * @return the task context itself for fluent method calls
+     * @see #getSystemString()
+     */
+    public TaskContext setJob(String job) {
+        if (Strings.isEmpty(job)) {
+            this.job = GENERIC;
+        } else {
+            this.job = job;
+        }
+        CallContext.getCurrent().addToMDC(MDC_SYSTEM, getSystemString());
+        return this;
+    }
+
+    /**
+     * Returns the title of the currently active job.
+     * <p>
+     * This is independent of the <tt>System String</tt> and merely used to provide a nicely formatted title
+     * to the user.
+     * </p>
+     *
+     * @return the title of the currently active job
+     */
+    public String getJobTitle() {
+        return jobTitle;
+    }
+
+    /**
+     * Sets the title of the currently active job.
+     *
+     * @param jobTitle the job title to set
+     * @return the task context itself for fluent method calls
+     */
+    public TaskContext setJobTitle(String jobTitle) {
+        if (Strings.isEmpty(jobTitle)) {
+            this.jobTitle = null;
+        } else {
+            this.jobTitle = jobTitle;
+        }
+        if (adapter != null) {
+            adapter.setJobTitle(jobTitle);
+        }
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        if (jobTitle != null) {
+            return getSystemString() + ": " + getJobTitle();
+        } else {
+            return getSystemString();
+        }
+    }
+
+    /**
+     * Returns the monitoring adapter which is currently active.
+     *
+     * @return the monitoring adapter or <tt>null</tt> if no adapter is active
+     */
+    public TaskContextAdapter getAdapter() {
+        return adapter;
+    }
+
+    /**
+     * Installs the given adapter as monitoring adapter.
+     *
+     * @param adapter the adapter to install
+     */
+    public void setAdapter(TaskContextAdapter adapter) {
+        this.adapter = adapter;
+    }
+}
