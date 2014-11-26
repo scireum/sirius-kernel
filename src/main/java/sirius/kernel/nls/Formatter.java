@@ -21,29 +21,24 @@ import java.util.regex.Pattern;
  * A formatter is created for a given template string which contains named parameters like <code>${param1}</code>.
  * Using one of the <tt>set</tt> methods, values for the parameters can be supplied. Calling <code>#format</code>
  * creates the output string.
- * </p>
  * <p>
  * Non string objects which are passed in as parameters, will be converted using {@link NLS#toUserString(Object)}
- * </p>
  * <p>
  * A formatter is neither thread safe nor intended for reuse. Instead a formatter is created, supplied with the
  * relevant parameters by chaining calls to <tt>set</tt> and then discarded after getting the result string via
  * <tt>format</tt>.
- * </p>
  * <p>
  * An example call might look like this:
- * <code>
  * <pre>
+ * <code>
  *         System.out.println(
  *              Formatter.create("Hello ${programmer}")
  *                       .set("programmer, "Obi Wan")
  *                       .format());
- * </pre>
  * </code>
- * </p>
+ * </pre>
  * <p>
  * {@link NLS} uses this class by supplied translated patterns when calling {@link NLS#fmtr(String)}.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see NLS#fmtr(String)
@@ -67,7 +62,6 @@ public class Formatter {
      * Creates a new formatter with the given pattern and language.
      * <p>
      * The given language will be used when converting non-string parameters.
-     * </p>
      *
      * @param pattern specifies the pattern to be used for creating the output
      * @param lang    specifies the language used when converting non-string parameters.
@@ -84,7 +78,6 @@ public class Formatter {
      * Creates a new formatter with the given pattern.
      * <p>
      * Uses the currently active language when converting non-string parameters.
-     * </p>
      *
      * @param pattern specifies the pattern to be used for creating the output
      * @return <tt>this</tt> for fluently calling <tt>set</tt> methods.
@@ -101,7 +94,6 @@ public class Formatter {
      * Creates a new formatter with auto url encoding turned on.
      * <p>
      * Any parameters passed to this formatter will be automatically url encoded.
-     * </p>
      *
      * @param pattern specifies the pattern to be used for creating the output
      * @return <tt>this</tt> for fluently calling <tt>set</tt> methods.
@@ -130,7 +122,6 @@ public class Formatter {
      * <p>
      * Formatters created by <tt>#createURLFormatter</tt> perform automatic url conversion for all parameters.
      * Using this method however, disables url encoding for the given parameter and value.
-     * </p>
      *
      * @param property the parameter in the template string which should be replaced
      * @param value    the value which should be used as replacement
@@ -144,7 +135,6 @@ public class Formatter {
      * Sets the whole context as parameters in this formatter.
      * <p>
      * Calls <tt>#set</tt> for each entry in the given map.
-     * </p>
      *
      * @param ctx a <tt>Map</tt> which provides a set of entries to replace.
      * @return <tt>this</tt> to permit fluent method chains
@@ -163,7 +153,6 @@ public class Formatter {
      * <p>
      * Sets the given string as replacement value for the named parameter. The value will not be sent through
      * {@link NLS#toUserString(Object)} and therefore not trimmed etc.
-     * </p>
      *
      * @param property  the parameter in the template string which should be replaced
      * @param value     the value which should be used as replacement
@@ -182,7 +171,6 @@ public class Formatter {
      * <p>
      * Applies all supplied replacement values on detected parameters formatted like <code>${param}</code>.
      * If no value is supplied for a parameter, the original expression will remain in the string.
-     * </p>
      *
      * @return the template string with all parameters replaced for which a value was supplied.
      */

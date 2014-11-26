@@ -34,12 +34,10 @@ import java.util.*;
  * currently being processed, which user is currently active etc.) and will be attached to each error. Also, each
  * context comes with a new "flow-id". This can be used to trace an execution across different threads and even
  * across different cluster nodes.
- * </p>
  * <p>
  * Tasks which fork async subtasks will automatically pass on their current context. Therefore essential information
  * can be passed along, without having to provide a method parameter for each value. Since sub-contexts can be of any
  * type, this concept can be enhanced by additional frameworks or application programs.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -60,7 +58,6 @@ public class CallContext {
      * Returns the name of this computation node.
      * <p>
      * This is either the current host name or can be set via <tt>sirius.nodeName</tt>.
-     * </p>
      *
      * @return the name of this computation node.
      */
@@ -88,7 +85,6 @@ public class CallContext {
      * Returns the context for the current thread.
      * <p>
      * If no context is available, a new one will be initialized.
-     * </p>
      *
      * @return the <tt>CallContext</tt> of the current thread.
      */
@@ -106,7 +102,6 @@ public class CallContext {
      * Returns the context for the current thread.
      * <p>
      * Returns <tt>null</tt> if no context was installed yet.
-     * </p>
      *
      * @return the current context or <tt>null</tt> if no context is available
      */
@@ -132,7 +127,6 @@ public class CallContext {
      * <p>
      * This counts all CallContexts which have been created and is used
      * to provide rough system utilization metrics.
-     * </p>
      *
      * @return the Counter, which contains the total number of CallContexts created
      */
@@ -144,7 +138,6 @@ public class CallContext {
      * Creates a new CallContext for the given thread.
      * <p>
      * Discards the current <tt>CallContext</tt>, if there was already one.
-     * </p>
      *
      * @return the newly created CallContext, which is already attached to the current thread.
      */
@@ -240,9 +233,9 @@ public class CallContext {
      * Returns or creates the sub context of the given type.
      * <p>
      * The class of the sub context must provide a no-args constructor, as it will be instantiated if non existed.
-     * </p>
      *
      * @param contextType the type of the sub-context to be returned.
+     * @param <C>         the type of the sub-context
      * @return an instance of the given type. If no instance was available, a new one is created
      */
     @Nonnull
@@ -258,10 +251,10 @@ public class CallContext {
             return (C) result;
         } catch (Throwable e) {
             throw Exceptions.handle()
-                            .error(e)
-                            .withSystemErrorMessage("Cannot get instance of %s from current CallContext: %s (%s)",
-                                                    contextType.getName())
-                            .handle();
+                    .error(e)
+                    .withSystemErrorMessage("Cannot get instance of %s from current CallContext: %s (%s)",
+                            contextType.getName())
+                    .handle();
         }
     }
 
@@ -270,10 +263,10 @@ public class CallContext {
      * <p>
      * This should only be used if required (e.g. in test environments to replace/mock objects). Otherwise a
      * call to {@link #get(Class)} will initialize the requested sub context.
-     * </p>
      *
      * @param contextType the type of the context to set
      * @param instance    the instance to set
+     * @param <C>         the type of the sub-context
      */
     public <C> void set(Class<C> contextType, C instance) {
         subContext.put(contextType, instance);

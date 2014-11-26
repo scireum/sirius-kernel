@@ -12,7 +12,6 @@ package sirius.kernel.health;
  * Can be used to "tap" the logging system.
  * <p>
  * A <tt>LogTap</tt> can re supplied to the {@link Log} class to be notified about all logged statements.
- * </p>
  */
 public interface LogTap {
     /**

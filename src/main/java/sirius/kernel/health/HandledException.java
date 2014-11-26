@@ -14,10 +14,8 @@ package sirius.kernel.health;
  * <p>
  * Instances of this type need no further treatment and guarantee to have a properly translated error message,
  * which van be directly shown to the user.
- * </p>
  * <p>
  * Creating a <tt>HandledException</tt> is done by using one of the static methods of {@link Exceptions}.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08

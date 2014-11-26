@@ -186,6 +186,9 @@ class PartRegistry implements MutableGlobalContext {
         if (partsOfClass == null) {
             return null;
         }
+        if (uniqueName == null) {
+            return null;
+        }
         return (P) partsOfClass.get(uniqueName);
     }
 

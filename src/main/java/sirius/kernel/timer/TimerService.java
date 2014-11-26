@@ -29,10 +29,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Other than for statistical reasons, this class does not need to be called directly. It automatically
  * discovers all parts registered for one of the timer interfaces (<tt>EveryMinute</tt>, <tt>EveryTenMinutes</tt>,
  * <tt>EveryHour</tt>, <tt>EveryDay</tt>) and invokes them appropriately.
- * </p>
  * <p>
  * To access this class, a <tt>Part</tt> annotation can be used on a field of type <tt>TimerService</tt>.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -251,7 +249,6 @@ public class TimerService implements Lifecycle {
      * <p>
      * This is used to reload files like properties in development environments. In production systems, no
      * reloading will be performed.
-     * </p>
      *
      * @param url      the file to watch
      * @param callback the callback to invoke once the file has changed

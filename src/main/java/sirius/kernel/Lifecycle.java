@@ -14,7 +14,6 @@ package sirius.kernel;
  * In contrast to {@link sirius.kernel.di.Initializable} this might be called a bit later, since the system is first initialized
  * and then started up. However, one can assume that all annotations have been processed and dependent parts
  * can be accessed.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -29,7 +28,6 @@ public interface Lifecycle {
      * Invoked when the framework shuts down.
      * <p>
      * This method must not block (and wait for internals to stop). This can be done in {@link #awaitTermination()}.
-     * </p>
      */
     void stopped();
 
@@ -38,7 +36,6 @@ public interface Lifecycle {
      * <p>
      * This method may block for a certain amount of time to permit the subsystem to shut down properly. However,
      * it should not block infinitely...
-     * </p>
      */
     void awaitTermination();
 

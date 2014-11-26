@@ -19,7 +19,6 @@ import java.lang.annotation.Target;
  * Provides a shortcut for accessing the config ({@link sirius.kernel.Sirius#getConfig()}). Also it performs the
  * appropriate conversion to the target type of the given field. A default value should be placed in the
  * component config (which then can be overridden in the application.conf or instance.conf).
- * </p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.FIELD)
@@ -37,7 +36,6 @@ public @interface ConfigValue {
      * <p>
      * Basically this should not happen, as it is a good practice to place a default value in the current
      * component config.
-     * </p>
      *
      * @return <tt>true</tt> if the value must be filled, <tt>false</tt> (default) otherwise.
      */

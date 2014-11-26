@@ -19,26 +19,24 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A <tt>Barrier</tt> can be used to block and wait for the completion of a given set of promises. A barrier should
  * only be used once and after a call to <tt>await</tt>, no further promises should be added. Also <tt>await</tt>
  * must only be called once.
- * </p>
  * <p>
  * The general call pattern looks like that:
- * <code>
  * <pre>
+ * <code>
  *      Barrier b = Barrier.create();
  *      b.add(somePromise);
  *      b.add(anotherPromise);
  *
  *      b.await(1, TimeUnit.MINUTE);
- * </pre>
  * </code>
- * </p>
+ * </pre>
+ * <p>
  * Always prefer {@link #await(long, java.util.concurrent.TimeUnit)} and specify a sane timeout since something
  * might always go wrong and a promise might therefore not complete (in time - or not at all) and your program
  * is locked forever.
  * <p>
  * This barrier can also be used in a non-blocking way, by calling {@link #asFuture()} after the last call to
  * {@link #add(Promise)}. If possible, the non-block approach should always be preferred.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -64,7 +62,6 @@ public class Barrier {
      * Adds a promise to the barrier which will be waited for.
      * <p>
      * Note that one must not call <tt>add</tt> after calling <tt>await</tt>.
-     * </p>
      *
      * @param promise the promise to wait for
      */
@@ -112,10 +109,6 @@ public class Barrier {
      * <p>
      * Note that this method might block for an indefinite amount of time. Consider using
      * {@link #await(long, java.util.concurrent.TimeUnit)} and specify a sane timeout
-     * </p>
-     * <p>
-     * Also consider using Async.c
-     * </p>
      *
      * @throws InterruptedException if the thread was interrupted while waiting for completion.
      */

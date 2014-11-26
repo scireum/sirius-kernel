@@ -22,7 +22,6 @@ import java.util.stream.Stream;
  * <p>
  * Provides an implementation which simulates a <code>Map&lt;K, Collection&lt;V&gt;&gt;</code> by providing
  * specific <tt>put</tt>, <tt>get</tt> and <tt>remove</tt> methods.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -76,6 +75,8 @@ public class MultiMap<K, V> {
 
     /**
      * Used the static factory methods <tt>create</tt> or <tt>createdSynchronized</tt> to obtain an instance.
+     *
+     * @param base the underlying map to use
      */
     protected MultiMap(Map<K, Collection<V>> base) {
         this.base = base;
@@ -86,7 +87,6 @@ public class MultiMap<K, V> {
      * <p>
      * Note that the values for a given key don't from a <tt>Set</tt>. Therefore adding the same value twice
      * for the same key, will result in having a value list containing the added element twice.
-     * </p>
      *
      * @param key   the key for which the value is added to the map
      * @param value the value which is added to the list of values for this key
@@ -104,7 +104,6 @@ public class MultiMap<K, V> {
      * Sets the given value to the given name.
      * <p>
      * All previously set values will be removed.
-     * </p>
      *
      * @param key   the key for which the value is added to the map
      * @param value the name (and only) value for the given key
@@ -133,7 +132,6 @@ public class MultiMap<K, V> {
      * Removes all occurrences of the given value in the value list of the given key.
      * <p>
      * If the value does not occur in the value list or if the key is completely unknown, nothing will happen.
-     * </p>
      *
      * @param key   the key of which value list the value will be removed from
      * @param value the value which will be removed from the value list
@@ -151,7 +149,6 @@ public class MultiMap<K, V> {
      * Returns the value list for the given key.
      * <p>
      * If the key is completely unknown, an empty list will be returned.
-     * </p>
      *
      * @param key the key which value list is to be returned
      * @return the value map associated with the given key or an empty list is the key is unknown
@@ -180,7 +177,6 @@ public class MultiMap<K, V> {
      * <p>
      * For the sake of simplicity and extensibility, the original map is returned. Therefore manipulations should
      * be well considered.
-     * </p>
      *
      * @return the underlying <tt>Map</tt> of this instance.
      */
@@ -194,7 +190,6 @@ public class MultiMap<K, V> {
      * <p>
      * Note that this list has no <tt>Set</tt> like behaviour. Therefore the same value might occur several times
      * if it was added more than once for the same or for different keys.
-     * </p>
      *
      * @return a list of all values stored for all keys
      */
@@ -226,10 +221,8 @@ public class MultiMap<K, V> {
      * Merges the given multi map into this one.
      * <p>
      * If both maps contain values for the same key, to lists will be joined together.
-     * </p>
      * <p>
      * <b>Note</b>: This will modify the callee instead of creating a new result map
-     * </p>
      *
      * @param other the other map to merge into this one
      * @return the callee itself for further processing
@@ -237,9 +230,9 @@ public class MultiMap<K, V> {
     public MultiMap<K, V> merge(MultiMap<K, V> other) {
         if (other != null) {
             other.base.entrySet()
-                      .stream()
-                      .flatMap(e -> Tuple.flatten(e))
-                      .forEach(t -> put(t.getFirst(), t.getSecond()));
+                    .stream()
+                    .flatMap(e -> Tuple.flatten(e))
+                    .forEach(t -> put(t.getFirst(), t.getSecond()));
         }
         return this;
     }
@@ -256,10 +249,10 @@ public class MultiMap<K, V> {
     public static <K, V> Collector<V, MultiMap<K, V>, MultiMap<K, V>> groupingBy(Supplier<MultiMap<K, V>> supplier,
                                                                                  Function<V, K> classifier) {
         return Collector.of(supplier,
-                            (map, value) -> map.put(classifier.apply(value), value),
-                            (a, b) -> a.merge(b),
-                            Function.identity(),
-                            Collector.Characteristics.IDENTITY_FINISH);
+                (map, value) -> map.put(classifier.apply(value), value),
+                (a, b) -> a.merge(b),
+                Function.identity(),
+                Collector.Characteristics.IDENTITY_FINISH);
     }
 
     /**
@@ -267,7 +260,6 @@ public class MultiMap<K, V> {
      * <p>
      * This method permits the classifier function to return multiple keys for a single element. The element will
      * be added for all returned keys.
-     * </p>
      *
      * @param supplier   the factory for creating the result map
      * @param classifier the method used to extract the keys from the elements
@@ -278,10 +270,10 @@ public class MultiMap<K, V> {
     public static <K, V> Collector<V, MultiMap<K, V>, MultiMap<K, V>> groupingByMultiple(Supplier<MultiMap<K, V>> supplier,
                                                                                          Function<V, Collection<K>> classifier) {
         return Collector.of(supplier,
-                            (map, value) -> classifier.apply(value).stream().forEach(key -> map.put(key, value)),
-                            (a, b) -> a.merge(b),
-                            Function.identity(),
-                            Collector.Characteristics.IDENTITY_FINISH);
+                (map, value) -> classifier.apply(value).stream().forEach(key -> map.put(key, value)),
+                (a, b) -> a.merge(b),
+                Function.identity(),
+                Collector.Characteristics.IDENTITY_FINISH);
     }
 
     /**
@@ -290,7 +282,6 @@ public class MultiMap<K, V> {
      * <b>Note</b>: Calling {@link sirius.kernel.commons.Tuple#flatten(java.util.Map.Entry)} via
      * {@link Stream#flatMap(java.util.function.Function)} will transform the resulting stream into a stream of
      * all pairs represented by this map.
-     * </p>
      *
      * @return a <tt>Stream</tt> containing all entries of this map
      */

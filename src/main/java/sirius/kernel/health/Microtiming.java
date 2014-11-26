@@ -19,16 +19,13 @@ import java.util.stream.Collectors;
  * <p>
  * Can be used to identify bottlenecks or to analyze system performance to measure the average execution time of
  * different tasks.
- * </p>
  * <p>
  * Once the microtiming framework is enabled it will be notified by other frameworks as defined tasks are executed.
  * The execution times are combined and can be queried using {@link sirius.kernel.health.Microtiming#getTimings()}.
- * </p>
  * <p>
  * An example might be an SQL query which is executed in a loop to perform a file import. Since the SQL-Query is
  * always the same (in case or a prepared statement) the execution times will be added to an average which will
  * be stored until the next call to <tt>Microtiming.getTimings()</tt>.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -95,7 +92,8 @@ public class Microtiming {
 
         /*
          * Adds the given duration in nanoseconds.
-         * <p>Also toggles the changed flag to <tt>true</tt></p>
+         * <p>
+         * Also toggles the changed flag to <tt>true</tt>
          */
         protected void addNanos(long durationInNanos) {
             avg.addValue(durationInNanos / 1000);
@@ -109,7 +107,6 @@ public class Microtiming {
      * This will only report timings, which changed since the last call of <tt>getTimings</tt>. Using this approach
      * provides a kind of auto filtering which permits to enable this framework in production systems while
      * still getting reasonable small results.
-     * </p>
      *
      * @return all {@link sirius.kernel.health.Microtiming.Timing} values recorded which where submitted since the
      * last call to <tt>getTimings()</tt>
@@ -122,11 +119,10 @@ public class Microtiming {
      * Submits a new timing for the given key.
      * <p>
      * Adds the average to the "live set" which will be output on the next call to {@link #getTimings()}
-     * </p>
      * <p>
      * A convenient way to call this method is to use {@link sirius.kernel.commons.Watch#submitMicroTiming(String, String)}
-     * </p>
      *
+     * @param category        the category of the recorded timing. This permits grouping a microtimings of the same kind.
      * @param key             the key for which the value should be submitted
      * @param durationInNanos the number of nanoseconds used as timing for the given key
      */

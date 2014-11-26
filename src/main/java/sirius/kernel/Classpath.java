@@ -30,14 +30,11 @@ import java.util.stream.Stream;
  * <p>
  * This is used by the {@link sirius.kernel.di.Injector} to discover and register all classes in the
  * component model. Additionally {@link sirius.kernel.nls.Babelfish} uses this to load all relevant .properties files.
- * </p>
  * <p>
  * The method used, is to provide a name of a resource which is placed in every component root (jar file etc.) which
  * then can be discovered using <tt>Class.getResources</tt>.
- * </p>
  * <p>
  * Once a file pattern is given, all files in the classpath are scanned, starting from the detected roots.
- * </p>
  *
  * @author Andreas Haufler (aha@sciruem.de)
  * @since 2013/08
@@ -95,6 +92,7 @@ public class Classpath {
      * Scans the classpath for files which relative path match the given patter
      *
      * @param pattern the pattern for the relative path used to filter files
+     * @return a stream of matching elements
      */
     public Stream<Matcher> find(final Pattern pattern) {
         return getComponentRoots().stream().flatMap(url -> scan(url)).filter(path -> {

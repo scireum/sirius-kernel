@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
  * <p>
  * It supports elegant <code>null</code> handling and type
  * conversions.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -54,6 +53,9 @@ public class Value {
 
     /**
      * Creates a new wrapper for the given data.
+     *
+     * @param data the object wrap
+     * @return the newly created value which wraps the given data object
      */
     @Nonnull
     public static Value of(@Nullable Object data) {
@@ -155,6 +157,7 @@ public class Value {
     /**
      * Returns a new {@link Value} which will be empty its value equals one of the given ignored values.
      *
+     * @param ignoredValues the list of values which will be replaced by an empty value
      * @return a <tt>Value</tt> which is empty if the currently wrapped value equals to one of the given values.
      * Otherwise the current value is returned.
      */
@@ -165,7 +168,7 @@ public class Value {
         }
         for (String val : ignoredValues) {
             if (data.equals(val)) {
-                return Value.of(null);
+                return Value.EMPTY;
             }
         }
         return this;
@@ -175,20 +178,22 @@ public class Value {
      * Returns a new <tt>Value</tt> which will wrap the given value, if the current value is empty.
      * Otherwise, the current value will be returned.
      *
+     * @param replacement the value which is used as replacement if this value is empty
      * @return a new Value wrapping the given value or the current value if this is not empty.
      */
     @Nonnull
-    public Value replaceEmptyWith(@Nullable Object value) {
+    public Value replaceEmptyWith(@Nullable Object replacement) {
         if (isFilled()) {
             return this;
         }
-        return Value.of(value);
+        return Value.of(replacement);
     }
 
     /**
      * Returns a new <tt>Value</tt> which will wrap the value produced by the given supplier, if the current
      * value is empty. Otherwise, the current value will be returned.
      *
+     * @param supplier the supplier used to compute a replacement value if this value is empty
      * @return a new Value wrapping the produced value of the given supplier or the current value if this is not empty.
      */
     @Nonnull
@@ -221,9 +226,9 @@ public class Value {
      * Boilerplate for <code>Optional.ofNullable(get(type, null))</code>.
      * <p>
      * Returns the internal value wrapped as Optional.
-     * </p>
      *
      * @param type the desired type of the data
+     * @param <T>  the expected type of the contents of this value
      * @return the internal value (casted to the given type) wrapped as Optional or an empty Optional if the value
      * was empty or the cast failed.
      */
@@ -236,7 +241,6 @@ public class Value {
      * Returns the internal value wrapped as Optional while expecting it to be an integer number.
      * <p>
      * If the value is empty or not an integer, an empty Optional will be returned.
-     * </p>
      *
      * @return the internal value wrapped as Optional or an empty Optional if the value is not filled or non-integer
      */
@@ -248,7 +252,6 @@ public class Value {
      * Returns the internal value wrapped as Optional.
      * <p>
      * If the value is empty, an empty Optional will be returned.
-     * </p>
      *
      * @return the internal value wrapped as Optional or an empty Optional if the value is not filled
      */
@@ -261,7 +264,6 @@ public class Value {
      * <p>
      * If the current value is empty, the given value is returned (without the separator). If the given
      * value is an empty string, the current value is returned (without the separator).
-     * </p>
      *
      * @param separator the separator to be put in between the two. If the given value is <tt>null</tt>, "" is assumed
      * @param value     the value to be appended to the current value.
@@ -287,7 +289,6 @@ public class Value {
      * <p>
      * If the current value is empty, the given value is returned (without the separator). If the given
      * value is an empty string, the current value is returned (without the separator).
-     * </p>
      *
      * @param separator the separator to be put in between the two. If the given value is <tt>null</tt>, "" is assumed
      * @param value     the value to be appended to the current value.
@@ -313,23 +314,20 @@ public class Value {
      * <p>
      * <b>Note:</b> This modifies the internal state of this value, since the number of characters is cut from
      * the string representation of the current object and the remaining string is stored as new internal value.
-     * </p>
      * <p>
      * If the wrapped value is empty, "" is returned. If the string representation of the wrapped object
      * is shorter than maxNumberOfCharacters, the remaining string is returned and the internal value is set to
      * <tt>null</tt>.
-     * </p>
      * <p>
      * This can be used to cut a string into sub strings of a given length:
-     * <code>
      * <pre>
+     * <code>
      *             Value v = Value.of("This is a long string...");
      *             while(v.isFilled()) {
      *                 System.out.println("Up to 5 chars of v: "+v.eat(5));
      *             }
-     *         </pre>
      * </code>
-     * </p>
+     * </pre>
      *
      * @param maxNumberOfCharacters the max length of the string to cut from the wrapped value
      * @return the first maxNumberOfCharacters of the wrapped values string representation, or less if it is shorter.
@@ -375,6 +373,7 @@ public class Value {
     /**
      * Returns the internal data or the given <tt>defaultValue</tt>
      *
+     * @param defaultValue the value to use if the inner value is <tt>null</tt>
      * @return the wrapped value or the given defaultValue if the wrapped value is <tt>null</tt>
      */
     @Nonnull
@@ -387,6 +386,7 @@ public class Value {
      *
      * @param targetClazz  the desired class to which the wrapped value should be converted or casted.
      * @param defaultValue the default value if the wrapped object is empty or cannot be cast to the given target.
+     * @param <T>          the type to coerce to
      * @return a converted instance of type targetClass or the defaultValue if no conversion was possible
      * @throws IllegalArgumentException if the given <tt>targetClazz</tt> is unknown
      */
@@ -430,11 +430,11 @@ public class Value {
         }
         if (LocalTime.class.equals(targetClazz) && data instanceof TemporalAccessor) {
             if (is(TemporalAccessor.class,
-                   Calendar.class,
-                   Date.class,
-                   java.sql.Date.class,
-                   Timestamp.class,
-                   Time.class)) {
+                    Calendar.class,
+                    Date.class,
+                    java.sql.Date.class,
+                    Timestamp.class,
+                    Time.class)) {
                 return (T) asLocalTime((LocalTime) defaultValue);
             }
         }
@@ -469,8 +469,8 @@ public class Value {
         }
 
         throw new IllegalArgumentException(Strings.apply("Cannot convert '%s' to target class: %s ",
-                                                         data,
-                                                         targetClazz));
+                data,
+                targetClazz));
     }
 
     /**
@@ -478,6 +478,7 @@ public class Value {
      *
      * @param clazz        the desired class of the return type
      * @param defaultValue the value which is returned if the wrapped value is not assignable to the given class.
+     * @param <V>          the expected type of the wrapped value
      * @return the wrapped value if the given <tt>clazz</tt> is assignable from wrapped values class
      * or the <tt>defaultValue</tt> otherwise
      */
@@ -494,7 +495,6 @@ public class Value {
      * Returns the data converted to a string, or <tt>null</tt> if the wrapped value is null
      * <p>
      * The conversion method used is {@link NLS#toMachineString(Object)}
-     * </p>
      *
      * @return a string representation of the wrapped object or <tt>null</tt> if the wrapped value is <tt>null</tt>
      */
@@ -507,8 +507,8 @@ public class Value {
      * Returns the wrapped data converted to a string or <tt>defaultValue</tt> if the wrapped value is <tt>null</tt>
      * <p>
      * The conversion method used is {@link NLS#toMachineString(Object)}
-     * </p>
      *
+     * @param defaultValue the value to use if the wrapped object was <tt>null</tt>
      * @return a string representation of the wrapped object
      * or <tt>defaultValue</tt> if the wrapped value is <tt>null</tt>
      */
@@ -521,7 +521,6 @@ public class Value {
      * Returns the wrapped data converted to a string or <tt>""</tt> if the wrapped value is <tt>null</tt>
      * <p>
      * The conversion method used is {@link NLS#toMachineString(Object)}
-     * </p>
      *
      * @return a string representation of the wrapped object or <tt>""</tt> if the wrapped value is <tt>null</tt>
      */
@@ -542,7 +541,6 @@ public class Value {
      * This method behaves just like <tt>asString</tt>, except for <tt>Double</tt> and <tt>BigDecimal</tt> values
      * where the output is "smart rounded". Therefore, 12.34 will be formatted as <code>12.34</code> but 1.000 will
      * be formatted as <code>1</code>
-     * </p>
      *
      * @return a string representation of the wrapped object as generated by <tt>asString</tt>
      * except for <tt>Double</tt> or <tt>BigDecimal</tt> values, which are "smart rounded".
@@ -569,7 +567,6 @@ public class Value {
      * <p>
      * To convert a value, {@link Boolean#parseBoolean(String)} is used, where <code>toString</code> is called on all
      * non-string objects.
-     * </p>
      *
      * @param defaultValue the value to be used if the wrapped value cannot be converted to a boolean.
      * @return <tt>true</tt> if the wrapped value is <tt>true</tt>
@@ -603,11 +600,9 @@ public class Value {
      * <p>
      * If the wrapped value is an <tt>Integer</tt> or <tt>BigDecimal</tt>, it is either directly returned or converted
      * by calling {@link java.math.BigDecimal#longValue()}.
-     * </p>
      * <p>
      * Otherwise {@link Integer#parseInt(String)} is called on the string representation of the wrapped value. If
      * parsing fails, or if the wrapped value was <tt>null</tt>, the <tt>defaultValue</tt> will be returned.
-     * </p>
      *
      * @param defaultValue the value to be used, if no conversion to <tt>int</tt> is possible.
      * @return the wrapped value casted or converted to <tt>int</tt> or <tt>defaultValue</tt>
@@ -637,11 +632,9 @@ public class Value {
      * <p>
      * If the wrapped value is an <tt>Integer</tt> or <tt>BigDecimal</tt>, it is either directly returned or converted
      * by calling {@link java.math.BigDecimal#longValue()}.
-     * </p>
      * <p>
      * Otherwise {@link Integer#parseInt(String)} is called on the string representation of the wrapped value. If
      * parsing fails, or if the wrapped value was <tt>null</tt>, <tt>null</tt> will be returned.
-     * </p>
      *
      * @return the wrapped value casted or converted to <tt>Integer</tt> or <tt>null</tt>
      * if no conversion is possible.
@@ -670,11 +663,9 @@ public class Value {
      * <p>
      * If the wrapped value is a <tt>Long</tt>, <tt>Integer</tt> or <tt>BigDecimal</tt>,
      * it is either directly returned or converted by calling {@link java.math.BigDecimal#longValue()}.
-     * </p>
      * <p>
      * Otherwise {@link Long#parseLong(String)} is called on the string representation of the wrapped value. If
      * parsing fails, or if the wrapped value was <tt>null</tt>, the <tt>defaultValue</tt> will be returned.
-     * </p>
      *
      * @param defaultValue the value to be used, if no conversion to <tt>long</tt> is possible.
      * @return the wrapped value casted or converted to <tt>long</tt> or <tt>defaultValue</tt>
@@ -706,11 +697,9 @@ public class Value {
      * <p>
      * If the wrapped value is a <tt>Long</tt>, <tt>Integer</tt> or <tt>BigDecimal</tt>, it is either directly
      * returned or by calling {@link java.math.BigDecimal#longValue()}.
-     * </p>
      * <p>
      * Otherwise {@link Long#parseLong(String)} is called on the string representation of the wrapped value. If
      * parsing fails, or if the wrapped value was <tt>null</tt>, <tt>null</tt> will be returned.
-     * </p>
      *
      * @return the wrapped value casted or converted to <tt>Long</tt> or <tt>null</tt>
      * if no conversion is possible.
@@ -736,11 +725,9 @@ public class Value {
      * <p>
      * If the wrapped value is a <tt>Double</tt>, <tt>Long</tt>, <tt>Integer</tt> or <tt>BigDecimal</tt>,
      * it is either directly returned or converted by calling {@link java.math.BigDecimal#doubleValue()}.
-     * </p>
      * <p>
      * Otherwise {@link Double#parseDouble(String)} is called on the string representation of the wrapped value. If
      * parsing fails, or if the wrapped value was <tt>null</tt>, the <tt>defaultValue</tt> will be returned.
-     * </p>
      *
      * @param defaultValue the value to be used, if no conversion to <tt>double</tt> is possible.
      * @return the wrapped value casted or converted to <tt>double</tt> or <tt>defaultValue</tt>
@@ -769,6 +756,18 @@ public class Value {
         }
     }
 
+    /**
+     * Returns the wrapped value as {@link java.time.LocalDate} or <tt>defaultValue</tt> if the wrapped value
+     * cannot be converted.
+     * <p>
+     * If the wrapped value is an <tt>Instant</tt>, <tt>LocalDateTime</tt>, <tt>ZonedDateTime</tt>,
+     * <tt>Date</tt>, <tt>Calendar</tt>, <tt>java.sql.Date</tt>, <tt>Timestamp</tt> or <tt>long</tt>,
+     * it is converted to a {@link java.time.LocalDate}.
+     *
+     * @param defaultValue the value to be used, if no conversion is possible
+     * @return the wrapped value casted or converted to <tt>LocalDate</tt> or <tt>defaultValue</tt>
+     * if no conversion is possible.
+     */
     public LocalDate asLocalDate(LocalDate defaultValue) {
         if (data == null) {
             return defaultValue;
@@ -794,10 +793,25 @@ public class Value {
         if (is(Timestamp.class)) {
             return Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         }
+        if (is(long.class) || is(Long.class)) {
+            return Instant.ofEpochMilli((long) data).atZone(ZoneId.systemDefault()).toLocalDate();
+        }
 
         return defaultValue;
     }
 
+    /**
+     * Returns the wrapped value as {@link java.time.LocalDateTime} or <tt>defaultValue</tt> if the wrapped value
+     * cannot be converted.
+     * <p>
+     * If the wrapped value is an <tt>Instant</tt>, <tt>LocalDateTime</tt>, <tt>ZonedDateTime</tt>,
+     * <tt>Date</tt>, <tt>Calendar</tt>, <tt>java.sql.Date</tt>, <tt>Timestamp</tt> or <tt>long</tt>,
+     * it is converted to a {@link java.time.LocalDateTime}.
+     *
+     * @param defaultValue the value to be used, if no conversion is possible
+     * @return the wrapped value casted or converted to <tt>LocalDateTime</tt> or <tt>defaultValue</tt>
+     * if no conversion is possible.
+     */
     public LocalDateTime asLocalDateTime(LocalDateTime defaultValue) {
         if (data == null) {
             return defaultValue;
@@ -819,15 +833,15 @@ public class Value {
         }
         if (is(Calendar.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((Calendar) data).getTimeInMillis()),
-                                           ZoneId.systemDefault());
+                    ZoneId.systemDefault());
         }
         if (is(java.sql.Date.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.sql.Date) data).getTime()),
-                                           ZoneId.systemDefault());
+                    ZoneId.systemDefault());
         }
         if (is(Timestamp.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime()),
-                                           ZoneId.systemDefault());
+                    ZoneId.systemDefault());
         }
         if (is(long.class) || is(Long.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli((long) data), ZoneId.systemDefault());
@@ -836,6 +850,18 @@ public class Value {
         return defaultValue;
     }
 
+    /**
+     * Returns the wrapped value as {@link java.time.LocalTime} or <tt>defaultValue</tt> if the wrapped value
+     * cannot be converted.
+     * <p>
+     * If the wrapped value is an <tt>Instant</tt>, <tt>LocalDateTime</tt>, <tt>ZonedDateTime</tt>,
+     * <tt>Date</tt>, <tt>Calendar</tt>, <tt>java.sql.Date</tt>, <tt>Timestamp</tt> or <tt>long</tt>,
+     * it is converted to a {@link java.time.LocalTime}.
+     *
+     * @param defaultValue the value to be used, if no conversion is possible
+     * @return the wrapped value casted or converted to <tt>LocalTime</tt> or <tt>defaultValue</tt>
+     * if no conversion is possible.
+     */
     public LocalTime asLocalTime(LocalTime defaultValue) {
         if (data == null) {
             return defaultValue;
@@ -864,10 +890,25 @@ public class Value {
         if (is(Timestamp.class)) {
             return LocalTime.from(Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime()));
         }
+        if (is(long.class) || is(Long.class)) {
+            return LocalTime.from(Instant.ofEpochMilli((long) data));
+        }
 
         return defaultValue;
     }
 
+    /**
+     * Returns the wrapped value as {@link java.time.ZonedDateTime} or <tt>defaultValue</tt> if the wrapped value
+     * cannot be converted.
+     * <p>
+     * If the wrapped value is an <tt>Instant</tt>, <tt>LocalDateTime</tt>, <tt>ZonedDateTime</tt>,
+     * <tt>Date</tt>, <tt>Calendar</tt>, <tt>java.sql.Date</tt>, <tt>Timestamp</tt> or <tt>long</tt>,
+     * it is converted to a {@link java.time.ZonedDateTime}.
+     *
+     * @param defaultValue the value to be used, if no conversion is possible
+     * @return the wrapped value casted or converted to <tt>ZonedDateTime</tt> or <tt>defaultValue</tt>
+     * if no conversion is possible.
+     */
     public ZonedDateTime asZonedDateTime(ZonedDateTime defaultValue) {
         if (data == null) {
             return defaultValue;
@@ -902,6 +943,18 @@ public class Value {
         return defaultValue;
     }
 
+    /**
+     * Returns the wrapped value as {@link java.time.Instant} or <tt>defaultValue</tt> if the wrapped value
+     * cannot be converted.
+     * <p>
+     * If the wrapped value is an <tt>Instant</tt>, <tt>LocalDateTime</tt>, <tt>ZonedDateTime</tt>,
+     * <tt>Date</tt>, <tt>Calendar</tt>, <tt>java.sql.Date</tt>, <tt>Timestamp</tt> or <tt>long</tt>,
+     * it is converted to an {@link java.time.Instant}.
+     *
+     * @param defaultValue the value to be used, if no conversion is possible
+     * @return the wrapped value casted or converted to <tt>Instant</tt> or <tt>defaultValue</tt>
+     * if no conversion is possible.
+     */
     public Instant asInstant(Instant defaultValue) {
         if (data == null) {
             return defaultValue;
@@ -936,6 +989,14 @@ public class Value {
         return defaultValue;
     }
 
+    /**
+     * Converts the wrapped number into an {@link java.time.Instant} by assuming the number represents a
+     * "unix timestamp" in seconds.
+     *
+     * @param defaultValue used if an invalid or non numeric value was found
+     * @return the <tt>Instant</tt> as determined by the wrapped timestamp value or <tt>defaultValue</tt> if no
+     * conversion was possible
+     */
     public Instant asInstantOfEpochSeconds(Instant defaultValue) {
         long epochSeconds = asLong(-1);
         if (epochSeconds < 0) {
@@ -944,6 +1005,14 @@ public class Value {
         return Instant.ofEpochSecond(epochSeconds);
     }
 
+    /**
+     * Converts the wrapped number into an {@link java.time.Instant} by assuming the number represents a
+     * "unix timestamp" in milliseconds.
+     *
+     * @param defaultValue used if an invalid or non numeric value was found
+     * @return the <tt>Instant</tt> as determined by the wrapped timestamp value or <tt>defaultValue</tt> if no
+     * conversion was possible
+     */
     public Instant asInstantOfEpochMillis(Instant defaultValue) {
         long epochSeconds = asLong(-1);
         if (epochSeconds < 0) {
@@ -952,6 +1021,14 @@ public class Value {
         return Instant.ofEpochMilli(epochSeconds);
     }
 
+    /**
+     * Converts the wrapped number into  {@link java.time.LocalDateTime} by assuming the number represents a
+     * "unix timestamp" in milliseconds.
+     *
+     * @param defaultValue used if an invalid or non numeric value was found
+     * @return the <tt>LocalDateTime</tt> as determined by the wrapped timestamp value or <tt>defaultValue</tt> if no
+     * conversion was possible
+     */
     public LocalDateTime asLocalDateTimeOfEpochMillis(LocalDateTime defaultValue) {
         Instant temporal = asInstantOfEpochMillis(null);
         if (temporal == null) {
@@ -960,6 +1037,14 @@ public class Value {
         return LocalDateTime.ofInstant(temporal, ZoneOffset.systemDefault());
     }
 
+    /**
+     * Converts the wrapped number into  {@link java.time.LocalDateTime} by assuming the number represents a
+     * "unix timestamp" in seconds.
+     *
+     * @param defaultValue used if an invalid or non numeric value was found
+     * @return the <tt>LocalDateTime</tt> as determined by the wrapped timestamp value or <tt>defaultValue</tt> if no
+     * conversion was possible
+     */
     public LocalDateTime asLocalDateTimeOfEpochSeconds(LocalDateTime defaultValue) {
         Instant temporal = asInstantOfEpochSeconds(null);
         if (temporal == null) {
@@ -972,14 +1057,12 @@ public class Value {
      * Returns the <tt>BigDecimal</tt> value for the wrapped value or <tt>defaultValue</tt> if the wrapped value
      * isn't a BigDecimal and cannot be converted to one.
      * <p>
-     * If the wrapped value is a <tt>BigDecimal</tt>, tt>Double</tt>, <tt>Long</tt> or <tt>Integer</tt>,
+     * If the wrapped value is a <tt>BigDecimal</tt>, <tt>Double</tt>, <tt>Long</tt> or <tt>Integer</tt>,
      * it is either directly returned or converted by calling <tt>java.math.BigDecimal#valueOf</tt>.
-     * </p>
      * <p>
      * Otherwise {@link BigDecimal#BigDecimal(String, java.math.MathContext)} is called on the string representation
      * of the wrapped value (with "," replaced to ".") and <tt>MathContext.UNLIMITED</tt>. If parsing fails, or if
      * the wrapped value was <tt>null</tt>, the <tt>defaultValue</tt> will be returned.
-     * </p>
      *
      * @param defaultValue the value to be used, if no conversion to <tt>BigDecimal</tt> is possible.
      * @return the wrapped value casted or converted to <tt>BigDecimal</tt> or <tt>defaultValue</tt>
@@ -1014,7 +1097,6 @@ public class Value {
      * <p>
      * If the wrapped value can be converted to a BigDecimal ({@link #getBigDecimal(java.math.BigDecimal)},
      * an <tt>Amount</tt> for the result is returned. Otherwise an empty <tt>Amount</tt> is returned.
-     * </p>
      *
      * @return the wrapped value converted to <tt>Amount</tt>. The result might be an empty amount, if the wrapped
      * value is <tt>null</tt> or if no conversion was possible.
@@ -1028,6 +1110,7 @@ public class Value {
      * Converts the wrapped value to an enum constant of the given <tt>clazz</tt>.
      *
      * @param clazz the type of the enum to use
+     * @param <E>   the type of the enum
      * @return an enum constant of the given <tt>clazz</tt> with the same name as the wrapped value
      * or <tt>null</tt> if no matching constant was found
      */
@@ -1072,7 +1155,6 @@ public class Value {
      * Returns a trimmed version of the string representation of the wrapped value.
      * <p>
      * The conversion method used is {@link #asString()}, therefore an empty value will yield <code>""</code>.
-     * </p>
      *
      * @return a string representing the wrapped value without leading or trailing spaces.
      */
@@ -1086,11 +1168,9 @@ public class Value {
      * <p>
      * If the wrapped value is <tt>null</tt>, <code>""</code> will be returned. If the string representation is
      * shorter than <tt>length</tt>, the whole string is returned.
-     * </p>
      * <p>
      * If <tt>length</tt> is negative, the string representation <b>without</b> the first N (<tt>length</tt>)
      * characters is returned. If the string representation is too short, <code>""</code> is returned.
-     * </p>
      *
      * @param length the number of characters to return or to omit (if <tt>length</tt> is negative)
      * @return the first N characters (or less if the string representation of the wrapped value is shorter)
@@ -1122,11 +1202,9 @@ public class Value {
      * <p>
      * If the wrapped value is <tt>null</tt>, <code>""</code> will be returned. If the string representation is
      * shorter than <tt>length</tt>, the whole string is returned.
-     * </p>
      * <p>
      * If <tt>length</tt> is negative, the string representation <b>without</b> the last N (<tt>length</tt>)
      * characters is returned. If the string representation is too short, <code>""</code> is returned.
-     * </p>
      *
      * @param length the number of characters to return or to omit (if <tt>length</tt> is negative)
      * @return the last N characters (or less if the string representation of the wrapped value is shorter)
@@ -1157,13 +1235,11 @@ public class Value {
      * Returns the substring of the internal value starting right after the last occurrence of the given separator.
      * <p>
      * If the separator is not found in the string, or if the internal value is empty, "" is returned.
-     * </p>
      * <p>
      * An example would be:
      * <pre>
      *         <code>Value.of("test.tmp.pdf").afterLast("."); // returns "pdf"</code>
      * </pre>
-     * </p>
      *
      * @param separator the separator string to search for
      * @return the substring right after the last occurrence of the given separator. This will not include the separator itself.
@@ -1183,13 +1259,11 @@ public class Value {
      * Returns the substring of the internal value containing everything up to the last occurrence of the given separator.
      * <p>
      * If the separator is not found in the string, or if the internal value is empty, "" is returned.
-     * </p>
      * <p>
      * An example would be:
      * <pre>
      *         <code>Value.of("test.tmp.pdf").beforeLast("."); // returns "test.tmp"</code>
      * </pre>
-     * </p>
      *
      * @param separator the separator string to search for
      * @return the substring up to the last occurrence of the given separator. This will not include the separator itself.
@@ -1209,13 +1283,11 @@ public class Value {
      * Returns the substring of the internal value starting right after the first occurrence of the given separator.
      * <p>
      * If the separator is not found in the string, or if the internal value is empty, "" is returned.
-     * </p>
      * <p>
      * An example would be:
      * <pre>
      *         <code>Value.of("test.tmp.pdf").afterFirst("."); // returns "tmp.pdf"</code>
      * </pre>
-     * </p>
      *
      * @param separator the separator string to search for
      * @return the substring right after the first occurrence of the given separator. This will not include the separator itself.
@@ -1235,13 +1307,11 @@ public class Value {
      * Returns the substring of the internal value containing everything up to the first occurrence of the given separator.
      * <p>
      * If the separator is not found in the string, or if the internal value is empty, "" is returned.
-     * </p>
      * <p>
      * An example would be:
      * <pre>
      *         <code>Value.of("test.tmp.pdf").beforeFirst("."); // returns "test"</code>
      * </pre>
-     * </p>
      *
      * @param separator the separator string to search for
      * @return the substring up to the first occurrence of the given separator. This will not include the separator itself.
@@ -1264,8 +1334,9 @@ public class Value {
      * end index is greater than the string length, the complete substring from <tt>startIndex</tt> to the end of
      * the string is returned. If the <tt>startIndex</tt> is greater than the string length, <code>""</code> is
      * returned.
-     * </p>
      *
+     * @param startIndex the index of the first character to be included in the sub string
+     * @param endIndex   the index of the last character to be included in the sub string
      * @return a substring like {@link String#substring(int, int)} or <code>""</code> if the wrapped value
      */
     @Nonnull
@@ -1400,13 +1471,13 @@ public class Value {
     /**
      * Determines if the wrapped value is equal to one of the given objects.
      * <p>
-     *     Instead of using <code>if (!value.in(...)) {}</code> consider {@link #notIn(Object...)}.
-     * </p>
+     * Instead of using <code>if (!value.in(...)) {}</code> consider {@link #notIn(Object...)}.
+     *
      * @param objects the set of objects to check against
      * @return <tt>true</tt> if the wrapped data is contained in the given objects array, <tt>false</tt> otherwise
      */
     public boolean in(Object... objects) {
-        for(Object obj : objects) {
+        for (Object obj : objects) {
             if (obj == null) {
                 if (data == null) {
                     return true;
@@ -1422,8 +1493,8 @@ public class Value {
     /**
      * Determines if the wrapped value isn't equal to any of the given objects.
      * <p>
-     *     This is the inverse of {@link #in(Object...)}
-     * </p>
+     * This is the inverse of {@link #in(Object...)}
+     *
      * @param objects the set of objects to check against
      * @return <tt>true</tt> if the wrapped data isn't contained in the given objects array, <tt>false</tt> otherwise
      */
@@ -1437,7 +1508,6 @@ public class Value {
      * <p>In this case equality does not take differences of upper and lower case characters into account. Therefore
      * this is boilerplate for <code>asString().equalsIgnoreCase(otherString.toString())</code>
      * (With proper <tt>null</tt> checks.)
-     * </p>
      *
      * @param otherString the input to compare against
      * @return <tt>true</tt> if the string representation of the wrapped object is equal to the string representation

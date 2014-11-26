@@ -11,6 +11,5 @@
  * {@link sirius.kernel.di.FieldAnnotationProcessor} to process them.
  * <p>
  * The defined annotations handle common tasks (self-registering parts, loading parts into fields etc.)
- * </p>
  */
 package sirius.kernel.di.std;

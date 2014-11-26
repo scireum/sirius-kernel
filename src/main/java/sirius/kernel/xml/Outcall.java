@@ -26,7 +26,6 @@ import java.util.Map;
  * <p>
  * This is basically a thin wrapper over <tt>HttpURLConnection</tt> which adds some boilder plate code and a bit
  * of logging / monitoring.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -83,7 +82,6 @@ public class Outcall {
      * Provides access to the result of the call.
      * <p>
      * Once this method is called, the call will be started and data will be read.
-     * </p>
      *
      * @return the stream returned by the call
      * @throws IOException in case of any IO error

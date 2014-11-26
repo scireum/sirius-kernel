@@ -18,7 +18,6 @@ import java.util.Map;
  * Provides a tuple of values where the key is used as comparator.
  * <p>
  * Subclasses {@link Tuple} to implement <tt>Comparable</tt> based on the key, that is the first element of the tuple.
- * </p>
  *
  * @param <F> defines the first type of the tuple. The supplied class must implement <code>Comparable</code>
  * @param <S> defines the second type of the tuple
@@ -31,23 +30,29 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S> imp
 
     /**
      * Creates a new tuple without any values.
+     *
+     * @param <F> the type for the first value
+     * @param <S> the type for the second value
+     * @return the newly created tuple
      */
     @Nonnull
     public static <F extends Comparable<F>, S> ComparableTuple<F, S> createTuple() {
-        return new ComparableTuple<F, S>(null, null);
+        return new ComparableTuple<>(null, null);
     }
 
     /**
      * Creates a new tuple by only specifying the first value of the tuple.
      * <p>
      * The second value will remain <tt>null</tt>.
-     * </p>
      *
      * @param first defines the first value of the tuple
+     * @param <F>   the type for the first value
+     * @param <S>   the type for the second value
+     * @return the newly created tuple
      */
     @Nonnull
     public static <F extends Comparable<F>, S> ComparableTuple<F, S> create(@Nullable F first) {
-        return new ComparableTuple<F, S>(first, null);
+        return new ComparableTuple<>(first, null);
     }
 
     /**
@@ -55,6 +60,9 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S> imp
      *
      * @param first  defines the first value of the tuple
      * @param second defines the second value of the tuple
+     * @param <F>    the type for the first value
+     * @param <S>    the type for the second value
+     * @return the newly created tuple
      */
     @Nonnull
     public static <F extends Comparable<F>, S> ComparableTuple<F, S> create(@Nullable F first, @Nullable S second) {
@@ -68,7 +76,7 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S> imp
      * @param <K> the key type of the map and therefore the type of the first component of the tuples
      * @param <V> the value type of the map and therefore the type of the second component of the tuples
      * @return a list of tuples, containing one tuple per map entry where the first component is the key,
-     *         and the second component is the value of the map entry.
+     * and the second component is the value of the map entry.
      */
     public static <K extends Comparable<K>, V> List<ComparableTuple<K, V>> fromComparableMap(@Nonnull Map<K, V> map) {
         List<ComparableTuple<K, V>> result = new ArrayList<ComparableTuple<K, V>>(map.size());

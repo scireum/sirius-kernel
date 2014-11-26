@@ -22,7 +22,6 @@ import java.util.function.Consumer;
  * {@link sirius.kernel.async.CallContext#get(Class)}. This provides an interface to a monitoring system which
  * might be present (by calling {@link sirius.kernel.async.TaskContext#setAdapter(TaskContextAdapter)}. If no
  * monitoring is available, the default mechanisms of the platform are used.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/07
@@ -56,7 +55,6 @@ public class TaskContext {
      * Provides access to the <tt>TaskContext</tt> for the current thread.
      * <p>
      * This is boilerplate for <code>CallContext.getCurrent().get(TaskContext.class)</code>
-     * </p>
      *
      * @return the task context for the current thread
      */
@@ -68,7 +66,6 @@ public class TaskContext {
      * Writes a log message to the monitor.
      * <p>
      * If no monitor is available, the <tt>async</tt> logger will be used.
-     * </p>
      *
      * @param message the message to log
      * @param args    the parameters used to format the message (see {@link Strings#apply(String, Object...)})
@@ -85,7 +82,6 @@ public class TaskContext {
      * Writes a debug message to the monitor.
      * <p>
      * If no monitor is available, the <tt>async</tt> logger will be used.
-     * </p>
      *
      * @param message the message to log
      * @param args    the parameters used to format the message (see {@link Strings#apply(String, Object...)})
@@ -126,7 +122,6 @@ public class TaskContext {
      * <p>
      * By calling <code>shouldUpdateState().check()</code> an inner loop can detect if a state update should be
      * performed. This will limit the number of updates to a reasonable value.
-     * </p>
      *
      * @return a rate limit which limits the number of updates to a reasonable value
      */
@@ -139,7 +134,6 @@ public class TaskContext {
      * <p>
      * Updates the named performance counter of the monitor. Also the duration given in milliseconds is added to
      * compute the average duration. Use {@link sirius.kernel.commons.Watch#elapsedMillis()} to obtain such a value.
-     * </p>
      *
      * @param counter  the counter to update
      * @param duration the duration the measured section took to execute. Use <tt>0d</tt> if no duration is available
@@ -155,7 +149,6 @@ public class TaskContext {
      * <p>
      * Although an error is signaled, this will not cancel or interrupt the execution of the task. This is merely
      * a signal for an user or administrator that an unexpected or non-anticipated event occurred.
-     * </p>
      */
     public void markErroneous() {
         if (adapter != null) {
@@ -168,7 +161,6 @@ public class TaskContext {
      * <p>
      * A task can be either stopped via the {@link #cancel()} method or due to a system shutdown. In any case it is
      * wise for a task to check this flag every once in a while to keep the overall app responsive.
-     * </p>
      *
      * @return <tt>true</tt> as long as the task is expected to be executed, <tt>false</tt> otherwise
      */
@@ -181,7 +173,6 @@ public class TaskContext {
      * <p>
      * Note that this will not kill the underlying thread. This will merely toggle the canceled flag. It is
      * however the task programmers job to check this flag and interrupt / terminate all computations.
-     * </p>
      */
     public void cancel() {
         cancelled = true;
@@ -195,6 +186,7 @@ public class TaskContext {
      *
      * @param iterable the collection to iterate through
      * @param consumer the processor invoked for each element
+     * @param <T>      the type of elements being processed
      */
     public <T> void iterateWhileActive(Iterable<T> iterable, Consumer<T> consumer) {
         for (T obj : iterable) {
@@ -211,16 +203,13 @@ public class TaskContext {
      * This will consist of three parts: System, Sub-System and Job. It is used to provide information which
      * module is currently active. Therefore the <tt>System</tt> will provide a raw information which module is
      * active. This might be <b>HTTP</b> for the web server or the category of an executor in {@link Async}.
-     * </p>
      * <p>
      * The <tt>Sub-System</tt> will provide a more detailed information, like the class name or the name of
      * a component which is currently active.
-     * </p>
      * <p>
      * Finally the <tt>Job</tt> will provide a detailed information what's being currently processed. This might be
      * the effective URI of the request being processed by the web server or the name of a file currently being
      * imported.
-     * </p>
      *
      * @return the <tt>System String</tt> with a format like <i>System::Sub-System::Job</i>
      */
@@ -315,7 +304,6 @@ public class TaskContext {
      * <p>
      * This is independent of the <tt>System String</tt> and merely used to provide a nicely formatted title
      * to the user.
-     * </p>
      *
      * @return the title of the currently active job
      */

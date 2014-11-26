@@ -9,9 +9,9 @@
 package sirius.kernel.async;
 
 import com.google.common.collect.Maps;
+import sirius.kernel.Lifecycle;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueProvider;
-import sirius.kernel.Lifecycle;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
@@ -26,18 +26,16 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Static helper for managing and scheduling asynchronous background tasks.
- * <p/>
+ * <p>
  * Provides various helper methods to execute tasks in another thread and to provide interaction via instances of
  * {@link Promise}.
  * <p>
  * Scheduling tasks via {@link #executor(String)} or {@link #defaultExecutor()} provides externally configured
  * thread-pools (via <tt>async.executor</tt>) as well as auto transfer of the current {@link CallContext} to the
  * called thread.
- * </p>
  * <p>
  * Additionally helper-methods for creating and aggregating instances {@link Promise} are provided, which are the
  * main interaction model when dealing with async and non-blocking execution.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -57,7 +55,6 @@ public class Async {
      * <p>
      * The configuration for this executor is taken from <tt>async.executor.[category]</tt>. If no config is found,
      * the default values are used.
-     * </p>
      *
      * @param category the category of the task to be executed, which implies the executor to use.
      * @return the execution builder which submits tasks to the appropriate executor.
@@ -87,8 +84,8 @@ public class Async {
                 if (exec == null) {
                     Extension config = Extensions.getExtension("async.executor", wrapper.category);
                     exec = new AsyncExecutor(wrapper.category,
-                                             config.get("poolSize").asInt(10),
-                                             config.get("queueLength").asInt(0));
+                            config.get("poolSize").asInt(10),
+                            config.get("queueLength").asInt(0));
                     executors.put(wrapper.category, exec);
                 }
             }
@@ -101,11 +98,9 @@ public class Async {
      * <p>
      * Forks the computation, which means that the current <tt>CallContext</tt> is transferred to the new thread,
      * and returns the result of the computation as promise.
-     * </p>
      * <p>
      * If the executor for the given category is saturated (all threads are active and the queue is full) this
      * will drop the computation and the promise will be sent a <tt>RejectedExecutionException</tt>.
-     * </p>
      *
      * @param category    the category which implies which executor to use.
      * @param computation the computation which eventually yields the resulting value
@@ -176,11 +171,9 @@ public class Async {
      * Turns a list of promises into a promise for a list of values.
      * <p>
      * Note that all values need to have the same type.
-     * </p>
      * <p>
      * If only the completion of all promises matters in contrast to their actual result, a {@link Barrier} can also
      * be used. This permits to wait for promises of different types.
-     * </p>
      *
      * @param list the list of promises to convert.
      * @param <V>  the type of each promise.
@@ -245,7 +238,6 @@ public class Async {
      * Determines if the application is still running.
      * <p>
      * Can be used for long loops in async tasks to determine if a computation should be interrupted.
-     * </p>
      *
      * @return <tt>true</tt> if the system is running, <tt>false</tt> if a shutdown is in progress
      */
@@ -283,11 +275,11 @@ public class Async {
                     try {
                         if (!exec.awaitTermination(60, TimeUnit.SECONDS)) {
                             LOG.SEVERE(Strings.apply("Executor '%s' did not terminate within 60s. Interrupting tasks...",
-                                                     e.getKey()));
+                                    e.getKey()));
                             exec.shutdownNow();
                             if (!exec.awaitTermination(30, TimeUnit.SECONDS)) {
                                 LOG.SEVERE(Strings.apply("Executor '%s' did not terminate after another 30s!",
-                                                         e.getKey()));
+                                        e.getKey()));
                             }
                         }
                     } catch (InterruptedException ex) {

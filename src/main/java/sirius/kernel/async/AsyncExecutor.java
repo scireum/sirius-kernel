@@ -19,7 +19,6 @@ import java.util.concurrent.*;
  * <p>
  * Instances of this class are created and managed by {@link Async}. This class is only made public so it can be
  * accessed for statistical reasons like ({@link #getBlocked()} or {@link #getDropped()}.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -83,7 +82,6 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
      * The number of tasks which were executed by blocking the caller due to system overload conditions.
      * <p>
      * A system overload occurs if all available tasks are busy and the queue of this executor reached its limit.
-     * </p>
      *
      * @return the number of blocking task executions so far.
      */
@@ -97,7 +95,6 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
      * A system overload occurs if all available tasks are busy and the queue of this executor reached its limit. If
      * a task has a <tt>dropHandler</tt> attached, the handler is informed and the task is not executed by simply
      * deleted.
-     * </p>
      *
      * @return the number of dropped tasks so far.
      */

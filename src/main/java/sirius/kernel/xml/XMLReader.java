@@ -10,7 +10,6 @@ package sirius.kernel.xml;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -35,7 +34,6 @@ import java.util.function.Function;
  * Used SAX to parse a given XML file. A set of {@link NodeHandler} objects can be given, which get notified if
  * a sub-tree below a given tag was parsed. This sub-tree is available as DOM and can conveniently be processed
  * using xpath.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -119,7 +117,6 @@ public class XMLReader extends DefaultHandler {
      * Handlers are invoked after the complete node was read. Namespaces are ignored for now which eases
      * the processing a lot (especially for xpath related tasks). Namespaces however
      * could be easily added by replacing String with QName here.
-     * </p>
      *
      * @param name    the qualified name of the tag which should be parsed and processed
      * @param handler the NodeHandler used to process the parsed DOM sub-tree
@@ -131,6 +128,7 @@ public class XMLReader extends DefaultHandler {
     /**
      * Parses the given stream.
      *
+     * @param stream the stream to parse
      * @throws IOException if parsing the XML fails either due to an IO error or due to an SAXException (when
      *                     processing a malformed XML).
      */

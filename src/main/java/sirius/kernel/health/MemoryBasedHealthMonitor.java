@@ -21,7 +21,6 @@ import java.util.List;
  * Provides a in-memory store for logs and exceptions.
  * <p>
  * This will be inherently limited in size but should always contain the most recent logs and errors.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/11

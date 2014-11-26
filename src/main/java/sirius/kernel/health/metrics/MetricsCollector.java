@@ -26,7 +26,6 @@ public interface MetricsCollector {
      * Respectively <tt>health.limits.&lt;limitType&gt;.warning</tt> and <tt>health.limits.&lt;limitType&gt;.error</tt>
      * will be used to determine if it is GREEN, YELLOW or RED. If either of the config values is missing or 0, it will
      * be ignored.
-     * </p>
      *
      * @param limitType the name used to retrieve the limits from the system config
      * @param title     the name of the metric
@@ -50,7 +49,6 @@ public interface MetricsCollector {
      * <p>In contrast to {@link #metric(String, String, double, String)} this will not report the absolute value
      * but the difference to the last measured value. This value will be stored inside a special map, hence an unique
      * id is required to identify it.
-     * </p>
      *
      * @param id           the unique id used to store and retrieve the last measured value
      * @param limitType    the name used to fetch the limits from the system configuration

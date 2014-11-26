@@ -18,7 +18,6 @@ import java.util.Date;
  * <p>
  * Such entries are created and managed by the cache implementation. However, via {@link sirius.kernel.cache.Cache#getContents()}
  * can be used to access the entries of a cache. These entries provide detailed information for each item in the cache.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08

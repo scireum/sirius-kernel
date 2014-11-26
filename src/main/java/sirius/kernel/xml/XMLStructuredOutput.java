@@ -28,7 +28,6 @@ import java.io.OutputStream;
  * Represents a {@link StructuredOutput} emitting XML data.
  * <p>
  * Can be used to construct XML using the <tt>StructuredOutput</tt> interface.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08

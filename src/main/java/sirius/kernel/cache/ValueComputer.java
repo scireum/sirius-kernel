@@ -16,7 +16,6 @@ import javax.annotation.Nullable;
  * <p>
  * Can be supplied to {@link CacheManager#createCache(String, ValueComputer, ValueVerifier)} when creating a cache
  * to compute values which are not found in the cache.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08

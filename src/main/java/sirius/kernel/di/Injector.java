@@ -29,14 +29,12 @@ import java.util.regex.Pattern;
  * Contains the micro kernel which keeps track of all parts and injects them where required. We consider this
  * a micro kernel, as it doesn't directly know any annotations. It rather delegates the work to classes which implement
  * defined interfaces. Therefore the implementation is rather short but easily extensible.
- * </p>
  * <p>
  * Parts are commonly added via subclasses of {@link ClassLoadAction}. These scan each class in the classpath
  * and instantiate and insert them into the {@link MutableGlobalContext} if required. Most of these
  * <tt>ClassLoadAction</tt> implementations trigger on annotations. A prominent example is the
  * {@link sirius.kernel.di.std.AutoRegisterAction} which loads all classes wearing the {@link sirius.kernel.di.std.Register}
  * annotation. Subclasses of <tt>ClassLoadAction</tt> are discovered automatically.
- * </p>
  * <p>
  * Accessing parts can be done in two ways. First, one can access the current {@link GlobalContext} via
  * {@link #context()}. This can be used to retrieve parts by class or by class and name. The second way
@@ -45,11 +43,9 @@ import java.util.regex.Pattern;
  * these annotations are not processed by the micro kernel itself, but by subclasses of {@link FieldAnnotationProcessor}.
  * To process all annotations of a given Java object, {@link GlobalContext#wire(Object)} can be used. This will
  * be automatically called for each part which is auto-instantiated by a <tt>ClassLoadAction</tt>.
- * </p>
  * <p>
  * Also all annotations on static fields are processed on system startup. This is a simple trick to pass a
  * part to objects which are frequently created and destroyed.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -156,7 +152,6 @@ public class Injector {
      * Provides access to the global context, containing all parts
      * <p>
      * This can also be loaded into a class field using the {@link sirius.kernel.di.std.Context} annotation
-     * </p>
      *
      * @return the global context containing all parts known to the system
      */

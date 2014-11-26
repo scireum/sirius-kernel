@@ -58,11 +58,9 @@ public interface Extension {
      * <p>
      * If this extension doesn't provide a value for this key, but there is an extension with the name
      * <tt>default</tt> which provides a value, this is used.
-     * </p>
      * <p>
      * If the value in the config file starts with a dollar sign, the value is treated as an i18n key and the
      * returned value will contain the translation for the current language.
-     * </p>
      *
      * @param path the access path to retrieve the value
      * @return the value wrapping the contents for the given path. This will never by <tt>null</tt>,
@@ -101,13 +99,10 @@ public interface Extension {
      *     }
      * }
      * </pre>
-     * </p>
      * <p>
      * Then getConfigs("sub") for the extension "test" would return a list containing a and b wrapped as config.
-     * </p>
      * <p>
      * The name of the config object is available as "id".
-     * </p>
      *
      * @param key the path to the config object containing a list of sub object.
      * @return a list of config object underneath the given object.
@@ -121,7 +116,6 @@ public interface Extension {
      * <p>
      * If this extension doesn't provide a value for this key, but there is an extension with the name
      * <tt>default</tt> which provides a value, this is used.
-     * </p>
      *
      * @param path the access path to retrieve the value
      * @return the encoded duration as milliseconds.
@@ -134,11 +128,9 @@ public interface Extension {
      * <p>
      * If this extension doesn't provide a value for this key, but there is an extension with the name
      * <tt>default</tt> which provides a value, this is used.
-     * </p>
      * <p>
      * Returning a {@link Value} instead of a plain object provides lots of conversion methods on the one hand
      * and also guarantees a non null result on the other hand, since a <tt>Value</tt> can be empty.
-     * </p>
      *
      * @param path the access path to retrieve the value
      * @return the value wrapping the contents for the given path. This will never by <tt>null</tt>.
@@ -152,11 +144,9 @@ public interface Extension {
      * <p>
      * Tries to lookup the value for <tt>classProperty</tt>, fetches the corresponding class and creates a new
      * instance for it.
-     * </p>
      * <p>
      * Returning a {@link Value} instead of a plain object provides lots of conversion methods on the one hand
      * and also guarantees a non null result on the other hand, since a <tt>Value</tt> can be empty.
-     * </p>
      *
      * @param classProperty the property which is used to retrieve the class name
      * @return a new instance of the given class

@@ -13,7 +13,6 @@ package sirius.kernel.commons;
  * <p>
  * Implementations can be passed along and then decide whether to lazily compute a value or to simply return a
  * previously set value.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08

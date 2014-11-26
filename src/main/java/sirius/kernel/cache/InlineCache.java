@@ -17,15 +17,13 @@ import javax.annotation.Nullable;
  * <p>
  * Caches a computed value for a certain amount of time. Re-computes the value once the value is expired and the
  * cache is used again.
- * </p>
  * <p>
  * A real lookup cache, with a Map like behaviour can be found here: {@link Cache}.
- * </p>
  * <p>
  * Use {@link CacheManager#createInlineCache(long, java.util.concurrent.TimeUnit, sirius.kernel.commons.ValueProvider)}
  * to create a new inline cache.
- * </p>
  *
+ * @param <E> the type of values being cached
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
  */
@@ -37,6 +35,9 @@ public class InlineCache<E> {
 
     /**
      * Creates a new inline cache based on the given parameters.
+     *
+     * @param computer the function used to compute a value if it is not present in the cache
+     * @param timeout  the time to live (ttl) for the value in milliseconds
      */
     protected InlineCache(@Nullable ValueProvider<E> computer, long timeout) {
         this.computer = computer;

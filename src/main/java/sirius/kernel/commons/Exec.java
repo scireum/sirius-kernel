@@ -39,7 +39,7 @@ public class Exec {
         public void run() {
             try {
                 Thread.currentThread()
-                      .setName(StreamEater.class.getSimpleName() + "-" + Thread.currentThread().getId());
+                        .setName(StreamEater.class.getSimpleName() + "-" + Thread.currentThread().getId());
                 InputStreamReader isr = new InputStreamReader(stream);
                 BufferedReader br = new BufferedReader(isr);
                 String line = br.readLine();
@@ -97,6 +97,7 @@ public class Exec {
      * Executes the given command and returns a transcript of stderr and stdout.
      *
      * @param command the command to execute
+     * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails
      */
     public static String exec(String command) throws ExecException {

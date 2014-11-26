@@ -35,8 +35,9 @@ public class XMLCall {
     /**
      * Creates a new XMLCall for the given url.
      *
-     * @param url the target URL to call
+     * @param url         the target URL to call
      * @param contentType the Content-Type to use
+     * @return a new instance to perform the xml call
      * @throws IOException in case of an IO error
      */
     public static XMLCall to(URL url, String contentType) throws IOException {
@@ -47,11 +48,12 @@ public class XMLCall {
     }
 
     /**
-     * Adds a custom headerfield to the call
-     * @param name name of the field
+     * Adds a custom header field to the call
+     *
+     * @param name  name of the field
      * @param value value of the field
      */
-    public void addHeader(String name, String value){
+    public void addHeader(String name, String value) {
         outcall.setRequestProperty(name, value);
     }
 

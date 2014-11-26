@@ -18,7 +18,6 @@ public class Doubles {
      * <p>
      * The fractional part is "everything behind the decimal separator". So for 1.454 it will be 0.454. This method
      * always returns an absolute value so the fractional part of -4.5656 will be 0.5656.
-     * </p>
      *
      * @param val the number for return the fractional part of
      * @return the fractional part [0..1) of the number
@@ -32,7 +31,6 @@ public class Doubles {
      * <p>
      * The numbers are not compared for absolute exactness (as == would do) but a minimal delta ({@link #EPSILON})
      * is permitted to make up for rounding errors which are in the nature of floating point numbers.
-     * </p>
      *
      * @param a the first number to compare
      * @param b the second number to compare
@@ -48,7 +46,6 @@ public class Doubles {
      * <p>
      * Determines if the given number is zero or less than {@link #EPSILON} away from it. This is used to make up for
      * rounding errors which are in the nature of floating point numbers.
-     * </p>
      *
      * @param val the number to check if it is 0.
      * @return <tt>true</tt> if the absolute value of the given numbers is less than {@link #EPSILON},

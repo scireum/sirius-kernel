@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
  * <p>
  * The references class must be an implementation of {@link Priorized} and all parts will
  * be sorted by their priority (ascending) before the list is inserted.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see Parts

@@ -34,7 +34,6 @@ import java.util.stream.Stream;
  * Loads all .properties files in the given {@link Classpath} which match the pattern
  * <code>name_lang.properties</code>. Where <tt>name</tt> is any string (must not contain "_") and <tt>lang</tt>
  * is a two letter language code.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see NLS
@@ -83,7 +82,6 @@ public class Babelfish {
      * Tries to write out all stored properties to their respective source location.
      * <p>
      * This intended to be called in development systems after translations have been edited via the web interface.
-     * </p>
      */
     public void writeProperties() {
         LOG.INFO("Writing properties back to source files...");
@@ -205,7 +203,6 @@ public class Babelfish {
      * <p>
      * If no matching entry is found, the given <tt>fallback</tt> is used. If still no match was found, either
      * a new one is create (if <tt>create</tt> is <tt>true</tt>) or <tt>false</tt> otherwise.
-     * </p>
      *
      * @param property the property key for which a translation is required
      * @param fallback a fallback key, if no translation is found. May be <tt>null</tt>.
@@ -259,7 +256,6 @@ public class Babelfish {
      * Initializes the translation engine by using the given classpath.
      * <p>
      * Scans for all .properties files matching <tt>PROPERTIES_FILE</tt> and loads their contents.
-     * </p>
      *
      * @param classpath the classpath used to discover all relevant properties files
      */
@@ -312,7 +308,6 @@ public class Babelfish {
      * <p>
      * This is called by {@link sirius.kernel.Sirius#stop()} if the framework was initialized as test
      * environment. The idea is to break unit-tests if unknown translations are encountered.
-     * </p>
      *
      * @throws sirius.kernel.health.HandledException if unknown translations where detected.
      */

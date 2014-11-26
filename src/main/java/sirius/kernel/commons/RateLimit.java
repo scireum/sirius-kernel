@@ -7,22 +7,20 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * This method {@link #check()} can be called frequently. It will however only return <tt>true</tt> after a certain
  * amount of time has elapsed or after a number of calls where made. The mode depends on how the object was created.
- * </p>
  * <p>
  * As an example, this can be used in an inner loop if one wants to print out the current status every once in a while.
  * Since writing to System.out is comparatively slow, it's a good idea to apply a rate limit:
- * <code>
  * <pre>
+ * <code>
  * RateLimit limit = RateLimit.everyNthCall(1000);
- * for(int i = 0; i < 100000; i++) {
+ * for(int i = 0; i &lt; 100000; i++) {
  *     // ...smart computation here...
  *     if (limit.check()) {
  *          System.out.println(i);
  *     }
  * }
- * </pre>
  * </code>
- * </p>
+ * </pre>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/09
@@ -53,8 +51,9 @@ public class RateLimit {
      * Creates a new call based rate limit.
      * <p>
      * Calling {@link #check()} on will only return <tt>true</tt> every n-th call and <tt>false</tt> otherwise.
-     * </p>
      *
+     * @param n the number of calls to skip (returning <tt>false</tt>) by {@link #check()} before <tt>true</tt>
+     *          is returned
      * @return a new call based rate limit
      */
     public static RateLimit everyNthCall(long n) {
@@ -66,8 +65,9 @@ public class RateLimit {
      * <p>
      * Calling {@link #check()} on will only return <tt>true</tt> every after the given amount of time has be passed
      * since the last time it returned <tt>true</tt>. Returns <tt>false</tt> otherwise.
-     * </p>
      *
+     * @param interval the amount of time after a call to {@link #check()} returns <tt>true</tt> again
+     * @param unit     the unit for amount
      * @return a new time based rate limit
      */
     public static RateLimit timeInterval(long interval, TimeUnit unit) {
@@ -99,9 +99,9 @@ public class RateLimit {
         if (mode == Mode.CALL_BASED) {
             return Strings.apply("Every %d calls: %d to go...", interval, state);
         }
-        long delta =  interval - (System.currentTimeMillis() - state);
+        long delta = interval - (System.currentTimeMillis() - state);
         if (delta > 0) {
-            return Strings.apply("Every %d ms: %d ms to go...", interval,delta);
+            return Strings.apply("Every %d ms: %d ms to go...", interval, delta);
         } else {
             return Strings.apply("Every %d ms: Ready to go...", interval);
         }

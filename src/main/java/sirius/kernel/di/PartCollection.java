@@ -16,7 +16,6 @@ import java.util.Collection;
  * given interface (PartCollection{@link #getInterface()}.
  * <p>
  * This is the content of a field wearing the {@link sirius.kernel.di.std.Parts} annotation.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08

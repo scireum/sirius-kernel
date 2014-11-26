@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
  * <p>
  * Can be used to access the <tt>GlobalContext</tt> to wire other objects or to lookup a named part via
  * {@link sirius.kernel.di.GlobalContext#findPart(String, Class)}.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08

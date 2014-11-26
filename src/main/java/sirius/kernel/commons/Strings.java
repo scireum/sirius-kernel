@@ -28,10 +28,8 @@ import java.util.regex.Pattern;
  * <p>
  * The {@link Value} class provides some additional methods for working with nullable strings like
  * {@link Value#left(int)}, {@link Value#toLowerCase()} etc.
- * </p>
  * <p>
  * This class can and should not be instantiated, as all methods are static.
- * </p>
  *
  * @author aha
  * @see Value
@@ -77,7 +75,6 @@ public class Strings {
      * <p>
      * This is essentially the same as <code>left.equalsIgnoreCase(right)</code>
      * while gracefully handling <tt>null</tt> values.
-     * </p>
      *
      * @param left  the first string to be compared
      * @param right the second string to be compared with
@@ -112,7 +109,6 @@ public class Strings {
      * Internally this method calls {@link Object#toString()}. For locale aware or locale fixed methods,
      * {@link sirius.kernel.nls.NLS#toUserString(Object)} and
      * {@link sirius.kernel.nls.NLS#toMachineString(Object)} can be used.
-     * </p>
      *
      * @param object the object to be converted to string.
      * @return the string representation of the given object or <tt>null</tt> if <tt>object</tt> was null.
@@ -127,12 +123,10 @@ public class Strings {
      * <p>
      * This is just a delegate to {@link String#format(String, Object...)}. It is however defined in this class to
      * forces all framework parts to use the same formatting mechanism (and not <tt>MessageFormat</tt> etc.).
-     * </p>
      * <p>
      * This method is intended to be used for format short strings or non-translated log messages etc. For more
      * complex messages and especially for translated strings, a {@link sirius.kernel.nls.Formatter} should be
      * used.
-     * </p>
      *
      * @param format    the format pattern to be used
      * @param arguments the parameters for be used for replacement
@@ -149,12 +143,13 @@ public class Strings {
      * Returns the first non empty value of the given array.
      * <p>
      * This can be used to provide a default value or to check several sources for a value, e.g.:
-     * <code><pre>
+     * <pre>
+     * <code>
      *         String s = Strings.firstFilled(System.getProperty("foo.test"),
      *                                        System.getProperty("test"),
      *                                        "default");
-     *     </pre></code>
-     * </p>
+     * </code>
+     * </pre>
      *
      * @param values an array of string values to be scanned
      * @return the first value of values which is filled.
@@ -191,7 +186,6 @@ public class Strings {
      * Splits the given string at the first occurrence of the separator.
      * <p>
      * If the given input is empty, a tuple with <tt>null</tt> as first and second component will be returned.
-     * </p>
      *
      * @param input     the input to be split
      * @param separator the separator used to split at
@@ -216,7 +210,6 @@ public class Strings {
      * Splits the given string at the last occurrence of the separator.
      * <p>
      * If the given input is empty, a tuple with <tt>null</tt> as first and second component will be returned.
-     * </p>
      *
      * @param input     the input to be split
      * @param separator the separator used to split at
@@ -258,7 +251,6 @@ public class Strings {
      * Returns a string representation of the given map.
      * <p>
      * Keys and values are separated by a colon (:) and entries by a new line.
-     * </p>
      *
      * @param source to map to be converted to a string
      * @return a string representation of the given map, or "" if the map was null
@@ -283,7 +275,6 @@ public class Strings {
      * <p>
      * Generates a string which contains the string representation of each item separated by the given separator.
      * The conversion method for the list items used is {@link NLS#toMachineString(Object)}.
-     * </p>
      *
      * @param list      the list items to join
      * @param separator the separator to place between the items
@@ -360,6 +351,10 @@ public class Strings {
     /**
      * Returns a trimmed version of the given object's string representation.
      * And empty string '' will always be null.
+     *
+     * @param object the input to be converted into a string and then trimmed
+     * @return a trimmed version of the string representation of the given object.
+     * Returns <tt>null</tt> if an empty string was given.
      */
     public static String trim(Object object) {
         if (isEmpty(object)) {
@@ -398,11 +393,9 @@ public class Strings {
      * <p>
      * The regular expression is expected to have one explicit matching group which will be used as input for
      * the replacement function.
-     * </p>
      * <p>
      * To replace all occurrences of <code>#{X}</code> by <code>NLS.get("X")</code> one could use:
      * <code>Strings.replaceAll(Pattern.compile("#\\{([^\\}]+)\\}"), someText, NLS::get)</code>
-     * </p>
      *
      * @param regEx       the regular expression to replace in the given input
      * @param input       the input to scan

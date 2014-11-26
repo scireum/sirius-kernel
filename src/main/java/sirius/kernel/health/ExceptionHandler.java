@@ -19,7 +19,6 @@ public interface ExceptionHandler {
      * Invoked to handle the given exception.
      * <p>
      * Can be used to get notified about any exception which occurs in the system.
-     * </p>
      *
      * @param incident contains the error description to be processed.
      * @throws Exception as this method is already called from within the exception handling system, errors in here

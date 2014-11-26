@@ -5,7 +5,6 @@ package sirius.kernel.di.std;
  * <p>
  * Classes implementing this interface can be used by the {@link PriorityParts} annotation and will
  * be auto sorted (ascending) by priority before they are made available.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/02

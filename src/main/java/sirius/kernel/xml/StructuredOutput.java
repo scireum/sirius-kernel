@@ -79,7 +79,8 @@ public interface StructuredOutput {
 
     /**
      * Outputs the given collection as array.
-     * <p>This will create a property with the given name and the given array as value</p>
+     * <p>
+     * This will create a property with the given name and the given array as value
      *
      * @param name        the name of the property
      * @param elementName the name used to generate inner elements (if required, e.g. XML)

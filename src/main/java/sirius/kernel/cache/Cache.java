@@ -24,7 +24,6 @@ import java.util.List;
  * entries are evicted to make room for newer ones. Also this cache will be automatically evicted from time to
  * time so that only values which are really used remain in the cache. Therefore system resources (most essentially
  * heap storage) is released if no longer required.
- * </p>
  * <p>
  * A new Cache is created by invoking {@link CacheManager#createCache(String)}. The maximal size as well as the
  * time to live value for each entry is set via the <tt>cache.[cacheName]</tt> extension. Additionally
@@ -32,7 +31,6 @@ import java.util.List;
  * <tt>ValueComputer</tt> as well as a <tt>ValueVerifier</tt>. Those classes are responsible for creating non-
  * existent cache values or to verify that cached values are still up to date, before they are returned to a
  * user of the cache.
- * </p>
  *
  * @author Andreas Haulfer (aha@scireum.de)
  * @see CacheManager
@@ -105,7 +103,6 @@ public interface Cache<K, V> {
      * <p>
      * This can be called by an administrative tool. However as this method is called regularly by the
      * {@link CacheEvictionTimer}, this does not need to be called manually.
-     * </p>
      */
     void runEviction();
 
@@ -119,7 +116,7 @@ public interface Cache<K, V> {
      *
      * @param key the key used to retrieve the value in the cache
      * @return the cached value or <tt>null</tt> if neither a valid value was found, nor one could be
-     *         computed.
+     * computed.
      */
     @Nullable
     V get(@Nonnull K key);
@@ -131,7 +128,7 @@ public interface Cache<K, V> {
      * @param key      the key used to retrieve the value in the cache
      * @param computer the computer used to generate a value if absent in the cache
      * @return the cached value or <tt>null</tt> if neither a valid value was found, nor one could be
-     *         computed.
+     * computed.
      */
     @Nullable
     V get(@Nonnull K key, @Nullable ValueComputer<K, V> computer);
@@ -155,6 +152,7 @@ public interface Cache<K, V> {
      * Checks if there is a cached entry for the given key
      *
      * @param key contains the key to check in the cache
+     * @return <tt>true</tt> if a value os present for the given key, <tt>false</tt> otherwise
      */
     boolean contains(@Nonnull K key);
 
@@ -176,7 +174,6 @@ public interface Cache<K, V> {
      * Sets the remove callback which is invoked once a value is removed from the cache.
      * <p>
      * Only one handler can be set at a time.
-     * </p>
      *
      * @param onRemoveCallback the callback to call when an element is removed from the cache. Can be null
      *                         <tt>null</tt> to remove the last handler.

@@ -20,11 +20,9 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Is responsible for creating new caches using {@link #createCache(String)}. Also, this class keeps track of all
  * known caches.
- * </p>
  * <p>
  * Additionally instances of {@link InlineCache} can be created, which can be used to compute a single value,
  * which is then cached for a given amount of time.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -64,7 +62,6 @@ public class CacheManager {
      * If a value is absent in the cache, the given <tt>valueComputer</tt> is used to generate the requested value. If
      * a value is fetched from the cache, it is verified by the given <tt>verifier</tt> in certain intervals before it
      * is returned to the user.
-     * </p>
      * <p>
      * The system config can provide the following values:
      * <ul>
@@ -73,7 +70,6 @@ public class CacheManager {
      * <li><tt>verification</tt>: a duration specifying in which interval a verification of a value will
      * take place (if possible)</li>
      * </ul>
-     * </p>
      *
      * @param name          the name of the cache, used to load the appropriate extension from the config
      * @param valueComputer used to compute a value, if no valid value was found in the cache for the given key. Can
@@ -82,12 +78,14 @@ public class CacheManager {
      * @param verifier      used to verify a value before it is returned to the user. Note that the
      *                      value is not verified each time, but in given intervals. If the verifier is <tt>null</tt>,
      *                      no verification will take place.
+     * @param <K>           the key field used to identify cache entries
+     * @param <V>           the value type used by the cache
      * @return a newly created cache according to the given parameters and the settings in the system config
      */
     public static <K, V> Cache<K, V> createCache(String name,
                                                  ValueComputer<K, V> valueComputer,
                                                  ValueVerifier<V> verifier) {
-        Cache<K, V> result = new ManagedCache<K, V>(name, valueComputer, verifier);
+        Cache<K, V> result = new ManagedCache<>(name, valueComputer, verifier);
         caches.add(result);
         return result;
     }
@@ -97,8 +95,11 @@ public class CacheManager {
      * <p>
      * This is just a shortcut for {@link #createCache(String, ValueComputer, ValueVerifier)} with neither a
      * <tt>ValueComputer</tt> nor a <tt>ValueVerifier</tt> supplied.
-     * </p>
      *
+     * @param <K>  the key field used to identify cache entries
+     * @param <V>  the value type used by the cache
+     * @param name the name of the cache (used to fetch settings from the system config
+     * @return the newly created cache
      * @see #createCache(String, ValueComputer, ValueVerifier)
      */
     public static <K, V> Cache<K, V> createCache(String name) {
@@ -110,16 +111,16 @@ public class CacheManager {
      * Creates a new {@link InlineCache} with the given TTL and computer.
      * <p>
      * An inline cache can be used to compute a single value, which is then cached for a certain amount of time.
-     * </p>
      *
      * @param ttl      specifies the number of time units which the computed value will be cached
      * @param ttlUnit  specifies the unit of time in which the ttl value is expressed
      * @param computer the provider which is used to re-compute the value once it expired
+     * @param <E>      the type of values being cached
      * @return an inline cache which keeps a computed value for the given amount of time and then uses the provided
-     *         computer to re-compute the value
+     * computer to re-compute the value
      */
     public static <E> InlineCache<E> createInlineCache(long ttl, TimeUnit ttlUnit, ValueProvider<E> computer) {
-        return new InlineCache<E>(computer, TimeUnit.MILLISECONDS.convert(ttl, ttlUnit));
+        return new InlineCache<>(computer, TimeUnit.MILLISECONDS.convert(ttl, ttlUnit));
     }
 
     /**
@@ -127,10 +128,11 @@ public class CacheManager {
      * which keeps the computed value for up to 10 seconds.
      *
      * @param computer the provider which is used to re-compute the value once it expired
+     * @param <E>      the type of values being cached
      * @return an inline cache which keeps a computed value for ten seconds and then uses the provided
-     *         computer to re-compute the value
+     * computer to re-compute the value
      */
     public static <E> InlineCache<E> createTenSecondsInlineCache(ValueProvider<E> computer) {
-        return new InlineCache<E>(computer, TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
+        return new InlineCache<>(computer, TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
     }
 }

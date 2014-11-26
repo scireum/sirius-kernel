@@ -12,7 +12,6 @@ package sirius.kernel.timer;
  * Super-interface for timer intervals.
  * <p>
  * See subclasses for defined semantics.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08

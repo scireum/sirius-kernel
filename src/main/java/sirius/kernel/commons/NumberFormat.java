@@ -18,7 +18,6 @@ import java.text.DecimalFormatSymbols;
  * <p>
  * Provides a set of default formats and also describes the parameters used to format a number. This is used
  * by {@link Amount} to create string representations.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -31,7 +30,6 @@ public interface NumberFormat {
      * It therefore specifies two decimal places which are rounded {@link RoundingMode#HALF_UP}. It uses
      * the decimal format symbols for the currently active language provided by
      * {@link sirius.kernel.nls.NLS}. As suffix the percent sign <tt>%</tt> is used.
-     * </p>
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */
@@ -69,7 +67,6 @@ public interface NumberFormat {
      * It specifies {@link RoundingMode#HALF_UP} as rounding mode and uses
      * the decimal format symbols for the currently active language provided by
      * {@link sirius.kernel.nls.NLS}.
-     * </p>
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */
@@ -108,7 +105,6 @@ public interface NumberFormat {
      * It specifies {@link RoundingMode#HALF_UP} as rounding mode and uses
      * the decimal format symbols for the currently active language provided by
      * {@link sirius.kernel.nls.NLS}.
-     * </p>
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */

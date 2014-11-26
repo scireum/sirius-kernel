@@ -15,7 +15,6 @@ package sirius.kernel.timer;
  * {@link sirius.kernel.di.std.Register} annotation. Once the system is started, the method
  * {@link TimedTask#runTimer()} is invoked once every ten seconds (however no assumptions about the
  * exact length of the interval should be made - it will be "about" ten seconds, not exactly ten).
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/09

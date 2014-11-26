@@ -17,7 +17,6 @@ import java.lang.annotation.Target;
  * Can be applied to fields to insert the denoted list of extensions defined in the system config.
  * <p>
  * This is a shortcut for {@link sirius.kernel.extensions.Extensions#getExtensions(String)}.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.kernel.extensions.Extensions

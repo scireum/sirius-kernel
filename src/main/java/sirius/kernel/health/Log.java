@@ -28,7 +28,6 @@ import java.util.List;
  * <b>Note:</b> Instead of "just" logging exceptions, handle them with {@link sirius.kernel.health.Exceptions#handle()}
  * to generate sophisticated error messages and to permit other parts of the framework to intercept error
  * handling.
- * </p>
  * <p>
  * In contrast to other approaches, it is not recommended to create a logger per class, but rather one per
  * framework or sub system. It should have a concise name, all lowercase without any dots. The log level of each
@@ -39,11 +38,9 @@ import java.util.List;
  * <li>WARN</li>
  * <li>ERROR</li>
  * </ul>
- * </p>
  * <p>
  * Internally uses log4j to perform all logging operations. Still it is recommended to only log through this facade
  * and not to rely on any log4j specific behaviour.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -61,7 +58,6 @@ public class Log {
      * <p>
      * The given name should be short and simple. It is not recommended to create a logger per class but one for
      * each framework or subsystem.
-     * </p>
      *
      * @param name the name of the logger. This should be a simple name, completely lowercase, without any dots
      * @return a new logger logging with the given name.
@@ -86,7 +82,6 @@ public class Log {
      * <p>
      * By default the system configuration is used to set the leg level (logging.[name]=LEVEL). Also the "logger"
      * command in the console can be used to change the log level at runtime.
-     * </p>
      *
      * @param logger the name of the logger to change
      * @param level  the desired log level
@@ -167,7 +162,6 @@ public class Log {
      * <p>
      * The given object is converted to a string if necessary. The INFO level should be used for informative
      * messages to the system operator which occur at a low rate
-     * </p>
      *
      * @param msg the message to be logged
      */
@@ -239,7 +233,6 @@ public class Log {
      * Formats the given message at the INFO level using the supplied parameters.
      * <p>
      * The INFO level should be used for informative messages to the system operator which occur at a low rate
-     * </p>
      *
      * @param msg    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
      * @param params the parameters used to format the resulting log message
@@ -259,7 +252,6 @@ public class Log {
      * The given object is converted to a string if necessary. The FINE level can be used for in depth debug or trace
      * messages used when developing a system. Sill the rate should be kept bearable to enable this level in
      * production systems to narrow down errors.
-     * </p>
      *
      * @param msg the message to be logged
      */
@@ -280,7 +272,6 @@ public class Log {
      * <p>
      * The FINE level can be used for in depth debug or trace messages used when developing a system.
      * Sill the rate should be kept bearable to enable this level in production systems to narrow down errors.
-     * </p>
      *
      * @param msg    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
      * @param params the parameters used to format the resulting log message
@@ -299,7 +290,6 @@ public class Log {
      * <p>
      * The given object is converted to a string if necessary. The WARN level can be used to signal unexpected
      * situations which do not (yet) result in an error or problem.
-     * </p>
      *
      * @param msg the message to be logged
      */
@@ -317,7 +307,6 @@ public class Log {
      * Formats the given message at the WARN level using the supplied parameters.
      * <p>
      * The WARN level can be used to signal unexpected situations which do not (yet) result in an error or problem.
-     * </p>
      *
      * @param msg    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
      * @param params the parameters used to format the resulting log message
@@ -336,7 +325,6 @@ public class Log {
      * The given object is converted to a string if necessary. The ERROR level can be used to signal problems or error
      * which occurred in the system. It is recommended to handle exceptions using {@link Exceptions} - which will
      * eventually also call this method, but provides sophisticated error handling.
-     * </p>
      *
      * @param msg the message to be logged
      */
@@ -357,7 +345,6 @@ public class Log {
      * {@link #FINE(String, Object...)} doesn't require this check since the message is only formatted if it will be
      * logged. However, if the computation of one of the parameters is complex, one might sill want to surround the
      * log message by an appropriate if statement calling this method.
-     * </p>
      *
      * @return <tt>true</tt> if this logger logs FINE message, <tt>false</tt> otherwise
      */

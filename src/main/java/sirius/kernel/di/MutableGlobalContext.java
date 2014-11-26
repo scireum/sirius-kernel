@@ -23,7 +23,6 @@ public interface MutableGlobalContext extends GlobalContext {
      * Registers the given part for the given lookup classes.
      * <p>
      * Note that the given part does not need to implement the given interfaces or classes.
-     * </p>
      *
      * @param part          the object to be stored in the global context.
      * @param lookupClasses the list of classes (don't need to be interfaces) by which this part can be

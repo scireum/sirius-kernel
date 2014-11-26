@@ -17,7 +17,6 @@ import java.util.Random;
  * <p>
  * Instead of using {@link Thread#sleep(long)} there methods provide a literal feedback on the intended period. Also
  * we take care of the <tt>InterruptedException</tt> by ignoring it. This make the code more compact and readable.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/11
@@ -29,7 +28,6 @@ public class Wait {
      * <p>
      * If the given value is 0 or negative, the method returns immediately. If an <tt>InterruptedException</tt>
      * is thrown while waiting, the method will return immediately but ignore the exception.
-     * </p>
      *
      * @param millisToWait the number of milliseconds to wait
      */
@@ -48,7 +46,6 @@ public class Wait {
      * <p>
      * If the given value is 0 or negative, the method returns immediately. If an <tt>InterruptedException</tt>
      * is thrown while waiting, the method will return immediately but ignore the exception.
-     * </p>
      *
      * @param secondsToWait the number of seconds to wait
      */
@@ -66,10 +63,9 @@ public class Wait {
      * <code>randomMillis(-500, 500)</code> can be invoked. Using this bounds, the expected wait time will be
      * between -500ms and 0ms in 50% of all calls (on average). As negative delays are ignored, the method
      * will return immediately.
-     * </p>
      *
      * @param minWaitMillis the minimal time to wait in millis.
-     * @param maxWaitMillis the maximal time to wait in millis. This must be >= minWaitMillis and also > 0 or the
+     * @param maxWaitMillis the maximal time to wait in millis. This must be &gt;= minWaitMillis and also &gt; 0 or the
      *                      method will always return immediately
      */
     public static void randomMillis(int minWaitMillis, int maxWaitMillis) {
@@ -84,10 +80,9 @@ public class Wait {
      * Waits for a random amount of seconds within the given bounds.
      * <p>
      * See {@link #randomMillis(int, int)} for a detailed description on using a negative lower bound.
-     * </p>
      *
      * @param minWaitSeconds the minimal time to wait in seconds.
-     * @param maxWaitSeconds the maximal time to wait in seconds. This must be >= minWaitSeconds and also > 0 or the
+     * @param maxWaitSeconds the maximal time to wait in seconds. This must be &gt;= minWaitSeconds and also &gt; 0 or the
      *                       method will always return immediately
      */
     public static void randomSeconds(double minWaitSeconds, double maxWaitSeconds) {

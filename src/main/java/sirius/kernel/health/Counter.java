@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
  * Represents a counter for statistical use. Overflows to 0 instead to {@link Long#MIN_VALUE}
  * <p>
  * Counts up to <code>Long.MAX_VALUE - 1</code> starting at 0 and overflowing to 0.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -42,6 +41,8 @@ public class Counter {
 
     /**
      * Increments the counter by one
+     *
+     * @return the update value of the counter
      */
     public long inc() {
         if (startTimeMillis < 0) {

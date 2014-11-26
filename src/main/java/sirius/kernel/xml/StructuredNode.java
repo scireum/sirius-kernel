@@ -30,7 +30,6 @@ import java.util.function.Consumer;
  * Represents a structured node, which is part of a {@link StructuredInput}.
  * <p>
  * This is basically a XML node which can be queried using xpath.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -103,6 +102,7 @@ public class StructuredNode {
      * Determines if the underlying node is actually an instance of the given class.
      *
      * @param type the class to check for
+     * @param <N>  the node type to check for
      * @return <tt>true</tt> if the underlying node is an instance of the given class, <tt>false</tt> otherwise
      */
     public <N extends Node> boolean is(Class<N> type) {
@@ -114,9 +114,9 @@ public class StructuredNode {
      * <p>
      * Used {@link #is(Class)} to check if the node actually is an instance of the target class. Otherwise a
      * <tt>ClassCastException</tt> will be thrown.
-     * </p>
      *
      * @param type the target class for the cast
+     * @param <N>  the node type to cast to
      * @return the underlying node casted to the target type.
      * @throws java.lang.ClassCastException if the underlying node isn't an instance of the given class.
      */

@@ -27,12 +27,10 @@ import java.util.function.Function;
  * is not immediately available is returned as <tt>Promise</tt>. This promise is either successfully fulfilled
  * or supplied with a failure. In any case a {@link CompletionHandler} can be attached which is notified once
  * the computation is completed.
- * </p>
  * <p>
  * Since promises can be chained ({@link #chain(Promise)}, {@link #failChain(Promise, sirius.kernel.commons.Callback)})
  * or aggregated ({@link Async#sequence(java.util.List)}, {@link Barrier}) complex computations can be glued
  * together using simple components.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -206,7 +204,6 @@ public class Promise<V> {
      * Chains this promise to the given one.
      * <p>
      * Connects both, the successful path as well as the failure handling of this promise to the given one.
-     * </p>
      *
      * @param promise the promise to be used as completion handler for this.
      */
@@ -281,7 +278,6 @@ public class Promise<V> {
      * Adds a completion handler to this promise.
      * <p>
      * If the promise is already completed, the handler is immediately invoked.
-     * </p>
      *
      * @param handler the handler to be notified once the promise is completed. A promise can notify more than one
      *                handler.
@@ -307,7 +303,6 @@ public class Promise<V> {
      * Adds a completion handler to this promise which only handles the successful completion of the promise.
      * <p>
      * If the promise is already completed, the handler is immediately invoked.
-     * </p>
      *
      * @param successHandler the handler to be notified once the promise is completed. A promise can notify more than
      *                       one handler.
@@ -336,7 +331,6 @@ public class Promise<V> {
      * Adds a completion handler to this promise which only handles the failed completion of the promise.
      * <p>
      * If the promise is already completed, the handler is immediately invoked.
-     * </p>
      *
      * @param failureHandler the handler to be notified once the promise is completed. A promise can notify more than
      *                       one handler.
@@ -362,7 +356,6 @@ public class Promise<V> {
      * <p>
      * By default, if no explicit completion handler is present, all failures are logged using the <tt>async</tt>
      * logger.
-     * </p>
      *
      * @param log the logger to be used when logging an error.
      * @return <tt>this</tt> for fluent method chaining

@@ -19,17 +19,15 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Measures the duration between <tt>start</tt> and <tt>elapsed</tt> or <tt>duration</tt> in
  * nanosecond resolution. The returned value is however not necessarily that exact: {@link System#nanoTime()}.
- * </p>
  * <p>
  * This is intended to replace code like:
- * <code>
  * <pre>
+ * <code>
  *             long start = System.currentTimeMillis();
  *             //do something
  *             System.out.println("Duration: "+(System.currentTimeMillis() - start));
- * </pre>
  * </code>
- * </p>
+ * </pre>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see System#nanoTime()
@@ -97,7 +95,6 @@ public class Watch {
      * less than one microsecond, the number of nanoseconds is returned. If the duration is less than one millisecond,
      * the number of microseconds (rounded) is returned. Otherwise, the value is rounded to milliseconds and returned as
      * formatted by {@link NLS#convertDuration(long)}.
-     * </p>
      *
      * @param reset determines if the watch should be reset, after the duration has be computed.
      * @return a string representing the duration since the last call to <tt>reset</tt> or <tt>start</tt>.

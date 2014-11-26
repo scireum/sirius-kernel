@@ -27,13 +27,11 @@ import java.util.function.Supplier;
  * numeric value. The internal representation is <tt>BigDecimal</tt> and uses MathContext.DECIMAL128 for
  * numerical operations. Also the scale of each value is fixed to 5 decimal places after the comma, since this is
  * enough for most business applications and rounds away any rounding errors introduced by doubles.
- * </p>
+ * <p>
  * A textual representation can be created by calling one of the <tt>toString</tt> methods or by supplying
  * a {@link NumberFormat}.
- * <p/>
  * <p>
  * Being able to be <i>empty</i>, this class handles <tt>null</tt> values gracefully, which simplifies many operations.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see NumberFormat
@@ -290,11 +288,10 @@ public class Amount implements Comparable<Amount> {
      * <p>
      * This can be used to compute the effective discount if two discounts like 15% and 5% are applied after
      * each other. The result would be <code>(15 + 5) - (15 * 5 / 100)</code> which is <tt>19,25 %</tt>
-     * </p>
      *
      * @param percent the second percent value which would be applied after this percent value.
      * @return the effective percent value after both percentages would have been applied
-     *         or <tt>NOTHING</tt> if one of both was empty.
+     * or <tt>NOTHING</tt> if one of both was empty.
      */
     @Nonnull
     @CheckReturnValue
@@ -307,7 +304,7 @@ public class Amount implements Comparable<Amount> {
      *
      * @param other the operand to add to this.
      * @return an <tt>Amount</tt> representing the sum of <tt>this</tt> and <tt>other</tt> if both values were filled.
-     *         If <tt>other</tt> is empty, <tt>this</tt> is returned. If this is empty, <tt>NOTHING</tt> is returned.
+     * If <tt>other</tt> is empty, <tt>this</tt> is returned. If this is empty, <tt>NOTHING</tt> is returned.
      */
     @Nonnull
     @CheckReturnValue
@@ -326,7 +323,7 @@ public class Amount implements Comparable<Amount> {
      *
      * @param other the operand to subtract from this.
      * @return an <tt>Amount</tt> representing the difference of <tt>this</tt> and <tt>other</tt> if both values were filled.
-     *         If <tt>other</tt> is empty, <tt>this</tt> is returned. If this is empty, <tt>NOTHING</tt> is returned.
+     * If <tt>other</tt> is empty, <tt>this</tt> is returned. If this is empty, <tt>NOTHING</tt> is returned.
      */
     @Nonnull
     @CheckReturnValue
@@ -345,7 +342,7 @@ public class Amount implements Comparable<Amount> {
      *
      * @param other the operand to multiply with this.
      * @return an <tt>Amount</tt> representing the product of <tt>this</tt> and <tt>other</tt> if both values were filled.
-     *         If <tt>other</tt> is empty or if <tt>this</tt> is empty, <tt>NOTHING</tt> is returned.
+     * If <tt>other</tt> is empty or if <tt>this</tt> is empty, <tt>NOTHING</tt> is returned.
      */
     @Nonnull
     @CheckReturnValue
@@ -362,7 +359,7 @@ public class Amount implements Comparable<Amount> {
      *
      * @param other the operand to divide this by.
      * @return an <tt>Amount</tt> representing the division of <tt>this</tt> by <tt>other</tt> or <tt>NOTHING</tt>
-     *         if either of both is empty.
+     * if either of both is empty.
      */
     @Nonnull
     @CheckReturnValue
@@ -379,7 +376,7 @@ public class Amount implements Comparable<Amount> {
      *
      * @param other the base to compute the percentage from.
      * @return an <tt>Amount</tt> representing the ratio between <tt>this</tt> and <tt>other</tt>
-     *         or <tt>NOTHING</tt> if either of both is empty.
+     * or <tt>NOTHING</tt> if either of both is empty.
      */
     @Nonnull
     @CheckReturnValue
@@ -393,7 +390,7 @@ public class Amount implements Comparable<Amount> {
      *
      * @param other the base to compute the increase from.
      * @return an <tt>Amount</tt> representing the percentage increase between <tt>this</tt> and <tt>other</tt>
-     *         or <tt>NOTHING</tt> if either of both is empty.
+     * or <tt>NOTHING</tt> if either of both is empty.
      */
     @Nonnull
     @CheckReturnValue
@@ -518,10 +515,9 @@ public class Amount implements Comparable<Amount> {
      * A custom {@link NumberFormat} can be used by directly calling {@link #toSmartRoundedString(NumberFormat)}
      * or to disable smart rounding (to also show .00) {@link #toString(NumberFormat)} can be called using
      * {@link NumberFormat#PERCENT}.
-     * </p>
      *
      * @return a string representation of this number using <code>NumberFormat#PERCENT</code>
-     *         or "" if the value is empty.
+     * or "" if the value is empty.
      */
     public String toPercentString() {
         return toSmartRoundedString(NumberFormat.PERCENT).toString();
@@ -532,7 +528,7 @@ public class Amount implements Comparable<Amount> {
      * {@link NumberFormat#NO_DECIMAL_PLACES}.
      *
      * @return a rounded representation of this number using <code>NumberFormat#NO_DECIMAL_PLACES</code>
-     *         or "" is the value is empty.
+     * or "" is the value is empty.
      */
     public String toRoundedString() {
         return toSmartRoundedString(NumberFormat.NO_DECIMAL_PLACES).toString();
@@ -545,10 +541,10 @@ public class Amount implements Comparable<Amount> {
      * computations and round at the end when rendering the values as string.
      * <p>
      * The number of decimal places and the rounding mode is obtained from <tt>format</tt> ({@link NumberFormat}).
-     * </p>
      *
+     * @param format the format used to determine the precision of the rounding operation
      * @return returns an <tt>Amount</tt> which is rounded using the given <code>NumberFormat</code>
-     *         or <tt>NOTHING</tt> if the value is empty.
+     * or <tt>NOTHING</tt> if the value is empty.
      */
     @Nonnull
     @CheckReturnValue
@@ -579,7 +575,7 @@ public class Amount implements Comparable<Amount> {
      * @param format the <code>NumberFormat</code> used to obtain the number of decimal places,
      *               the decimal format symbols and rounding mode
      * @return a <tt>Value</tt> containing the string representation according to the given format
-     *         or an empty <tt>Value</tt> if <tt>this</tt> is empty.
+     * or an empty <tt>Value</tt> if <tt>this</tt> is empty.
      * @see Value#append(String, Object)
      * @see Value#prepend(String, Object)
      */
@@ -595,7 +591,7 @@ public class Amount implements Comparable<Amount> {
      * @param format the <code>NumberFormat</code> used to obtain the number of decimal places,
      *               the decimal format symbols and rounding mode
      * @return a <tt>Value</tt> containing the string representation according to the given format
-     *         or an empty <tt>Value</tt> if <tt>this</tt> is empty. Omits 0 as decimal places.
+     * or an empty <tt>Value</tt> if <tt>this</tt> is empty. Omits 0 as decimal places.
      * @see #toString()
      */
     @Nonnull
@@ -620,11 +616,9 @@ public class Amount implements Comparable<Amount> {
      * <li>M - mega</li>
      * <li>G - giga</li>
      * </ul>
-     * </p>
      * <p>
      * An input of <tt>0.0341 V</tt> will be represented as <tt>34.1 mV</tt> if digits was 4 or 34 mV is digits was 2
      * or less.
-     * </p>
      *
      * @param digits the number of decimal digits to display
      * @param unit   the unit to be appended to the generated string

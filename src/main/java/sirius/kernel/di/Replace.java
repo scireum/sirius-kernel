@@ -9,8 +9,20 @@
 package sirius.kernel.di;
 
 /**
- * Created by aha on 28.08.14.
+ * Classes provided by customizations can be annotated with this to replace classes provided as a standard class.
+ *
+ * @author Andreas Haufler (aha@scireum.de)
+ * @since 2014/11
  */
 public @interface Replace {
+
+    /**
+     * Contains the standard class to be replaced.
+     *
+     * @return the the standard class to be replaced
+     */
     Class<?> value();
+
 }
+
+

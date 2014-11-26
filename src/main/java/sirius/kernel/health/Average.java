@@ -49,7 +49,6 @@ public class Average {
      * Returns the average of the added values.
      * <p>
      * Returns the sliding average of the last 100 values
-     * </p>
      *
      * @return the average of the added values
      */
@@ -85,7 +84,6 @@ public class Average {
      * <p>
      * Note that the internal value counter won't be reset. Only the buffer containing the last 100
      * measurements will be reset.
-     * </p>
      *
      * @return the average of the last 100 values
      */

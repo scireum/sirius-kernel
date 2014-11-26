@@ -50,14 +50,11 @@ import java.util.regex.Pattern;
  * <p>
  * This can be considered the <tt>stage2</tt> when booting the framework, as it is responsible to discover and
  * initialize all components.
- * </p>
  * <p>
  * This class can be also used as superclass for jUnit-Tests as it starts the framework when required.
- * </p>
  * <p>
  * To make a jar or other classpath-root visible to SIRIUS an empty file called "component.marker" must be placed in
  * its root directory.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -160,8 +157,8 @@ public class Sirius {
                 LOG.DEBUG_INFO(Strings.apply("  * %s: %b", framework, enabled));
             } catch (Exception e) {
                 LOG.WARN("Cannot convert status '%s' of framework '%s' to a boolean! Framework will be disabled.",
-                         entry.getValue().render(),
-                         framework);
+                        entry.getValue().render(),
+                        framework);
                 frameworkStatus.put(framework, false);
             }
         }
@@ -194,10 +191,10 @@ public class Sirius {
                         lifecycle.started();
                     } catch (Throwable e) {
                         Exceptions.handle()
-                                  .error(e)
-                                  .to(LOG)
-                                  .withSystemErrorMessage("Startup of: %s failed!", lifecycle.getName())
-                                  .handle();
+                                .error(e)
+                                .to(LOG)
+                                .withSystemErrorMessage("Startup of: %s failed!", lifecycle.getName())
+                                .handle();
                     }
                 }
             }).execute());
@@ -218,7 +215,7 @@ public class Sirius {
         if (startedAsTest) {
             // Load test configurations (will override component configs)
             classpath.find(Pattern.compile("component-test-([^\\-]*?)\\.conf"))
-                     .forEach(value -> config = config.withFallback(ConfigFactory.load(loader, value.group())));
+                    .forEach(value -> config = config.withFallback(ConfigFactory.load(loader, value.group())));
         }
 
         // Load component configurations
@@ -271,10 +268,10 @@ public class Sirius {
                 lifecycle.stopped();
             } catch (Throwable e) {
                 Exceptions.handle()
-                          .error(e)
-                          .to(LOG)
-                          .withSystemErrorMessage("Stop of: %s failed!", lifecycle.getName())
-                          .handle();
+                        .error(e)
+                        .to(LOG)
+                        .withSystemErrorMessage("Stop of: %s failed!", lifecycle.getName())
+                        .handle();
             }
         }
         LOG.INFO("---------------------------------------------------------");
@@ -287,10 +284,10 @@ public class Sirius {
                 LOG.INFO("Terminated: %s (Took: %s)", lifecycle.getName(), w.duration());
             } catch (Throwable e) {
                 Exceptions.handle()
-                          .error(e)
-                          .to(LOG)
-                          .withSystemErrorMessage("Termination of: %s failed!", lifecycle.getName())
-                          .handle();
+                        .error(e)
+                        .to(LOG)
+                        .withSystemErrorMessage("Termination of: %s failed!", lifecycle.getName())
+                        .handle();
             }
         }
         LOG.INFO("---------------------------------------------------------");
@@ -309,7 +306,6 @@ public class Sirius {
      * booted into the test mode.
      * <p>
      * It will also make sure, that the framework is only initialized once and not per method / class.
-     * </p>
      */
     public static void initializeTestEnvironment() {
         if (!initialized) {
@@ -322,7 +318,6 @@ public class Sirius {
      * Initializes the framework.
      * <p>
      * This is called by <tt>IPL.main</tt> once the classloader is fully populated.
-     * </p>
      *
      * @param loader the class loader containing all class files and jars used to build the system
      */
@@ -375,7 +370,6 @@ public class Sirius {
      * Frameworks can be enabled or disabled using the config path <tt>sirius.framework.[name]</tt>. This is
      * intensively used by the app part, as it provides a lot of basic frameworks which can be turned off or
      * on as required.
-     * </p>
      *
      * @param framework the framework to check
      * @return <tt>true</tt> if the framework is enabled, <tt>false</tt> otherwise
@@ -395,16 +389,13 @@ public class Sirius {
      * <p>
      * A customer configuration can be used to override basic functionality with more specialized classes or resources
      * which were adapted based on customer needs.
-     * </p>
      * <p>
      * As often groups of customers share the same requirements, not only a single configuration can be activated
      * but a list. Within this list each configuration may override classes and resources of all former
      * configurations. Therefore the last configuration will always "win".
-     * </p>
      * <p>
      * Note that classes must be placed in the package: <b>configuration.[name]</b> (with arbitrary sub packages).
      * Also resources must be placed in: <b>configuration/[name]/resource-path</b>.
-     * </p>
      *
      * @return a list of all active configurations
      */
@@ -416,6 +407,7 @@ public class Sirius {
      * Determines if the given config is active (or null which is considered active)
      *
      * @param configName the name of the config to check. <tt>null</tt> will be considered as active
+     * @return <tt>true</tt> if the named customization is active, <tt>false</tt> otherwise
      */
     public static boolean isActiveCustomization(@Nullable String configName) {
         return configName == null || Sirius.getActiveConfigurations().contains(configName);
@@ -435,7 +427,6 @@ public class Sirius {
      * Extracts the customization name from a resource.
      * <p>
      * Valid names are paths like "customizations/[name]/..." or classes like "customizations.[name]...".
-     * </p>
      *
      * @param resource the name of the resource
      * @return the name of the customizations or <tt>null</tt> if no config name is contained
@@ -489,10 +480,10 @@ public class Sirius {
             }
         } catch (Exception e) {
             Exceptions.handle()
-                      .to(LOG)
-                      .error(e)
-                      .withSystemErrorMessage("Error while waiting for shutdown-ping: %s (%s)")
-                      .handle();
+                    .to(LOG)
+                    .error(e)
+                    .withSystemErrorMessage("Error while waiting for shutdown-ping: %s (%s)")
+                    .handle();
         }
     }
 
@@ -500,7 +491,6 @@ public class Sirius {
      * Runs the given main loop
      * <p>
      * This can be used to run SWT app, since these need to be started in the main thread (at least on OSX).
-     * </p>
      *
      * @param loop the main loop to execute.
      */
@@ -613,9 +603,9 @@ public class Sirius {
             @Override
             public void publish(LogRecord record) {
                 repository.getLogger(record.getLoggerName())
-                          .log(Log.convertJuliLevel(record.getLevel()),
-                               formatter.formatMessage(record),
-                               record.getThrown());
+                        .log(Log.convertJuliLevel(record.getLevel()),
+                                formatter.formatMessage(record),
+                                record.getThrown());
             }
 
             @Override
@@ -683,7 +673,6 @@ public class Sirius {
      * Returns the name of the product which is running SIRIUS.
      * <p>
      * Can be set via the config value <code>product.name</code>.
-     * </p>
      *
      * @return the name of the product for which the framework was started.
      */
@@ -695,7 +684,6 @@ public class Sirius {
      * Returns the version of the product which is running SIRIUS.
      * <p>
      * Can be set via the config value <code>product.version</code>.
-     * </p>
      *
      * @return the version of the product for which the framework was started.
      */
@@ -708,7 +696,6 @@ public class Sirius {
      * <p>
      * Can be set via the config values <code>product.version</code>, <code>product.build</code>,
      * <code>product.vcs</code>.
-     * </p>
      *
      * @return the detailed version of the product for which the framework was started.
      */

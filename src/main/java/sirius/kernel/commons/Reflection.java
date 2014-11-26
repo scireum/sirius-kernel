@@ -22,7 +22,6 @@ public class Reflection {
      * Converts the first character of a given string to upper case.
      * <p>
      * Comes in handy when translating properties to getter/setter names.
-     * </p>
      *
      * @param string the name of the property to convert
      * @return the given string, with an upper-case letter at the start or <tt>null</tt> if the input was null
@@ -70,8 +69,9 @@ public class Reflection {
      * Returns the setter method according to the java beans specification for a
      * given property.
      *
-     * @param clazz    the class in which the method should be searched
-     * @param property the name of the property for which the setter is requested
+     * @param clazz     the class in which the method should be searched
+     * @param property  the name of the property for which the setter is requested
+     * @param fieldType determines the type of the field (which is accepted as parameter of the setter)
      * @return the <tt>Method</tt> which is used to get the value
      * @throws IllegalArgumentException if the setter cannot be obtained
      */
@@ -90,7 +90,6 @@ public class Reflection {
      * <p>
      * An access path can look like <tt>foo.bar.baz</tt> and represents: <code>root.getFoo().getBar().getBaz()</code>.
      * If any of the getters returns <tt>null</tt>, <tt>null</tt> will also be the result of the evaluation.
-     * </p>
      *
      * @param path the access path to evaluate
      * @param root the root object on which the first getter is called
@@ -118,7 +117,6 @@ public class Reflection {
      * Calls the given handler for each superclass of the given one.
      * <p>
      * Calls the handler for the given class and each of its superclasses until <code>Object</code> is reached.
-     * </p>
      *
      * @param clazz   the class to start from
      * @param handler the handler to call for each superclass
@@ -156,7 +154,6 @@ public class Reflection {
      * <p>
      * This is essentially a shortcut for <code>superclass.isAssignableFrom(classInQuestion)</code> which seems
      * to be more natural.
-     * </p>
      *
      * @param superclass      the designated superclass or superinterface
      * @param classInQuestion the class in question

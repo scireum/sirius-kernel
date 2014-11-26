@@ -35,8 +35,8 @@ import java.util.Map;
  * several component.conf (along with application.conf etc.) will be loaded to form the system config
  * (see: {@link sirius.kernel.Sirius#setupConfiguration(ClassLoader)}). These files will be merged together, so that extensions
  * like the following wil be put into one extension list reachable as "examples":
- * <code>
  * <pre>
+ * <code>
  *     File A:
  *
  *      examples {
@@ -54,31 +54,27 @@ import java.util.Map;
  *              otherKey = true
  *          }
  *      }
- * </pre>
  * </code>
- * </p>
+ * </pre>
  * <p>
  * This permits frameworks to provide extension hooks which can be extended by sub modules, without having the
  * framework to "know" those modules. Using a loose coupled approach like this simplifies the task of building
  * modular and extensible systems.
- * </p>
  * <p>
  * The extensions defined above can be obtained calling <code>Extensions.getExtension("examples")</code>. Each
  * of those extensions can be read out calling <code>ext.getValue("key").asString()</code> or
  * <code>ext.getValue("otherKey").asBoolean()</code>
- * </p>
  * <p>
  * Another way of loading extensions is to place an {@link sirius.kernel.di.std.ExtensionList} annotation
  * on a field like:
- * <code>
  * <pre>
+ * <code>
  *     &#64;ExtensionList("examples")
  *     private List&lt;Extension&gt; examples;
- * </pre>
  * </code>
+ * </pre>
  * This will be detected by the {@link sirius.kernel.di.std.ExtensionListAnnotationProcessor} as the
  * {@link sirius.kernel.di.Injector} starts up and filled with the appropriate list.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see Extension
@@ -194,7 +190,6 @@ public class Extensions {
      * <p>
      * The order of the extensions can be defined, setting a property named <tt>priority</tt>. If no value is
      * present {@link PriorityCollector#DEFAULT_PRIORITY} is assumed.
-     * </p>
      *
      * @param type the type of the extensions to be returned.
      * @return a non-null collection of extensions found for the given type

@@ -12,7 +12,6 @@ import java.lang.annotation.Target;
  * This is the central extension mechanism to permit other modules to add functionality to the current one, as yet
  * unknown classes can be registered for the given lookup class. Using this yields in loose coupling and extensible
  * software design.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08

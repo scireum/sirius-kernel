@@ -14,12 +14,11 @@ import java.util.Set;
  * A trie is a highly efficient data structure for iterating through a string and retrieving a previously stored
  * value. Checking containment or retrieving a value has guaranteed O(n) runtime, where n is the length of the
  * processed string, independent of the size of the trie.
- * </p>
  * <p>
  * An Example: If we have a list of stop words: "one", "two", "three" and want to detect if these occur in a
  * given text, we can do the following:
- * <code>
  * <pre>
+ * <code>
  * Trie&lt;Boolean&gt; trie = Trie.create();
  *
  * trie.put("one", true);
@@ -39,10 +38,10 @@ import java.util.Set;
  *     }
  * }
  *
- * </pre>
  * </code>
- * </p>
+ * </pre>
  *
+ * @param <V> the type of values managed by the trie
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
@@ -51,6 +50,7 @@ public class Trie<V> {
     /**
      * Creates a new {@link Trie} without forcing you to re-type the generics.
      *
+     * @param <V> the type of values managed by the trie
      * @return a new instance of {@link Trie}
      */
     public static <V> Trie<V> create() {
@@ -66,11 +66,10 @@ public class Trie<V> {
          * Determines if the current path can be continued with the given character.
          * <p>
          * This will not change the internal state.
-         * </p>
          *
          * @param c the character to continue with
          * @return <tt>true</tt> if the current path can continued using the given character,
-         *         <tt>false</tt> otherwise.
+         * <tt>false</tt> otherwise.
          */
         boolean canContinue(char c);
 
@@ -79,7 +78,6 @@ public class Trie<V> {
          * <p>
          * If the current path can be continued, the internal state will be updated. Otherwise the internal
          * state will remain unchanged - the iterator is not reset automatically.
-         * </p>
          *
          * @param c the character to continue with
          * @return <tt>true</tt> if it was possible to continue using the given character, <tt>false</tt> otherwise
@@ -104,7 +102,7 @@ public class Trie<V> {
          * Determines if the iterator is currently pointing at a valid match.
          *
          * @return <tt>true</tt> if a value was previously associated with path traversed so far,
-         *         <tt>false</tt> otherwise
+         * <tt>false</tt> otherwise
          */
         boolean isCompleted();
 
@@ -112,7 +110,7 @@ public class Trie<V> {
          * Determines if the iterator can backtrack.
          *
          * @return <tt>true</tt> if at least one transition took place, fl<tt>false</tt> if the iterator is at the
-         *         root node.
+         * root node.
          */
         boolean canGoBack();
 
@@ -138,7 +136,7 @@ public class Trie<V> {
          *
          * @param c the character to try to use after resetting the iterator
          * @return <tt>true</tt> if the transition using <tt>c</tt> was possible, <tt>false</tt> otherwise. In this
-         *         case the iterator remains in the "reset" state and can be used as if <tt>reset()</tt> was called.
+         * case the iterator remains in the "reset" state and can be used as if <tt>reset()</tt> was called.
          */
         boolean resetWith(char c);
 
@@ -264,7 +262,7 @@ public class Trie<V> {
      *
      * @param key the key to check for.
      * @return <tt>true</tt> if a value is associated with the path represented by the given key,
-     *         <tt>false</tt> otherwise
+     * <tt>false</tt> otherwise
      */
     public boolean containsKey(@Nonnull CharSequence key) {
         if (Strings.isEmpty(key)) {

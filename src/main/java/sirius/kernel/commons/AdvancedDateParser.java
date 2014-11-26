@@ -22,8 +22,7 @@ import java.util.TreeSet;
 /**
  * A flexible parser which can parse dates like DD.MM.YYYY or YYYY/DD/MM along with some computations.
  * <p>
- * A valid expression is defined by the following grammar:</p>
- * </p>
+ * A valid expression is defined by the following grammar:
  * <ul>
  * <li><code><b>ROOT</b> ::= (MODIFIER ",")* (":")? ("now" | DATE)? (("+" | "-") NUMBER (UNIT)?)</code></li>
  * <li><code><b>UNIT</b> ::= ("day" | "days" | "week" | "weeks" | "month" | "months" | "year" | "years")</code></li>
@@ -155,10 +154,10 @@ public class AdvancedDateParser {
         @Override
         public String toString() {
             return NLS.fmtr("AdvancedDateParser.tokenizerMessage")
-                      .set("nextToken", nextToken)
-                      .set("tokenStart", tokenStart)
-                      .set("tokenEnd", position)
-                      .format();
+                    .set("nextToken", nextToken)
+                    .set("tokenStart", tokenStart)
+                    .set("tokenEnd", position)
+                    .format();
         }
 
         /*
@@ -204,7 +203,6 @@ public class AdvancedDateParser {
      * Parses the given input and returns a <tt>DateSelection</tt> as result.
      * <p>
      * Note that an <tt>AdvancedDateParser</tt> is stateful an is therefore neither reusable nor thread-safe.
-     * </p>
      *
      * @param input the text to parse
      * @return a <tt>DateSelection</tt> containing the effective date along with the parsed expression
@@ -541,8 +539,8 @@ public class AdvancedDateParser {
     private void expectNumber() throws ParseException {
         if (!(tokenizer.getType() == Tokenizer.NUMBER)) {
             throw new ParseException(NLS.fmtr("AdvancedDateParser.errInvalidToken")
-                                        .set("token", tokenizer.toString())
-                                        .format(), tokenizer.getTokenStart());
+                    .set("token", tokenizer.toString())
+                    .format(), tokenizer.getTokenStart());
         }
     }
 
@@ -565,9 +563,9 @@ public class AdvancedDateParser {
                 allKeyWords.append("'");
             }
             throw new ParseException(NLS.fmtr("AdvancedDateParser.errUnexpectedKeyword")
-                                        .set("token", tokenizer.toString())
-                                        .set("keywords", allKeyWords.substring(2))
-                                        .format(), tokenizer.getTokenStart());
+                    .set("token", tokenizer.toString())
+                    .set("keywords", allKeyWords.substring(2))
+                    .format(), tokenizer.getTokenStart());
         }
     }
 
@@ -716,7 +714,6 @@ public class AdvancedDateParser {
      * <p>
      * The string representation of this contains the effective date in angular brackets. As there are ignored by
      * the parser, the resulting string can be re-parsed to refresh modifiers and computations.
-     * </p>
      *
      * @author Andreas Haufler (aha@scireum.de)
      * @since 2013/08
@@ -732,10 +729,10 @@ public class AdvancedDateParser {
         DateSelection(Calendar calendar, String dateString) {
             super();
             this.date = LocalDateTime.of(calendar.get(Calendar.YEAR),
-                                         calendar.get(Calendar.MONTH) + 1,
-                                         calendar.get(Calendar.DAY_OF_MONTH),
-                                         calendar.get(Calendar.HOUR_OF_DAY),
-                                         calendar.get(Calendar.MINUTE));
+                    calendar.get(Calendar.MONTH) + 1,
+                    calendar.get(Calendar.DAY_OF_MONTH),
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE));
             this.dateString = dateString;
         }
 

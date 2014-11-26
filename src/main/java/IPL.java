@@ -20,11 +20,9 @@ import java.util.List;
  * This will load all provided jar files from the "libs" sub folder as well as all classes from the "classes"
  * folder. When debugging from an IDE, set the system property <tt>ide</tt> to <tt>true</tt> - this will
  * bypass class loading, as all classes are typically provided via the system classpath.
- * </p>
  * <p>
  * This class only generates a <tt>ClassLoader</tt> which is then used to load
  * {@link sirius.kernel.Sirius#initializeEnvironment(ClassLoader)} as stage2.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -125,8 +123,8 @@ public class IPL {
             System.out.println("IPL completed - Loading Sirius as stage2...");
             System.out.println();
             Class.forName("sirius.kernel.Sirius", true, loader)
-                 .getMethod("initializeEnvironment", ClassLoader.class)
-                 .invoke(null, loader);
+                    .getMethod("initializeEnvironment", ClassLoader.class)
+                    .invoke(null, loader);
         } catch (Throwable e) {
             e.printStackTrace();
         }

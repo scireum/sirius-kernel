@@ -8,12 +8,11 @@ import java.util.function.Predicate;
  * A <tt>Limit</tt> is used to process a stream of data while limiting the results to a given window. This
  * window is described by setting the number of items to skip and the maximal number of items to pass on. If the
  * maximal number of items to pass on is <tt>null</tt>, no limiting will be performed.
- * </p>
  * <p>
  * This class can be used to "page" through result lists. Having a page size of 25 and showing the 2nd page,
  * would lead to:
- * <code>
  * <pre>
+ * <code>
  *         Limit limit = new Limit(25,25); // Skip the 25 items of the first page, and show up to 25 items.
  *         List result = new ArrayList();
  *         for(Object o : someList) {
@@ -26,9 +25,8 @@ import java.util.function.Predicate;
  *                 return;
  *             }
  *         }
- * </pre>
  * </code>
- * </p>
+ * </pre>
  */
 public class Limit {
     private int itemsToSkip;
@@ -51,7 +49,6 @@ public class Limit {
      * Notifies the limit, that the next row is being processed.
      * <p>
      * Must be called before any call to {@link #shouldOutput()} or {@link #shouldContinue()}.
-     * </p>
      */
     public void nextRow() {
         if (itemsToSkip > 0) {
@@ -84,7 +81,6 @@ public class Limit {
      * Converts the limit into a predicate.
      * <p>
      * Note that the limit is stateful and therefore asPredicate should only be called once.
-     * </p>
      *
      * @return a predicate implementing the limit
      */

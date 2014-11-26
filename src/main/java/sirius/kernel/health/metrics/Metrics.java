@@ -27,10 +27,8 @@ import java.util.Map;
  * <p>
  * To provide custom metrics, implement {@link MetricProvider} and register it in the component model using the
  * {@link Register} annotation.
- * </p>
  * <p>
  * The collected metrics are updated once every minute.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/09

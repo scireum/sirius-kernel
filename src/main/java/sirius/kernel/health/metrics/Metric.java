@@ -16,7 +16,6 @@ import sirius.kernel.commons.NumberFormat;
  * <p>
  * Basically this combines a name along with a value and unit. Additionally an interpretation of the value is
  * given as state.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/09

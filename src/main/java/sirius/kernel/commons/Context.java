@@ -19,7 +19,6 @@ import java.util.TreeMap;
  * Provides an execution context to scripts etc.
  * <p>
  * This is basically a wrapper for <code>Map&lt;String, Object&gt;</code>
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08

@@ -20,7 +20,6 @@ public interface Initializable {
      * Invoked by the injector once the system is completely initialized.
      * <p>
      * Can be used to perform initial actions where access to dependent parts is required.
-     * </p>
      *
      * @throws Exception in case of any error during the initialization.
      */

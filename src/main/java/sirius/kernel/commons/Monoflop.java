@@ -4,12 +4,11 @@ package sirius.kernel.commons;
  * Represents a boolean state variable, which can be toggled once from <tt>false</tt> to <tt>true</tt>.
  * <p>
  * All successive calls will not change the internal state, and return constantly true (or respectively).
- * </p>
  * <p>
  * This is particularly useful in loops where the first iteration must be handled differently. Therefore two more
  * functions are provided: {@link #firstCall()} and {@link #successiveCall()} which can be used like shown here:
- * <code>
  * <pre>
+ * <code>
  * Monoflop mono = Monoflop.create();
  * StringBuilder sb = new StringBuilder();
  * for(String value : somelist) {
@@ -19,9 +18,8 @@ package sirius.kernel.commons;
  *     sb.append(value);
  * }
  * System.out.println(sb.toString());
- * </pre>
  * </code>
- * </p>
+ * </pre>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/09
@@ -51,7 +49,6 @@ public class Monoflop {
      * <p>
      * If the monoflop is in its initial state, this will return <tt>false</tt> (and toggle the monoflop).
      * Therefore all successive class will return <tt>true</tt>.
-     * </p>
      *
      * @return <tt>false</tt> if the monoflop was not toggled yet, <tt>true</tt> for all successive calls
      */
@@ -68,7 +65,6 @@ public class Monoflop {
      * <p>
      * If the monoflop is in its initial state, this will return <tt>true</tt> (and toggle the monoflop).
      * Therefore all successive class will return <tt>false</tt>.
-     * </p>
      *
      * @return <tt>true</tt> if the monoflop was not toggled yet, <tt>false</tt> for all successive calls
      */
@@ -81,10 +77,8 @@ public class Monoflop {
      * <p>
      * If the monoflop is in its initial state, this will return <tt>true</tt> (and toggle the monoflop).
      * Therefore all successive class will return <tt>false</tt>.
-     * </p>
      * <p>
      * This is just an alias for {@link #inverseToggle()}.
-     * </p>
      *
      * @return <tt>true</tt> if the monoflop was not toggled yet, <tt>false</tt> for all successive calls
      */
@@ -97,10 +91,8 @@ public class Monoflop {
      * <p>
      * If the monoflop is in its initial state, this will return <tt>false</tt> (and toggle the monoflop).
      * Therefore all successive class will return <tt>true</tt>.
-     * </p>
      * <p>
      * This is just an alias for {@link #toggle()}.
-     * </p>
      *
      * @return <tt>false</tt> if the monoflop was not toggled yet, <tt>true</tt> for all successive calls
      */
