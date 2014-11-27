@@ -30,19 +30,17 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
-
-    <scm>
-        <connection>scm:git:git@github.com:scireum/${project.artifactId}.git</connection>
-        <developerConnection>scm:git:git@github.com:scireum/${project.artifactId}.git</developerConnection>
-        <url>git@github.com:scireum/${project.artifactId}.git</url>
-    </scm>
-
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+    <scm>
+        <connection>scm:git:git@github.com:scireum/${project.artifactId}.git</connection>
+        <developerConnection>scm:git:git@github.com:scireum/${project.artifactId}.git</developerConnection>
+        <url>git@github.com:scireum/${project.artifactId}.git</url>
+    </scm>
 
     <build>
         <plugins>
@@ -99,8 +97,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.12.1</version>
                 <configuration>
-                    <parallel>methods</parallel>
-                    <threadCount>10</threadCount>
                     <includes>
                         <include>sirius/kernel/TestSuite.java</include>
                     </includes>
@@ -208,7 +204,6 @@
             <version>1.6.4</version>
         </dependency>
 
-
         <!-- Include JUnit for testing -->
         <dependency>
             <groupId>junit</groupId>
@@ -233,21 +228,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Include cglib for mocking via Spock -->
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib</artifactId>
-            <version>3.1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Include objenesis for mocking via Spock -->
-        <dependency>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-            <version>2.1</version>
-            <scope>test</scope>
-        </dependency>
 
     </dependencies>
 
