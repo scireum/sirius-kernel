@@ -11,12 +11,10 @@ package sirius.kernel.extensions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.typesafe.config.*;
-import com.typesafe.config.ConfigValue;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Value;
-import sirius.kernel.di.std.*;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
@@ -172,7 +170,9 @@ public class Extensions {
                 if (entry.getValue() instanceof ConfigObject) {
                     list.add(new BasicExtension(type, key, (ConfigObject) entry.getValue(), def));
                 } else {
-                    LOG.WARN("Malformed extension within '%s'. Expected a config object but found: %s", type, entry.getValue());
+                    LOG.WARN("Malformed extension within '%s'. Expected a config object but found: %s",
+                             type,
+                             entry.getValue());
                 }
             }
         }
@@ -207,7 +207,7 @@ public class Extensions {
         private ConfigObject config;
         private ConfigObject def;
 
-        protected BasicExtension(String type, String key, ConfigObject config, ConfigObject def) {
+        protected BasicExtension(String type, String key, ConfigObject config, @Nullable ConfigObject def) {
             this.type = type;
             this.id = key;
             this.config = config;
@@ -236,6 +236,7 @@ public class Extensions {
         }
 
         @Override
+        @Nonnull
         public Value get(String path) {
             if (config.containsKey(path)) {
                 return Value.of(config.get(path).unwrapped()).translate();
@@ -259,6 +260,7 @@ public class Extensions {
         }
 
         @Override
+        @Nonnull
         public Context getContext() {
             Context ctx = Context.create();
             if (def != null) {
@@ -266,9 +268,11 @@ public class Extensions {
                     ctx.put(key, get(key).get());
                 }
             }
-            for(String key : config.keySet()) {
+            for (String key : config.keySet()) {
                 ctx.put(key, get(key).get());
             }
+
+            ctx.put("id", id);
 
             return ctx;
         }
@@ -301,6 +305,7 @@ public class Extensions {
         }
 
         @Override
+        @Nonnull
         public Value require(String path) {
             Value result = get(path);
             if (result.isNull()) {
@@ -317,22 +322,12 @@ public class Extensions {
         }
 
         @Override
+        @Nonnull
         public Object make(String classProperty) {
             String className = require(classProperty).asString();
             try {
                 return Class.forName(className).newInstance();
-            } catch (InstantiationException e) {
-                throw Exceptions.handle()
-                                .error(e)
-                                .to(LOG)
-                                .withSystemErrorMessage(
-                                        "Cannot create instance of class %s (%s) for extension %s of type %s: %s (%s)",
-                                        className,
-                                        classProperty,
-                                        id,
-                                        type)
-                                .handle();
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw Exceptions.handle()
                                 .error(e)
                                 .to(LOG)
@@ -357,7 +352,7 @@ public class Extensions {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
@@ -377,7 +372,7 @@ public class Extensions {
         }
 
         @Override
-        public int compareTo(BasicExtension o) {
+        public int compareTo(@Nullable BasicExtension o) {
             if (o == null) {
                 return -1;
             }

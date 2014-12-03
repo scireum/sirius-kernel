@@ -19,6 +19,7 @@ package sirius.kernel;
  * @since 2013/08
  */
 public interface Lifecycle {
+
     /**
      * Invoked when the framework starts up.
      */

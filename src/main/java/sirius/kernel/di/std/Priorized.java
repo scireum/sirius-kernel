@@ -11,6 +11,9 @@ package sirius.kernel.di.std;
  */
 public interface Priorized {
 
+    /**
+     * Contains the default priority used by <tt>Priorized</tt> parts.
+     */
     static final int DEFAULT_PRIORITY = 100;
 
     /**

@@ -24,7 +24,6 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.PartCollection;
-import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -36,7 +35,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +65,6 @@ public class Sirius {
     private static List<String> customizations = Lists.newArrayList();
     private static Classpath classpath;
     private static volatile boolean started = false;
-    private static volatile boolean running = false;
     private static volatile boolean initialized = false;
     private static final long startTimestamp = System.currentTimeMillis();
 
@@ -157,8 +154,8 @@ public class Sirius {
                 LOG.DEBUG_INFO(Strings.apply("  * %s: %b", framework, enabled));
             } catch (Exception e) {
                 LOG.WARN("Cannot convert status '%s' of framework '%s' to a boolean! Framework will be disabled.",
-                        entry.getValue().render(),
-                        framework);
+                         entry.getValue().render(),
+                         framework);
                 frameworkStatus.put(framework, false);
             }
         }
@@ -180,22 +177,18 @@ public class Sirius {
             stop();
         }
         started = true;
-        running = true;
         Barrier barrier = Barrier.create();
         for (final Lifecycle lifecycle : lifecycleParticipants.getParts()) {
-            barrier.add(Async.defaultExecutor().fork(new Runnable() {
-                @Override
-                public void run() {
-                    LOG.INFO("Starting: %s", lifecycle.getName());
-                    try {
-                        lifecycle.started();
-                    } catch (Throwable e) {
-                        Exceptions.handle()
-                                .error(e)
-                                .to(LOG)
-                                .withSystemErrorMessage("Startup of: %s failed!", lifecycle.getName())
-                                .handle();
-                    }
+            barrier.add(Async.defaultExecutor().fork(() -> {
+                LOG.INFO("Starting: %s", lifecycle.getName());
+                try {
+                    lifecycle.started();
+                } catch (Throwable e) {
+                    Exceptions.handle()
+                              .error(e)
+                              .to(LOG)
+                              .withSystemErrorMessage("Startup of: %s failed!", lifecycle.getName())
+                              .handle();
                 }
             }).execute());
         }
@@ -215,7 +208,7 @@ public class Sirius {
         if (startedAsTest) {
             // Load test configurations (will override component configs)
             classpath.find(Pattern.compile("component-test-([^\\-]*?)\\.conf"))
-                    .forEach(value -> config = config.withFallback(ConfigFactory.load(loader, value.group())));
+                     .forEach(value -> config = config.withFallback(ConfigFactory.load(loader, value.group())));
         }
 
         // Load component configurations
@@ -259,7 +252,6 @@ public class Sirius {
         if (!started) {
             return;
         }
-        running = false;
         LOG.INFO("Stopping Sirius");
         LOG.INFO("---------------------------------------------------------");
         for (Lifecycle lifecycle : lifecycleParticipants.getParts()) {
@@ -268,10 +260,10 @@ public class Sirius {
                 lifecycle.stopped();
             } catch (Throwable e) {
                 Exceptions.handle()
-                        .error(e)
-                        .to(LOG)
-                        .withSystemErrorMessage("Stop of: %s failed!", lifecycle.getName())
-                        .handle();
+                          .error(e)
+                          .to(LOG)
+                          .withSystemErrorMessage("Stop of: %s failed!", lifecycle.getName())
+                          .handle();
             }
         }
         LOG.INFO("---------------------------------------------------------");
@@ -284,10 +276,10 @@ public class Sirius {
                 LOG.INFO("Terminated: %s (Took: %s)", lifecycle.getName(), w.duration());
             } catch (Throwable e) {
                 Exceptions.handle()
-                        .error(e)
-                        .to(LOG)
-                        .withSystemErrorMessage("Termination of: %s failed!", lifecycle.getName())
-                        .handle();
+                          .error(e)
+                          .to(LOG)
+                          .withSystemErrorMessage("Termination of: %s failed!", lifecycle.getName())
+                          .handle();
             }
         }
         LOG.INFO("---------------------------------------------------------");
@@ -356,12 +348,7 @@ public class Sirius {
             }
         }
 
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                stop();
-            }
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(Sirius::stop));
     }
 
     /**
@@ -480,10 +467,10 @@ public class Sirius {
             }
         } catch (Exception e) {
             Exceptions.handle()
-                    .to(LOG)
-                    .error(e)
-                    .withSystemErrorMessage("Error while waiting for shutdown-ping: %s (%s)")
-                    .handle();
+                      .to(LOG)
+                      .error(e)
+                      .withSystemErrorMessage("Error while waiting for shutdown-ping: %s (%s)")
+                      .handle();
         }
     }
 
@@ -515,10 +502,10 @@ public class Sirius {
         }
         Config instanceConfig = null;
         if (startedAsTest) {
-            if (startedAsTest && Sirius.class.getResource("/test.conf") != null) {
+            if (Sirius.class.getResource("/test.conf") != null) {
                 LOG.INFO("using test.conf from classpath...");
                 config = ConfigFactory.load(loader, "test.conf").withFallback(config);
-            } else if (startedAsTest) {
+            } else {
                 LOG.INFO("test.conf not present in classpath");
             }
         } else {
@@ -603,9 +590,9 @@ public class Sirius {
             @Override
             public void publish(LogRecord record) {
                 repository.getLogger(record.getLoggerName())
-                        .log(Log.convertJuliLevel(record.getLevel()),
-                                formatter.formatMessage(record),
-                                record.getThrown());
+                          .log(Log.convertJuliLevel(record.getLevel()),
+                               formatter.formatMessage(record),
+                               record.getThrown());
             }
 
             @Override
@@ -651,60 +638,6 @@ public class Sirius {
      */
     public static Config getConfig() {
         return config;
-    }
-
-    @ConfigValue("product.name")
-    private static String productName;
-
-    @ConfigValue("product.version")
-    private static String productVersion;
-
-    @ConfigValue("product.build")
-    private static String productBuild;
-
-    @ConfigValue("product.date")
-    private static String productDate;
-
-    @ConfigValue("product.vcs")
-    private static String productVcs;
-
-
-    /**
-     * Returns the name of the product which is running SIRIUS.
-     * <p>
-     * Can be set via the config value <code>product.name</code>.
-     *
-     * @return the name of the product for which the framework was started.
-     */
-    public static String getProductName() {
-        return "@PRODUCT@".equals(productName) ? "SIRIUS" : productName;
-    }
-
-    /**
-     * Returns the version of the product which is running SIRIUS.
-     * <p>
-     * Can be set via the config value <code>product.version</code>.
-     *
-     * @return the version of the product for which the framework was started.
-     */
-    public static String getProductVersion() {
-        return "@VERSION@".equals(productVersion) ? "DEV" : productVersion;
-    }
-
-    /**
-     * Returns a detailed description of the product version.
-     * <p>
-     * Can be set via the config values <code>product.version</code>, <code>product.build</code>,
-     * <code>product.vcs</code>.
-     *
-     * @return the detailed version of the product for which the framework was started.
-     */
-    public static String getProductVersionDetails() {
-        String version = getProductVersion();
-        String build = "@BUILD@".equals(productBuild) ? "-" : productBuild;
-        String vcs = "@VCS@".equals(productVcs) ? "-" : productVcs;
-        String date = "@DATE@".equals(productDate) ? NLS.toMachineString(LocalDate.now()) : productDate;
-        return Strings.apply("Version: %s, Build: %s (%s), Revision: %s", version, build, date, vcs);
     }
 
     /**
