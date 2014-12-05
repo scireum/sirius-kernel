@@ -71,7 +71,7 @@ public class Module {
      * as the $ is swallowed by typesafe config)
      */
     protected static String fix(String value, String replacement) {
-        if (Strings.isEmpty(value) || value.startsWith("{")) {
+        if (Strings.isEmpty(value) || value.startsWith("{") || value.startsWith("$")) {
             return replacement;
         }
 
