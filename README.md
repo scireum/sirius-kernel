@@ -1,5 +1,4 @@
 # sirius-kernel
-=============
 
 Provides common core classes and the microkernel powering all SIRIUS applications
 
