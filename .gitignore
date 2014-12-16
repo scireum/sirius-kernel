@@ -1,3 +1,4 @@
 target
 workspace.xml
 docs/_build
+.idea/libraries
