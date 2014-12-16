@@ -62,9 +62,12 @@ public class Log {
      * @param name the name of the logger. This should be a simple name, completely lowercase, without any dots
      * @return a new logger logging with the given name.
      */
-    public static Log get(String name) {
+    public static synchronized Log get(String name) {
         Log result = new Log(Logger.getLogger(name));
         all.add(result);
+        if (!name.matches("[a-z0-9\\-]+")) {
+            System.err.printf("Invalid logger name: %s. Only numbers, lowercase letters and - are allowed!%n", name);
+        }
         return result;
     }
 

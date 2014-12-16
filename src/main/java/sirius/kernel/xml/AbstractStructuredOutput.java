@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Basic implementation of <tt>StructuredOutput</tt>, taking care of all output independent boilerplate code.
@@ -27,7 +28,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
      * Types used by internal bookkeeping
      */
     protected static enum ElementType {
-        UNKNOWN, OBJECT, ARRAY;
+        UNKNOWN, OBJECT, ARRAY
     }
 
     /**
@@ -89,21 +90,37 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     protected List<Element> nesting = new ArrayList<Element>();
 
     @Override
-    public void beginArray(String name) {
+    public StructuredOutput beginArray(String name) {
         startArray(name);
         if (!nesting.isEmpty()) {
             nesting.get(0).setEmpty(false);
         }
         nesting.add(0, new Element(ElementType.ARRAY, name));
+
+        return this;
     }
 
     @Override
-    public void array(@Nonnull String name, @Nonnull String elementName, @Nonnull Collection<?> array) {
+    public StructuredOutput array(@Nonnull String name, @Nonnull String elementName, @Nonnull Collection<?> array) {
         beginArray(name);
-        for(Object o : array) {
+        for (Object o : array) {
             property(elementName, o);
         }
         endArray();
+        return this;
+    }
+
+    @Override
+    public <E> StructuredOutput array(@Nonnull String name,
+                                      @Nonnull Collection<E> array,
+                                      BiConsumer<StructuredOutput, E> arrayConsumer) {
+        beginArray(name);
+        for (E e : array) {
+            arrayConsumer.accept(this, e);
+        }
+        endArray();
+
+        return this;
     }
 
     /**
@@ -144,21 +161,23 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     protected abstract void writeProperty(String name, Object value);
 
     @Override
-    public void beginObject(String name) {
+    public StructuredOutput beginObject(String name) {
         startObject(name, (Attribute[]) null);
         if (!nesting.isEmpty()) {
             nesting.get(0).setEmpty(false);
         }
         nesting.add(0, new Element(ElementType.OBJECT, name));
+        return this;
     }
 
     @Override
-    public void beginObject(String name, Attribute... attributes) {
+    public StructuredOutput beginObject(String name, Attribute... attributes) {
         startObject(name, attributes);
         if (!nesting.isEmpty()) {
             nesting.get(0).setEmpty(false);
         }
         nesting.add(0, new Element(ElementType.OBJECT, name));
+        return this;
     }
 
     /**
@@ -212,7 +231,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     }
 
     @Override
-    public void endArray() {
+    public StructuredOutput endArray() {
         if (nesting.isEmpty()) {
             throw new IllegalArgumentException("Invalid result structure. No array to close");
         }
@@ -222,10 +241,11 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
             throw new IllegalArgumentException("Invalid result structure. No array to close");
         }
         endArray(e.getName());
+        return this;
     }
 
     @Override
-    public void endObject() {
+    public StructuredOutput endObject() {
         if (nesting.isEmpty()) {
             throw new IllegalArgumentException("Invalid result structure. No object to close");
         }
@@ -235,6 +255,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
             throw new IllegalArgumentException("Invalid result structure. No object to close");
         }
         endObject(e.getName());
+        return this;
     }
 
     @Override
@@ -245,12 +266,13 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     }
 
     @Override
-    public void property(String name, Object data) {
+    public StructuredOutput property(String name, Object data) {
         if (getCurrentType() != ElementType.OBJECT && getCurrentType() != ElementType.ARRAY) {
             throw new IllegalArgumentException("Invalid result structure. Cannot place a property here.");
         }
         writeProperty(name, data);
         nesting.get(0).setEmpty(false);
+        return this;
     }
 
 }

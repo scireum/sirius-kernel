@@ -92,21 +92,22 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
 
 
     @Override
-    public void beginResult() {
-        beginOutput("result");
+    public StructuredOutput beginResult() {
+        return beginOutput("result");
     }
 
     @Override
-    public void beginResult(String name) {
-        beginOutput(name);
+    public StructuredOutput beginResult(String name) {
+        return beginOutput(name);
     }
 
     /**
      * Starts the output with the given root element.
      *
      * @param rootElement the name of the root element of the generated document.
+     * @return the output itself for fluent method calls
      */
-    public void beginOutput(@Nonnull String rootElement) {
+    public StructuredOutput beginOutput(@Nonnull String rootElement) {
         if (opensCalled == 0) {
             try {
                 hd.startDocument();
@@ -116,6 +117,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         }
         opensCalled++;
         beginObject(rootElement);
+
+        return this;
     }
 
     /**
@@ -123,8 +126,9 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      *
      * @param rootElement the name of the root element of the generated document.
      * @param attr        the attributes for the root element
+     * @return the output itself for fluent method calls
      */
-    public void beginOutput(@Nonnull String rootElement, Attribute... attr) {
+    public StructuredOutput beginOutput(@Nonnull String rootElement, Attribute... attr) {
         if (opensCalled == 0) {
             try {
                 hd.startDocument();
@@ -134,6 +138,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         }
         opensCalled++;
         beginObject(rootElement, attr);
+
+        return this;
     }
 
     /**
@@ -223,8 +229,9 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      * Creates a text node for the current node.
      *
      * @param text the text to be added to the current node
+     * @return the output itself for fluent method calls
      */
-    public void text(Object text) {
+    public StructuredOutput text(Object text) {
         try {
             if (text != null) {
                 String val = text.toString();
@@ -233,6 +240,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
+
+        return this;
     }
 
     /**

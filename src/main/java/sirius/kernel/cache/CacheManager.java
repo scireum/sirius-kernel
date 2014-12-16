@@ -12,7 +12,9 @@ import sirius.kernel.commons.ValueProvider;
 import sirius.kernel.health.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,7 +46,7 @@ public class CacheManager {
     /*
      * Lists all known caches.
      */
-    private static List<Cache<?, ?>> caches = new ArrayList<Cache<?, ?>>();
+    private static List<Cache<?, ?>> caches = new CopyOnWriteArrayList<>();
 
     /**
      * Returns a list of all known caches
@@ -52,7 +54,7 @@ public class CacheManager {
      * @return a list of all caches created so far
      */
     public static List<Cache<?, ?>> getCaches() {
-        return caches;
+        return Collections.unmodifiableList(caches);
     }
 
     /**
