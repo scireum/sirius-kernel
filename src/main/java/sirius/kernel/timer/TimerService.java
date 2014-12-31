@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
  */
-@Register(name = "timer", classes = {TimerService.class, Lifecycle.class})
+@Register(classes = {TimerService.class, Lifecycle.class})
 public class TimerService implements Lifecycle {
 
     protected static final Log LOG = Log.get("timer");

@@ -8,15 +8,11 @@
 
 package sirius.kernel;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.log4j.*;
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggerRepository;
 import sirius.kernel.async.Async;
 import sirius.kernel.async.Barrier;
 import sirius.kernel.commons.Strings;
@@ -33,23 +29,17 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.*;
-import java.util.logging.LogManager;
 import java.util.regex.Pattern;
 
 /**
  * Loads and initializes the framework.
  * <p>
  * This can be considered the <tt>stage2</tt> when booting the framework, as it is responsible to discover and
- * initialize all components.
- * <p>
- * This class can be also used as superclass for jUnit-Tests as it starts the framework when required.
+ * initialize all components. Call {@link #start(Setup)} to initialize the framework.
  * <p>
  * To make a jar or other classpath-root visible to SIRIUS an empty file called "component.marker" must be placed in
  * its root directory.
@@ -59,7 +49,7 @@ import java.util.regex.Pattern;
  */
 public class Sirius {
 
-    private static final boolean dev;
+    private static Setup setup;
     private static Config config;
     private static Map<String, Boolean> frameworks = Maps.newHashMap();
     private static List<String> customizations = Lists.newArrayList();
@@ -79,29 +69,22 @@ public class Sirius {
     @Parts(Lifecycle.class)
     private static PartCollection<Lifecycle> lifecycleParticipants;
 
-    static {
-        dev = getProperty("debug").asBoolean();
-    }
-
-    private static boolean startedAsTest = false;
-
     /**
      * Determines if the framework is running in development or in production mode.
      *
      * @return <code>true</code> is the framework runs in development mode, false otherwise.
      */
     public static boolean isDev() {
-        return startedAsTest || dev;
+        return setup.getMode() == Setup.Mode.DEV;
     }
 
     /**
      * Determines if the framework was started as test run (JUNIT or the like).
      *
-     * @return <tt>true</tt> if the framework was started as test ({@link #initializeTestEnvironment()},
-     * <tt>false</tt> otherwise
+     * @return <tt>true</tt> if the framework was started as test, <tt>false</tt> otherwise
      */
     public static boolean isStartedAsTest() {
-        return startedAsTest;
+        return setup.getMode() == Setup.Mode.TEST;
     }
 
     /**
@@ -172,7 +155,7 @@ public class Sirius {
     /*
      * Starts all framework components
      */
-    private static void start() {
+    private static void startComponents() {
         if (started) {
             stop();
         }
@@ -201,20 +184,24 @@ public class Sirius {
     /*
      * Discovers all components in the class path and initializes the {@link Injector}
      */
-    private static void init(final ClassLoader loader) {
+    private static void init() {
+        if (initialized) {
+            return;
+        }
         initialized = true;
-        classpath = new Classpath(loader, "component.marker", customizations);
+        classpath = new Classpath(setup.getLoader(), "component.marker", customizations);
 
-        if (startedAsTest) {
+        if (isStartedAsTest()) {
             // Load test configurations (will override component configs)
             classpath.find(Pattern.compile("component-test-([^\\-]*?)\\.conf"))
-                     .forEach(value -> config = config.withFallback(ConfigFactory.load(loader, value.group())));
+                     .forEach(value -> config = config.withFallback(ConfigFactory.load(setup.getLoader(),
+                                                                                       value.group())));
         }
 
         // Load component configurations
         classpath.find(Pattern.compile("component-([^\\-]*?)\\.conf")).forEach(value -> {
             if (!"test".equals(value.group(1))) {
-                config = config.withFallback(ConfigFactory.load(loader, value.group()));
+                config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
             }
         });
 
@@ -228,9 +215,9 @@ public class Sirius {
         NLS.init(classpath);
 
         // Initialize dependency injection...
-        Injector.init(ctx -> ctx.registerPart(config, Config.class), classpath);
+        Injector.init(classpath);
 
-        start();
+        startComponents();
 
         // Start resource monitoring...
         NLS.startMonitoring(classpath);
@@ -294,59 +281,29 @@ public class Sirius {
     }
 
     /**
-     * If <tt>Sirius</tt> is used as base class for a JUnit test, this method will ensure that the framework is
-     * booted into the test mode.
-     * <p>
-     * It will also make sure, that the framework is only initialized once and not per method / class.
-     */
-    public static void initializeTestEnvironment() {
-        if (!initialized) {
-            startedAsTest = true;
-            initializeEnvironment(ClassLoader.getSystemClassLoader());
-        }
-    }
-
-    /**
      * Initializes the framework.
      * <p>
-     * This is called by <tt>IPL.main</tt> once the classloader is fully populated.
+     * This is called by <tt>IPL.main</tt> once the class loader is fully populated.
      *
-     * @param loader the class loader containing all class files and jars used to build the system
+     * @param setup the setup class used to configure the framework
      */
-    public static void initializeEnvironment(ClassLoader loader) {
+    public static void start(Setup setup) {
         Watch w = Watch.start();
-        if (!getProperty("sirius.manual-health").asBoolean()) {
-            setupLogging();
-        }
+        Sirius.setup = setup;
+        setup.init();
         LOG.INFO("---------------------------------------------------------");
-        LOG.INFO("Booting the SIRIUS Framework...");
-        LOG.INFO("---------------------------------------------------------");
-        if (!getProperty("sirius.manual-logging").asBoolean()) {
-            LOG.INFO(
-                    "Updated log4j config! To block this, set the system property 'sirius.manual-logging' to true! [-Dsirius.manual-logging=true]");
-        }
-        setupDNSCache();
-        setupEncoding();
+        LOG.INFO("System is STARTING...");
         LOG.INFO("---------------------------------------------------------");
         LOG.INFO("Loading config...");
         LOG.INFO("---------------------------------------------------------");
-        setupConfiguration(loader);
+        setupConfiguration();
         LOG.INFO("---------------------------------------------------------");
         LOG.INFO("Starting the system...");
         LOG.INFO("---------------------------------------------------------");
-        init(loader);
+        init();
         LOG.INFO("---------------------------------------------------------");
         LOG.INFO("System is UP and RUNNING - %s", w.duration());
         LOG.INFO("---------------------------------------------------------");
-
-        if (!startedAsTest) {
-            MainLoop loop = Injector.context().getPart(MainLoop.class);
-            if (loop != null) {
-                runMainLoop(loop);
-            } else {
-                waitForLethalConnection();
-            }
-        }
 
         Runtime.getRuntime().addShutdownHook(new Thread(Sirius::stop));
     }
@@ -451,60 +408,22 @@ public class Sirius {
         return customizations.indexOf(configA) - customizations.indexOf(configB);
     }
 
-    /**
-     * Waits until a connection to thee port specified in <tt>sirius.shutdownPort</tt> is made.
-     */
-    private static void waitForLethalConnection() {
-        try {
-            ServerSocket socket = new ServerSocket(config.getInt("sirius.shutdownPort"));
-            LOG.INFO(Strings.apply("Opening port %d as shutdown listener", socket.getLocalPort()));
-            try {
-                Socket client = socket.accept();
-                stop();
-                client.close();
-            } finally {
-                socket.close();
-            }
-        } catch (Exception e) {
-            Exceptions.handle()
-                      .to(LOG)
-                      .error(e)
-                      .withSystemErrorMessage("Error while waiting for shutdown-ping: %s (%s)")
-                      .handle();
-        }
-    }
-
-    /**
-     * Runs the given main loop
-     * <p>
-     * This can be used to run SWT app, since these need to be started in the main thread (at least on OSX).
-     *
-     * @param loop the main loop to execute.
-     */
-    private static void runMainLoop(MainLoop loop) {
-        try {
-            loop.run();
-        } catch (Exception e) {
-            Exceptions.handle().to(LOG).error(e).withSystemErrorMessage("Error in MainLoop: %s (%s)").handle();
-        }
-    }
-
     /*
      * Loads all relevant .conf files
      */
-    private static void setupConfiguration(ClassLoader loader) {
+    private static void setupConfiguration() {
         config = ConfigFactory.empty();
         if (Sirius.class.getResource("/application.conf") != null) {
             LOG.INFO("using application.conf from classpath...");
-            config = ConfigFactory.load(loader, "application.conf").withFallback(config);
+            config = ConfigFactory.load(setup.getLoader(), "application.conf").withFallback(config);
         } else {
             LOG.INFO("application.conf not present in classpath");
         }
         Config instanceConfig = null;
-        if (startedAsTest) {
+        if (isStartedAsTest()) {
             if (Sirius.class.getResource("/test.conf") != null) {
                 LOG.INFO("using test.conf from classpath...");
-                config = ConfigFactory.load(loader, "test.conf").withFallback(config);
+                config = ConfigFactory.load(setup.getLoader(), "test.conf").withFallback(config);
             } else {
                 LOG.INFO("test.conf not present in classpath");
             }
@@ -535,7 +454,8 @@ public class Sirius {
         for (String conf : customizations) {
             if (Sirius.class.getResource("/customizations/" + conf + "/settings.conf") != null) {
                 LOG.INFO("loading settings.conf for customization '" + conf + "'");
-                config = ConfigFactory.load(loader, "customizations/" + conf + "/settings.conf").withFallback(config);
+                config = ConfigFactory.load(setup.getLoader(), "customizations/" + conf + "/settings.conf")
+                                      .withFallback(config);
             } else {
                 LOG.INFO("customization '" + conf + "' has no settings.conf...");
             }
@@ -544,90 +464,6 @@ public class Sirius {
             config = instanceConfig.withFallback(config);
         }
 
-    }
-
-    /*
-     * Initializes log4j as logging framework. In development mode, we log everything to the console.
-     * In production mode, we use a rolling file appender and log into the logs directory.
-     */
-    private static void setupLogging() {
-        final LoggerRepository repository = Logger.getRootLogger().getLoggerRepository();
-        repository.resetConfiguration();
-        Logger.getRootLogger().setLevel(Level.INFO);
-
-        if (Sirius.isDev() || Value.of(System.getProperty("console")).asBoolean(false)) {
-            ConsoleAppender console = new ConsoleAppender();
-            console.setLayout(new PatternLayout("%d{HH:mm:ss.SSS} %-5p [%X{flow}|%t] %c - %m%n"));
-            console.setThreshold(Level.DEBUG);
-            console.activateOptions();
-            Logger.getRootLogger().addAppender(console);
-        } else {
-            File logsDirectory = new File("logs");
-            if (!logsDirectory.exists()) {
-                logsDirectory.mkdirs();
-            }
-            DailyRollingFileAppender fa = new DailyRollingFileAppender();
-            fa.setName("FileLogger");
-            fa.setFile("logs/application.log");
-            fa.setLayout(new PatternLayout("%d %-5p [%X{flow}|%t] %c - %m%n"));
-            fa.setThreshold(Level.DEBUG);
-            fa.setAppend(true);
-            fa.activateOptions();
-            Logger.getRootLogger().addAppender(fa);
-        }
-
-        // Redirect java.utils.logging to log4j...
-        java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
-        // remove old handlers
-        for (Handler handler : rootLogger.getHandlers()) {
-            rootLogger.removeHandler(handler);
-        }
-        // add our own
-        Handler handler = new Handler() {
-
-            private Formatter formatter = new SimpleFormatter();
-
-            @Override
-            public void publish(LogRecord record) {
-                repository.getLogger(record.getLoggerName())
-                          .log(Log.convertJuliLevel(record.getLevel()),
-                               formatter.formatMessage(record),
-                               record.getThrown());
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-            }
-        };
-        handler.setLevel(java.util.logging.Level.ALL);
-        rootLogger.addHandler(handler);
-        rootLogger.setLevel(java.util.logging.Level.INFO);
-    }
-
-    /*
-     * Set UTF-8 as encoding
-     */
-    private static void setupEncoding() {
-        LOG.INFO("Setting " + Charsets.UTF_8.name() + " as default encoding (file.encoding)");
-        System.setProperty("file.encoding", Charsets.UTF_8.name());
-        LOG.INFO("Setting " + Charsets.UTF_8.name() + " as default mime encoding (mail.mime.charset)");
-        System.setProperty("mail.mime.charset", Charsets.UTF_8.name());
-    }
-
-    /*
-     * By default java infinitely caches all DNS entries. Will be changed to 10 seconds...
-     */
-    private static void setupDNSCache() {
-        LOG.INFO("Setting DNS-Cache to 10 seconds...");
-        java.security.Security.setProperty("networkaddress.cache.ttl", "10");
-    }
-
-    private static Value getProperty(String property) {
-        return Value.of(System.getProperty(property));
     }
 
     /**

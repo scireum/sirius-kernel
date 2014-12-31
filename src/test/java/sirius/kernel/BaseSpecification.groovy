@@ -30,7 +30,7 @@ class BaseSpecification extends Specification {
      * handles all initial Sirius setup.
      */
     static def setupSiriusTestEnvironment() {
-        Sirius.initializeTestEnvironment()
+        Sirius.start(new Setup(Setup.Mode.TEST, Sirius.class.getClassLoader()))
         NLS.setDefaultLanguage("de")
     }
 

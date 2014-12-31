@@ -10,15 +10,11 @@ package sirius.kernel.di;
 
 import com.google.common.collect.Lists;
 import sirius.kernel.Classpath;
-import sirius.kernel.commons.Callback;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -64,11 +60,9 @@ public class Injector {
     /**
      * Initializes the framework. Must be only called once on system startup.
      *
-     * @param callback  the given callback is invoked, once the system is initialized and permits to add external
-     *                  parts to the given context.
      * @param classpath the classpath used to enumerate all classes to be scanned
      */
-    public static void init(@Nullable Callback<MutableGlobalContext> callback, @Nonnull final Classpath classpath) {
+    public static void init(@Nonnull final Classpath classpath) {
         ctx = new PartRegistry();
 
         loadedClasses = Lists.newArrayList();
@@ -87,26 +81,26 @@ public class Injector {
                         actions.add((ClassLoadAction) clazz.newInstance());
                     } catch (Throwable e) {
                         Exceptions.handle()
-                                .error(e)
-                                .to(LOG)
-                                .withSystemErrorMessage("Failed to instantiate ClassLoadAction: %s - %s (%s)",
-                                        className)
-                                .handle();
+                                  .error(e)
+                                  .to(LOG)
+                                  .withSystemErrorMessage("Failed to instantiate ClassLoadAction: %s - %s (%s)",
+                                                          className)
+                                  .handle();
                     }
                 }
                 loadedClasses.add(clazz);
             } catch (NoClassDefFoundError e) {
                 Exceptions.handle()
-                        .error(e)
-                        .to(LOG)
-                        .withSystemErrorMessage("Failed to load dependent class: %s", className)
-                        .handle();
+                          .error(e)
+                          .to(LOG)
+                          .withSystemErrorMessage("Failed to load dependent class: %s", className)
+                          .handle();
             } catch (Throwable e) {
                 Exceptions.handle()
-                        .error(e)
-                        .to(LOG)
-                        .withSystemErrorMessage("Failed to load class %s: %s (%s)", className)
-                        .handle();
+                          .error(e)
+                          .to(LOG)
+                          .withSystemErrorMessage("Failed to load class %s: %s (%s)", className)
+                          .handle();
             }
         });
 
@@ -119,23 +113,14 @@ public class Injector {
                         action.handle(ctx, clazz);
                     } catch (Throwable e) {
                         Exceptions.handle()
-                                .error(e)
-                                .to(LOG)
-                                .withSystemErrorMessage("Failed to auto-load: %s with ClassLoadAction: %s: %s (%s)",
-                                        clazz.getName(),
-                                        action.getClass().getSimpleName())
-                                .handle();
+                                  .error(e)
+                                  .to(LOG)
+                                  .withSystemErrorMessage("Failed to auto-load: %s with ClassLoadAction: %s: %s (%s)",
+                                                          clazz.getName(),
+                                                          action.getClass().getSimpleName())
+                                  .handle();
                     }
                 }
-            }
-        }
-
-        LOG.INFO("~ Enhancing context...");
-        if (callback != null) {
-            try {
-                callback.invoke(ctx);
-            } catch (Exception e) {
-                LOG.SEVERE(e);
             }
         }
 
