@@ -9,11 +9,15 @@
 package sirius.kernel;
 
 import com.google.common.base.Charsets;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.apache.log4j.*;
 import org.apache.log4j.spi.LoggerRepository;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Log;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -260,4 +264,83 @@ public class Setup {
         rootLogger.setLevel(java.util.logging.Level.INFO);
     }
 
+    /**
+     * Loads the main application configuration which is shipped with the app.
+     * <p>
+     * By default this loads "application.conf" from the classpath
+     *
+     * @return the main application config. This will override all component configs but be overridden by developer,
+     * test and instance configs
+     */
+    @Nonnull
+    public Config loadApplicationConfig() {
+        Config result = ConfigFactory.empty();
+        if (Sirius.class.getResource("/application.conf") != null) {
+            Sirius.LOG.INFO("using application.conf from classpath...");
+            result = ConfigFactory.load(loader, "application.conf").withFallback(result);
+        } else {
+            Sirius.LOG.INFO("application.conf not present in classpath");
+        }
+
+        return result;
+    }
+
+    /**
+     * Applies the test configuration to the given config object.
+     * <p>
+     * By default this loads and applies "test.conf" from the classpath.
+     *
+     * @param config the config to enhance
+     * @return the enhanced config
+     */
+    @Nonnull
+    public Config applyTestConfig(@Nonnull Config config) {
+        if (Sirius.class.getResource("/test.conf") != null) {
+            Sirius.LOG.INFO("using test.conf from classpath...");
+            return ConfigFactory.load(loader, "test.conf").withFallback(config);
+        } else {
+            Sirius.LOG.INFO("test.conf not present in classpath");
+            return config;
+        }
+    }
+
+    /**
+     * Applies the developer configuration to the given config object.
+     * <p>
+     * By default this loads and applies "develop.conf" from the file system.
+     *
+     * @param config the config to enhance
+     * @return the enhanced config
+     */
+    @Nonnull
+    public Config applyDeveloperConfig(@Nonnull Config config) {
+        if (new File("develop.conf").exists()) {
+            Sirius.LOG.INFO("using develop.conf from filesystem...");
+            return ConfigFactory.parseFile(new File("develop.conf")).withFallback(config);
+        } else {
+            Sirius.LOG.INFO("develop.conf not present in work directory");
+            return config;
+        }
+    }
+
+    /**
+     * Loads the instance configuration which configures the app for the machine it is running on.
+     * <p>
+     * By default this loads "instance.conf" from the file system
+     * <p>
+     * This will later be applied to the overall system configuration and will override all other settings.
+     *
+     * @return the instance configuration or <tt>null</tt> if no config was found.
+     */
+    @Nullable
+    public Config loadInstanceConfig() {
+        if (new File("instance.conf").exists()) {
+            Sirius.LOG.INFO("using instance.conf from filesystem...");
+            return ConfigFactory.parseFile(new File("instance.conf"));
+        } else {
+            Sirius.LOG.INFO("instance.conf not present work in directory");
+            return null;
+        }
+
+    }
 }

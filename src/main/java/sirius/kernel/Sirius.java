@@ -412,45 +412,27 @@ public class Sirius {
      * Loads all relevant .conf files
      */
     private static void setupConfiguration() {
-        config = ConfigFactory.empty();
-        if (Sirius.class.getResource("/application.conf") != null) {
-            LOG.INFO("using application.conf from classpath...");
-            config = ConfigFactory.load(setup.getLoader(), "application.conf").withFallback(config);
-        } else {
-            LOG.INFO("application.conf not present in classpath");
-        }
+        config = setup.loadApplicationConfig();
         Config instanceConfig = null;
         if (isStartedAsTest()) {
-            if (Sirius.class.getResource("/test.conf") != null) {
-                LOG.INFO("using test.conf from classpath...");
-                config = ConfigFactory.load(setup.getLoader(), "test.conf").withFallback(config);
-            } else {
-                LOG.INFO("test.conf not present in classpath");
-            }
+            config = setup.applyTestConfig(config);
         } else {
             // instance.conf and develop.conf are not used to tests to permit uniform behaviour on local
             // machines and build servers...
-            if (Sirius.isDev() && new File("develop.conf").exists()) {
-                LOG.INFO("using develop.conf from filesystem...");
-                config = ConfigFactory.parseFile(new File("develop.conf")).withFallback(config);
-            } else if (Sirius.isDev()) {
-                LOG.INFO("develop.conf not present in work directory");
+            if (Sirius.isDev()) {
+                config = setup.applyDeveloperConfig(config);
             }
-            if (new File("instance.conf").exists()) {
-                LOG.INFO("using instance.conf from filesystem...");
-                instanceConfig = ConfigFactory.parseFile(new File("instance.conf"));
-            } else {
-                LOG.INFO("instance.conf not present work in directory");
-            }
+            instanceConfig = setup.loadInstanceConfig();
         }
 
-        // Setup customer customizations
+        // Setup customer customizations...
         if (instanceConfig != null && instanceConfig.hasPath("sirius.customizations")) {
             customizations = instanceConfig.getStringList("sirius.customizations");
         } else if (config.hasPath("sirius.customizations")) {
             customizations = config.getStringList("sirius.customizations");
         }
 
+        // Load settings.conf for customizations...
         for (String conf : customizations) {
             if (Sirius.class.getResource("/customizations/" + conf + "/settings.conf") != null) {
                 LOG.INFO("loading settings.conf for customization '" + conf + "'");
@@ -460,6 +442,8 @@ public class Sirius {
                 LOG.INFO("customization '" + conf + "' has no settings.conf...");
             }
         }
+
+        // Apply instance config at last for override all other configs...
         if (instanceConfig != null) {
             config = instanceConfig.withFallback(config);
         }
