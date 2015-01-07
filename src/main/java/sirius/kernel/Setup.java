@@ -341,6 +341,5 @@ public class Setup {
             Sirius.LOG.INFO("instance.conf not present work in directory");
             return null;
         }
-
     }
 }

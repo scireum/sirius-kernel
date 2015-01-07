@@ -26,7 +26,6 @@ import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.util.Collections;
@@ -84,7 +83,7 @@ public class Sirius {
      * @return <tt>true</tt> if the framework was started as test, <tt>false</tt> otherwise
      */
     public static boolean isStartedAsTest() {
-        return setup.getMode() == Setup.Mode.TEST;
+        return setup != null && setup.getMode() == Setup.Mode.TEST;
     }
 
     /**
