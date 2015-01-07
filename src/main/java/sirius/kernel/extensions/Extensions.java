@@ -31,7 +31,7 @@ import java.util.Map;
  * <p>
  * Using the <a href="https://github.com/typesafehub/config" target="_blank">typesafe config library</a>,
  * several component.conf (along with application.conf etc.) will be loaded to form the system config
- * (see: {@link sirius.kernel.Sirius#setupConfiguration(ClassLoader)}). These files will be merged together, so that extensions
+ * (see: {@link sirius.kernel.Sirius#setupConfiguration()}). These files will be merged together, so that extensions
  * like the following wil be put into one extension list reachable as "examples":
  * <pre>
  * <code>
@@ -77,7 +77,7 @@ import java.util.Map;
  * @author Andreas Haufler (aha@scireum.de)
  * @see Extension
  * @see Value
- * @see sirius.kernel.Sirius#setupConfiguration(ClassLoader)
+ * @see sirius.kernel.Sirius#setupConfiguration()
  * @since 2013/08
  */
 @ParametersAreNonnullByDefault
