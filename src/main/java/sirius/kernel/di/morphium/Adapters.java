@@ -14,7 +14,14 @@ import sirius.kernel.di.Injector;
 import java.util.Map;
 
 /**
- * Created by aha on 24.11.14.
+ * Helper class to utilize available {@link sirius.kernel.di.morphium.AdapterFactory} instances to perform
+ * conversions (to adapt objects).
+ * <p>
+ * This class is automatically utilized by {@link sirius.kernel.di.morphium.Adaptable} but kept public in case
+ * custom implementation need to access this functionality.
+ *
+ * @author Andreas Haufler (aha@scireum.de)
+ * @since 2015/01
  */
 public class Adapters {
 
@@ -33,6 +40,13 @@ public class Adapters {
         return (AdapterFactory<A>) factories.get(targetType);
     }
 
+    /**
+     * Determines if the given object can be adapted into the given target type.
+     *
+     * @param adaptable the object to adapt
+     * @param type      the target type
+     * @return <tt>true</tt> if a conversion (adaption) is possible, <tt>false</tt> otherwise
+     */
     public static boolean canMake(Adaptable adaptable, Class<?> type) {
         AdapterFactory<?> factory = getFactory(type);
         if (factory == null) {
@@ -43,6 +57,15 @@ public class Adapters {
         return result != null;
     }
 
+    /**
+     * Tries to adapt the given object to match the given target type.
+     *
+     * @param adaptable   the object to adapt
+     * @param adapterType the target type
+     * @param <A>         the generic type of adapterType
+     * @return an adapted object matching the given type or <tt>null</tt> to indicate that no conversion (adaption)
+     * was possible
+     */
     public static <A> A make(Adaptable adaptable, Class<A> adapterType) {
         AdapterFactory<A> factory = getFactory(adapterType);
         if (factory == null) {

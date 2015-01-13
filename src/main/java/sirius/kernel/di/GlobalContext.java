@@ -116,7 +116,7 @@ public interface GlobalContext {
      * Registers a new part for the given name and lookup classes.
      * <p>
      * In contrast to {@link sirius.kernel.di.MutableGlobalContext#registerPart(String, Object, Class[])} this
-     * method may replace already existing implementations
+     * method may replace already existing implementations.
      *
      * @param uniqueName    the unique name of the part
      * @param part          the part itself

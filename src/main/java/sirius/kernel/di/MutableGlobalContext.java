@@ -9,7 +9,6 @@
 package sirius.kernel.di;
 
 import javax.annotation.Nonnull;
-import java.util.function.Supplier;
 
 /**
  * Visible for instances of {@link sirius.kernel.di.ClassLoadAction} and {@link FieldAnnotationProcessor} during the system
@@ -42,6 +41,6 @@ public interface MutableGlobalContext extends GlobalContext {
      *                      fetched from the global context. At least one class should be given, otherwise the
      *                      part will be discarded.
      */
-    void registerPart(String uniqueName, Object part, Class<?>... lookupClasses);
+    void registerPart(@Nonnull String uniqueName, @Nonnull Object part, @Nonnull Class<?>... lookupClasses);
 
 }

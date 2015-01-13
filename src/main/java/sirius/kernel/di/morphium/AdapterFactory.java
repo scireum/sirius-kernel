@@ -9,12 +9,30 @@
 package sirius.kernel.di.morphium;
 
 /**
- * Created by aha on 24.11.14.
+ * Generates adapter instances for a given type.
+ * <p>
+ * Used by {@link sirius.kernel.di.morphium.Adapters} to generate adapters of a certain type for a given input. This
+ * permits to transform existing classes into interfaces or other classes without modifying them.
+ *
+ * @author Andreas Haufler (aha@scireum.de)
+ * @since 2015/01
  */
 public interface AdapterFactory<A> {
 
+    /**
+     * Returns the target type for which this factory can create adapters.
+     *
+     * @return the target type for which adapters are created
+     */
     Class<A> getAdapterClass();
 
+    /**
+     * Generates a new object of the desired target type for the given object to adapt.
+     *
+     * @param adaptable the object to adapt
+     * @return the adapted instance (matching the target class) or <tt>null</tt> to indicate that no conversion
+     * was possible
+     */
     A make(Adaptable adaptable);
 
 }

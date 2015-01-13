@@ -59,6 +59,8 @@ public class Injector {
 
     /**
      * Initializes the framework. Must be only called once on system startup.
+     * <p>
+     * This is automatically invoked by {@link sirius.kernel.Sirius#start(sirius.kernel.Setup)}.
      *
      * @param classpath the classpath used to enumerate all classes to be scanned
      */

@@ -7,22 +7,28 @@
  */
 
 /**
- * Micro kernel based dependency injection framework.
+ * Contains the micro kernel for the discovery based programming framework.
+ *
+ * <h3>The Micro Kernel</h3>
+ * This annotation based framework is the heart of SIRIUS. Most of the time, the annotations
+ * {@link sirius.kernel.di.std.Register} will be used to put parts (components) into the injector and
+ * {@link sirius.kernel.di.std.Part} or {@link sirius.kernel.di.std.Parts} will be used to retrieve (discover) those.
  * <p>
- * This annotation based di framework is the heart of SIRIUS. Most of the time, the annotations
- * {@link sirius.kernel.di.std.Register} will be used to put parts (dependencies) into the injector and
- * {@link sirius.kernel.di.std.Part} or {@link sirius.kernel.di.std.Parts} will be used to retrieve those.
- * <p>
- * Additionally the configuration can be accessed via {@link sirius.kernel.di.std.ConfigValue} and
- * {@link sirius.kernel.di.std.ExtensionList}. The kernel itself ({@link sirius.kernel.di.GlobalContext}) can
- * be accessed either via {@link sirius.kernel.di.std.Context} or without any annotations using:
- * {@link sirius.kernel.di.Injector}.
- * Being a micro kernel, all those annotations are already extensions. Therefore it's very easy to process other
- * annotations (i.e. like Java's <tt>javax.inject.Inject</tt>).
- * <p>
- * fills fields with the appropriate values. Static fields are filled on system startup. All parts will be
- * automatically wired when they are inserted into the context. Other objects can be manually wired by calling
- * {@link sirius.kernel.di.GlobalContext#wire(Object)}.
- * However, this framework does neither support nor use dependency injection in constructors.
+ * Note that all these annotations are not part of the micro kernel but already extensions to it (this is why it is
+ * a micro kernel). Therefore own handlers for custom annotations or patterns can be implemented and treated as first
+ * class citizens.
+ *
+ * <h3>Adding Functionality</h3>
+ * To provide such functionality, a {@link sirius.kernel.di.ClassLoadAction} or a
+ * {@link sirius.kernel.di.FieldAnnotationProcessor} has to be implemented. Those implementation will be picked up
+ * by Sirius during the start phase and therefore be automatically applied. All that is required is a file called
+ * <tt>component.marker</tt> in the classpath root of the respective code base to make these and other classes
+ * visible to Sirius.
+ *
+ * <h3>Accessing Components</h3>
+ * To access components without using annotations, the {@link sirius.kernel.di.Injector} class can be used. If
+ * provides access to the {@link sirius.kernel.di.GlobalContext} which contains all registered parts (components).
+ * Note that the <tt>GlobalContext</tt> can also be accessed using the {@link sirius.kernel.di.std.Context}
+ * annotation.
  */
 package sirius.kernel.di;

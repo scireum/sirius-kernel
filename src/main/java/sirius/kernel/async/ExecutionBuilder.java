@@ -10,6 +10,7 @@ package sirius.kernel.async;
 
 import sirius.kernel.health.Exceptions;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -98,10 +99,13 @@ public class ExecutionBuilder<R> {
 
     /**
      * Specifies to fork the current CallContext while executing the given task.
+     * <p>
+     * Note that {@link #execute()} has to be called to actually start the task.
      *
      * @param task the task to execute.
      * @return this for fluent builder calls.
      */
+    @CheckReturnValue
     public ExecutionBuilder<R> fork(Runnable task) {
         wrapper.runnable = task;
         wrapper.fork = true;
@@ -110,10 +114,13 @@ public class ExecutionBuilder<R> {
 
     /**
      * Specifies to create a new CallContext while executing the given task.
+     * <p>
+     * Note that {@link #execute()} has to be called to actually start the task.
      *
      * @param task the task to execute.
      * @return this for fluent builder calls.
      */
+    @CheckReturnValue
     public ExecutionBuilder<R> start(Runnable task) {
         wrapper.runnable = task;
         wrapper.fork = false;
@@ -123,10 +130,13 @@ public class ExecutionBuilder<R> {
     /**
      * Specifies that the given task can be dropped (ignored) in system overload conditions, if at least the given
      * handler is called.
+     * <p>
+     * Note that {@link #execute()} has to be called to actually start the task.
      *
      * @param dropHandler the handler which is informed if the task is dropped due to system overload conditions.
      * @return this for fluent builder calls.
      */
+    @CheckReturnValue
     public ExecutionBuilder<R> dropOnOverload(Runnable dropHandler) {
         wrapper.dropHandler = dropHandler;
         return this;
