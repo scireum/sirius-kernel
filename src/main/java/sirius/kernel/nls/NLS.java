@@ -39,7 +39,7 @@ import java.util.*;
  * <p>
  * This class provides a translation engine ({@link #get(String)}, {@link #safeGet(String, String, String)},
  * {@link #fmtr(String)}). It also provides access to the current language via {@link #getCurrentLang()} and to the
- * default language ({@link #getDefaultLanguage()}. Most of the methods come in two version, one which accepts a
+ * default language ({@link #getDefaultLanguage()}. Most of the methods come in two versions, one which accepts a
  * <tt>lang</tt> parameter and another which uses the currently active language.
  * <p>
  * Additionally this class provides conversion methods to and from <tt>String</tt>. The most prominent ones are
@@ -67,11 +67,11 @@ public class NLS {
     private static Set<String> supportedLanguages;
 
     private static final DateTimeFormatter MACHINE_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss",
-            Locale.ENGLISH);
+                                                                                                  Locale.ENGLISH);
     private static final DateTimeFormatter MACHINE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd",
-            Locale.ENGLISH);
+                                                                                             Locale.ENGLISH);
     private static final DateTimeFormatter MACHINE_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss",
-            Locale.ENGLISH);
+                                                                                             Locale.ENGLISH);
     private static final Map<String, DateTimeFormatter> dateTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> dateFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> timeFormatters = Maps.newTreeMap();
@@ -173,9 +173,7 @@ public class NLS {
         for (String name : blubb.getLoadedResourceBundles()) {
             URL resource = classpath.getLoader().getResource(name);
             if ("file".equals(resource.getProtocol()) && !resource.getFile().contains("!")) {
-                timer.addWatchedResource(resource, () ->
-                                blubb.reloadBundle(name)
-                );
+                timer.addWatchedResource(resource, () -> blubb.reloadBundle(name));
             }
         }
     }
@@ -439,7 +437,7 @@ public class NLS {
      */
     public static DateTimeFormatter getTimeFormatWithSeconds(String lang) {
         return fullTimeFormatters.computeIfAbsent(lang,
-                l -> DateTimeFormatter.ofPattern(get("NLS.patternFullTime", l)));
+                                                  l -> DateTimeFormatter.ofPattern(get("NLS.patternFullTime", l)));
     }
 
     /**
@@ -460,7 +458,7 @@ public class NLS {
      */
     public static DateTimeFormatter getDateTimeFormat(String lang) {
         return dateTimeFormatters.computeIfAbsent(lang,
-                l -> DateTimeFormatter.ofPattern(get("NLS.patternDateTime", l)));
+                                                  l -> DateTimeFormatter.ofPattern(get("NLS.patternDateTime", l)));
     }
 
     /**
@@ -647,10 +645,19 @@ public class NLS {
     }
 
     /**
-     * Converts dates to a "human" format (today, yesterday, tomorrow).
+     * Converts dates to a "human" (e.g. "today", "yesterday") format.
      * <p>
-     * Everything but today, yesterday and tomorrow will be converted to a string representation formatted by
-     * using the date format of the current language.
+     * The following texts are supported:
+     * <ul>
+     * <li>If the given date contains a time and is less than 30 min ago: "some minutes ago"</li>
+     * <li>If the given date contains a time and is less than 60 min ago: "N minutes ago"</li>
+     * <li>If the given date contains a time and is less than 2 hours ago: "one hour ago"</li>
+     * <li>If the given date contains a time and is less than 6 hours ago: "N hours ago"</li>
+     * <li>If the given date is today: "today"</li>
+     * <li>If the given date is tomorrow: "tomorrow"</li>
+     * <li>If the given date is yesterday: "yesterday"</li>
+     * <li>For everything else we use the date format (note that in this case the time is omitted</li>
+     * </ul>
      *
      * @param date the date to be formatted
      * @return a date string which a human would use in common sentences
@@ -659,21 +666,45 @@ public class NLS {
         if (date == null) {
             return "";
         }
+
         if (ChronoUnit.HOURS.isSupportedBy(date)) {
+            // We have a time, perform some nice formatting...
+            LocalDateTime givenDateTime = LocalDateTime.from(date);
+            if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(30))) {
+                return NLS.get("NLS.someMinutesAgo");
+            } else if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(59))) {
+                return NLS.fmtr("NLS.nMinutesAgo")
+                          .set("minutes", Duration.between(givenDateTime, LocalDateTime.now()).toMinutes())
+                          .format();
+            } else if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
+                return NLS.get("NLS.oneHourAgo");
+            } else if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
+                return NLS.fmtr("NLS.nHoursAgo")
+                          .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
+                          .format();
+            }
+
+            // We don't have a date and the time difference is quite big -> simply format the time...
             if (!ChronoField.DAY_OF_MONTH.isSupportedBy(date)) {
                 return getTimeFormat(getCurrentLang()).format(date);
-            } else {
-                return getDateTimeFormat(getCurrentLang()).format(date);
             }
+        }
+
+        // Check if we have a date which is not "today"....
+        LocalDate givenDate = LocalDate.from(date);
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        if (tomorrow.equals(givenDate)) {
+            // Handle tomorrow
+            return NLS.get("NLS.tomorrow");
+        } else if (yesterday.equals(givenDate)) {
+            // Handle yesterday
+            return NLS.get("NLS.yesterday");
+        } else if (tomorrow.isBefore(givenDate) || yesterday.isAfter(givenDate)) {
+            // Handle dates in the future or the past
+            return getDateFormat(getCurrentLang()).format(givenDate);
         } else {
-            if (LocalDate.now().equals(date)) {
-                return NLS.get("NLS.today");
-            } else if (LocalDate.now().minusDays(1).equals(date)) {
-                return NLS.get("NLS.yesterday");
-            } else if (LocalDate.now().plusDays(1).equals(date)) {
-                return NLS.get("NLS.tomorrow");
-            }
-            return getDateFormat(getCurrentLang()).format(date);
+            return NLS.get("NLS.today");
         }
     }
 
@@ -746,8 +777,8 @@ public class NLS {
                 return (V) LocalDate.from(MACHINE_DATE_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                        .set("format", "yyyy-MM-dd")
-                        .format(), e);
+                                                                             .set("format", "yyyy-MM-dd")
+                                                                             .format(), e);
             }
         }
         if (LocalDateTime.class.equals(clazz)) {
@@ -755,8 +786,8 @@ public class NLS {
                 return (V) LocalDateTime.from(MACHINE_DATE_TIME_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                        .set("format", "yyyy-MM-dd HH:mm:ss")
-                        .format(), e);
+                                                                             .set("format", "yyyy-MM-dd HH:mm:ss")
+                                                                             .format(), e);
             }
         }
         if (ZonedDateTime.class.equals(clazz)) {
@@ -764,8 +795,8 @@ public class NLS {
                 return (V) ZonedDateTime.from(MACHINE_DATE_TIME_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                        .set("format", "yyyy-MM-dd HH:mm:ss")
-                        .format(), e);
+                                                                             .set("format", "yyyy-MM-dd HH:mm:ss")
+                                                                             .format(), e);
             }
         }
         if (LocalTime.class.equals(clazz)) {
@@ -773,8 +804,8 @@ public class NLS {
                 return (V) LocalTime.from(MACHINE_TIME_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                        .set("format", "HH:mm:ss")
-                        .format(), e);
+                                                                             .set("format", "HH:mm:ss")
+                                                                             .format(), e);
             }
         }
 
@@ -919,7 +950,7 @@ public class NLS {
      *
      * @param clazz  the expected class of the value to be parsed
      * @param string the string to be parsed
-     * @param <V>   the target type be be parsed
+     * @param <V>    the target type be be parsed
      * @return an instance of <tt>clazz</tt> representing the parsed string or <tt>null</tt> if value was empty.
      * @throws IllegalArgumentException if the given input was not well formed or if instances of <tt>clazz</tt>
      *                                  cannot be created. The thrown exception has a translated error message which

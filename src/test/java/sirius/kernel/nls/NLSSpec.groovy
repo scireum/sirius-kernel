@@ -91,4 +91,69 @@ class NLSSpec extends BaseSpecification {
         result == ""
     }
 
+    def "toSpokenDate() formats today as today"() {
+        given:
+        def date = LocalDate.now();
+        when:
+        def result = NLS.toSpokenDate(date);
+        then:
+        result == "heute"
+    }
+
+    def "toSpokenDate() formats yesterday as yesterday"() {
+        given:
+        def date = LocalDate.now().minusDays(1);
+        def dateTime = LocalDateTime.now().minusDays(1);
+        when:
+        def result = NLS.toSpokenDate(date);
+        def resultTime = NLS.toSpokenDate(dateTime);
+        then:
+        result == "gestern"
+        resultTime == "gestern"
+    }
+
+    def "toSpokenDate() formats tomorrow as tomorrow"() {
+        given:
+        def date = LocalDate.now().plusDays(1);
+        def dateTime = LocalDate.now().plusDays(1);
+        when:
+        def result = NLS.toSpokenDate(date);
+        def resultTime = NLS.toSpokenDate(dateTime);
+        then:
+        result == "morgen"
+        resultTime == "morgen"
+    }
+
+    def "toSpokenDate() formats a date in the past as date"() {
+        given:
+        def date = LocalDate.of(2014,1,1)
+        when:
+        def result = NLS.toSpokenDate(date);
+        then:
+        result == "01.01.2014"
+    }
+
+    def "toSpokenDate() formats a date in the future as date"() {
+        given:
+        def date = LocalDate.of(2114,1,1)
+        when:
+        def result = NLS.toSpokenDate(date);
+        then:
+        result == "01.01.2114"
+    }
+
+    def "toSpokenDate() formats a a date time of today correctly"() {
+        when:
+        def someMinutesAgo = LocalDateTime.now().minusMinutes(5);
+        def moreThan30MinAgo = LocalDateTime.now().minusMinutes(35);
+        def oneHourAgo = LocalDateTime.now().minusHours(1);
+        def someHoursAgo = LocalDateTime.now().minusHours(4);
+        def manyHoursAgo = LocalDateTime.now().minusHours(14);
+        then:
+        NLS.toSpokenDate(someMinutesAgo) == "vor wenigen Minuten"
+        NLS.toSpokenDate(moreThan30MinAgo) == "vor 35 Minuten"
+        NLS.toSpokenDate(oneHourAgo) == "vor einer Stunde"
+        NLS.toSpokenDate(someHoursAgo) == "vor 4 Stunden"
+    }
+
 }
