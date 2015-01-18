@@ -148,7 +148,6 @@ class NLSSpec extends BaseSpecification {
         def moreThan30MinAgo = LocalDateTime.now().minusMinutes(35);
         def oneHourAgo = LocalDateTime.now().minusHours(1);
         def someHoursAgo = LocalDateTime.now().minusHours(4);
-        def manyHoursAgo = LocalDateTime.now().minusHours(14);
         then:
         NLS.toSpokenDate(someMinutesAgo) == "vor wenigen Minuten"
         NLS.toSpokenDate(moreThan30MinAgo) == "vor 35 Minuten"
@@ -156,4 +155,12 @@ class NLSSpec extends BaseSpecification {
         NLS.toSpokenDate(someHoursAgo) == "vor 4 Stunden"
     }
 
+    def "parseUserString with LocalTime parses 9:00 and 9:00:23"() {
+        when:
+        def input = "9:00";
+        def inputWithSeconds = "9:00:23";
+        then:
+        NLS.parseUserString(LocalTime.class, input).getHour() == 9;
+        NLS.parseUserString(LocalTime.class, inputWithSeconds).getHour() == 9;
+    }
 }

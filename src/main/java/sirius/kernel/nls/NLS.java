@@ -70,8 +70,10 @@ public class NLS {
                                                                                                   Locale.ENGLISH);
     private static final DateTimeFormatter MACHINE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd",
                                                                                              Locale.ENGLISH);
-    private static final DateTimeFormatter MACHINE_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss",
-                                                                                             Locale.ENGLISH);
+    private static final DateTimeFormatter MACHINE_PARSE_TIME_FORMAT = DateTimeFormatter.ofPattern("H:mm[:ss]",
+                                                                                                   Locale.ENGLISH);
+    private static final DateTimeFormatter MACHINE_FORMAT_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss",
+                                                                                                    Locale.ENGLISH);
     private static final Map<String, DateTimeFormatter> dateTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> dateFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> timeFormatters = Maps.newTreeMap();
@@ -431,6 +433,10 @@ public class NLS {
 
     /**
      * Returns the full time format (with seconds) for the given language.
+     * <p>
+     * This should be used to format dates (times). Use {@link #getTimeParseFormat(String)} to parse strings
+     * as it is more reluctant (or use {@link #parseUserString(Class, String)}).
+     * </p>
      *
      * @param lang the language for which the format is requested
      * @return a format initialized with the pattern described by the given language
@@ -442,12 +448,31 @@ public class NLS {
 
     /**
      * Returns the time format (without seconds) for the given language.
+     * <p>
+     * This should be used to format dates (times). Use {@link #getTimeParseFormat(String)} to parse strings
+     * as it is more reluctant (or use {@link #parseUserString(Class, String)}).
+     * </p>
      *
      * @param lang the language for which the format is requested
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getTimeFormat(String lang) {
         return timeFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternTime", l)));
+    }
+
+    /**
+     * Returns the time format which is intended to parse time value in the given language.
+     * <p>
+     * In contrast to {@link #getTimeFormat(String)} and {@link #getTimeFormatWithSeconds(String)}
+     * this is used to parse dates and is more reluctant when it comes to formatting (parses '9:00' whereas
+     * <tt>getTimeFormat(String)</tt> only accepts '09:00').
+     * </p>
+     *
+     * @param lang the language for which the format is requested
+     * @return a format initialized with the pattern described by the given language
+     */
+    public static DateTimeFormatter getTimeParseFormat(String lang) {
+        return timeFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternParseTime", l)));
     }
 
     /**
@@ -520,7 +545,7 @@ public class NLS {
             Temporal temporal = (Temporal) data;
             if (ChronoUnit.HOURS.isSupportedBy(temporal)) {
                 if (!ChronoField.DAY_OF_MONTH.isSupportedBy(temporal)) {
-                    return MACHINE_TIME_FORMAT.format(temporal);
+                    return MACHINE_FORMAT_TIME_FORMAT.format(temporal);
                 } else {
                     return MACHINE_DATE_TIME_FORMAT.format(temporal);
                 }
@@ -801,10 +826,10 @@ public class NLS {
         }
         if (LocalTime.class.equals(clazz)) {
             try {
-                return (V) LocalTime.from(MACHINE_TIME_FORMAT.parse(value));
+                return (V) LocalTime.from(MACHINE_PARSE_TIME_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                                                                             .set("format", "HH:mm:ss")
+                                                                             .set("format", "H:mm[:ss]")
                                                                              .format(), e);
             }
         }
@@ -928,10 +953,9 @@ public class NLS {
         }
         if (LocalTime.class.equals(clazz)) {
             try {
-                AdvancedDateParser parser = new AdvancedDateParser(lang);
-                return (V) LocalTime.from(parser.parse(value).getTemporal());
-            } catch (ParseException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
+                return (V) LocalTime.from(NLS.getTimeParseFormat(NLS.getCurrentLang()).parse(value));
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidTime").set("value", value).format(), e);
             }
         }
         if (AdvancedDateParser.DateSelection.class.equals(clazz)) {
