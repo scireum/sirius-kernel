@@ -58,20 +58,20 @@ public class XMLCall {
     }
 
     /**
-     * Provides access to the XML answer of the call.
+     * Can be used to generate the XML request.
      *
-     * @return the XML result of the call
-     * @throws IOException in case of an IO error while receiving the result
+     * @return the an input which can be used to generate an XML document which is sent to the URL
+     * @throws IOException in case of an IO error while sending the XML document
      */
     public XMLStructuredOutput getOutput() throws IOException {
         return new XMLStructuredOutput(outcall.getOutput());
     }
 
     /**
-     * Can be used to generate the XML request.
+     * Provides access to the XML answer of the call.
      *
-     * @return the an input which can be used to generate an XML document which is sent to the URL
-     * @throws IOException in case of an IO error while sending the XML document
+     * @return the XML result of the call
+     * @throws IOException in case of an IO error while receiving the result
      */
     public XMLStructuredInput getInput() throws IOException {
         return new XMLStructuredInput(outcall.getInput(), true);
