@@ -77,6 +77,7 @@ public class NLS {
     private static final Map<String, DateTimeFormatter> dateTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> dateFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> timeFormatters = Maps.newTreeMap();
+    private static final Map<String, DateTimeFormatter> parseTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> fullTimeFormatters = Maps.newTreeMap();
 
     /**
@@ -474,7 +475,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getTimeParseFormat(String lang) {
-        return timeFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternParseTime", l)));
+        return parseTimeFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternParseTime", l)));
     }
 
     /**
