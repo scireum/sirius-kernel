@@ -432,20 +432,6 @@ public class NLS {
     }
 
     /**
-     * Returns the date format for the current language as string.
-     * <p>
-     * The returned string is intended to be used in scripting languages like JavaScript to instruct formatters.
-     * <p>
-     * The pattern in this case will conform to the PHP 5 patterns as these are used by some JavaScript
-     * libraries like bootstrap datepicker. (See http://php.net/manual/en/function.date.php).
-     *
-     * @return the date format of the current language as string
-     */
-    public static String getJavaScriptDateFormat() {
-        return NLS.get("NLS.javaScriptDateFormat");
-    }
-
-    /**
      * Returns the full time format (with seconds) for the given language.
      * <p>
      * This should be used to format dates (times). Use {@link #getTimeParseFormat(String)} to parse strings
@@ -475,19 +461,6 @@ public class NLS {
     public static DateTimeFormatter getTimeFormat(String lang) {
         return timeFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternTime", l)));
     }
-
-
-    /**
-     * Returns the time format for the current language as string.
-     * <p>
-     * The returned string is intended to be used in scripting languages like JavaScript to instruct formatters.
-     *
-     * @return the time format of the current language as string
-     */
-    public static String getJavaScriptTimeFormat() {
-        return NLS.get("NLS.javaScriptTimeFormat");
-    }
-
 
     /**
      * Returns the time format which is intended to parse time value in the given language.
