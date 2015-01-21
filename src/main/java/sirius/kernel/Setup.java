@@ -172,7 +172,7 @@ public class Setup {
             }
             DailyRollingFileAppender fa = new DailyRollingFileAppender();
             fa.setName("FileLogger");
-            fa.setFile(getLogFileName());
+            fa.setFile(getLogFilePath());
             fa.setLayout(new PatternLayout("%d %-5p [%X{flow}|%t] %c - %m%n"));
             fa.setThreshold(Level.DEBUG);
             fa.setAppend(true);
