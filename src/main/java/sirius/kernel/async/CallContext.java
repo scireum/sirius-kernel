@@ -251,10 +251,10 @@ public class CallContext {
             return (C) result;
         } catch (Throwable e) {
             throw Exceptions.handle()
-                    .error(e)
-                    .withSystemErrorMessage("Cannot get instance of %s from current CallContext: %s (%s)",
-                            contextType.getName())
-                    .handle();
+                            .error(e)
+                            .withSystemErrorMessage("Cannot get instance of %s from current CallContext: %s (%s)",
+                                                    contextType.getName())
+                            .handle();
         }
     }
 
@@ -299,11 +299,16 @@ public class CallContext {
 
     /**
      * Sets the current language for the current thread.
+     * <p>
+     * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
+     * </p>
      *
      * @param lang the two-letter language code for this thread.
      */
-    public void setLang(String lang) {
-        this.lang = lang;
+    public void setLang(@Nullable String lang) {
+        if (Strings.isFilled(lang)) {
+            this.lang = lang;
+        }
     }
 
     @Override
