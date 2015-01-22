@@ -193,10 +193,10 @@ public class NLS {
             return null;
         }
         String langAsLowerCase = lang.toLowerCase();
-        if (supportedLanguages.contains(langAsLowerCase)) {
+        if (getSupportedLanguages().contains(langAsLowerCase)) {
             return langAsLowerCase;
         } else {
-            return defaultLanguage;
+            return getDefaultLanguage();
         }
     }
 
