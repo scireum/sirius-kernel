@@ -14,11 +14,15 @@ import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.AdvancedDateParser;
+import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.Injector;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.timer.TimerService;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigDecimal;
@@ -65,6 +69,7 @@ public class NLS {
 
     private static String defaultLanguage;
     private static Set<String> supportedLanguages;
+    private static Map<String, String> mapLanguages;
 
     private static final DateTimeFormatter MACHINE_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss",
                                                                                                   Locale.ENGLISH);
@@ -86,6 +91,7 @@ public class NLS {
      * @return a two-letter code of the currently active language, as defined in
      * {@link sirius.kernel.async.CallContext#getLang()}
      */
+    @Nonnull
     public static String getCurrentLang() {
         return CallContext.getCurrent().getLang();
     }
@@ -97,9 +103,10 @@ public class NLS {
      *
      * @return the language code of the default language
      */
+    @Nonnull
     public static String getDefaultLanguage() {
         if (defaultLanguage == null && Sirius.getConfig() != null) {
-            defaultLanguage = Sirius.getConfig().getString("nls.defaultLanguage");
+            defaultLanguage = Sirius.getConfig().getString("nls.defaultLanguage").toLowerCase();
             if ("auto".equals(defaultLanguage)) {
                 defaultLanguage = getSystemLanguage();
             }
@@ -127,10 +134,14 @@ public class NLS {
      * By default, SIRIUS initializes with the language set in <code>nls.defaultLanguage</code> so a switchover
      * to the system language has to be performed manually.
      *
-     * @return the language code of the underlying operating system
+     * @return the language code of the underlying operating system. If the language is not supported (not listed
+     * in <code>nls.languages</code>), <tt>null</tt> will be returned as
+     * {@link sirius.kernel.async.CallContext#setLang(String)} doesn't change the current language if <tt>null</tt> is
+     * passed in.
      */
+    @Nullable
     public static String getSystemLanguage() {
-        return Locale.getDefault().getLanguage().toLowerCase();
+        return makeLang(Locale.getDefault().getLanguage().toLowerCase());
     }
 
     /**
@@ -140,8 +151,16 @@ public class NLS {
      * @return a list of supported language codes
      */
     public static Set<String> getSupportedLanguages() {
-        if (supportedLanguages == null && Sirius.getConfig() != null) {
-            supportedLanguages = Sets.newLinkedHashSet(Sirius.getConfig().getStringList("nls.languages"));
+        if (supportedLanguages == null && Sirius.getConfig() != null) try {
+            {
+                supportedLanguages = Sirius.getConfig()
+                                           .getStringList("nls.languages")
+                                           .stream()
+                                           .map(String::toLowerCase)
+                                           .collect(Lambdas.into(Sets.newLinkedHashSet()));
+            }
+        } catch (Exception e) {
+            Exceptions.handle(e);
         }
         // Returns the default language or (for very early access we default to en)
         return supportedLanguages == null ? Collections.singleton("en") : Collections.unmodifiableSet(supportedLanguages);
@@ -151,10 +170,34 @@ public class NLS {
      * Determines if the given language code is supported or not.
      *
      * @param twoLetterLanguageCode the language as two-letter code
-     * @return <tt>true</tt> if the language is listed in <tt>nls.langauges</tt>, <tt>false</tt> otherwise.
+     * @return <tt>true</tt> if the language is listed in <tt>nls.languages</tt>, <tt>false</tt> otherwise.
      */
     public static boolean isSupportedLanguage(String twoLetterLanguageCode) {
         return getSupportedLanguages().contains(twoLetterLanguageCode);
+    }
+
+    /**
+     * Checks if the given language is supproted. Returns the default language otherwise.
+     * <p>
+     * Note that if the given lang is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
+     * to {@link sirius.kernel.async.CallContext#setLang(String)} with <tt>null</tt> as parameter won't change
+     * the language at all.
+     *
+     * @param lang the language to check
+     * @return <tt>lang</tt> if it was a supported language or the defaultLanguage otherwise, unless an empty string
+     * was passed in, in which case <tt>null</tt> is returned.
+     */
+    @Nullable
+    public static String makeLang(@Nullable String lang) {
+        if (Strings.isEmpty(lang)) {
+            return null;
+        }
+        String langAsLowerCase = lang.toLowerCase();
+        if (supportedLanguages.contains(langAsLowerCase)) {
+            return langAsLowerCase;
+        } else {
+            return defaultLanguage;
+        }
     }
 
     /**
@@ -475,7 +518,8 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getTimeParseFormat(String lang) {
-        return parseTimeFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternParseTime", l)));
+        return parseTimeFormatters.computeIfAbsent(lang,
+                                                   l -> DateTimeFormatter.ofPattern(get("NLS.patternParseTime", l)));
     }
 
     /**
