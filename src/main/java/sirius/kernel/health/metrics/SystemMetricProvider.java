@@ -68,7 +68,6 @@ public class SystemMetricProvider implements MetricProvider {
         } catch (SigarException e) {
             Exceptions.handle(LOG, e);
         } catch (UnsatisfiedLinkError e) {
-            LOG.INFO("Sigar native library not found! Disabling sigar.");
             sigarEnabled = false;
         }
     }
