@@ -13,12 +13,14 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.io.CharStreams;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 /**
@@ -33,6 +35,7 @@ import java.util.Map;
 public class Outcall {
 
     private HttpURLConnection connection;
+    private Charset charset = Charsets.UTF_8;
     private final URL url;
 
     /**
@@ -56,13 +59,25 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public Outcall(URL url, Context params) throws IOException {
+        this(url, params, Charsets.UTF_8);
+    }
+
+    /**
+     * Creates a new <tt>Outcall</tt> to the given URL, sending the given parameters as POST.
+     *
+     * @param url    the url to call
+     * @param params the parameters to POST.
+     * @throws IOException in case of any IO error
+     */
+    public Outcall(URL url, Context params, Charset charset) throws IOException {
         this.url = url;
+        this.charset = charset;
         connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setDoInput(true);
         connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        OutputStreamWriter writer = new OutputStreamWriter(getOutput(), Charsets.ISO_8859_1.name());
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=" + charset.name());
+        OutputStreamWriter writer = new OutputStreamWriter(getOutput(), charset.name());
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (Map.Entry<String, Object> entry : params.entrySet()) {
@@ -70,9 +85,9 @@ public class Outcall {
                 sb.append("&");
             }
             first = false;
-            sb.append(URLEncoder.encode(entry.getKey(), Charsets.ISO_8859_1.name()));
+            sb.append(URLEncoder.encode(entry.getKey(), charset.name()));
             sb.append("=");
-            sb.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), Charsets.ISO_8859_1.name()));
+            sb.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
         }
         writer.write(sb.toString());
         writer.flush();
@@ -122,9 +137,9 @@ public class Outcall {
             return;
         }
         try {
-            String userpassword = user + ":" + password;
+            String userAndPassword = user + ":" + password;
             String encodedAuthorization = BaseEncoding.base64()
-                                                      .encode(userpassword.getBytes(Charsets.ISO_8859_1.name()));
+                                                      .encode(userAndPassword.getBytes(charset.name()));
             setRequestProperty("Authorization", "Basic " + encodedAuthorization);
         } catch (UnsupportedEncodingException e) {
             throw new IOException(e);
@@ -139,19 +154,30 @@ public class Outcall {
      */
     public String getData() throws IOException {
         StringWriter writer = new StringWriter();
-        InputStreamReader reader = new InputStreamReader(getInput(),
-                                                         connection.getContentEncoding() == null ? Charsets.ISO_8859_1
-                                                                                                           .name() : connection
-                                                                 .getContentEncoding());
+        InputStreamReader reader = new InputStreamReader(getInput(), getContentEncoding());
         CharStreams.copy(reader, writer);
         reader.close();
         return writer.toString();
     }
 
     /**
+     * Returns the charset used by the server to encode the response.
+     *
+     * @return the charset used by the server or <tt>UTF-8</tt> as default
+     */
+    public Charset getContentEncoding() {
+        try {
+            return connection.getContentEncoding() == null ? Charsets.UTF_8 : Charset.forName(connection.getContentEncoding());
+        } catch (Exception e) {
+            Exceptions.ignore(e);
+            return Charsets.UTF_8;
+        }
+    }
+
+    /**
      * Sets a HTTP cookie
      *
-     * @param name name of the cookie
+     * @param name  name of the cookie
      * @param value value of the cookie
      */
     public void setCookie(String name, String value) {
