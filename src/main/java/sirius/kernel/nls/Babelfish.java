@@ -18,6 +18,8 @@ import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.*;
@@ -63,7 +65,7 @@ public class Babelfish {
      *               or in one of the translations.
      * @return a stream of all translations matching the given filter
      */
-    public Stream<Translation> getTranslations(String filter) {
+    public Stream<Translation> getTranslations(@Nullable String filter) {
         String effectiveFilter = Strings.isEmpty(filter) ? null : filter.toLowerCase();
         return translationMap.values().stream().filter(e -> e.containsText(effectiveFilter));
     }
@@ -74,7 +76,7 @@ public class Babelfish {
      * @param key the prefix with which the key must start
      * @return a stream of all translations matching the given filter
      */
-    public Stream<Translation> getEntriesStartingWith(String key) {
+    public Stream<Translation> getEntriesStartingWith(@Nonnull String key) {
         return translationMap.values().stream().filter(e -> e.getKey().startsWith(key));
     }
 
@@ -210,7 +212,7 @@ public class Babelfish {
      * @return a <tt>Translation</tt> for the given property or fallback.
      * Returns <tt>null</tt> if no translation was found and <tt>create</tt> is false.
      */
-    protected Translation get(String property, String fallback, boolean create) {
+    protected Translation get(@Nonnull String property, @Nullable String fallback, boolean create) {
         if (property == null) {
             throw new IllegalArgumentException("property");
         }
