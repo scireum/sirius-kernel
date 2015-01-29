@@ -211,6 +211,9 @@ public class Babelfish {
      * Returns <tt>null</tt> if no translation was found and <tt>create</tt> is false.
      */
     protected Translation get(String property, String fallback, boolean create) {
+        if (property == null) {
+            throw new IllegalArgumentException("property");
+        }
         Translation entry = translationMap.get(property);
         if (entry == null && fallback != null) {
             entry = translationMap.get(fallback);

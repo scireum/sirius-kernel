@@ -1000,7 +1000,7 @@ public class NLS {
         }
         if (LocalTime.class.equals(clazz)) {
             try {
-                return (V) LocalTime.from(NLS.getTimeParseFormat(NLS.getCurrentLang()).parse(value));
+                return (V) LocalTime.from(NLS.getTimeParseFormat(lang).parse(value.toUpperCase()));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidTime").set("value", value).format(), e);
             }

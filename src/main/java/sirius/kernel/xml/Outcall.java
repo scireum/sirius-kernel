@@ -65,8 +65,9 @@ public class Outcall {
     /**
      * Creates a new <tt>Outcall</tt> to the given URL, sending the given parameters as POST.
      *
-     * @param url    the url to call
-     * @param params the parameters to POST.
+     * @param url     the url to call
+     * @param params  the parameters to POST.
+     * @param charset determines the charset to use when encoding the uploaded data
      * @throws IOException in case of any IO error
      */
     public Outcall(URL url, Context params, Charset charset) throws IOException {
@@ -138,8 +139,7 @@ public class Outcall {
         }
         try {
             String userAndPassword = user + ":" + password;
-            String encodedAuthorization = BaseEncoding.base64()
-                                                      .encode(userAndPassword.getBytes(charset.name()));
+            String encodedAuthorization = BaseEncoding.base64().encode(userAndPassword.getBytes(charset.name()));
             setRequestProperty("Authorization", "Basic " + encodedAuthorization);
         } catch (UnsupportedEncodingException e) {
             throw new IOException(e);
