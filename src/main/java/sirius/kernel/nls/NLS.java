@@ -243,7 +243,7 @@ public class NLS {
      * @return a translated string for the current language (or for the default language if no translation was found)
      * or the property itself if no translation for neither of both languages is available.
      */
-    public static String get(String property) {
+    public static String get(@Nonnull String property) {
         return blubb.get(property, null, true).translate(getCurrentLang());
     }
 
@@ -256,8 +256,8 @@ public class NLS {
      * @param lang     a two-letter language code for which the translation is requested
      * @return a translated string in the requested language or a fallback value if no translation was found
      */
-    public static String get(String property, String lang) {
-        return blubb.get(property, null, true).translate(lang);
+    public static String get(@Nonnull String property, @Nullable String lang) {
+        return blubb.get(property, null, true).translate(Strings.isEmpty(lang) ? getCurrentLang() : lang);
     }
 
     /**
@@ -271,12 +271,12 @@ public class NLS {
      * @return a translated text in the requested language (or in the default language if no translation for the given
      * language was found). Returns an empty optional if no translation for this property exists at all.
      */
-    public static Optional<String> getIfExists(String property, String lang) {
+    public static Optional<String> getIfExists(@Nonnull String property, @Nullable String lang) {
         Translation translation = blubb.get(property, null, false);
         if (translation == null) {
             return Optional.empty();
         }
-        return Optional.of(translation.translate(lang));
+        return Optional.of(translation.translate(Strings.isEmpty(lang) ? getCurrentLang() : lang));
     }
 
     /**
@@ -290,8 +290,8 @@ public class NLS {
      * of both doesn't provide a translation for the given language, the translation for the default
      * language is returned. If neither of both keys exist <tt>property</tt> will be returned.
      */
-    public static String safeGet(String property, String fallback, String lang) {
-        return blubb.get(property, fallback, true).translate(lang);
+    public static String safeGet(@Nonnull String property, @Nonnull String fallback, @Nullable String lang) {
+        return blubb.get(property, fallback, true).translate(Strings.isEmpty(lang) ? getCurrentLang() : lang);
     }
 
     /**
@@ -304,7 +304,7 @@ public class NLS {
      * of both doesn't provide a translation for the given language, the translation for the default
      * language is returned. If neither of both keys exist <tt>property</tt> will be returned.
      */
-    public static String safeGet(String property, String fallback) {
+    public static String safeGet(@Nonnull String property, @Nonnull String fallback) {
         return blubb.get(property, fallback, true).translate(getCurrentLang());
     }
 
@@ -314,8 +314,19 @@ public class NLS {
      * @param property the property to used to retrieve a translated pattern
      * @return a <tt>Formatter</tt> initialized with the translated text of the given property
      */
-    public static Formatter fmtr(String property) {
+    public static Formatter fmtr(@Nonnull String property) {
         return Formatter.create(get(property), getCurrentLang());
+    }
+
+    /**
+     * Creates a formatted using the pattern supplied by the translation value for the given <tt>property</tt>.
+     *
+     * @param property the property to used to retrieve a translated pattern
+     * @param lang     a two-letter language code for which the translation is requested
+     * @return a <tt>Formatter</tt> initialized with the translated text of the given property
+     */
+    public static Formatter fmtr(@Nonnull String property, @Nullable String lang) {
+        return Formatter.create(get(property, lang), getCurrentLang());
     }
 
     /**
