@@ -8,11 +8,12 @@
 
 package sirius.kernel.nls;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.commons.Strings;
 
+import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -46,6 +47,7 @@ import java.util.regex.Pattern;
  */
 public class Formatter {
     private boolean urlEncode = false;
+    private boolean smartFormat = false;
     private Map<String, String> replacement = Maps.newTreeMap();
     private String pattern;
     private String lang;
@@ -128,7 +130,7 @@ public class Formatter {
      * @return <tt>this</tt> to permit fluent method chains
      */
     public Formatter setUnencoded(String property, Object value) {
-        return setDirect(property, NLS.toUserString(value == null ? "" : value, lang), false);
+        return setDirect(property, NLS.toUserString(value, lang), false);
     }
 
     /**
@@ -170,30 +172,123 @@ public class Formatter {
      * Generates the formatted string.
      * <p>
      * Applies all supplied replacement values on detected parameters formatted like <code>${param}</code>.
-     * If no value is supplied for a parameter, the original expression will remain in the string.
      *
      * @return the template string with all parameters replaced for which a value was supplied.
+     * @throws java.lang.IllegalArgumentException if the pattern is malformed
      */
     public String format() {
-        StringBuilder sb = new StringBuilder();
+        return format(false);
+    }
+
+    /**
+     * Generates the formatted string using smart output formatting.
+     * <p>
+     * Applies all supplied replacement values on detected parameters formatted like <code>${param}</code>.
+     * Block can be formed using '[' and ']' a whole block is only output, if at least one replacement
+     * was not empty.
+     * <p>
+     * Consider the pattern <code>[${salutation} ][${firstname}] ${lastname}</code>. This will create
+     * <tt>Mr. Foo Bar</tt> if all three parameters are filled, but <tt>Mr. Bar</tt> if the first name is missing
+     * or <tt>Foo Bar</tt> if the salutation is missing.
+     *
+     * @return the template string with all parameters replaced for which a value was supplied.
+     * @throws java.lang.IllegalArgumentException if the pattern is malformed
+     */
+    public String smartFormat() {
+        return format(true);
+    }
+
+    /*
+     * Keeps track of the current smart formatting block being parsed.
+     */
+    private static class Block {
+        StringBuilder output = new StringBuilder();
+        boolean replacementFound = false;
+        int startIndex;
+    }
+
+    /*
+     * Stack based implementation parsing parameterized strings with smart blocks. Each nested block will
+     * result in one stack level.
+     */
+    private String format(boolean smart) {
+        List<Block> blocks = Lists.newArrayList();
+        Block currentBlock = new Block();
+        blocks.add(currentBlock);
         int index = 0;
-        Matcher pm = PARAM.matcher(pattern);
-        while (pm.find(index)) {
-            sb.append(pattern.substring(index, pm.start()));
-            String val = replacement.get(pm.group(1));
-            if (val == null) {
-                sb.append(pm.group());
+        while (index < pattern.length()) {
+            char current = pattern.charAt(index);
+            if (current == '$' && pattern.charAt(index + 1) == '{') {
+                index = performParameterReplacement(currentBlock, index);
+            } else if (current == '[' && smart) {
+                currentBlock = startBlock(blocks, index);
+            } else if (current == ']' && smart) {
+                currentBlock = endBlock(blocks, currentBlock, index);
             } else {
-                sb.append(val);
+                currentBlock.output.append(current);
             }
-            index = pm.end();
+            index++;
         }
-        sb.append(pattern.substring(index));
-        return sb.toString();
+        if (blocks.size() > 1) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Unexpected end of pattern. Expected ']' for '[' at index %d in '%s'",
+                    currentBlock.startIndex + 1,
+                    pattern));
+        } else {
+            return currentBlock.output.toString();
+        }
+    }
+
+    private int performParameterReplacement(Block currentBlock, int index) {
+        index += 2;
+        int keyStart = index;
+        while (index < pattern.length() && pattern.charAt(index) != '}') {
+            index++;
+        }
+        if (index >= pattern.length()) {
+            throw new IllegalArgumentException(Strings.apply("Missing } for ${ started at index %d in '%s'",
+                                                             keyStart - 1,
+                                                             pattern));
+        }
+        String key = pattern.substring(keyStart, index);
+        String value = replacement.computeIfAbsent(key, s -> {
+            throw new IllegalArgumentException(Strings.apply("Unknown value '%s' used at index %d in '%s'",
+                                                             key,
+                                                             keyStart - 1,
+                                                             pattern));
+        });
+        if (Strings.isFilled(value)) {
+            currentBlock.output.append(value);
+            currentBlock.replacementFound = true;
+        }
+        return index;
+    }
+
+    private Block startBlock(List<Block> blocks, int index) {
+        Block currentBlock;
+        currentBlock = new Block();
+        currentBlock.startIndex = index;
+        blocks.add(currentBlock);
+        return currentBlock;
+    }
+
+    private Block endBlock(List<Block> blocks, Block currentBlock, int index) {
+        if (blocks.size() == 1) {
+            throw new IllegalArgumentException(Strings.apply("Unexpected ']' at index %d in '%s'", index + 1, pattern));
+        } else {
+            if (currentBlock.replacementFound) {
+                Block next = blocks.get(blocks.size() - 2);
+                next.output.append(currentBlock.output);
+                next.replacementFound = true;
+            }
+            currentBlock = blocks.get(blocks.size() - 2);
+            blocks.remove(blocks.size() - 1);
+        }
+        return currentBlock;
     }
 
     @Override
     public String toString() {
-        return format();
+        return pattern;
     }
 }
