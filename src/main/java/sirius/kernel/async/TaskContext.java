@@ -41,7 +41,7 @@ public class TaskContext {
      * @see #setSubSystem(String)
      * @see #setJob(String)
      */
-    private static final String MDC_SYSTEM = "system";
+    public static final String MDC_SYSTEM = "system";
 
     private TaskContextAdapter adapter;
     private String system = GENERIC;

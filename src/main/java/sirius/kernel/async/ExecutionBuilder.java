@@ -39,7 +39,7 @@ public class ExecutionBuilder<R> {
         Runnable runnable;
         boolean fork;
         Runnable dropHandler;
-        CallContext callContext;
+        CallContext parentContext;
         Future promise = Async.future();
 
         /**
@@ -47,7 +47,7 @@ public class ExecutionBuilder<R> {
          */
         void prepare() {
             if (fork) {
-                callContext = CallContext.getCurrent();
+                parentContext = CallContext.getCurrent();
             }
             if (runnable == null) {
                 throw new IllegalArgumentException("Please provide a runnable for me to execute!");
@@ -57,22 +57,17 @@ public class ExecutionBuilder<R> {
         @Override
         public void run() {
             try {
-                CallContext ctx = CallContext.getCurrentIfAvailable();
                 try {
-                    if (callContext == null) {
+                    if (parentContext == null) {
                         CallContext.initialize();
                     } else {
-                        CallContext.setCurrent(callContext);
+                        parentContext.forkAndInstall();
                     }
                     TaskContext.get().setSystem(category).setSubSystem(runnable.getClass().getSimpleName());
                     runnable.run();
                     promise.success(null);
                 } finally {
-                    if (ctx == null) {
-                        CallContext.detach();
-                    } else {
-                        CallContext.setCurrent(ctx);
-                    }
+                    CallContext.detach();
                 }
             } catch (Throwable t) {
                 Exceptions.handle(Async.LOG, t);

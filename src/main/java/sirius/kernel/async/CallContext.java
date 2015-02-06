@@ -9,7 +9,6 @@
 package sirius.kernel.async;
 
 import com.google.common.collect.Maps;
-import org.apache.log4j.MDC;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -22,9 +21,13 @@ import sirius.kernel.nls.NLS;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * A CallContext is attached to each thread managed by sirius.
@@ -49,8 +52,13 @@ public class CallContext {
      * Name of the flow variable in the MDC.
      */
     public static final String MDC_FLOW = "flow";
-    private static ThreadLocal<CallContext> currentContext = new ThreadLocal<>();
-    private static Map<Long, Map<String, String>> mdcMap = Maps.newConcurrentMap();
+
+    /**
+     * Name of the parent context in the MDC
+     */
+    public static final String MDC_PARENT = "parent";
+
+    private static Map<Long, WeakReference<CallContext>> contextMap = Maps.newConcurrentMap();
     private static String nodeName = null;
     private static Counter interactionCounter = new Counter();
 
@@ -81,6 +89,32 @@ public class CallContext {
         return nodeName;
     }
 
+
+    /**
+     * Returns the <tt>CallContext</tt> for the given thread or an empty optional if none is present.
+     *
+     * @param threadId the id of the thread to fetch the <tt>CallContext</tt> for
+     * @return the CallContext for the given thread wrapped as optional
+     */
+    @Nonnull
+    public static Optional<CallContext> getContext(long threadId) {
+        WeakReference<CallContext> ctxRef = contextMap.get(threadId);
+        if (ctxRef != null) {
+            return Optional.ofNullable(ctxRef.get());
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the context for the current thread.
+     *
+     * @return the current context wrapped as optional (is empty when no context is present yet).
+     */
+    @Nonnull
+    public static Optional<CallContext> getCurrentIfAvailable() {
+        return getContext(Thread.currentThread().getId());
+    }
+
     /**
      * Returns the context for the current thread.
      * <p>
@@ -90,24 +124,12 @@ public class CallContext {
      */
     @Nonnull
     public static CallContext getCurrent() {
-        CallContext result = currentContext.get();
-        if (result == null) {
+        Optional<CallContext> ctx = getCurrentIfAvailable();
+        if (!ctx.isPresent()) {
             return initialize();
         }
 
-        return result;
-    }
-
-    /**
-     * Returns the context for the current thread.
-     * <p>
-     * Returns <tt>null</tt> if no context was installed yet.
-     *
-     * @return the current context or <tt>null</tt> if no context is available
-     */
-    @Nullable
-    public static CallContext getCurrentIfAvailable() {
-        return currentContext.get();
+        return ctx.get();
     }
 
     /*
@@ -145,40 +167,38 @@ public class CallContext {
         return initialize(getNodeName() + "/" + interactionCounter.getCount());
     }
 
+
     /**
-     * Sets the CallContext for the current thread.
-     *
-     * @param context the context to use for the current thread.
+     * Forks and creates a sub context which is then installed.
+     * <p>
+     * All instantiated sub contexts are copied, the MDC is re-initialized.
      */
-    public static void setCurrent(CallContext context) {
-        currentContext.set(context);
-        mdcMap.put(Thread.currentThread().getId(), context.mdc);
+    public void forkAndInstall() {
+        CallContext newCtx = initialize(mdc.get(MDC_FLOW));
+        newCtx.watch = watch;
+        newCtx.mdc.put(MDC_PARENT, mdc.get(TaskContext.MDC_SYSTEM));
+        newCtx.subContext.putAll(subContext);
+    }
+
+    private static void setCurrent(CallContext context) {
+        contextMap.put(Thread.currentThread().getId(), new WeakReference<>(context));
     }
 
     /**
      * Detaches this CallContext from the current thread
      */
     public static void detach() {
-        currentContext.set(null);
-        mdcMap.remove(Thread.currentThread().getId());
+        contextMap.remove(Thread.currentThread().getId());
     }
 
-    private Map<String, String> mdc = new LinkedHashMap<String, String>();
-    private Map<Class<?>, Object> subContext = new HashMap<>();
+    private Map<String, String> mdc = Maps.newLinkedHashMap();
+
+    /*
+     * Needs to be synchronized as a CallContext might be shared across several sub tasks
+     */
+    private Map<Class<?>, Object> subContext = Collections.synchronizedMap(Maps.newHashMap());
     private Watch watch = Watch.start();
     private String lang = NLS.getDefaultLanguage();
-
-    /**
-     * Returns the mapped diagnostic context for the given thread.
-     *
-     * @param threadId the id of the thread for which the MDC is requested
-     * @return the MDC a map of strings
-     */
-    @Nonnull
-    public static Map<String, String> getMDC(long threadId) {
-        return mdcMap.getOrDefault(threadId, Collections.emptyMap());
-    }
-
 
     /**
      * Returns the current mapped diagnostic context (MDC).
@@ -273,22 +293,6 @@ public class CallContext {
     }
 
     /**
-     * Used to apply the MDC to the context used by Log4J. This is automatically called by
-     * {@link sirius.kernel.health.Log}.
-     */
-    public void applyToLog4j() {
-        @SuppressWarnings("unchecked") Hashtable<String, String> ctx = MDC.getContext();
-        if (ctx == null) {
-            for (Map.Entry<String, String> e : mdc.entrySet()) {
-                MDC.put(e.getKey(), e.getValue());
-            }
-        } else {
-            ctx.clear();
-            ctx.putAll(mdc);
-        }
-    }
-
-    /**
      * Returns the current language determined for the current thread.
      *
      * @return a two-letter language code used for the current thread.
@@ -323,4 +327,5 @@ public class CallContext {
 
         return sb.toString();
     }
+
 }

@@ -173,7 +173,6 @@ public class Log {
             return;
         }
         if (logger.isInfoEnabled()) {
-            fixMDC();
             if (msg instanceof Throwable) {
                 logger.info(((Throwable) msg).getMessage(), (Throwable) msg);
             } else {
@@ -225,13 +224,6 @@ public class Log {
         }
     }
 
-    /*
-     * Transfers our MDC to the one used by log4j
-     */
-    private void fixMDC() {
-        CallContext.getCurrent().applyToLog4j();
-    }
-
     /**
      * Formats the given message at the INFO level using the supplied parameters.
      * <p>
@@ -243,7 +235,6 @@ public class Log {
     public void INFO(String msg, Object... params) {
         msg = Strings.apply(msg, params);
         if (logger.isInfoEnabled()) {
-            fixMDC();
             logger.info(msg);
         }
         tap(msg, logger.isInfoEnabled(), Level.INFO);
@@ -260,7 +251,6 @@ public class Log {
      */
     public void FINE(Object msg) {
         if (logger.isDebugEnabled()) {
-            fixMDC();
             if (msg instanceof Throwable) {
                 logger.debug(((Throwable) msg).getMessage(), (Throwable) msg);
             } else {
@@ -282,7 +272,6 @@ public class Log {
     public void FINE(String msg, Object... params) {
         msg = Strings.apply(msg, params);
         if (logger.isDebugEnabled()) {
-            fixMDC();
             logger.debug(msg);
         }
         tap(msg, logger.isDebugEnabled(), Level.DEBUG);
@@ -297,7 +286,6 @@ public class Log {
      * @param msg the message to be logged
      */
     public void WARN(Object msg) {
-        fixMDC();
         if (msg instanceof Throwable) {
             logger.warn(((Throwable) msg).getMessage(), (Throwable) msg);
         } else {
@@ -317,7 +305,6 @@ public class Log {
     public void WARN(String msg, Object... params) {
         msg = Strings.apply(msg, params);
 
-        fixMDC();
         logger.warn(msg);
         tap(msg, true, Level.WARN);
     }
@@ -332,7 +319,6 @@ public class Log {
      * @param msg the message to be logged
      */
     public void SEVERE(Object msg) {
-        fixMDC();
         if (msg instanceof Throwable) {
             logger.error(((Throwable) msg).getMessage(), (Throwable) msg);
         } else {
