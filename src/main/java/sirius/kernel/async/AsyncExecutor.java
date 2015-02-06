@@ -10,6 +10,8 @@ package sirius.kernel.async;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Average;
+import sirius.kernel.health.Counter;
 import sirius.kernel.health.Exceptions;
 
 import java.util.concurrent.*;
@@ -25,10 +27,11 @@ import java.util.concurrent.*;
  */
 public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecutionHandler {
 
-    private ThreadPoolExecutor executor;
     private String category;
-    private int blocked;
-    private int dropped;
+    private Counter blocked = new Counter();
+    private Counter dropped = new Counter();
+    protected Counter executed = new Counter();
+    protected Average duration = new Average();
 
     AsyncExecutor(String category, int poolSize, int queueLength) {
         super(poolSize,
@@ -48,10 +51,15 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
             if (wrapper.dropHandler != null) {
                 wrapper.dropHandler.run();
                 wrapper.promise.fail(new RejectedExecutionException());
-                dropped++;
+                dropped.inc();
             } else {
-                wrapper.run();
-                blocked++;
+                CallContext current = CallContext.getCurrent();
+                try {
+                    wrapper.run();
+                } finally {
+                    CallContext.setCurrent(current);
+                }
+                blocked.inc();
             }
         } catch (Throwable t) {
             Exceptions.handle(Async.LOG, t);
@@ -64,9 +72,9 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
                              category,
                              getActiveCount(),
                              getQueue().size(),
-                             getCompletedTaskCount(),
-                             blocked,
-                             dropped);
+                             executed.getCount(),
+                             blocked.getCount(),
+                             dropped.getCount());
     }
 
     /**
@@ -79,14 +87,32 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
     }
 
     /**
+     * The number of tasks which were executed by this executor
+     *
+     * @return the number of tasks executed so far
+     */
+    public long getExecuted() {
+        return executed.getCount();
+    }
+
+    /**
+     * The average duration of a task in milliseconds.
+     *
+     * @return the average execution time of a task in milliseconds
+     */
+    public double getAverageDuration() {
+        return duration.getAvg();
+    }
+
+    /**
      * The number of tasks which were executed by blocking the caller due to system overload conditions.
      * <p>
      * A system overload occurs if all available tasks are busy and the queue of this executor reached its limit.
      *
      * @return the number of blocking task executions so far.
      */
-    public int getBlocked() {
-        return blocked;
+    public long getBlocked() {
+        return blocked.getCount();
     }
 
     /**
@@ -98,7 +124,7 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
      *
      * @return the number of dropped tasks so far.
      */
-    public int getDropped() {
-        return dropped;
+    public long getDropped() {
+        return dropped.getCount();
     }
 }

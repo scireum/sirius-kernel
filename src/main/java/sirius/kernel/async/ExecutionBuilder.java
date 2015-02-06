@@ -8,6 +8,8 @@
 
 package sirius.kernel.async;
 
+import sirius.kernel.commons.Watch;
+import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 
 import javax.annotation.CheckReturnValue;
@@ -30,6 +32,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class ExecutionBuilder<R> {
 
+    private static final String SYSTEM_ASYNC = "ASYNC";
+
     /**
      * Internal class which takes care of passing along the CallContext and for storing the configuration made by the
      * ExecutionBuilder.
@@ -41,6 +45,8 @@ public class ExecutionBuilder<R> {
         Runnable dropHandler;
         CallContext parentContext;
         Future promise = Async.future();
+        long jobNumber;
+        Average durationAverage;
 
         /**
          * Prepares the execution of this task while checking all preconditions.
@@ -57,17 +63,19 @@ public class ExecutionBuilder<R> {
         @Override
         public void run() {
             try {
+                Watch w = Watch.start();
                 try {
                     if (parentContext == null) {
                         CallContext.initialize();
                     } else {
                         parentContext.forkAndInstall();
                     }
-                    TaskContext.get().setSystem(category).setSubSystem(runnable.getClass().getSimpleName());
+                    TaskContext.get().setSystem(SYSTEM_ASYNC).setSubSystem(category).setJob(String.valueOf(jobNumber));
                     runnable.run();
                     promise.success(null);
                 } finally {
                     CallContext.detach();
+                    durationAverage.addValue(w.elapsedMillis());
                 }
             } catch (Throwable t) {
                 Exceptions.handle(Async.LOG, t);

@@ -90,6 +90,8 @@ public class Async {
                 }
             }
         }
+        wrapper.jobNumber = exec.executed.inc();
+        wrapper.durationAverage = exec.duration;
         exec.execute(wrapper);
     }
 
