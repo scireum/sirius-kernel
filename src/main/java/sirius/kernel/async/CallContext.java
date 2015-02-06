@@ -180,7 +180,12 @@ public class CallContext {
         newCtx.subContext.putAll(subContext);
     }
 
-    private static void setCurrent(CallContext context) {
+    /**
+     * Sets the CallContext for the current thread.
+     *
+     * @param context the context to use for the current thread.
+     */
+    public static void setCurrent(CallContext context) {
         contextMap.put(Thread.currentThread().getId(), new WeakReference<>(context));
     }
 
