@@ -21,7 +21,6 @@ import sirius.kernel.nls.NLS;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
@@ -58,7 +57,8 @@ public class CallContext {
      */
     public static final String MDC_PARENT = "parent";
 
-    private static Map<Long, WeakReference<CallContext>> contextMap = Maps.newConcurrentMap();
+    private static ThreadLocal<CallContext> currentContext = new ThreadLocal<>();
+    private static Map<Long, CallContext> contextMap = Maps.newConcurrentMap();
     private static String nodeName = null;
     private static Counter interactionCounter = new Counter();
 
@@ -89,7 +89,6 @@ public class CallContext {
         return nodeName;
     }
 
-
     /**
      * Returns the <tt>CallContext</tt> for the given thread or an empty optional if none is present.
      *
@@ -98,21 +97,18 @@ public class CallContext {
      */
     @Nonnull
     public static Optional<CallContext> getContext(long threadId) {
-        WeakReference<CallContext> ctxRef = contextMap.get(threadId);
-        if (ctxRef != null) {
-            return Optional.ofNullable(ctxRef.get());
-        }
-        return Optional.empty();
+        CallContext ctxRef = contextMap.get(threadId);
+        return Optional.ofNullable(ctxRef);
     }
 
     /**
      * Returns the context for the current thread.
      *
-     * @return the current context wrapped as optional (is empty when no context is present yet).
+     * @return the current context or <tt>null</tt> if none is present yet
      */
-    @Nonnull
-    public static Optional<CallContext> getCurrentIfAvailable() {
-        return getContext(Thread.currentThread().getId());
+    @Nullable
+    public static CallContext getCurrentIfAvailable() {
+        return currentContext.get();
     }
 
     /**
@@ -124,12 +120,12 @@ public class CallContext {
      */
     @Nonnull
     public static CallContext getCurrent() {
-        Optional<CallContext> ctx = getCurrentIfAvailable();
-        if (!ctx.isPresent()) {
+        CallContext ctx = getCurrentIfAvailable();
+        if (ctx == null) {
             return initialize();
         }
 
-        return ctx.get();
+        return ctx;
     }
 
     /*
@@ -138,7 +134,6 @@ public class CallContext {
     private static CallContext initialize(String externalFlowId) {
         CallContext ctx = new CallContext();
         ctx.addToMDC(MDC_FLOW, externalFlowId);
-        ctx.setLang(NLS.getDefaultLanguage());
         interactionCounter.inc();
         setCurrent(ctx);
         return ctx;
@@ -186,13 +181,15 @@ public class CallContext {
      * @param context the context to use for the current thread.
      */
     public static void setCurrent(CallContext context) {
-        contextMap.put(Thread.currentThread().getId(), new WeakReference<>(context));
+        currentContext.set(context);
+        contextMap.put(Thread.currentThread().getId(), context);
     }
 
     /**
      * Detaches this CallContext from the current thread
      */
     public static void detach() {
+        currentContext.set(null);
         contextMap.remove(Thread.currentThread().getId());
     }
 
