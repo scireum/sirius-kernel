@@ -289,6 +289,6 @@ public class Formatter {
 
     @Override
     public String toString() {
-        return pattern;
+        return format();
     }
 }
