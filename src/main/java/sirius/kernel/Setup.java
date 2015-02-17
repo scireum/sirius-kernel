@@ -73,6 +73,28 @@ public class Setup {
     }
 
     /**
+     * Overwrites the settings for the console appender.
+     *
+     * @param flag determines if logging to the console is enabled or not.
+     * @return the setup itself for fluent method calls
+     */
+    public Setup logToConsole(boolean flag) {
+        this.logToConsole = flag;
+        return this;
+    }
+
+    /**
+     * Overwrites the settings for the file appender.
+     *
+     * @param flag determines if logging to the log file is enabled or not.
+     * @return the setup itself for fluent method calls
+     */
+    public Setup logToFile(boolean flag) {
+        this.logToFile = flag;
+        return this;
+    }
+
+    /**
      * Creates and starts a new setup based on system properties.
      * <p>
      * Essentially this is <tt>debug</tt> which switches from PROD to DEV and <tt>console</tt> which enables

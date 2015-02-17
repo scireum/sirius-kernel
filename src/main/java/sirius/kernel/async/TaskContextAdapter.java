@@ -61,4 +61,11 @@ public interface TaskContextAdapter {
      * @param jobTitle the new job title
      */
     void setJobTitle(String jobTitle);
+
+    /**
+     * Determines if the current task is still "active" and processing should continue.
+     *
+     * @return <tt>true</tt> if execution should be continued, <tt>false</tt> otherwise
+     */
+    boolean isActive();
 }

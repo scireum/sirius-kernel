@@ -48,8 +48,11 @@ public class TaskContext {
     private String subSystem = GENERIC;
     private String job = GENERIC;
     private String jobTitle = "";
-    private volatile boolean cancelled = false;
     private RateLimit stateUpdate = RateLimit.timeInterval(5, TimeUnit.SECONDS);
+
+    public TaskContext() {
+        this.adapter = new BasicTaskContextAdapter(this);
+    }
 
     /**
      * Provides access to the <tt>TaskContext</tt> for the current thread.
@@ -87,11 +90,7 @@ public class TaskContext {
      * @param args    the parameters used to format the message (see {@link Strings#apply(String, Object...)})
      */
     public void trace(String message, Object... args) {
-        if (adapter != null) {
-            adapter.trace(Strings.apply(message, args));
-        } else {
-            Async.LOG.INFO(getSystemString() + ": " + Strings.apply(message, args));
-        }
+        adapter.trace(Strings.apply(message, args));
     }
 
     /**
@@ -112,9 +111,7 @@ public class TaskContext {
      * @param args     the parameters used to format the state message (see {@link Strings#apply(String, Object...)})
      */
     public void setState(String newState, Object... args) {
-        if (adapter != null) {
-            adapter.setState(Strings.apply(newState, args));
-        }
+        adapter.setState(Strings.apply(newState, args));
     }
 
     /**
@@ -139,9 +136,7 @@ public class TaskContext {
      * @param duration the duration the measured section took to execute. Use <tt>0d</tt> if no duration is available
      */
     public void inc(String counter, long duration) {
-        if (adapter != null) {
-            adapter.inc(counter, duration);
-        }
+        adapter.inc(counter, duration);
     }
 
     /**
@@ -151,9 +146,7 @@ public class TaskContext {
      * a signal for an user or administrator that an unexpected or non-anticipated event occurred.
      */
     public void markErroneous() {
-        if (adapter != null) {
-            adapter.markErroneous();
-        }
+        adapter.markErroneous();
     }
 
     /**
@@ -165,7 +158,7 @@ public class TaskContext {
      * @return <tt>true</tt> as long as the task is expected to be executed, <tt>false</tt> otherwise
      */
     public boolean isActive() {
-        return !cancelled && Async.isRunning();
+        return adapter.isActive() && Async.isRunning();
     }
 
     /**
@@ -175,10 +168,7 @@ public class TaskContext {
      * however the task programmers job to check this flag and interrupt / terminate all computations.
      */
     public void cancel() {
-        cancelled = true;
-        if (adapter != null) {
-            adapter.cancel();
-        }
+        adapter.cancel();
     }
 
     /**
