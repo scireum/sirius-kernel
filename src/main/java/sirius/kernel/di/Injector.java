@@ -10,13 +10,14 @@ package sirius.kernel.di;
 
 import com.google.common.collect.Lists;
 import sirius.kernel.Classpath;
+import sirius.kernel.Sirius;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -56,6 +57,9 @@ public class Injector {
 
     private static PartRegistry ctx = new PartRegistry();
     private static List<Class<?>> loadedClasses;
+    private static List<String> packageFilter;
+    private static Classpath cp;
+    private static List<ClassLoadAction> actions;
 
     /**
      * Initializes the framework. Must be only called once on system startup.
@@ -66,45 +70,14 @@ public class Injector {
      */
     public static void init(@Nonnull final Classpath classpath) {
         ctx = new PartRegistry();
-
+        cp = classpath;
         loadedClasses = Lists.newArrayList();
-        final List<ClassLoadAction> actions = new ArrayList<ClassLoadAction>();
-        LOG.INFO("Initializing the MicroKernel....");
+        actions = Lists.newArrayList();
+        packageFilter = Sirius.getConfig().getStringList("di.packageFilter");
 
+        LOG.INFO("Initializing the MicroKernel....");
         LOG.INFO("~ Scanning .class files...");
-        classpath.find(Pattern.compile(".*?\\.class")).forEach(matcher -> {
-            String relativePath = matcher.group();
-            String className = relativePath.substring(0, relativePath.length() - 6).replace("/", ".");
-            try {
-                LOG.FINE("Found class: " + className);
-                Class<?> clazz = Class.forName(className, true, classpath.getLoader());
-                if (ClassLoadAction.class.isAssignableFrom(clazz) && !clazz.isInterface()) {
-                    try {
-                        actions.add((ClassLoadAction) clazz.newInstance());
-                    } catch (Throwable e) {
-                        Exceptions.handle()
-                                  .error(e)
-                                  .to(LOG)
-                                  .withSystemErrorMessage("Failed to instantiate ClassLoadAction: %s - %s (%s)",
-                                                          className)
-                                  .handle();
-                    }
-                }
-                loadedClasses.add(clazz);
-            } catch (NoClassDefFoundError e) {
-                Exceptions.handle()
-                          .error(e)
-                          .to(LOG)
-                          .withSystemErrorMessage("Failed to load dependent class: %s", className)
-                          .handle();
-            } catch (Throwable e) {
-                Exceptions.handle()
-                          .error(e)
-                          .to(LOG)
-                          .withSystemErrorMessage("Failed to load class %s: %s (%s)", className)
-                          .handle();
-            }
-        });
+        classpath.find(Pattern.compile(".*?\\.class")).forEach(Injector::loadClass);
 
         LOG.INFO("~ Applying %d class load actions on %d classes...", actions.size(), loadedClasses.size());
         for (Class<?> clazz : loadedClasses) {
@@ -133,6 +106,55 @@ public class Injector {
 
         LOG.INFO("~ Initializing parts...");
         ctx.processAnnotations();
+    }
+
+    private static void loadClass(Matcher matcher) {
+        String relativePath = matcher.group();
+        String className = relativePath.substring(0, relativePath.length() - 6).replace("/", ".");
+        if (!shoudLoadClass(className)) {
+            return;
+        }
+        try {
+            LOG.FINE("Found class: " + className);
+            Class<?> clazz = Class.forName(className, true, cp.getLoader());
+            if (ClassLoadAction.class.isAssignableFrom(clazz) && !clazz.isInterface()) {
+                try {
+                    actions.add((ClassLoadAction) clazz.newInstance());
+                } catch (Throwable e) {
+                    Exceptions.handle()
+                              .error(e)
+                              .to(LOG)
+                              .withSystemErrorMessage("Failed to instantiate ClassLoadAction: %s - %s (%s)", className)
+                              .handle();
+                }
+            }
+            loadedClasses.add(clazz);
+        } catch (NoClassDefFoundError e) {
+            Exceptions.handle()
+                      .error(e)
+                      .to(LOG)
+                      .withSystemErrorMessage("Failed to load dependent class: %s", className)
+                      .handle();
+        } catch (Throwable e) {
+            Exceptions.handle()
+                      .error(e)
+                      .to(LOG)
+                      .withSystemErrorMessage("Failed to load class %s: %s (%s)", className)
+                      .handle();
+        }
+    }
+
+    private static boolean shoudLoadClass(String className) {
+        if (packageFilter.isEmpty()) {
+            return true;
+        }
+        for(String filter : packageFilter) {
+            if (className.startsWith(filter)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
