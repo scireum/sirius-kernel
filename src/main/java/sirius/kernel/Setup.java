@@ -54,10 +54,13 @@ public class Setup {
         DEV, TEST, PROD
     }
 
-    private ClassLoader loader;
-    private Mode mode;
-    private boolean logToConsole;
-    private boolean logToFile;
+    protected ClassLoader loader;
+    protected Mode mode;
+    protected boolean logToConsole;
+    protected boolean logToFile;
+    protected Level defaultLevel = Level.INFO;
+    protected String consoleLogFormat = "%d{HH:mm:ss.SSS} %-5p [%X{flow}|%t] %c - %m%n";
+    protected String fileLogFormat = "%d %-5p [%X{flow}|%t] %c - %m%n";
 
     /**
      * Creates a new setup for the given mode and class loader.
@@ -78,7 +81,7 @@ public class Setup {
      * @param flag determines if logging to the console is enabled or not.
      * @return the setup itself for fluent method calls
      */
-    public Setup logToConsole(boolean flag) {
+    public Setup withLogToConsole(boolean flag) {
         this.logToConsole = flag;
         return this;
     }
@@ -89,8 +92,48 @@ public class Setup {
      * @param flag determines if logging to the log file is enabled or not.
      * @return the setup itself for fluent method calls
      */
-    public Setup logToFile(boolean flag) {
+    public Setup withLogToFile(boolean flag) {
         this.logToFile = flag;
+        return this;
+    }
+
+    /**
+     * Used to set the default log level used by the root logger.
+     * <p>
+     * Note that each logger can be configured by specifying <tt>logging.[NAME]</tt> in the
+     * system configuration
+     *
+     * @param level the level to use
+     * @return the setup itself for fluent method calls
+     */
+    public Setup withDefaultLogLevel(Level level) {
+        this.defaultLevel = level;
+        return this;
+    }
+
+    /**
+     * Specifies the pattern used to format log messages in the console.
+     * <p>
+     * Refer to {@link org.apache.log4j.PatternLayout} for available options.
+     *
+     * @param format the template string to use
+     * @return the setup itself for fluent method calls
+     */
+    public Setup withConsoleLogFormat(String format) {
+        this.consoleLogFormat = format;
+        return this;
+    }
+
+    /**
+     * Specifies the pattern used to format log messages in the log file.
+     * <p>
+     * Refer to {@link org.apache.log4j.PatternLayout} for available options.
+     *
+     * @param format the template string to use
+     * @return the setup itself for fluent method calls
+     */
+    public Setup withFileLogFormat(String format) {
+        this.fileLogFormat = format;
         return this;
     }
 
@@ -177,11 +220,11 @@ public class Setup {
     protected void setupLogging() {
         final LoggerRepository repository = Logger.getRootLogger().getLoggerRepository();
         repository.resetConfiguration();
-        Logger.getRootLogger().setLevel(Level.INFO);
+        Logger.getRootLogger().setLevel(defaultLevel);
 
         if (shouldLogToConsole()) {
             ConsoleAppender console = new ConsoleAppender();
-            console.setLayout(new PatternLayout("%d{HH:mm:ss.SSS} %-5p [%X{flow}|%t] %c - %m%n"));
+            console.setLayout(new PatternLayout(consoleLogFormat));
             console.setThreshold(Level.DEBUG);
             console.activateOptions();
             Logger.getRootLogger().addAppender(console);
@@ -195,7 +238,7 @@ public class Setup {
             DailyRollingFileAppender fa = new DailyRollingFileAppender();
             fa.setName("FileLogger");
             fa.setFile(getLogFilePath());
-            fa.setLayout(new PatternLayout("%d %-5p [%X{flow}|%t] %c - %m%n"));
+            fa.setLayout(new PatternLayout(fileLogFormat));
             fa.setThreshold(Level.DEBUG);
             fa.setAppend(true);
             fa.activateOptions();
