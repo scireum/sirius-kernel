@@ -249,6 +249,18 @@ public class StructuredNode {
      * @return <tt>true</tt> if a node or non empty property was found, <tt>false</tt> otherwise
      * @throws IllegalArgumentException if an invalid xpath was given
      */
+    public boolean isFilled(String path) {
+        return Strings.isFilled(queryString(path));
+    }
+
+    /**
+     * Checks whether a empty node or empty content is reachable via the given
+     * XPath.
+     *
+     * @param path the xpath to be checked
+     * @return <tt>true/tt> if a empty node or empty property was found, <tt>false</tt> otherwise
+     * @throws IllegalArgumentException if an invalid xpath was given
+     */
     public boolean isEmpty(String path) {
         return Strings.isEmpty(queryString(path));
     }
