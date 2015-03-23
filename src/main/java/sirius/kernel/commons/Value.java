@@ -430,11 +430,11 @@ public class Value {
         }
         if (LocalTime.class.equals(targetClazz) && data instanceof TemporalAccessor) {
             if (is(TemporalAccessor.class,
-                    Calendar.class,
-                    Date.class,
-                    java.sql.Date.class,
-                    Timestamp.class,
-                    Time.class)) {
+                   Calendar.class,
+                   Date.class,
+                   java.sql.Date.class,
+                   Timestamp.class,
+                   Time.class)) {
                 return (T) asLocalTime((LocalTime) defaultValue);
             }
         }
@@ -469,8 +469,8 @@ public class Value {
         }
 
         throw new IllegalArgumentException(Strings.apply("Cannot convert '%s' to target class: %s ",
-                data,
-                targetClazz));
+                                                         data,
+                                                         targetClazz));
     }
 
     /**
@@ -785,13 +785,17 @@ public class Value {
             return Instant.ofEpochMilli(((Date) data).getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         }
         if (is(Calendar.class)) {
-            return Instant.ofEpochMilli(((Calendar) data).getTimeInMillis()).atZone(ZoneId.systemDefault()).toLocalDate();
+            return Instant.ofEpochMilli(((Calendar) data).getTimeInMillis())
+                          .atZone(ZoneId.systemDefault())
+                          .toLocalDate();
         }
         if (is(java.sql.Date.class)) {
             return Instant.ofEpochMilli(((java.sql.Date) data).getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         }
         if (is(Timestamp.class)) {
-            return Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+            return Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime())
+                          .atZone(ZoneId.systemDefault())
+                          .toLocalDate();
         }
         if (is(long.class) || is(Long.class)) {
             return Instant.ofEpochMilli((long) data).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -833,15 +837,15 @@ public class Value {
         }
         if (is(Calendar.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((Calendar) data).getTimeInMillis()),
-                    ZoneId.systemDefault());
+                                           ZoneId.systemDefault());
         }
         if (is(java.sql.Date.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.sql.Date) data).getTime()),
-                    ZoneId.systemDefault());
+                                           ZoneId.systemDefault());
         }
         if (is(Timestamp.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime()),
-                    ZoneId.systemDefault());
+                                           ZoneId.systemDefault());
         }
         if (is(long.class) || is(Long.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli((long) data), ZoneId.systemDefault());
@@ -1538,8 +1542,11 @@ public class Value {
     @Nonnull
     @CheckReturnValue
     public Value translate() {
-        if (data != null && data instanceof String && ((String) data).startsWith("$")) {
-            return Value.of(NLS.get(((String) data).substring(1)));
+        if (isFilled()) {
+            String str = asString();
+            if (str.length() > 2 && str.charAt(0) == '$' && str.charAt(1) != '{') {
+                return Value.of(NLS.get(((String) data).substring(1)));
+            }
         }
         return this;
     }
