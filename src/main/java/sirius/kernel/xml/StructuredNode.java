@@ -258,7 +258,7 @@ public class StructuredNode {
      * XPath.
      *
      * @param path the xpath to be checked
-     * @return <tt>true/tt> if no node or a empty property was found, <tt>false</tt> otherwise
+     * @return <tt>true</tt> if no node or a empty property was found, <tt>false</tt> otherwise
      * @throws IllegalArgumentException if an invalid xpath was given
      */
     public boolean isEmpty(String path) {
