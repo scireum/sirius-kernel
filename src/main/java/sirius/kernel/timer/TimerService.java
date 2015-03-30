@@ -66,7 +66,7 @@ public class TimerService implements Lifecycle {
 
     @Override
     public int getPriority() {
-        return Priorized.DEFAULT_PRIORITY;
+        return Priorized.DEFAULT_PRIORITY + 100;
     }
 
     private class InnerTimerTask extends TimerTask {
