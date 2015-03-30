@@ -22,6 +22,11 @@ import sirius.kernel.di.std.Priorized;
  */
 public interface Lifecycle extends Priorized {
 
+    @Override
+    default int getPriority() {
+        return DEFAULT_PRIORITY;
+    }
+
     /**
      * Invoked when the framework starts up.
      */
