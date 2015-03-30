@@ -461,6 +461,15 @@ public class Sirius {
     }
 
     /**
+     * Provides access to the setup instance which was used to configure Sirius.
+     *
+     * @return the setup instance used to configure Sirius.
+     */
+    public static Setup getSetup() {
+        return setup;
+    }
+
+    /**
      * Returns the up time of the system in milliseconds.
      *
      * @return the number of milliseconds the system is running

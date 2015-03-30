@@ -19,6 +19,8 @@ import sirius.kernel.health.Log;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
+import java.util.Arrays;
+import java.util.function.Predicate;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -50,7 +52,7 @@ public class Setup {
     /**
      * Determines the mode in which the framework should run. This mainly effects logging and the configuration.
      */
-    public static enum Mode {
+    public enum Mode {
         DEV, TEST, PROD
     }
 
@@ -264,6 +266,40 @@ public class Setup {
      */
     protected String getLogFilePath() {
         return getLogsDirectory() + File.separator + getLogFileName();
+    }
+
+    /**
+     * Invoked by Sirius itself on a regular basis to clean old log files.
+     *
+     * @param retentionInMillis the desired retention time in milli seconds before a file is deleted.
+     */
+    public void cleanOldLogFiles(long retentionInMillis) {
+        if (!shouldLogToFile()) {
+            return;
+        }
+
+        File logsDir = new File(getLogsDirectory());
+        if (!logsDir.exists()) {
+            return;
+        }
+        File[] children = logsDir.listFiles();
+        if (children == null) {
+            return;
+        }
+
+        // The file must start with the log file name, but have an extension (we don't want to delete
+        // the main log file).
+        Predicate<File> validLogFileName = f -> f.getName().startsWith(getLogFileName()) && !f.getName()
+                                                                                              .equals(getLogFileName());
+
+        Predicate<File> isOldEnough = f -> System.currentTimeMillis() - f.lastModified() > retentionInMillis;
+
+        Arrays.asList(children)
+              .stream()
+              .filter(File::isFile)
+              .filter(validLogFileName)
+              .filter(isOldEnough)
+              .forEach(File::delete);
     }
 
     /**
