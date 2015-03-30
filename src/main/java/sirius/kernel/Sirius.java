@@ -19,8 +19,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.Injector;
-import sirius.kernel.di.PartCollection;
-import sirius.kernel.di.std.Parts;
+import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
@@ -65,8 +64,8 @@ public class Sirius {
      */
     public static final Log DEBUG = Log.get("debug");
 
-    @Parts(Lifecycle.class)
-    private static PartCollection<Lifecycle> lifecycleParticipants;
+    @PriorityParts(Lifecycle.class)
+    private static List<Lifecycle> lifecycleParticipants;
 
     /**
      * Determines if the framework is running in development or in production mode.
@@ -160,7 +159,7 @@ public class Sirius {
         }
         started = true;
         Barrier barrier = Barrier.create();
-        for (final Lifecycle lifecycle : lifecycleParticipants.getParts()) {
+        for (final Lifecycle lifecycle : lifecycleParticipants) {
             barrier.add(Async.defaultExecutor().fork(() -> {
                 LOG.INFO("Starting: %s", lifecycle.getName());
                 try {
@@ -240,7 +239,8 @@ public class Sirius {
         }
         LOG.INFO("Stopping Sirius");
         LOG.INFO("---------------------------------------------------------");
-        for (Lifecycle lifecycle : lifecycleParticipants.getParts()) {
+        for (int i = lifecycleParticipants.size() - 1; i <= 0; i--) {
+            Lifecycle lifecycle = lifecycleParticipants.get(i);
             LOG.INFO("Stopping: %s", lifecycle.getName());
             try {
                 lifecycle.stopped();
@@ -255,7 +255,8 @@ public class Sirius {
         LOG.INFO("---------------------------------------------------------");
         LOG.INFO("Awaiting system halt...");
         LOG.INFO("---------------------------------------------------------");
-        for (Lifecycle lifecycle : lifecycleParticipants.getParts()) {
+        for (int i = lifecycleParticipants.size() - 1; i <= 0; i--) {
+            Lifecycle lifecycle = lifecycleParticipants.get(i);
             try {
                 Watch w = Watch.start();
                 lifecycle.awaitTermination();

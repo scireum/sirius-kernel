@@ -295,5 +295,10 @@ public class Async {
         public String getName() {
             return "async (Async Execution Engine)";
         }
+
+        @Override
+        public int getPriority() {
+            return 25;
+        }
     }
 }
