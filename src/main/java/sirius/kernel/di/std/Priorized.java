@@ -14,7 +14,7 @@ public interface Priorized {
     /**
      * Contains the default priority used by <tt>Priorized</tt> parts.
      */
-    static final int DEFAULT_PRIORITY = 100;
+    int DEFAULT_PRIORITY = 100;
 
     /**
      * Returns the priority of this element.

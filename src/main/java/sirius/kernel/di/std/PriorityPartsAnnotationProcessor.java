@@ -12,14 +12,10 @@ import com.google.common.collect.Lists;
 import sirius.kernel.di.FieldAnnotationProcessor;
 import sirius.kernel.di.MutableGlobalContext;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -46,20 +42,17 @@ public class PriorityPartsAnnotationProcessor implements FieldAnnotationProcesso
                         "PriorityParts annotations may only be used with classes implementing 'Priorized'");
             }
             List<Priorized> result = Lists.newArrayList(ctx.getParts(parts.value()));
-            Collections.sort(result, new Comparator<Priorized>() {
-                @Override
-                public int compare(Priorized o1, Priorized o2) {
-                    if (o1 == o2) {
-                        return 0;
-                    }
-                    if (o2 == null) {
-                        return -1;
-                    }
-                    if (o1 == null) {
-                        return 1;
-                    }
-                    return o1.getPriority() - o2.getPriority();
+            Collections.sort(result, (o1, o2) -> {
+                if (o1 == o2) {
+                    return 0;
                 }
+                if (o2 == null) {
+                    return -1;
+                }
+                if (o1 == null) {
+                    return 1;
+                }
+                return o1.getPriority() - o2.getPriority();
             });
             field.set(object, result);
         } else {

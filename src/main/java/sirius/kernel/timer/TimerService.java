@@ -6,6 +6,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.async.Async;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
+import sirius.kernel.di.std.Priorized;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -62,6 +63,11 @@ public class TimerService implements Lifecycle {
 
     private Timer timer;
     private ReentrantLock timerLock = new ReentrantLock();
+
+    @Override
+    public int getPriority() {
+        return Priorized.DEFAULT_PRIORITY + 100;
+    }
 
     private class InnerTimerTask extends TimerTask {
 

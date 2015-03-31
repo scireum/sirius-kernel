@@ -8,6 +8,8 @@
 
 package sirius.kernel;
 
+import sirius.kernel.di.std.Priorized;
+
 /**
  * Classes implementing this interface get notified once the framework is started or being shut down.
  * <p>
@@ -18,7 +20,12 @@ package sirius.kernel;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
  */
-public interface Lifecycle {
+public interface Lifecycle extends Priorized {
+
+    @Override
+    default int getPriority() {
+        return DEFAULT_PRIORITY;
+    }
 
     /**
      * Invoked when the framework starts up.
