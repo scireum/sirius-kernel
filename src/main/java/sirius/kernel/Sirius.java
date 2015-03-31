@@ -239,7 +239,7 @@ public class Sirius {
         }
         LOG.INFO("Stopping Sirius");
         LOG.INFO("---------------------------------------------------------");
-        for (int i = lifecycleParticipants.size() - 1; i <= 0; i--) {
+        for (int i = lifecycleParticipants.size() - 1; i >= 0; i--) {
             Lifecycle lifecycle = lifecycleParticipants.get(i);
             LOG.INFO("Stopping: %s", lifecycle.getName());
             try {
@@ -255,7 +255,7 @@ public class Sirius {
         LOG.INFO("---------------------------------------------------------");
         LOG.INFO("Awaiting system halt...");
         LOG.INFO("---------------------------------------------------------");
-        for (int i = lifecycleParticipants.size() - 1; i <= 0; i--) {
+        for (int i = lifecycleParticipants.size() - 1; i >= 0; i--) {
             Lifecycle lifecycle = lifecycleParticipants.get(i);
             try {
                 Watch w = Watch.start();
@@ -463,7 +463,7 @@ public class Sirius {
     /**
      * Provides access to the setup instance which was used to configure Sirius.
      *
-     * @return the setup instance used to configure Sirius.
+     * @return the setup instance used to configure Sirius.+
      */
     public static Setup getSetup() {
         return setup;
