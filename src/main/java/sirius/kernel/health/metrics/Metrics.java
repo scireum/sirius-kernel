@@ -128,7 +128,7 @@ public class Metrics implements EveryMinute {
             }
             limits.put(limitType, limit);
         }
-        if (limit.gray > 0 && value <= limit.gray) {
+        if (value <= limit.gray) {
             return MetricState.GRAY;
         }
         if (limit.red > 0 && value >= limit.red) {
