@@ -80,4 +80,20 @@ public class StringsTest {
         assertEquals(Tuple.create("A&B", null), Strings.split("A&B", "|"));
     }
 
+    @Test
+    public void toSaneFilename() {
+        assertEquals(Strings.toSaneFileName("test.pdf"), "test.pdf");
+        assertEquals(Strings.toSaneFileName("test"), "test");
+        assertEquals(Strings.toSaneFileName(".pdf"), ".pdf");
+        assertEquals(Strings.toSaneFileName("test."), "test.");
+        assertEquals(Strings.toSaneFileName("test.."), "test_.");
+        assertEquals(Strings.toSaneFileName("..test"), "_.test");
+        assertEquals(Strings.toSaneFileName("Test pdf"), "Test_pdf");
+        assertEquals(Strings.toSaneFileName("Hallöle"), "Halloele");
+        assertEquals(Strings.toSaneFileName("test/datei"), "test_datei");
+        assertEquals(Strings.toSaneFileName("test-datei"), "test-datei");
+        assertEquals(Strings.toSaneFileName(" test "), "test");
+        assertEquals(Strings.toSaneFileName("test.datei.pdf"), "test_datei.pdf");
+    }
+
 }

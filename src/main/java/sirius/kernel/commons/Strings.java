@@ -347,6 +347,38 @@ public class Strings {
         return textToReplace;
     }
 
+    /**
+     * Converts the given string to a valid and sane filename.
+     * <p>
+     * The result will only consist of letters, digits '-' and '_'. Everything else will be
+     * replaced by a '_'. German umlauts like 'ä', 'ö', 'ü' are replaced the appropriate
+     * ASCII sequences.
+     *
+     * @param input the filename to fix
+     * @return the transformed filename
+     */
+    @Nonnull
+    public static String toSaneFileName(@Nonnull String input) {
+        input = trim(input);
+        if (Strings.isEmpty(input)) {
+            throw new IllegalArgumentException("A filename must not be empty!");
+        }
+
+        input = input.replace("ä", "ae")
+                     .replace("ö", "oe")
+                     .replace("ü", "ue")
+                     .replace("Ä", "Ae")
+                     .replace("Ö", "Oe")
+                     .replace("Ü", "Ue")
+                     .replace("ß", "ss")
+                     .replaceAll("[^a-zA-Z0-9\\-_\\.]", "_");
+        Tuple<String, String> nameAndSuffix = splitAtLast(input, ".");
+        if (nameAndSuffix.getSecond() == null) {
+            return input;
+        }
+
+        return nameAndSuffix.getFirst().replace(".", "_") + "." + nameAndSuffix.getSecond();
+    }
 
     /**
      * Returns a trimmed version of the given object's string representation.
