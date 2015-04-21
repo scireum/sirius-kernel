@@ -71,6 +71,19 @@ public interface GlobalContext {
     /**
      * Returns all parts which are currently registered for the given lookup class.
      *
+     * @param lookupClass one of the lookup classes for which the parts of interest were registered
+     * @param partType    the expected type of the parts returned
+     * @param <L>         the type of the lookup class
+     * @param <P>         the type of the requested parts
+     * @return a collection of all parts registered for the given class. If no parts were found,
+     * an empty collection is returned
+     */
+    @Nonnull
+    <L, P> Collection<P> getParts(@Nonnull Class<L> lookupClass, @Nonnull Class<? extends P> partType);
+
+    /**
+     * Returns all parts which are currently registered for the given lookup class.
+     *
      * @param partInterface one of the lookup classes for which the parts of interest were registered
      * @param <P>           the type of the requested parts
      * @return a collection of all parts registered for the given class. If no parts were found,

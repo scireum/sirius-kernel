@@ -88,6 +88,12 @@ class PartRegistry implements MutableGlobalContext {
 
     @SuppressWarnings("unchecked")
     @Override
+    public <L, P> Collection<P> getParts(@Nonnull Class<L> lookupClass, @Nonnull Class<? extends P> partType) {
+        return (Collection<P>) parts.get(lookupClass);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
     public <P> Collection<Tuple<String, P>> getNamedParts(@Nonnull Class<P> partInterface) {
         return (Collection<Tuple<String, P>>) (Object) Tuple.fromMap(namedParts.get(partInterface));
     }
@@ -135,8 +141,7 @@ class PartRegistry implements MutableGlobalContext {
                                                                                  e.getMessage(),
                                                                                  e.getClass().getName());
                                                                      }
-                                                                 }
-                                                        );
+                                                                 });
             }
         }
     }
@@ -275,8 +280,7 @@ class PartRegistry implements MutableGlobalContext {
                               Injector.LOG.WARN("Error initializing %s (%s)", part, part.getClass().getName());
                               Injector.LOG.WARN(e);
                           }
-                      }
-             );
+                      });
     }
 
 }
