@@ -11,7 +11,6 @@ package sirius.kernel.async;
 import com.google.common.collect.Maps;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.ValueProvider;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
@@ -23,6 +22,7 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Static helper for managing and scheduling asynchronous background tasks.
@@ -84,8 +84,8 @@ public class Async {
                 if (exec == null) {
                     Extension config = Extensions.getExtension("async.executor", wrapper.category);
                     exec = new AsyncExecutor(wrapper.category,
-                            config.get("poolSize").asInt(10),
-                            config.get("queueLength").asInt(0));
+                                             config.get("poolSize").asInt(10),
+                                             config.get("queueLength").asInt(0));
                     executors.put(wrapper.category, exec);
                 }
             }
@@ -109,7 +109,7 @@ public class Async {
      * @param <V>         the type of the resulting value
      * @return a promise which will either be eventually supplied with the result of the computation or with an error
      */
-    public static <V> Promise<V> fork(String category, final ValueProvider<V> computation) {
+    public static <V> Promise<V> fork(String category, final Supplier<V> computation) {
         final Promise<V> result = promise();
 
         executor(category).fork(() -> {
@@ -277,11 +277,11 @@ public class Async {
                     try {
                         if (!exec.awaitTermination(60, TimeUnit.SECONDS)) {
                             LOG.SEVERE(Strings.apply("Executor '%s' did not terminate within 60s. Interrupting tasks...",
-                                    e.getKey()));
+                                                     e.getKey()));
                             exec.shutdownNow();
                             if (!exec.awaitTermination(30, TimeUnit.SECONDS)) {
                                 LOG.SEVERE(Strings.apply("Executor '%s' did not terminate after another 30s!",
-                                        e.getKey()));
+                                                         e.getKey()));
                             }
                         }
                     } catch (InterruptedException ex) {

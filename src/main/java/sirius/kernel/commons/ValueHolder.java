@@ -8,6 +8,9 @@
 
 package sirius.kernel.commons;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 /**
  * Provides a mutable value holder
  * <p>
@@ -16,7 +19,7 @@ package sirius.kernel.commons;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
  */
-public class ValueHolder<T> implements ValueProvider<T> {
+public class ValueHolder<T> implements Supplier<T>, Consumer<T> {
     private T value;
 
     /**
@@ -29,7 +32,7 @@ public class ValueHolder<T> implements ValueProvider<T> {
      * @return a new ValueHolder initialized with the given value.
      */
     public static <T> ValueHolder<T> of(T initialValue) {
-        return new ValueHolder<T>(initialValue);
+        return new ValueHolder<>(initialValue);
     }
 
     /**
@@ -41,11 +44,6 @@ public class ValueHolder<T> implements ValueProvider<T> {
         this.value = initialValue;
     }
 
-    /**
-     * Returns the previously stored value
-     *
-     * @return returns the value which was either set as initial value or which was last set via <tt>set</tt>
-     */
     @Override
     public T get() {
         return value;
@@ -65,4 +63,8 @@ public class ValueHolder<T> implements ValueProvider<T> {
         return Strings.toString(value);
     }
 
+    @Override
+    public void accept(T t) {
+        this.value = t;
+    }
 }

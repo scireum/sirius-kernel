@@ -8,14 +8,13 @@
 
 package sirius.kernel.cache;
 
-import sirius.kernel.commons.ValueProvider;
 import sirius.kernel.health.Log;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Provides access to all managed caches
@@ -121,12 +120,12 @@ public class CacheManager {
      * @return an inline cache which keeps a computed value for the given amount of time and then uses the provided
      * computer to re-compute the value
      */
-    public static <E> InlineCache<E> createInlineCache(long ttl, TimeUnit ttlUnit, ValueProvider<E> computer) {
+    public static <E> InlineCache<E> createInlineCache(long ttl, TimeUnit ttlUnit, Supplier<E> computer) {
         return new InlineCache<>(computer, TimeUnit.MILLISECONDS.convert(ttl, ttlUnit));
     }
 
     /**
-     * Boilerplate method for {@link #createInlineCache(long, java.util.concurrent.TimeUnit, sirius.kernel.commons.ValueProvider)}
+     * Boilerplate method for {@link #createInlineCache(long, java.util.concurrent.TimeUnit, Supplier)}
      * which keeps the computed value for up to 10 seconds.
      *
      * @param computer the provider which is used to re-compute the value once it expired
@@ -134,7 +133,7 @@ public class CacheManager {
      * @return an inline cache which keeps a computed value for ten seconds and then uses the provided
      * computer to re-compute the value
      */
-    public static <E> InlineCache<E> createTenSecondsInlineCache(ValueProvider<E> computer) {
+    public static <E> InlineCache<E> createTenSecondsInlineCache(Supplier<E> computer) {
         return new InlineCache<>(computer, TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
     }
 }

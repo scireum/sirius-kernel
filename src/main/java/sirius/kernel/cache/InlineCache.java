@@ -8,9 +8,8 @@
 
 package sirius.kernel.cache;
 
-import sirius.kernel.commons.ValueProvider;
-
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Caches a single value to prevent frequent re-computation.
@@ -20,7 +19,7 @@ import javax.annotation.Nullable;
  * <p>
  * A real lookup cache, with a Map like behaviour can be found here: {@link Cache}.
  * <p>
- * Use {@link CacheManager#createInlineCache(long, java.util.concurrent.TimeUnit, sirius.kernel.commons.ValueProvider)}
+ * Use {@link CacheManager#createInlineCache(long, java.util.concurrent.TimeUnit, java.util.function.Supplier)}
  * to create a new inline cache.
  *
  * @param <E> the type of values being cached
@@ -31,7 +30,7 @@ public class InlineCache<E> {
     private E buffer;
     private long lastComputation;
     private long timeout;
-    private ValueProvider<E> computer;
+    private Supplier<E> computer;
 
     /**
      * Creates a new inline cache based on the given parameters.
@@ -39,7 +38,7 @@ public class InlineCache<E> {
      * @param computer the function used to compute a value if it is not present in the cache
      * @param timeout  the time to live (ttl) for the value in milliseconds
      */
-    protected InlineCache(@Nullable ValueProvider<E> computer, long timeout) {
+    protected InlineCache(@Nullable Supplier<E> computer, long timeout) {
         this.computer = computer;
         this.timeout = timeout;
     }
