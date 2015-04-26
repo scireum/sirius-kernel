@@ -30,7 +30,18 @@ import java.util.function.Predicate;
  */
 public class Limit {
     private int itemsToSkip;
+    private int maxItems;
     private Integer itemsToOutput;
+
+    /**
+     * Represents a limit which has no upper limit and does not skip any items.
+     */
+    public static final Limit UNLIMITED = new Limit(0, null);
+
+    /**
+     * Represents a limit which only accepts the first item.
+     */
+    public static final Limit SINGLE_ITEM = new Limit(0, 1);
 
     /**
      * Creates a new <code>Limit</code> based on the given parameters.
@@ -39,9 +50,10 @@ public class Limit {
      * @param maxItems    determines the max number of items. Can be <tt>null</tt> or 0 to indicate that no limiting is active.
      */
     public Limit(int itemsToSkip, Integer maxItems) {
-        this.itemsToSkip = itemsToSkip;
-        if (maxItems != null && maxItems != 0) {
-            itemsToOutput = maxItems + 1;
+        this.itemsToSkip = itemsToSkip > 0 ? itemsToSkip : 0;
+        if (maxItems != null && maxItems > 0) {
+            this.itemsToOutput = maxItems + 1;
+            this.maxItems = maxItems;
         }
     }
 
@@ -94,4 +106,22 @@ public class Limit {
         };
     }
 
+    /**
+     * Returns the max number of items or 0 to indicate that there is no upper limit.
+     *
+     * @return the max. number of items to accept or 0 if there is no upper limit
+     */
+    public int getMaxItems() {
+        return maxItems;
+    }
+
+    /**
+     * Returns the total number of items to be processed. This is the number of items to be skipped plus the
+     * number of items to be accepted. Returns 0 to indicate that there is no upper limit.
+     *
+     * @return the total number of items to be processed or 0 if there is no upper limit
+     */
+    public int getTotalItems() {
+        return maxItems == 0 ? 0 : itemsToSkip + maxItems;
+    }
 }
