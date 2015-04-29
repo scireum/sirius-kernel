@@ -1,5 +1,6 @@
 package sirius.kernel.commons;
 
+import sirius.kernel.async.Operation;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
@@ -7,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.Duration;
 
 /**
  * A robust wrapper around calls to external programs.
@@ -39,7 +41,7 @@ public class Exec {
         public void run() {
             try {
                 Thread.currentThread()
-                        .setName(StreamEater.class.getSimpleName() + "-" + Thread.currentThread().getId());
+                      .setName(StreamEater.class.getSimpleName() + "-" + Thread.currentThread().getId());
                 InputStreamReader isr = new InputStreamReader(stream);
                 BufferedReader br = new BufferedReader(isr);
                 String line = br.readLine();
@@ -102,7 +104,9 @@ public class Exec {
      */
     public static String exec(String command) throws ExecException {
         StringBuffer logger = new StringBuffer();
+        Operation op = Operation.create("exec", () -> command, Duration.ofMinutes(5));
         try {
+
             Process p = Runtime.getRuntime().exec(command);
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger);
@@ -120,6 +124,8 @@ public class Exec {
             return logger.toString();
         } catch (Throwable e) {
             throw new ExecException(e, logger.toString());
+        } finally {
+            Operation.release(op);
         }
     }
 }
