@@ -26,7 +26,7 @@ import java.util.function.Consumer;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/07
  */
-public class TaskContext {
+public class TaskContext implements SubContext {
     /**
      * Forms the default value used to specify the system string which identifies the currently active module.
      *
@@ -344,5 +344,10 @@ public class TaskContext {
      */
     public void setAdapter(TaskContextAdapter adapter) {
         this.adapter = adapter;
+    }
+
+    @Override
+    public void detach() {
+
     }
 }

@@ -46,7 +46,7 @@ public class BasicTaskContextAdapter implements TaskContextAdapter {
 
     @Override
     public void inc(String counter, long duration) {
-
+        // IGNORED
     }
 
     @Override
@@ -61,7 +61,7 @@ public class BasicTaskContextAdapter implements TaskContextAdapter {
 
     @Override
     public void setJobTitle(String jobTitle) {
-
+        // IGNORED
     }
 
     @Override

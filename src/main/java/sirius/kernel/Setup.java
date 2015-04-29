@@ -19,6 +19,8 @@ import sirius.kernel.health.Log;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.util.Arrays;
 import java.util.function.Predicate;
 import java.util.logging.Formatter;
@@ -162,6 +164,15 @@ public class Setup {
         setupLogging();
         setupDNSCache();
         setupEncoding();
+        outputJVMInfo();
+    }
+
+    /**
+     * Outputs the name of the underlying JVM to verify that the correct one was used to start the application
+     */
+    protected void outputJVMInfo() {
+        RuntimeMXBean mx = ManagementFactory.getRuntimeMXBean();
+        Sirius.LOG.INFO("%s (%s, %s, %s)", mx.getVmName(), mx.getSpecVersion(), mx.getVmVendor(), mx.getVmVersion());
     }
 
     /**

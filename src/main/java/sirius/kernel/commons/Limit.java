@@ -16,8 +16,7 @@ import java.util.function.Predicate;
  *         Limit limit = new Limit(25,25); // Skip the 25 items of the first page, and show up to 25 items.
  *         List result = new ArrayList();
  *         for(Object o : someList) {
- *             limit.nextRow();
- *             if (limit.shouldOutput()) {
+ *             if (limit.nextRow()) {
  *                 result.add(o);
  *             }
  *             // If we already fetched enough items, we can also stop processing further.
@@ -35,13 +34,20 @@ public class Limit {
 
     /**
      * Represents a limit which has no upper limit and does not skip any items.
+     * <p>
+     * Although a limit is modified internally, we can use a constant here because a unlimited limit has
+     * not internal state.
      */
     public static final Limit UNLIMITED = new Limit(0, null);
 
     /**
      * Represents a limit which only accepts the first item.
+     *
+     * @return a new limit which will only accept the first item
      */
-    public static final Limit SINGLE_ITEM = new Limit(0, 1);
+    public static Limit singleItem() {
+        return new Limit(0, 1);
+    }
 
     /**
      * Creates a new <code>Limit</code> based on the given parameters.
@@ -52,32 +58,31 @@ public class Limit {
     public Limit(int itemsToSkip, Integer maxItems) {
         this.itemsToSkip = itemsToSkip > 0 ? itemsToSkip : 0;
         if (maxItems != null && maxItems > 0) {
-            this.itemsToOutput = maxItems + 1;
+            this.itemsToOutput = maxItems;
             this.maxItems = maxItems;
         }
     }
 
     /**
-     * Notifies the limit, that the next row is being processed.
-     * <p>
-     * Must be called before any call to {@link #shouldOutput()} or {@link #shouldContinue()}.
+     * Notifies the limit, that the next item is being processed and determines if this is part of the result.
+     *
+     * @return <tt>true</tt> if this item should be output, <tt>false</tt> otherwise.
      */
-    public void nextRow() {
+    public boolean nextRow() {
         if (itemsToSkip > 0) {
             itemsToSkip--;
+            return false;
         }
         if (itemsToOutput != null) {
-            itemsToOutput--;
+            if (itemsToOutput > 0) {
+                itemsToOutput--;
+                return true;
+            } else {
+                return false;
+            }
         }
-    }
 
-    /**
-     * Determines if  the current row should be passed on.
-     *
-     * @return <tt>true</tt> if the current row is accepted as output, <tt>false</tt> otherwise
-     */
-    public boolean shouldOutput() {
-        return itemsToSkip == 0 && itemsToOutput == null || itemsToOutput > 0;
+        return true;
     }
 
     /**
@@ -94,16 +99,12 @@ public class Limit {
      * <p>
      * Note that the limit is stateful and therefore asPredicate should only be called once.
      *
+     * @param <C> type used by the stream using this predicate. Ignored as we do not operate on the
+     *            items itself
      * @return a predicate implementing the limit
      */
-    public Predicate<?> asPredicate() {
-        return object -> {
-            if (shouldOutput()) {
-                nextRow();
-                return true;
-            }
-            return false;
-        };
+    public <C> Predicate<C> asPredicate() {
+        return object -> nextRow();
     }
 
     /**
@@ -123,5 +124,28 @@ public class Limit {
      */
     public int getTotalItems() {
         return maxItems == 0 ? 0 : itemsToSkip + maxItems;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Limit: ");
+        if (maxItems == 0) {
+            sb.append(" unlimited");
+            return sb.toString();
+        }
+        if (itemsToSkip > 0) {
+            sb.append("skip: ").append(itemsToSkip);
+        }
+        if (itemsToOutput == null) {
+            sb.append(" output: all");
+        } else {
+            if (itemsToOutput > 0) {
+                sb.append(" output: ").append(itemsToOutput);
+            } else {
+                sb.append(" output: none");
+            }
+        }
+        sb.append(" (total: ").append(maxItems).append(")");
+        return sb.toString();
     }
 }

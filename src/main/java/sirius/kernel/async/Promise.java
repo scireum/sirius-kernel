@@ -46,7 +46,7 @@ public class Promise<V> {
      * Returns the value of the promise or <tt>null</tt> if not completed yet.
      *
      * @return the value of the promised computation. This method will not block, so <tt>null</tt>  is returned if
-     *         the computation has not finished (or failed) yet.
+     * the computation has not finished (or failed) yet.
      */
     public V get() {
         return value != null ? value.get() : null;
@@ -134,7 +134,7 @@ public class Promise<V> {
      * Returns the failure which was the reason for this promise to have failed.
      *
      * @return the error which made this promise fail, or <tt>null</tt>  if the promnise is still running or not
-     *         completed yet.
+     * completed yet.
      */
     public Throwable getFailure() {
         return failure;
@@ -146,7 +146,7 @@ public class Promise<V> {
      * @param mapper the mapper to transform the promised value of this promise.
      * @param <X>    the resulting type of the mapper
      * @return a new promise which will be either contain the mapped value or which fails if either this promise fails
-     *         or if the mapper throws an exception.
+     * or if the mapper throws an exception.
      */
     @Nonnull
     public <X> Promise<X> map(@Nonnull final Function<V, X> mapper) {
@@ -176,7 +176,7 @@ public class Promise<V> {
      * @param mapper the mapper to transform the promised value of this promise.
      * @param <X>    the resulting type of the mapper
      * @return a new promise which will be either contain the mapped value or which fails if either this promise fails
-     *         or if the mapper throws an exception.
+     * or if the mapper throws an exception.
      */
     @Nonnull
     public <X> Promise<X> flatMap(@Nonnull final Function<V, Promise<X>> mapper) {
@@ -362,12 +362,7 @@ public class Promise<V> {
      */
     @Nonnull
     public Promise<V> handleErrors(@Nonnull final Log log) {
-        return onFailure(new Callback<Throwable>() {
-            @Override
-            public void invoke(Throwable value) throws Exception {
-                Exceptions.handle(log, value);
-            }
-        });
+        return onFailure(value -> Exceptions.handle(log, value));
     }
 
 

@@ -8,9 +8,11 @@
 
 package sirius.kernel.async;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
@@ -23,6 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Static helper for managing and scheduling asynchronous background tasks.
@@ -42,13 +45,18 @@ import java.util.function.Supplier;
  */
 @ParametersAreNonnullByDefault
 public class Async {
+
     protected static final Log LOG = Log.get("async");
     public static final String DEFAULT = "default";
     protected static final Map<String, AsyncExecutor> executors = Maps.newConcurrentMap();
+    protected static final List<BackgroundQueueWorker> backgroundWorkers = Lists.newArrayList();
 
     // If sirius is not started yet, we still consider it running already as the intention of this flag
     // is to detect a system halt and not to check if the startup sequence has finished.
     private static volatile boolean running = true;
+
+    @Parts(BackgroundTaskQueue.class)
+    private static List<BackgroundTaskQueue> backgroundQueues;
 
     /**
      * Returns the executor for the given category.
@@ -235,6 +243,14 @@ public class Async {
         return Collections.unmodifiableCollection(executors.values());
     }
 
+    /**
+     * Returns a list of all background workers
+     *
+     * @return a list of the state of all background workers
+     */
+    public static Collection<String> getBackgroundWorkers() {
+        return backgroundWorkers.stream().map(Object::toString).collect(Collectors.toList());
+    }
 
     /**
      * Determines if the application is still running.
@@ -257,6 +273,9 @@ public class Async {
         @Override
         public void started() {
             running = true;
+            for (BackgroundTaskQueue tq : backgroundQueues) {
+                backgroundWorkers.add(new BackgroundQueueWorker(tq).start());
+            }
         }
 
         @Override

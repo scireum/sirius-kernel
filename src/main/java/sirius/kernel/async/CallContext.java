@@ -189,6 +189,16 @@ public class CallContext {
      * Detaches this CallContext from the current thread
      */
     public static void detach() {
+        for (SubContext ctx : currentContext.get().subContext.values()) {
+            try {
+                ctx.detach();
+            } catch (Throwable e) {
+                Exceptions.handle()
+                          .error(e)
+                          .withSystemErrorMessage("Error detaching sub context '%s': %s (%s)", ctx.getClass().getName())
+                          .handle();
+            }
+        }
         currentContext.set(null);
         contextMap.remove(Thread.currentThread().getId());
     }
@@ -198,7 +208,7 @@ public class CallContext {
     /*
      * Needs to be synchronized as a CallContext might be shared across several sub tasks
      */
-    private Map<Class<?>, Object> subContext = Collections.synchronizedMap(Maps.newHashMap());
+    private Map<Class<? extends SubContext>, SubContext> subContext = Collections.synchronizedMap(Maps.newHashMap());
     private Watch watch = Watch.start();
     private String lang = NLS.getDefaultLanguage();
 
@@ -262,9 +272,9 @@ public class CallContext {
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public <C> C get(Class<C> contextType) {
+    public <C extends SubContext> C get(Class<C> contextType) {
         try {
-            Object result = subContext.get(contextType);
+            SubContext result = subContext.get(contextType);
             if (result == null) {
                 result = contextType.newInstance();
                 subContext.put(contextType, result);
@@ -290,7 +300,7 @@ public class CallContext {
      * @param instance    the instance to set
      * @param <C>         the type of the sub-context
      */
-    public <C> void set(Class<C> contextType, C instance) {
+    public <C extends SubContext> void set(Class<C> contextType, C instance) {
         subContext.put(contextType, instance);
     }
 
