@@ -242,6 +242,7 @@ public class Sirius {
         LOG.INFO("---------------------------------------------------------");
         if (!Operation.getActiveOperations().isEmpty()) {
             LOG.INFO("Active Operations");
+            LOG.INFO("---------------------------------------------------------");
             for (Operation op : Operation.getActiveOperations()) {
                 LOG.INFO(op.toString());
             }
@@ -265,6 +266,7 @@ public class Sirius {
         LOG.INFO("---------------------------------------------------------");
         if (!Operation.getActiveOperations().isEmpty()) {
             LOG.INFO("Active Operations");
+            LOG.INFO("---------------------------------------------------------");
             for (Operation op : Operation.getActiveOperations()) {
                 LOG.INFO(op.toString());
             }
@@ -272,6 +274,7 @@ public class Sirius {
         }
         if (!Async.getBackgroundWorkers().isEmpty()) {
             LOG.INFO("Background Task Queues");
+            LOG.INFO("---------------------------------------------------------");
             for (String queue : Async.getBackgroundWorkers()) {
                 LOG.INFO(queue);
             }
