@@ -15,6 +15,7 @@ import com.typesafe.config.ConfigFactory;
 import org.apache.log4j.Level;
 import sirius.kernel.async.Async;
 import sirius.kernel.async.Barrier;
+import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Watch;
@@ -239,6 +240,13 @@ public class Sirius {
         }
         LOG.INFO("Stopping Sirius");
         LOG.INFO("---------------------------------------------------------");
+        if (!Operation.getActiveOperations().isEmpty()) {
+            LOG.INFO("Active Operations");
+            for (Operation op : Operation.getActiveOperations()) {
+                LOG.INFO(op.toString());
+            }
+            LOG.INFO("---------------------------------------------------------");
+        }
         for (int i = lifecycleParticipants.size() - 1; i >= 0; i--) {
             Lifecycle lifecycle = lifecycleParticipants.get(i);
             LOG.INFO("Stopping: %s", lifecycle.getName());
@@ -255,6 +263,20 @@ public class Sirius {
         LOG.INFO("---------------------------------------------------------");
         LOG.INFO("Awaiting system halt...");
         LOG.INFO("---------------------------------------------------------");
+        if (!Operation.getActiveOperations().isEmpty()) {
+            LOG.INFO("Active Operations");
+            for (Operation op : Operation.getActiveOperations()) {
+                LOG.INFO(op.toString());
+            }
+            LOG.INFO("---------------------------------------------------------");
+        }
+        if (!Async.getBackgroundWorkers().isEmpty()) {
+            LOG.INFO("Background Task Queues");
+            for (String queue : Async.getBackgroundWorkers()) {
+                LOG.INFO(queue);
+            }
+            LOG.INFO("---------------------------------------------------------");
+        }
         for (int i = lifecycleParticipants.size() - 1; i >= 0; i--) {
             Lifecycle lifecycle = lifecycleParticipants.get(i);
             try {
