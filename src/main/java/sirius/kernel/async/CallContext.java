@@ -189,7 +189,21 @@ public class CallContext {
      * Detaches this CallContext from the current thread
      */
     public static void detach() {
-        for (SubContext ctx : currentContext.get().subContext.values()) {
+        CallContext ctx = currentContext.get();
+        if (ctx != null) {
+            ctx.detachContext();
+        }
+        currentContext.set(null);
+        contextMap.remove(Thread.currentThread().getId());
+    }
+
+    /**
+     * Detaches this context from the current thread.
+     * <p>
+     * This will notify all sub contexts ({@link SubContext}) that this context essentially ended.
+     */
+    public void detachContext() {
+        for (SubContext ctx : subContext.values()) {
             try {
                 ctx.detach();
             } catch (Throwable e) {
@@ -199,8 +213,6 @@ public class CallContext {
                           .handle();
             }
         }
-        currentContext.set(null);
-        contextMap.remove(Thread.currentThread().getId());
     }
 
     private Map<String, String> mdc = Maps.newLinkedHashMap();
