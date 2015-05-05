@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
@@ -56,7 +57,7 @@ public class Async {
     private static volatile boolean running = true;
 
     @Parts(BackgroundTaskQueue.class)
-    private static List<BackgroundTaskQueue> backgroundQueues;
+    private static PartCollection<BackgroundTaskQueue> backgroundQueues;
 
     /**
      * Returns the executor for the given category.

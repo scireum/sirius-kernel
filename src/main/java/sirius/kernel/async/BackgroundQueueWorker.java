@@ -20,7 +20,7 @@ import sirius.kernel.health.Exceptions;
  */
 class BackgroundQueueWorker implements Runnable {
     private BackgroundTaskQueue tq;
-    private Watch w;
+    private Watch w = Watch.start();
     private volatile boolean active;
 
     protected BackgroundQueueWorker(BackgroundTaskQueue tq) {
