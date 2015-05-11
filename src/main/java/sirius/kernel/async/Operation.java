@@ -52,7 +52,7 @@ import java.util.function.Supplier;
 public class Operation {
 
     private static Set<String> categories = null;
-    private static Set<Operation> ops = Collections.newSetFromMap(new WeakHashMap<>());
+    private static Set<Operation> ops = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     @ConfigValue("async.operations.categories")
     private static List<String> enabledCategories;

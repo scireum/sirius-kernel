@@ -57,7 +57,7 @@ public class CallContext {
      */
     public static final String MDC_PARENT = "parent";
 
-    private static ThreadLocal<CallContext> currentContext = new ThreadLocal<>();
+    private static final ThreadLocal<CallContext> currentContext = new ThreadLocal<>();
     private static Map<Long, CallContext> contextMap = Maps.newConcurrentMap();
     private static String nodeName = null;
     private static Counter interactionCounter = new Counter();
