@@ -14,6 +14,7 @@ import sirius.kernel.health.Log;
 import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,11 +113,15 @@ public class Classpath {
     private Stream<String> scan(URL url) {
         List<String> result = new ArrayList<>();
         if ("file".equals(url.getProtocol())) {
-            File file = new File(url.getPath());
-            if (!file.isDirectory()) {
-                file = file.getParentFile();
+            try {
+                File file = new File(url.toURI().getPath());
+                if (!file.isDirectory()) {
+                    file = file.getParentFile();
+                }
+                addFiles(file, result, file);
+            } catch (URISyntaxException e) {
+                LOG.SEVERE(e);
             }
-            addFiles(file, result, file);
         } else if ("jar".equals(url.getProtocol())) {
             try {
                 JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
