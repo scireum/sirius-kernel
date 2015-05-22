@@ -3,7 +3,7 @@
 Provides common core classes and the microkernel powering all SIRIUS applications
 
 If you have questions or are just curious, please feel welcome to join the chat room:
-[![Join the chat at https://gitter.im/scireum/sirius-kernel](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/andyHa/scireumOpenSource?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/scireum/sirius-kernel](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/scireum/OpenSource?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This is a module of the SIRIUS OpenSource project by scireum GmbH. For further information visit the project website: http://sirius-lib.net
 
