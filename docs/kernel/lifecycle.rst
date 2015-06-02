@@ -1,6 +1,0 @@
-Lifecycle (System start)
-========================
-
-
-
-
