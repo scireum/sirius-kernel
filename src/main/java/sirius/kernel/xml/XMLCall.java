@@ -13,9 +13,6 @@ import java.net.URL;
 
 /**
  * Simple call to send XML to a server (URL) and receive XML back.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class XMLCall {
 

@@ -30,13 +30,24 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Native Language Support used by the framework.
@@ -59,9 +70,7 @@ import java.util.*;
  * <li><b>nls.language:</b> Sets an array of two-letter codes which enumerate all supported languages</li>
  * </ul>
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see Babelfish
- * @since 2013/08
  */
 public class NLS {
 
@@ -71,19 +80,22 @@ public class NLS {
     private static Set<String> supportedLanguages;
     private static Map<String, String> mapLanguages;
 
-    private static final DateTimeFormatter MACHINE_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss",
-                                                                                                  Locale.ENGLISH);
-    private static final DateTimeFormatter MACHINE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd",
-                                                                                             Locale.ENGLISH);
-    private static final DateTimeFormatter MACHINE_PARSE_TIME_FORMAT = DateTimeFormatter.ofPattern("H:mm[:ss]",
-                                                                                                   Locale.ENGLISH);
-    private static final DateTimeFormatter MACHINE_FORMAT_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss",
-                                                                                                    Locale.ENGLISH);
+    private static final DateTimeFormatter MACHINE_DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+    private static final DateTimeFormatter MACHINE_DATE_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH);
+    private static final DateTimeFormatter MACHINE_PARSE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("H:mm[:ss]", Locale.ENGLISH);
+    private static final DateTimeFormatter MACHINE_FORMAT_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ENGLISH);
     private static final Map<String, DateTimeFormatter> dateTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> dateFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> timeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> parseTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> fullTimeFormatters = Maps.newTreeMap();
+
+    private NLS() {
+    }
 
     /**
      * Returns the currently active language as two-letter code.
@@ -97,7 +109,7 @@ public class NLS {
     }
 
     /**
-     * Returns the two-letter code of the default language. Provided via the config in <code>nls.defaultLanguage</code>
+     * Returns the two-letter code of the default language. Provided via the config in {@code nls.defaultLanguage}
      * <p>
      * If this is set to "auto" the default language will be the system language.
      *
@@ -116,7 +128,7 @@ public class NLS {
     }
 
     /**
-     * Overrides the default language as defined in the configuration (<code>nls.defaultLanguage</code>).
+     * Overrides the default language as defined in the configuration ({@code nls.defaultLanguage}).
      * <p>
      * This can be used to enforce the system language. However, setting nls.defaultLanguage to 'auto' is
      * the recommended approach.
@@ -131,11 +143,11 @@ public class NLS {
     /**
      * Returns the two-letter code of the system language.
      * <p>
-     * By default, SIRIUS initializes with the language set in <code>nls.defaultLanguage</code> so a switchover
+     * By default, SIRIUS initializes with the language set in {@code nls.defaultLanguage} so a switchover
      * to the system language has to be performed manually.
      *
      * @return the language code of the underlying operating system. If the language is not supported (not listed
-     * in <code>nls.languages</code>), <tt>null</tt> will be returned as
+     * in {@code nls.languages}), <tt>null</tt> will be returned as
      * {@link sirius.kernel.async.CallContext#setLang(String)} doesn't change the current language if <tt>null</tt> is
      * passed in.
      */
@@ -146,24 +158,26 @@ public class NLS {
 
     /**
      * Returns a list of two-letter codes enumerating all supported languages. Provided via the config in
-     * <code>nls.languages</code>
+     * {@code nls.languages}
      *
      * @return a list of supported language codes
      */
     public static Set<String> getSupportedLanguages() {
-        if (supportedLanguages == null && Sirius.getConfig() != null) try {
-            {
+        if (supportedLanguages == null && Sirius.getConfig() != null) {
+            try {
                 supportedLanguages = Sirius.getConfig()
                                            .getStringList("nls.languages")
                                            .stream()
                                            .map(String::toLowerCase)
                                            .collect(Lambdas.into(Sets.newLinkedHashSet()));
+            } catch (Exception e) {
+                Exceptions.handle(e);
             }
-        } catch (Exception e) {
-            Exceptions.handle(e);
         }
         // Returns the default language or (for very early access we default to en)
-        return supportedLanguages == null ? Collections.singleton("en") : Collections.unmodifiableSet(supportedLanguages);
+        return supportedLanguages == null ?
+               Collections.singleton("en") :
+               Collections.unmodifiableSet(supportedLanguages);
     }
 
     /**
@@ -359,9 +373,10 @@ public class NLS {
     /**
      * Provides access to commonly used keys.
      */
-    public static enum CommonKeys {
+    public enum CommonKeys {
         // Common terms
-        YES, NO, OK, CANCEL, NAME, EDIT, DELETE, SEARCH, SEARCHKEY, REFRESH, CLOSE, DESCRIPTION, SAVE, NEW, BACK, FILTER,
+        YES, NO, OK, CANCEL, NAME, EDIT, DELETE, SEARCH, SEARCHKEY, REFRESH, CLOSE, DESCRIPTION, SAVE, NEW, BACK,
+        FILTER,
         // Weekdays
         MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY,
         // Months
@@ -387,11 +402,11 @@ public class NLS {
     }
 
     /**
-     * Converts a given integer (<code>Calendar.Monday...Calendar.Sunday</code>) into textual their representation.
+     * Converts a given integer ({@code Calendar.Monday...Calendar.Sunday}) into textual their representation.
      *
      * @param day the weekday to be translated. Use constants {@link Calendar#MONDAY} etc.
      * @return the name of the given weekday in the current language
-     * or <code>""</code> if an invalid index was given
+     * or {@code ""} if an invalid index was given
      */
     public static String getDayOfWeek(int day) {
         switch (day) {
@@ -414,11 +429,11 @@ public class NLS {
     }
 
     /**
-     * Returns a two letter abbreviation of the name of the given day, like <code>"Mo"</code>.
+     * Returns a two letter abbreviation of the name of the given day, like {@code "Mo"}.
      *
      * @param day the weekday to be translated. Use constants {@link Calendar#MONDAY} etc.
      * @return returns the first two letters of the name
-     * or <code>""</code> if the given index was invalid.
+     * or {@code ""} if the given index was invalid.
      */
     public static String getDayOfWeekShort(int day) {
         return Value.of(getDayOfWeek(day)).substring(0, 2);
@@ -640,7 +655,6 @@ public class NLS {
         return String.valueOf(data);
     }
 
-
     /**
      * Returns a string representation of the given number in an english format, that is,
      * using a dot as decimal separator.
@@ -724,7 +738,6 @@ public class NLS {
             return result;
         }
         return String.valueOf(data);
-
     }
 
     /**
@@ -755,13 +768,16 @@ public class NLS {
             LocalDateTime givenDateTime = LocalDateTime.from(date);
             if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(30))) {
                 return NLS.get("NLS.someMinutesAgo");
-            } else if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(59))) {
+            }
+            if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(59))) {
                 return NLS.fmtr("NLS.nMinutesAgo")
                           .set("minutes", Duration.between(givenDateTime, LocalDateTime.now()).toMinutes())
                           .format();
-            } else if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
+            }
+            if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
                 return NLS.get("NLS.oneHourAgo");
-            } else if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
+            }
+            if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
                 return NLS.fmtr("NLS.nHoursAgo")
                           .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
                           .format();
@@ -812,6 +828,11 @@ public class NLS {
         if (String.class.equals(clazz)) {
             return (V) value;
         }
+        return parseBasicTypesFromMachineString(clazz, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <V> V parseBasicTypesFromMachineString(Class<V> clazz, String value) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
                 return (V) Integer.valueOf(value);
@@ -829,10 +850,10 @@ public class NLS {
         if (Float.class.equals(clazz) || float.class.equals(clazz)) {
             try {
                 Double result = Double.valueOf(value);
+                //noinspection UnnecessaryParentheses
                 return (result == null) ? null : (V) Float.valueOf(result.floatValue());
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
-
             }
         }
         if (Double.class.equals(clazz) || double.class.equals(clazz)) {
@@ -850,11 +871,13 @@ public class NLS {
             }
         }
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
-            return (V) new Boolean(Boolean.parseBoolean(value));
+            return (V) Boolean.valueOf(Boolean.parseBoolean(value));
         }
-        if (String.class.equals(clazz)) {
-            return (V) value;
-        }
+        return parseDatesFromMachineString(clazz, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <V> V parseDatesFromMachineString(Class<V> clazz, String value) {
         if (LocalDate.class.equals(clazz)) {
             try {
                 return (V) LocalDate.from(MACHINE_DATE_FORMAT.parse(value));
@@ -915,6 +938,11 @@ public class NLS {
         if (String.class.equals(clazz)) {
             return (V) value;
         }
+        return parseBasicTypesFromUserString(clazz, value, lang);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String lang) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
                 return (V) Integer.valueOf(value);
@@ -930,61 +958,53 @@ public class NLS {
             }
         }
         if (Float.class.equals(clazz) || float.class.equals(clazz)) {
-            try {
-                try {
-                    // If there is exactly one "." in the pattern and no "," and
-                    // we have less then 3 digits behind the "." we treat this
-                    // as english decimal format and not as german grouping
-                    // separator.
-                    if (".".equals(NLS.get("NLS.groupingSeparator")) && value.contains(".") && !value.contains(",") && value
-                            .indexOf(".") == value.lastIndexOf(".") && value.indexOf(".") > value.length() - 4) {
-                        try {
-                            Double result = Double.valueOf(value);
-                            return (result == null) ? null : (V) Float.valueOf(result.floatValue());
-                        } catch (Exception e) {
-                            /* IGNORE, TRY REAL FORMAT */
-                        }
-                    }
-                    return (V) (Float) getDecimalFormat(lang).parse(value).floatValue();
-                } catch (ParseException e) {
-                    Double result = Double.valueOf(value);
-                    return (result == null) ? null : (V) Float.valueOf(result.floatValue());
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
-            }
+            return (V) Float.valueOf((float) parseDecimalNumberFromUser(value, lang).doubleValue());
         }
         if (Double.class.equals(clazz) || double.class.equals(clazz)) {
-            try {
-                try {
-                    // If there is exactly one "." in the pattern and no "," and
-                    // we have less then 3 digits behind the "." we treat this
-                    // as english decimal format and not as german grouping
-                    // separator.
-                    if (".".equals(NLS.get("NLS.groupingSeparator")) && value.contains(".") && !value.contains(",") && value
-                            .indexOf(".") == value.lastIndexOf(".") && value.indexOf(".") > value.length() - 4) {
-                        try {
-                            return (V) (Double) Double.valueOf(value);
-                        } catch (Exception e) {
-                            /* IGNORE, TRY REAL FORMAT */
-                        }
-                    }
-                    return (V) (Double) getDecimalFormat(lang).parse(value).doubleValue();
-                } catch (ParseException e) {
-                    return (V) Double.valueOf(value);
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
-            }
+            return (V) parseDecimalNumberFromUser(value, lang);
         }
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
             if (CommonKeys.YES.translated().equalsIgnoreCase(value)) {
                 return (V) Boolean.TRUE;
-            } else if (CommonKeys.NO.translated().equalsIgnoreCase(value)) {
+            }
+            if (CommonKeys.NO.translated().equalsIgnoreCase(value)) {
                 return (V) Boolean.FALSE;
             }
-            return (V) new Boolean(Boolean.parseBoolean(value));
+            return (V) Boolean.valueOf(Boolean.parseBoolean(value));
         }
+        return parseDatesFromUserString(clazz, value, lang);
+    }
+
+    private static Double parseDecimalNumberFromUser(String value, String lang) {
+        try {
+            try {
+                // If there is exactly one "." in the pattern and no "," and
+                // we have less then 3 digits behind the "." we treat this
+                // as english decimal format and not as german grouping
+                // separator.
+                if (".".equals(NLS.get("NLS.groupingSeparator"))
+                    && value.contains(".")
+                    && !value.contains(",")
+                    && value.indexOf(".") == value.lastIndexOf(".")
+                    && value.indexOf(".") > value.length() - 4) {
+                    try {
+                        return Double.valueOf(value);
+                    } catch (Exception e) {
+                        /* IGNORE, TRY REAL FORMAT */
+                    }
+                }
+                return getDecimalFormat(lang).parse(value).doubleValue();
+            } catch (ParseException e) {
+                Exceptions.ignore(e);
+                return Double.valueOf(value);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <V> V parseDatesFromUserString(Class<V> clazz, String value, String lang) {
         if (LocalDate.class.equals(clazz)) {
             try {
                 AdvancedDateParser parser = new AdvancedDateParser(lang);
@@ -1024,6 +1044,7 @@ public class NLS {
                 throw new IllegalArgumentException(e.getMessage(), e);
             }
         }
+
         throw new IllegalArgumentException(fmtr("NLS.parseError").set("type", clazz).format());
     }
 
@@ -1042,10 +1063,10 @@ public class NLS {
         return parseUserString(clazz, string, getCurrentLang());
     }
 
-    private final static long SECOND = 1000;
-    private final static long MINUTE = 60 * SECOND;
-    private final static long HOUR = 60 * MINUTE;
-    private final static long DAY = 24 * HOUR;
+    private static final long SECOND = 1000;
+    private static final long MINUTE = 60 * SECOND;
+    private static final long HOUR = 60 * MINUTE;
+    private static final long DAY = 24 * HOUR;
 
     /**
      * Converts a given time range in milliseconds to a human readable format using the current language
@@ -1059,65 +1080,39 @@ public class NLS {
     public static String convertDuration(long duration, boolean includeSeconds, boolean includeMillis) {
         StringBuilder result = new StringBuilder();
         if (duration > DAY) {
-            long value = duration / DAY;
-            if (value == 1) {
-                result.append(NLS.apply("NLS.day", value));
-            } else {
-                result.append(NLS.apply("NLS.days", value));
-            }
+            appendDurationValue(result, "NLS.day", "NLS.days", duration / DAY);
             duration = duration % DAY;
         }
         if (duration > HOUR) {
-            if (result.length() > 0) {
-                result.append(", ");
-            }
-            long value = duration / HOUR;
-            if (value == 1) {
-                result.append(NLS.apply("NLS.hour", value));
-            } else {
-                result.append(NLS.apply("NLS.hours", value));
-            }
+            appendDurationValue(result, "NLS.hour", "NLS.hours", duration / HOUR);
             duration = duration % HOUR;
         }
         if (duration > MINUTE || (!includeSeconds && duration > 0)) {
-            if (result.length() > 0) {
-                result.append(", ");
-            }
-            long value = duration / MINUTE;
-            if (value == 1) {
-                result.append(NLS.apply("NLS.minute", value));
-            } else {
-                result.append(NLS.apply("NLS.minutes", value));
-            }
+            appendDurationValue(result, "NLS.minute", "NLS.minutes", duration / MINUTE);
             duration = duration % MINUTE;
         }
         if (includeSeconds) {
             if (duration > SECOND || (!includeMillis && duration > 0)) {
-                if (result.length() > 0) {
-                    result.append(", ");
-                }
-                long value = duration / SECOND;
-                if (value == 1) {
-                    result.append(NLS.apply("NLS.second", value));
-                } else {
-                    result.append(NLS.apply("NLS.seconds", value));
-                }
+                appendDurationValue(result, "NLS.second", "NLS.second", duration / SECOND);
                 duration = duration % SECOND;
             }
-            if (includeMillis) {
-                if (duration > 0) {
-                    if (result.length() > 0) {
-                        result.append(", ");
-                    }
-                    if (duration == 1) {
-                        result.append(NLS.apply("NLS.millisecond", duration));
-                    } else {
-                        result.append(NLS.apply("NLS.milliseconds", duration));
-                    }
-                }
+            if (includeMillis && duration > 0) {
+                appendDurationValue(result, "NLS.millisecond", "NLS.milliseconds", duration);
             }
         }
+
         return result.toString();
+    }
+
+    private static void appendDurationValue(StringBuilder result, String oneKey, String manyKey, long value) {
+        if (result.length() > 0) {
+            result.append(", ");
+        }
+        if (value == 1) {
+            result.append(NLS.apply(oneKey, 1));
+        } else {
+            result.append(NLS.apply(manyKey, value));
+        }
     }
 
     /**
@@ -1136,7 +1131,7 @@ public class NLS {
     /**
      * Outputs integer numbers without decimals, but fractional numbers with two digits.
      * <p>
-     * Discards fractional parts which absolute value is less or equal to <code>0.00001</code>.
+     * Discards fractional parts which absolute value is less or equal to {@code 0.00001}.
      *
      * @param number the number to be rounded
      * @return a string representation using the current languages decimal format.
@@ -1166,9 +1161,8 @@ public class NLS {
             size = size / 1024;
             index++;
         }
-        return NLS.toEnglishRepresentation(size) + " " + UNITS[index];
+        return toEnglishRepresentation(size) + " " + UNITS[index];
     }
 
-    private static final String[] UNITS = new String[]{"Bytes", "KB", "MB", "GB", "TB", "PB"};
-
+    private static final String[] UNITS = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
 }

@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.commons;
 
 /**
@@ -8,7 +16,7 @@ package sirius.kernel.commons;
  * This is particularly useful in loops where the first iteration must be handled differently. Therefore two more
  * functions are provided: {@link #firstCall()} and {@link #successiveCall()} which can be used like shown here:
  * <pre>
- * <code>
+ * {@code
  * Monoflop mono = Monoflop.create();
  * StringBuilder sb = new StringBuilder();
  * for(String value : somelist) {
@@ -18,11 +26,8 @@ package sirius.kernel.commons;
  *     sb.append(value);
  * }
  * System.out.println(sb.toString());
- * </code>
+ * }
  * </pre>
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/09
  */
 public class Monoflop {
 
@@ -32,7 +37,6 @@ public class Monoflop {
      * Use the static constructor create()
      */
     private Monoflop() {
-
     }
 
     /**
@@ -113,5 +117,4 @@ public class Monoflop {
     public String toString() {
         return "Monoflop (Toggled: " + toggled + ")";
     }
-
 }

@@ -8,7 +8,14 @@
 
 package sirius.kernel.health.metrics;
 
-import org.hyperic.sigar.*;
+import org.hyperic.sigar.CpuPerc;
+import org.hyperic.sigar.FileSystem;
+import org.hyperic.sigar.FileSystemUsage;
+import org.hyperic.sigar.Mem;
+import org.hyperic.sigar.NetInterfaceStat;
+import org.hyperic.sigar.ProcCpu;
+import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.SigarException;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -22,9 +29,6 @@ import java.util.List;
 
 /**
  * Provides core metrics for the operating system, the Java Virtual Machine and central frameworks.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/09
  */
 @Register
 public class SystemMetricProvider implements MetricProvider {
@@ -68,6 +72,7 @@ public class SystemMetricProvider implements MetricProvider {
         } catch (SigarException e) {
             Exceptions.handle(LOG, e);
         } catch (UnsatisfiedLinkError e) {
+            Exceptions.ignore(e);
             sigarEnabled = false;
         }
     }
@@ -107,5 +112,4 @@ public class SystemMetricProvider implements MetricProvider {
             }
         }
     }
-
 }

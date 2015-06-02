@@ -24,9 +24,6 @@ import java.util.Objects;
  * <p>
  * Also this supports access via "Excel Style" column names ("A", "B", ...,  "AH") which is beneficial when importing
  * external data.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/01
  */
 public class Values {
     private List<?> dataList;
@@ -36,7 +33,6 @@ public class Values {
      * Use one of the static factory methods
      */
     private Values() {
-
     }
 
     /**
@@ -91,7 +87,8 @@ public class Values {
     /**
      * Returns the element at the given column in "Excel style" notation.
      * <p>
-     * Therefore <b>"A"</b> will return the first element (which is at index 0). <b>"Z"</b> will return the 26th element
+     * Therefore <b>"A"</b> will return the first element (which is at index 0). <b>"Z"</b> will return the 26th
+     * element
      * (at index 25). <b>"AH"</b> will return the 34th element (at index 33).
      *
      * @param excelStyleIndex a column index in "Excel Notation" (A, B, ..., AA, AB, ...)
@@ -133,11 +130,13 @@ public class Values {
             char currentChar = input.charAt(i);
             if (currentChar < 'A' || currentChar > 'Z') {
                 throw new IllegalArgumentException(Strings.apply(
-                        "Invalid Excel style column index: %s. Character at position %s ('%s') is invalid. Only A-Z are allowed",
+                        "Invalid Excel style column index: %s. Character at position %s ('%s') is invalid. Only A-Z "
+                        + "are allowed",
                         input,
                         i + 1,
                         currentChar));
             }
+            // noinspection UnnecessaryParentheses
             result = result * 26 + (currentChar - 'A' + 1);
         }
 

@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.di.std;
 
 import java.lang.annotation.ElementType;
@@ -12,12 +20,9 @@ import java.lang.annotation.Target;
  * <p>
  * If a configPath is set, the system configuration is used to load the value specified for this path. The system
  * then tries to find the part with that name.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.FIELD)
+@Target(ElementType.FIELD)
 public @interface Part {
     String configPath() default "";
 }

@@ -8,16 +8,16 @@
 
 package sirius.kernel.xml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 import org.xml.sax.Attributes;
 import sirius.kernel.commons.Strings;
 
-
 /**
  * Internal adapter used to forward SAX events
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 class SAX2DOMHandler {
 

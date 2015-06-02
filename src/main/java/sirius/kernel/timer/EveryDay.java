@@ -22,9 +22,6 @@ package sirius.kernel.timer;
  * if the system is restarted within the given hour, the method might be called twice, as the time of call is not
  * persisted over restarts. If a more precise behaviour is required, the subclass must take care of handling such
  * cases.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface EveryDay extends TimedTask {
 

@@ -21,15 +21,12 @@ import java.util.List;
  * Provides a in-memory store for logs and exceptions.
  * <p>
  * This will be inherently limited in size but should always contain the most recent logs and errors.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 @Register(classes = {MemoryBasedHealthMonitor.class, LogTap.class, ExceptionHandler.class})
 public class MemoryBasedHealthMonitor implements ExceptionHandler, LogTap {
 
-    private List<Incident> incidents = Collections.synchronizedList(new ArrayList<Incident>());
-    private List<LogMessage> messages = Collections.synchronizedList(new ArrayList<LogMessage>());
+    private final List<Incident> incidents = Collections.synchronizedList(new ArrayList<Incident>());
+    private final List<LogMessage> messages = Collections.synchronizedList(new ArrayList<LogMessage>());
 
     @ConfigValue("health.memory.max-errors")
     private int maxErrors;

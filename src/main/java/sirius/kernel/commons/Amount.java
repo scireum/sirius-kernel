@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -33,10 +34,8 @@ import java.util.function.Supplier;
  * <p>
  * Being able to be <i>empty</i>, this class handles <tt>null</tt> values gracefully, which simplifies many operations.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see NumberFormat
  * @see BigDecimal
- * @since 2013/08
  */
 @Immutable
 public class Amount implements Comparable<Amount> {
@@ -99,7 +98,7 @@ public class Amount implements Comparable<Amount> {
      * Converts the given string into a number which is formatted according the decimal symbols for the current locale.
      *
      * @param value the string value which should be converted into a numeric value.
-     * @return an <code>Amount</code> representing the given input. <code>NOTHING</code> if the input was empty.
+     * @return an {@code Amount} representing the given input. {@code NOTHING} if the input was empty.
      * @see NLS
      */
     @Nonnull
@@ -262,7 +261,7 @@ public class Amount implements Comparable<Amount> {
      * the result would by 118.
      *
      * @param increase the percent value by which the value of this will be increased
-     * @return <tt>NOTHING</tt> if this or increase is empty, <code>this * (1 + increase / 100)</code> otherwise
+     * @return <tt>NOTHING</tt> if this or increase is empty, {@code this * (1 + increase / 100)} otherwise
      */
     @Nonnull
     @CheckReturnValue
@@ -275,7 +274,7 @@ public class Amount implements Comparable<Amount> {
      * the result would by 90.
      *
      * @param decrease the percent value by which the value of this will be decreased
-     * @return <tt>NOTHING</tt> if this or increase is empty, <code>this * (1 - increase / 100)</code> otherwise
+     * @return <tt>NOTHING</tt> if this or increase is empty, {@code this * (1 - increase / 100)} otherwise
      */
     @Nonnull
     @CheckReturnValue
@@ -287,7 +286,7 @@ public class Amount implements Comparable<Amount> {
      * Used to multiply two percentages, like two discounts as if they where applied after each other.
      * <p>
      * This can be used to compute the effective discount if two discounts like 15% and 5% are applied after
-     * each other. The result would be <code>(15 + 5) - (15 * 5 / 100)</code> which is <tt>19,25 %</tt>
+     * each other. The result would be {@code (15 + 5) - (15 * 5 / 100)} which is <tt>19,25 %</tt>
      *
      * @param percent the second percent value which would be applied after this percent value.
      * @return the effective percent value after both percentages would have been applied
@@ -300,7 +299,8 @@ public class Amount implements Comparable<Amount> {
     }
 
     /**
-     * Adds the given number to <tt>this</tt>, if <tt>other</tt> is not empty. Otherwise <tt>this</tt> will be returned.
+     * Adds the given number to <tt>this</tt>, if <tt>other</tt> is not empty. Otherwise <tt>this</tt> will be
+     * returned.
      *
      * @param other the operand to add to this.
      * @return an <tt>Amount</tt> representing the sum of <tt>this</tt> and <tt>other</tt> if both values were filled.
@@ -319,10 +319,12 @@ public class Amount implements Comparable<Amount> {
     }
 
     /**
-     * Subtracts the given number from <tt>this</tt>, if <tt>other</tt> is not empty. Otherwise <tt>this</tt> will be returned.
+     * Subtracts the given number from <tt>this</tt>, if <tt>other</tt> is not empty. Otherwise <tt>this</tt> will be
+     * returned.
      *
      * @param other the operand to subtract from this.
-     * @return an <tt>Amount</tt> representing the difference of <tt>this</tt> and <tt>other</tt> if both values were filled.
+     * @return an <tt>Amount</tt> representing the difference of <tt>this</tt> and <tt>other</tt> if both values were
+     * filled.
      * If <tt>other</tt> is empty, <tt>this</tt> is returned. If this is empty, <tt>NOTHING</tt> is returned.
      */
     @Nonnull
@@ -341,7 +343,8 @@ public class Amount implements Comparable<Amount> {
      * Multiplies the given number with <tt>this</tt>. If either of both is empty, <tt>NOTHING</tt> will be returned.
      *
      * @param other the operand to multiply with this.
-     * @return an <tt>Amount</tt> representing the product of <tt>this</tt> and <tt>other</tt> if both values were filled.
+     * @return an <tt>Amount</tt> representing the product of <tt>this</tt> and <tt>other</tt> if both values were
+     * filled.
      * If <tt>other</tt> is empty or if <tt>this</tt> is empty, <tt>NOTHING</tt> is returned.
      */
     @Nonnull
@@ -372,7 +375,7 @@ public class Amount implements Comparable<Amount> {
 
     /**
      * Returns the ratio in percent from <tt>this</tt> to <tt>other</tt>.
-     * This is equivalent to <code>this / other * 100</code>
+     * This is equivalent to {@code this / other * 100}
      *
      * @param other the base to compute the percentage from.
      * @return an <tt>Amount</tt> representing the ratio between <tt>this</tt> and <tt>other</tt>
@@ -386,7 +389,7 @@ public class Amount implements Comparable<Amount> {
 
     /**
      * Returns the increase in percent of <tt>this</tt> over <tt>other</tt>.
-     * This is equivalent to <code>((this / other) - 1) * 100</code>
+     * This is equivalent to {@code ((this / other) - 1) * 100}
      *
      * @param other the base to compute the increase from.
      * @return an <tt>Amount</tt> representing the percentage increase between <tt>this</tt> and <tt>other</tt>
@@ -404,7 +407,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if this value is filled and equal to 0.00, <tt>false</tt> otherwise.
      */
     public boolean isZero() {
-        return (amount != null && amount.compareTo(BigDecimal.ZERO) == 0);
+        return amount != null && amount.compareTo(BigDecimal.ZERO) == 0;
     }
 
     /**
@@ -413,7 +416,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if this value is filled and not equal to 0.00, <tt>false</tt> otherwise.
      */
     public boolean isNonZero() {
-        return (amount != null && amount.compareTo(BigDecimal.ZERO) != 0);
+        return amount != null && amount.compareTo(BigDecimal.ZERO) != 0;
     }
 
     /**
@@ -422,7 +425,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if this value is filled and greater than 0.00, <tt>false</tt> otherwise.
      */
     public boolean isPositive() {
-        return (amount != null && amount.compareTo(BigDecimal.ZERO) > 0);
+        return amount != null && amount.compareTo(BigDecimal.ZERO) > 0;
     }
 
     /**
@@ -431,7 +434,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if this value is filled and less than 0.00, <tt>false</tt> otherwise.
      */
     public boolean isNegative() {
-        return (amount != null && amount.compareTo(BigDecimal.ZERO) < 0);
+        return amount != null && amount.compareTo(BigDecimal.ZERO) < 0;
     }
 
     /**
@@ -440,12 +443,12 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if this value is empty, or equal to 0.00, <tt>false</tt> otherwise.
      */
     public boolean isZeroOrNull() {
-        return (amount == null || amount.compareTo(BigDecimal.ZERO) == 0);
+        return amount == null || amount.compareTo(BigDecimal.ZERO) == 0;
     }
 
     /**
      * Converts a given decimal fraction into a percent value i.e. 0.34 to 34 %.
-     * Effectively this is <code>this * 100</code>
+     * Effectively this is {@code this * 100}
      *
      * @return a percentage representation of the given decimal value.
      */
@@ -457,7 +460,7 @@ public class Amount implements Comparable<Amount> {
 
     /**
      * Converts a percent value into a decimal fraction i.e. 34 % to 0.34
-     * Effectively this is <code>this / 100</code>
+     * Effectively this is {@code this / 100}
      *
      * @return a decimal representation fo the given percent value.
      */
@@ -475,7 +478,7 @@ public class Amount implements Comparable<Amount> {
         if (o == this) {
             return 0;
         }
-        if (amount == o.amount) {
+        if (Objects.equals(amount, o.amount)) {
             return 0;
         }
         if (amount == null) {
@@ -486,8 +489,12 @@ public class Amount implements Comparable<Amount> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Amount amount = (Amount) o;
         if (this.amount == null || amount.amount == null) {
@@ -516,7 +523,7 @@ public class Amount implements Comparable<Amount> {
      * or to disable smart rounding (to also show .00) {@link #toString(NumberFormat)} can be called using
      * {@link NumberFormat#PERCENT}.
      *
-     * @return a string representation of this number using <code>NumberFormat#PERCENT</code>
+     * @return a string representation of this number using {@code NumberFormat#PERCENT}
      * or "" if the value is empty.
      */
     public String toPercentString() {
@@ -527,7 +534,7 @@ public class Amount implements Comparable<Amount> {
      * Formats the represented value by rounding to zero decimal places. The rounding mode is obtained from
      * {@link NumberFormat#NO_DECIMAL_PLACES}.
      *
-     * @return a rounded representation of this number using <code>NumberFormat#NO_DECIMAL_PLACES</code>
+     * @return a rounded representation of this number using {@code NumberFormat#NO_DECIMAL_PLACES}
      * or "" is the value is empty.
      */
     public String toRoundedString() {
@@ -543,7 +550,7 @@ public class Amount implements Comparable<Amount> {
      * The number of decimal places and the rounding mode is obtained from <tt>format</tt> ({@link NumberFormat}).
      *
      * @param format the format used to determine the precision of the rounding operation
-     * @return returns an <tt>Amount</tt> which is rounded using the given <code>NumberFormat</code>
+     * @return returns an <tt>Amount</tt> which is rounded using the given {@code NumberFormat}
      * or <tt>NOTHING</tt> if the value is empty.
      */
     @Nonnull
@@ -572,7 +579,7 @@ public class Amount implements Comparable<Amount> {
      * Converts the number into a string according to the given <tt>format</tt>. The returned {@link Value} provides
      * helpful methods to pre- or append texts like units or currency symbols while gracefully handling empty values.
      *
-     * @param format the <code>NumberFormat</code> used to obtain the number of decimal places,
+     * @param format the {@code NumberFormat} used to obtain the number of decimal places,
      *               the decimal format symbols and rounding mode
      * @return a <tt>Value</tt> containing the string representation according to the given format
      * or an empty <tt>Value</tt> if <tt>this</tt> is empty.
@@ -588,7 +595,7 @@ public class Amount implements Comparable<Amount> {
      * Converts the number into a string just like {@link #toString(NumberFormat)}. However, if the number has no
      * decimal places, a rounded value (without .00) will be returned.
      *
-     * @param format the <code>NumberFormat</code> used to obtain the number of decimal places,
+     * @param format the {@code NumberFormat} used to obtain the number of decimal places,
      *               the decimal format symbols and rounding mode
      * @return a <tt>Value</tt> containing the string representation according to the given format
      * or an empty <tt>Value</tt> if <tt>this</tt> is empty. Omits 0 as decimal places.
@@ -599,8 +606,8 @@ public class Amount implements Comparable<Amount> {
         return convertToString(format, true);
     }
 
-    private static final String[] METRICS = new String[]{"f", "n", "u", "m", "", "K", "M", "G"};
-    private static int NEUTRAL_METRIC = 4;
+    private static final String[] METRICS = {"f", "n", "u", "m", "", "K", "M", "G"};
+    private static final int NEUTRAL_METRIC = 4;
 
     /**
      * Creates a "scientific" representation of the amount.
@@ -631,18 +638,16 @@ public class Amount implements Comparable<Amount> {
         }
         int metric = NEUTRAL_METRIC;
         double value = amount.doubleValue();
-        if (value != 0d) {
-            while (Math.abs(value) >= 990d && metric < METRICS.length - 1) {
-                value /= 1000d;
-                metric += 1;
-            }
-            if (metric == NEUTRAL_METRIC) {
-                while (Math.abs(value) < 1.01 && metric > 0) {
-                    value *= 1000d;
-                    metric -= 1;
-                    // We loose accuracy, therefore we limit our decimal digits...
-                    digits -= 3;
-                }
+        while (Math.abs(value) >= 990d && metric < METRICS.length - 1) {
+            value /= 1000d;
+            metric += 1;
+        }
+        if (metric == NEUTRAL_METRIC) {
+            while (value != 0d && Math.abs(value) < 1.01 && metric > 0) {
+                value *= 1000d;
+                metric -= 1;
+                // We loose accuracy, therefore we limit our decimal digits...
+                digits -= 3;
             }
         }
         DecimalFormat df = new DecimalFormat();
@@ -650,13 +655,16 @@ public class Amount implements Comparable<Amount> {
         df.setMaximumFractionDigits(Math.max(0, digits));
         df.setDecimalFormatSymbols(NLS.getDecimalFormatSymbols());
         df.setGroupingUsed(true);
-        if (unit != null) {
-            return df.format(value) + " " + METRICS[metric] + unit;
-        } else if (metric != NEUTRAL_METRIC) {
-            return df.format(value) + " " + METRICS[metric];
-        } else {
-            return df.format(value);
+        StringBuilder sb = new StringBuilder(df.format(value));
+        if (metric != NEUTRAL_METRIC) {
+            sb.append(" ");
+            sb.append(METRICS[metric]);
         }
+        if (unit != null) {
+            sb.append(unit);
+        }
+
+        return sb.toString();
     }
 
     /**

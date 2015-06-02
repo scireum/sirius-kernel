@@ -21,10 +21,8 @@ import java.util.Set;
 /**
  * Handles the {@link Register} annotation.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see ClassLoadAction
  * @see Register
- * @since 2013/08
  */
 public class AutoRegisterAction implements ClassLoadAction {
 
@@ -46,7 +44,8 @@ public class AutoRegisterAction implements ClassLoadAction {
         }
         if (classes.isEmpty()) {
             Injector.LOG.WARN(
-                    "%s wears a @Register annotation but neither implements an interface nor lists which classes to register for...",
+                    "%s wears a @Register annotation but neither implements an interface nor lists which classes to "
+                    + "register for...",
                     clazz.getName());
         }
         String name = r.name();
@@ -54,7 +53,8 @@ public class AutoRegisterAction implements ClassLoadAction {
             classes.remove(Named.class);
             if (Strings.isFilled(name)) {
                 Injector.LOG.WARN(
-                        "%s implements Named and still provides a name in the @Register annotation. Using value provided by Named.getName()...",
+                        "%s implements Named and still provides a name in the @Register annotation. Using value "
+                        + "provided by Named.getName()...",
                         clazz.getName());
             }
             name = ((Named) part).getName();
@@ -69,5 +69,4 @@ public class AutoRegisterAction implements ClassLoadAction {
             ctx.registerPart(part, classes.toArray(new Class<?>[classes.size()]));
         }
     }
-
 }

@@ -15,9 +15,6 @@ import java.util.function.BiConsumer;
 
 /**
  * Interface for writing structured outputs like XML or JSON.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface StructuredOutput {
 
@@ -102,7 +99,8 @@ public interface StructuredOutput {
     StructuredOutput array(@Nonnull String name, @Nonnull String elementName, @Nonnull Collection<?> array);
 
     /**
-     * Outputs the given collection as array while using the given <tt>arrayConsumer</tt> to generate the array contents.
+     * Outputs the given collection as array while using the given <tt>arrayConsumer</tt> to generate the array
+     * contents.
      *
      * @param name          the name of the array property to create
      * @param array         the collection to generate inner elements
@@ -113,5 +111,4 @@ public interface StructuredOutput {
     <E> StructuredOutput array(@Nonnull String name,
                                @Nonnull Collection<E> array,
                                BiConsumer<StructuredOutput, E> arrayConsumer);
-
 }

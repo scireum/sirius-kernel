@@ -21,10 +21,8 @@ import java.util.List;
 /**
  * Handles the {@link sirius.kernel.di.std.PriorityParts} annotation.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.kernel.di.FieldAnnotationProcessor
  * @see sirius.kernel.di.std.PriorityParts
- * @since 2013/08
  */
 @Register
 public class PriorityPartsAnnotationProcessor implements FieldAnnotationProcessor {
@@ -60,5 +58,4 @@ public class PriorityPartsAnnotationProcessor implements FieldAnnotationProcesso
                     "Only fields of type Collection or List are allowed whe using @PriorityParts.");
         }
     }
-
 }

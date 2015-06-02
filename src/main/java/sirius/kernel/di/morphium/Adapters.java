@@ -19,13 +19,13 @@ import java.util.Map;
  * <p>
  * This class is automatically utilized by {@link sirius.kernel.di.morphium.Adaptable} but kept public in case
  * custom implementation need to access this functionality.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/01
  */
 public class Adapters {
 
     private static Map<Class<?>, AdapterFactory<?>> factories;
+
+    private Adapters() {
+    }
 
     @SuppressWarnings("unchecked")
     private static <A> AdapterFactory<A> getFactory(Class<A> targetType) {

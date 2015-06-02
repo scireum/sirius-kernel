@@ -21,9 +21,6 @@ import java.util.Collection;
  * accessed via the <tt>getPart</tt> or <tt>findPart</tt> methods. Also all annotations processed by an appropriate
  * {@link FieldAnnotationProcessor} (like {@link sirius.kernel.di.std.Part}) will use this context to find the
  * requested part.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface GlobalContext {
 
@@ -136,5 +133,4 @@ public interface GlobalContext {
      * @param partInterface the lookup class for which the part is registered
      */
     void registerDynamicPart(@Nonnull String uniqueName, @Nonnull Object part, @Nonnull Class<?> partInterface);
-
 }

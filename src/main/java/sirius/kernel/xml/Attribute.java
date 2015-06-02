@@ -10,9 +10,6 @@ package sirius.kernel.xml;
 
 /**
  * Used to pass in attributes when creating objects for a {@link StructuredOutput}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class Attribute {
     private String name;
@@ -70,5 +67,4 @@ public class Attribute {
     public static Attribute set(String name, Object value) {
         return new Attribute(name, value);
     }
-
 }

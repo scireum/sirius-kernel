@@ -32,11 +32,11 @@ import java.util.List;
  * existent cache values or to verify that cached values are still up to date, before they are returned to a
  * user of the cache.
  *
- * @author Andreas Haulfer (aha@scireum.de)
+ * @param <K> the key type determining the type of the lookup values in the cache
+ * @param <V> the value type determining the type of values stored in the cache
  * @see CacheManager
  * @see ValueComputer
  * @see ValueVerifier
- * @since 2013/08
  */
 public interface Cache<K, V> {
 
@@ -97,14 +97,6 @@ public interface Cache<K, V> {
      * @return the timestamp of the last eviction
      */
     Date getLastEvictionRun();
-
-    /**
-     * Executes the eviction strategy
-     * <p>
-     * This can be called by an administrative tool. However as this method is called regularly by the
-     * {@link CacheEvictionTimer}, this does not need to be called manually.
-     */
-    void runEviction();
 
     /**
      * Clears the complete cache
@@ -180,5 +172,4 @@ public interface Cache<K, V> {
      * @return the original instance of the cache.
      */
     Cache<K, V> onRemove(Callback<Tuple<K, V>> onRemoveCallback);
-
 }

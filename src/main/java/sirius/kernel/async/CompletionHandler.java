@@ -15,8 +15,7 @@ import javax.annotation.Nullable;
  * Handler which can be attached to instances of {@link Promise} to be notified once a value is available or when the
  * computation failed.
  *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
+ * @param <V> the type of the expected value to be computed by the Promise
  */
 public interface CompletionHandler<V> {
     /**

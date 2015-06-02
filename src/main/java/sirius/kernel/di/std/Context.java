@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.di.std;
 
 import java.lang.annotation.ElementType;
@@ -10,11 +18,8 @@ import java.lang.annotation.Target;
  * <p>
  * Can be used to access the <tt>GlobalContext</tt> to wire other objects or to lookup a named part via
  * {@link sirius.kernel.di.GlobalContext#findPart(String, Class)}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.FIELD)
+@Target(ElementType.FIELD)
 public @interface Context {
 }

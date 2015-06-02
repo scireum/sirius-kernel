@@ -20,7 +20,11 @@ import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +34,6 @@ import java.util.function.Consumer;
  * Represents a structured node, which is part of a {@link StructuredInput}.
  * <p>
  * This is basically a XML node which can be queried using xpath.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class StructuredNode {
 
@@ -69,7 +70,6 @@ public class StructuredNode {
         return new StructuredNode(node);
     }
 
-
     private Node node;
 
     /*
@@ -78,7 +78,6 @@ public class StructuredNode {
     protected StructuredNode(Node root) {
         node = root;
     }
-
 
     /**
      * Returns the current nodes name.
@@ -125,6 +124,12 @@ public class StructuredNode {
         return (N) node;
     }
 
+    /**
+     * Returns a list of all children of this DOM node.
+     *
+     * @return a list containing all children of this node. If no children exist, an empty list will be returned.
+     */
+    @Nonnull
     public List<StructuredNode> getChildren() {
         NodeList result = node.getChildNodes();
         List<StructuredNode> resultList = new ArrayList<>(result.getLength());

@@ -13,10 +13,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Represents a counter for statistical use. Overflows to 0 instead to {@link Long#MIN_VALUE}
  * <p>
- * Counts up to <code>Long.MAX_VALUE - 1</code> starting at 0 and overflowing to 0.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
+ * Counts up to {@code Long.MAX_VALUE - 1} starting at 0 and overflowing to 0.
  */
 public class Counter {
     private volatile long startTimeMillis = -1;
@@ -33,7 +30,7 @@ public class Counter {
     }
 
     /**
-     * Creates a new counter up to <code>Long.MAX.VALUE - 1</code>
+     * Creates a new counter up to {@code Long.MAX.VALUE - 1}
      */
     public Counter() {
         this(Long.MAX_VALUE - 1);
@@ -63,7 +60,7 @@ public class Counter {
      * @return the average increment per given time unit
      */
     public double getAvgPer(TimeUnit unit) {
-        return (count) / getDuration(unit);
+        return (double) count / getDuration(unit);
     }
 
     /**

@@ -29,9 +29,6 @@ import java.util.Map;
  * {@link Register} annotation.
  * <p>
  * The collected metrics are updated once every minute.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/09
  */
 @Register(classes = {Metrics.class, EveryMinute.class})
 public class Metrics implements EveryMinute {
@@ -47,7 +44,7 @@ public class Metrics implements EveryMinute {
     /*
      * Internal structure to combine the three limits available for each metric: gray, warning (yellow), error (red)
      */
-    private class Limit {
+    private static class Limit {
         double gray = 0;
         double yellow = 0;
         double red = 0;
@@ -68,46 +65,43 @@ public class Metrics implements EveryMinute {
      */
     private Map<String, Double> differentials = Maps.newHashMap();
 
-
     @Override
-    public void runTimer() throws Exception {
-        synchronized (this) {
-            final DataCollector<Metric> collector = DataCollector.create();
-            for (MetricProvider provider : providers) {
-                try {
-                    provider.gather(new MetricsCollector() {
+    public synchronized void runTimer() throws Exception {
+        final DataCollector<Metric> collector = DataCollector.create();
+        for (MetricProvider provider : providers) {
+            try {
+                provider.gather(new MetricsCollector() {
 
-                        @Override
-                        public void metric(String title, double value, String unit, MetricState state) {
-                            collector.add(new Metric(title, value, state, unit));
-                        }
+                    @Override
+                    public void metric(String title, double value, String unit, MetricState state) {
+                        collector.add(new Metric(title, value, state, unit));
+                    }
 
-                        @Override
-                        public void metric(String limitType, String title, double value, String unit) {
-                            collector.add(new Metric(title, value, computeState(limitType, value), unit));
-                        }
+                    @Override
+                    public void metric(String limitType, String title, double value, String unit) {
+                        collector.add(new Metric(title, value, computeState(limitType, value), unit));
+                    }
 
-                        @Override
-                        public void differentialMetric(String id,
-                                                       String limitType,
-                                                       String title,
-                                                       double currentValue,
-                                                       String unit) {
-                            Double lastValue = differentials.get(id);
-                            if (lastValue != null) {
-                                metric(limitType, title, currentValue - lastValue, unit);
-                            }
-                            differentials.put(id, currentValue);
+                    @Override
+                    public void differentialMetric(String id,
+                                                   String limitType,
+                                                   String title,
+                                                   double currentValue,
+                                                   String unit) {
+                        Double lastValue = differentials.get(id);
+                        if (lastValue != null) {
+                            metric(limitType, title, currentValue - lastValue, unit);
                         }
-                    });
-                } catch (Exception e) {
-                    Exceptions.handle(e);
-                }
+                        differentials.put(id, currentValue);
+                    }
+                });
+            } catch (Exception e) {
+                Exceptions.handle(e);
             }
-            List<Metric> metricsList = collector.getData();
-            Collections.sort(metricsList);
-            metrics = metricsList;
         }
+        List<Metric> metricsList = collector.getData();
+        Collections.sort(metricsList);
+        metrics = metricsList;
     }
 
     /*
@@ -148,6 +142,4 @@ public class Metrics implements EveryMinute {
     public List<Metric> getMetrics() {
         return Collections.unmodifiableList(metrics);
     }
-
-
 }

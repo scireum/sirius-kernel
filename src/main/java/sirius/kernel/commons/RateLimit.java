@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.commons;
 
 import java.util.concurrent.TimeUnit;
@@ -11,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * As an example, this can be used in an inner loop if one wants to print out the current status every once in a while.
  * Since writing to System.out is comparatively slow, it's a good idea to apply a rate limit:
  * <pre>
- * <code>
+ * {@code
  * RateLimit limit = RateLimit.everyNthCall(1000);
  * for(int i = 0; i &lt; 100000; i++) {
  *     // ...smart computation here...
@@ -19,16 +27,14 @@ import java.util.concurrent.TimeUnit;
  *          System.out.println(i);
  *     }
  * }
- * </code>
+ * }
  * </pre>
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/09
  */
 public class RateLimit {
 
-
-    private enum Mode {TIME_BASED, CALL_BASED}
+    private enum Mode {
+        TIME_BASED, CALL_BASED
+    }
 
     private long interval;
     private final Mode mode;

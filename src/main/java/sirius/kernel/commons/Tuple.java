@@ -11,7 +11,11 @@ package sirius.kernel.commons;
 import com.google.common.base.Objects;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -25,10 +29,8 @@ import java.util.stream.Stream;
  *
  * @param <F> defines the first type of the tuple
  * @param <S> defines the second type of the tuple
- * @author Andreas Haufler (aha@scireum.de)
  * @see Tuple
  * @see Comparable
- * @since 2013/08
  */
 public class Tuple<F, S> {
 
@@ -153,6 +155,7 @@ public class Tuple<F, S> {
      * @param <V>    the type of the second elements of the tuples
      * @return a list containing each <tt>first</tt> component of the collection of given tuples.
      */
+    @SuppressWarnings("Convert2streamapi")
     public static <T extends Tuple<K, V>, K, V> List<K> firsts(@Nonnull Collection<T> tuples) {
         List<K> result = new ArrayList<>(tuples.size());
         for (Tuple<K, V> t : tuples) {
@@ -170,6 +173,7 @@ public class Tuple<F, S> {
      * @param <V>    the type of the second elements of the tuples
      * @return a list containing each <tt>second</tt> component of the collection of given tuples.
      */
+    @SuppressWarnings("Convert2streamapi")
     public static <T extends Tuple<K, V>, K, V> List<V> seconds(@Nonnull Collection<T> tuples) {
         List<V> result = new ArrayList<>(tuples.size());
         for (Tuple<K, V> t : tuples) {
@@ -187,6 +191,7 @@ public class Tuple<F, S> {
      * @return a list of tuples, containing one tuple per map entry where the first component is the key,
      * and the second component is the value of the map entry.
      */
+    @SuppressWarnings("Convert2streamapi")
     public static <K, V> List<Tuple<K, V>> fromMap(@Nonnull Map<K, V> map) {
         List<Tuple<K, V>> result = new ArrayList<>(map.size());
         for (Map.Entry<K, V> e : map.entrySet()) {
@@ -216,7 +221,7 @@ public class Tuple<F, S> {
     /**
      * Provides a {@link Collector} which can be used to collect a {@link Stream} of tuples into a {@link Map}.
      * <p>
-     * As an example: <code>aStream.collect(Tuple.toMap(HashMap::new, (a, b) -&gt; b))</code> will transform the
+     * As an example: {@code aStream.collect(Tuple.toMap(HashMap::new, (a, b) -&gt; b))} will transform the
      * stream of tuples into a map where a later key value pair will overwrite earlier ones.
      *
      * @param supplier factory for generating the result map
@@ -229,14 +234,11 @@ public class Tuple<F, S> {
     public static <K, V> Collector<Tuple<K, V>, Map<K, V>, Map<K, V>> toMap(Supplier<Map<K, V>> supplier,
                                                                             BinaryOperator<V> merger) {
         return Collector.of(supplier, (map, tuple) -> map.put(tuple.getFirst(), tuple.getSecond()), (a, b) -> {
-                    b.entrySet()
-                            .forEach(entryInB -> a.compute(entryInB.getKey(),
-                                    (key, valueOfA) -> merger.apply(valueOfA,
-                                            entryInB.getValue())
-                            ));
-                    return a;
-                }, Function.identity(), Collector.Characteristics.IDENTITY_FINISH
-        );
+            b.entrySet()
+             .forEach(entryInB -> a.compute(entryInB.getKey(),
+                                            (key, valueOfA) -> merger.apply(valueOfA, entryInB.getValue())));
+            return a;
+        }, Function.identity(), Collector.Characteristics.IDENTITY_FINISH);
     }
 
     /**
@@ -257,7 +259,7 @@ public class Tuple<F, S> {
      * Provides a {@link Collector} which can be used to collect a {@link Stream} of tuples into a {@link MultiMap}.
      * <p>
      * The type of <tt>MultiMap</tt> used can be determined by the <tt>supplier</tt>. So for example
-     * <code>MultiMap::createOrdered</code> will create a map with ordered keys.
+     * {@code MultiMap::createOrdered} will create a map with ordered keys.
      *
      * @param supplier factory for generating the result map
      * @param <K>      key type of the tuples being processed
@@ -266,10 +268,10 @@ public class Tuple<F, S> {
      */
     public static <K, V> Collector<Tuple<K, V>, MultiMap<K, V>, MultiMap<K, V>> toMultiMap(Supplier<MultiMap<K, V>> supplier) {
         return Collector.of(supplier,
-                (map, tuple) -> map.put(tuple.getFirst(), tuple.getSecond()),
-                (a, b) -> a.merge(b),
-                Function.identity(),
-                Collector.Characteristics.IDENTITY_FINISH);
+                            (map, tuple) -> map.put(tuple.getFirst(), tuple.getSecond()),
+                            (a, b) -> a.merge(b),
+                            Function.identity(),
+                            Collector.Characteristics.IDENTITY_FINISH);
     }
 
     /**
@@ -278,9 +280,9 @@ public class Tuple<F, S> {
      * <p>
      * This method is designed to be used with {@link Stream#flatMap(java.util.function.Function)}:
      * <pre>
-     * <code>
+     * {@code
      *      map.entrySet().flatMap(e -&gt; Tuple.flatten(e)).forEach(t -&gt; System.out.println(t));
-     * </code>
+     * }
      * </pre>
      *
      * @param entry the entry to transform
@@ -303,5 +305,4 @@ public class Tuple<F, S> {
     public static <K, V> Tuple<K, V> valueOf(Map.Entry<K, V> entry) {
         return Tuple.create(entry.getKey(), entry.getValue());
     }
-
 }

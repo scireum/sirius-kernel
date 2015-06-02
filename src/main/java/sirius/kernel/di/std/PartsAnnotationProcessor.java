@@ -12,20 +12,15 @@ import sirius.kernel.di.FieldAnnotationProcessor;
 import sirius.kernel.di.MutableGlobalContext;
 import sirius.kernel.di.PartCollection;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Collection;
 
 /**
  * Handles the {@link Parts} annotation.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.kernel.di.FieldAnnotationProcessor
  * @see Parts
- * @since 2013/08
  */
 @Register
 public class PartsAnnotationProcessor implements FieldAnnotationProcessor {

@@ -16,8 +16,7 @@ import java.util.function.Supplier;
  * <p>
  * Can be used to create final variable which can be modified from within an inner class.
  *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
+ * @param <T> the type of the value contained in the value holder
  */
 public class ValueHolder<T> implements Supplier<T>, Consumer<T> {
     private T value;

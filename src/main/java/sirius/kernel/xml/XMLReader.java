@@ -19,8 +19,16 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.health.Exceptions;
 
-import javax.xml.parsers.*;
-import java.io.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -34,14 +42,19 @@ import java.util.function.Function;
  * Used SAX to parse a given XML file. A set of {@link NodeHandler} objects can be given, which get notified if
  * a sub-tree below a given tag was parsed. This sub-tree is available as DOM and can conveniently be processed
  * using xpath.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class XMLReader extends DefaultHandler {
 
     private TaskContext taskContext;
 
+    /**
+     * Creates a new XMLReader.
+     * <p>
+     * Use {@link #addHandler(String, NodeHandler)} tobind handlers to tags and then call one of the <tt>parse</tt>
+     * methods to process the XML file.
+     * <p>
+     * To interrupt processing use {@link TaskContext#cancel()}.
+     */
     public XMLReader() {
         try {
             documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -110,7 +123,6 @@ public class XMLReader extends DefaultHandler {
     private List<SAX2DOMHandler> activeHandlers = Lists.newArrayList();
     private DocumentBuilder documentBuilder;
 
-
     /**
      * Registers a new handler for a qualified name of a node.
      * <p>
@@ -136,13 +148,12 @@ public class XMLReader extends DefaultHandler {
         parse(stream, null);
     }
 
-    /*
+    /**
      * Used to handle the an abort via {@link TaskContext}
      */
-    class UserInterruptException extends RuntimeException {
+    static class UserInterruptException extends RuntimeException {
 
         private static final long serialVersionUID = -7454219131982518216L;
-
     }
 
     /**
@@ -160,7 +171,8 @@ public class XMLReader extends DefaultHandler {
             org.xml.sax.XMLReader reader = saxParser.getXMLReader();
             reader.setEntityResolver(new EntityResolver() {
 
-                public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                @Override
+                public InputSource resolveEntity(String publicId, String systemId) throws IOException {
                     URL url = new URL(systemId);
                     // Check if file is local
                     if ("file".equals(url.getProtocol())) {
@@ -185,15 +197,11 @@ public class XMLReader extends DefaultHandler {
             });
             reader.setContentHandler(this);
             reader.parse(new InputSource(stream));
-        } catch (ParserConfigurationException e) {
-            throw new IOException(e);
-        } catch (SAXException e) {
+        } catch (ParserConfigurationException | SAXException e) {
             throw new IOException(e);
         } catch (UserInterruptException e) {
-            /*
-             * IGNORED - this is used to cancel parsing if the used tried to
-			 * cancel a process.
-			 */
+            // IGNORED - this is used to cancel parsing if the used tried to
+            // cancel a process.
         } finally {
             stream.close();
         }

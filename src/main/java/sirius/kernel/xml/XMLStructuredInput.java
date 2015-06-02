@@ -21,9 +21,6 @@ import java.io.InputStream;
 
 /**
  * Represents an XML based input which can be processed using xpath.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class XMLStructuredInput implements StructuredInput {
 
@@ -43,9 +40,7 @@ public class XMLStructuredInput implements StructuredInput {
             if (close) {
                 in.close();
             }
-        } catch (ParserConfigurationException e) {
-            throw new IOException(e);
-        } catch (SAXException e) {
+        } catch (ParserConfigurationException | SAXException e) {
             throw new IOException(e);
         }
     }

@@ -19,17 +19,17 @@ import java.util.stream.Collector;
 
 /**
  * Helper class which provides various methods to work with lambdas.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/05
  */
 public class Lambdas {
+
+    private Lambdas() {
+    }
 
     /**
      * Provides an identity function which permits to "touch" the element for which it was called.
      * <p>
      * This is designed to be used with {@link java.util.Optional} like this:
-     * <code>return Optional.of("Test").map(Lambdas.touch(s -&gt; System.out.println(s)))</code>
+     * {@code return Optional.of("Test").map(Lambdas.touch(s -&gt; System.out.println(s)))}
      *
      * @param consumer the lambda used to "touch" (use) each parameter
      * @param <T>      the type of the elements accepted by the consumer
@@ -52,10 +52,10 @@ public class Lambdas {
      */
     public static <T, C extends Collection<T>> Collector<T, ?, C> into(C collection) {
         return Collector.of(() -> collection,
-                Collection::add,
-                Lambdas::unsupportedBiOperation,
-                Function.identity(),
-                Collector.Characteristics.IDENTITY_FINISH);
+                            Collection::add,
+                            Lambdas::unsupportedBiOperation,
+                            Function.identity(),
+                            Collector.Characteristics.IDENTITY_FINISH);
     }
 
     /**
@@ -89,10 +89,10 @@ public class Lambdas {
      */
     public static <K> Collector<K, Map<K, Integer>, Map<K, Integer>> groupAndCount() {
         return Collector.of(() -> new HashMap<>(),
-                Lambdas::increment,
-                Lambdas::unsupportedBiOperation,
-                Function.identity(),
-                Collector.Characteristics.IDENTITY_FINISH);
+                            Lambdas::increment,
+                            Lambdas::unsupportedBiOperation,
+                            Function.identity(),
+                            Collector.Characteristics.IDENTITY_FINISH);
     }
 
     private static <K> void increment(Map<K, Integer> map, K value) {
@@ -114,5 +114,4 @@ public class Lambdas {
     public static <O> O unsupportedBiOperation(O a, O b) {
         throw new UnsupportedOperationException();
     }
-
 }

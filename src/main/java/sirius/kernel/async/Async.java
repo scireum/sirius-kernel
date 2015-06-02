@@ -17,13 +17,20 @@ import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.*;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -40,17 +47,23 @@ import java.util.stream.Collectors;
  * <p>
  * Additionally helper-methods for creating and aggregating instances {@link Promise} are provided, which are the
  * main interaction model when dealing with async and non-blocking execution.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @ParametersAreNonnullByDefault
 public class Async {
 
-    protected static final Log LOG = Log.get("async");
+    /**
+     * Contains the name of the default executor.
+     */
     public static final String DEFAULT = "default";
+
+    /**
+     * Contains the priority of this {@link Lifecycle}
+     */
+    public static final int LIFECYCLE_PRIORITY = 25;
+
+    protected static final Log LOG = Log.get("async");
     protected static final Map<String, AsyncExecutor> executors = Maps.newConcurrentMap();
-    protected static final List<BackgroundQueueWorker> backgroundWorkers = Lists.newArrayList();
+    protected static List<BackgroundQueueWorker> backgroundWorkers = Lists.newArrayList();
 
     // If sirius is not started yet, we still consider it running already as the intention of this flag
     // is to detect a system halt and not to check if the startup sequence has finished.
@@ -58,6 +71,9 @@ public class Async {
 
     @Parts(BackgroundTaskQueue.class)
     private static PartCollection<BackgroundTaskQueue> backgroundQueues;
+
+    private Async() {
+    }
 
     /**
      * Returns the executor for the given category.
@@ -93,8 +109,8 @@ public class Async {
                 if (exec == null) {
                     Extension config = Extensions.getExtension("async.executor", wrapper.category);
                     exec = new AsyncExecutor(wrapper.category,
-                                             config.get("poolSize").asInt(10),
-                                             config.get("queueLength").asInt(0));
+                                             config.get("poolSize").getInteger(),
+                                             config.get("queueLength").getInteger());
                     executors.put(wrapper.category, exec);
                 }
             }
@@ -209,7 +225,7 @@ public class Async {
             final int currentIndex = index;
             promise.onComplete(new CompletionHandler<V>() {
                 @Override
-                public void onSuccess(V value) throws Exception {
+                public void onSuccess(@Nullable V value) throws Exception {
                     if (!result.isFailed()) {
                         // onSuccess can be called from any thread -> sync on resultList...
                         synchronized (resultList) {
@@ -264,7 +280,6 @@ public class Async {
         return running;
     }
 
-
     /**
      * Ensures that all thread pools are halted, when the system shuts down.
      */
@@ -279,6 +294,7 @@ public class Async {
             }
         }
 
+        @SuppressWarnings("Convert2streamapi")
         @Override
         public void stopped() {
             running = false;
@@ -288,6 +304,18 @@ public class Async {
             }
         }
 
+        /**
+         * Determines the duration we wait for an executor to shut down normally
+         * (after having called {@link ThreadPoolExecutor#shutdown()})
+         */
+        private static final Duration EXECUTOR_SHUTDOWN_WAIT = Duration.ofSeconds(60);
+
+        /**
+         * Determines the duration we wait for an executor to shut down forced
+         * (after having called {@link ThreadPoolExecutor#shutdownNow()})
+         */
+        private static final Duration EXECUTOR_TERMINATION_WAIT = Duration.ofSeconds(30);
+
         @Override
         public void awaitTermination() {
             for (Map.Entry<String, AsyncExecutor> e : executors.entrySet()) {
@@ -295,16 +323,17 @@ public class Async {
                 if (!exec.isTerminated()) {
                     LOG.INFO("Waiting for async executor '%s' to terminate...", e.getKey());
                     try {
-                        if (!exec.awaitTermination(60, TimeUnit.SECONDS)) {
-                            LOG.SEVERE(Strings.apply("Executor '%s' did not terminate within 60s. Interrupting tasks...",
-                                                     e.getKey()));
+                        if (!exec.awaitTermination(EXECUTOR_SHUTDOWN_WAIT.getSeconds(), TimeUnit.SECONDS)) {
+                            LOG.SEVERE(Strings.apply("Executor '%s' did not terminate within 60s. Interrupting "
+                                                     + "tasks...", e.getKey()));
                             exec.shutdownNow();
-                            if (!exec.awaitTermination(30, TimeUnit.SECONDS)) {
+                            if (!exec.awaitTermination(EXECUTOR_TERMINATION_WAIT.getSeconds(), TimeUnit.SECONDS)) {
                                 LOG.SEVERE(Strings.apply("Executor '%s' did not terminate after another 30s!",
                                                          e.getKey()));
                             }
                         }
                     } catch (InterruptedException ex) {
+                        Exceptions.ignore(ex);
                         LOG.SEVERE(Strings.apply("Interrupted while waiting for '%s' to terminate!", e.getKey()));
                     }
                 }
@@ -318,7 +347,7 @@ public class Async {
 
         @Override
         public int getPriority() {
-            return 25;
+            return LIFECYCLE_PRIORITY;
         }
     }
 }

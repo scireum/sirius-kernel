@@ -10,6 +10,8 @@ package sirius.kernel.commons;
 
 import sirius.kernel.health.Exceptions;
 
+import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.Random;
 
 /**
@@ -17,11 +19,11 @@ import java.util.Random;
  * <p>
  * Instead of using {@link Thread#sleep(long)} there methods provide a literal feedback on the intended period. Also
  * we take care of the <tt>InterruptedException</tt> by ignoring it. This make the code more compact and readable.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/11
  */
 public class Wait {
+
+    private Wait() {
+    }
 
     /**
      * Waits the given amount of milliseconds.
@@ -38,6 +40,20 @@ public class Wait {
             } catch (InterruptedException e) {
                 Exceptions.ignore(e);
             }
+        }
+    }
+
+    /**
+     * Waits the given amount of time.
+     * <p>
+     * If the given value is <tt>null</tt>, the method returns immediately. If an <tt>InterruptedException</tt>
+     * is thrown while waiting, the method will return immediately but ignore the exception.
+     *
+     * @param durationToWait the duration to wait
+     */
+    public static void duration(@Nullable Duration durationToWait) {
+        if (durationToWait != null) {
+            seconds(durationToWait.getSeconds());
         }
     }
 
@@ -60,7 +76,7 @@ public class Wait {
      * <p>
      * Note that minWaitMillis may be negative. This can be used to only block the thread in a given percentage of
      * all calls. So if the thread should wait between 0 and 500ms in 50% of all calls
-     * <code>randomMillis(-500, 500)</code> can be invoked. Using this bounds, the expected wait time will be
+     * {@code randomMillis(-500, 500)} can be invoked. Using this bounds, the expected wait time will be
      * between -500ms and 0ms in 50% of all calls (on average). As negative delays are ignored, the method
      * will return immediately.
      *
@@ -82,7 +98,8 @@ public class Wait {
      * See {@link #randomMillis(int, int)} for a detailed description on using a negative lower bound.
      *
      * @param minWaitSeconds the minimal time to wait in seconds.
-     * @param maxWaitSeconds the maximal time to wait in seconds. This must be &gt;= minWaitSeconds and also &gt; 0 or the
+     * @param maxWaitSeconds the maximal time to wait in seconds. This must be &gt;= minWaitSeconds and also &gt; 0
+     *                       or the
      *                       method will always return immediately
      */
     public static void randomSeconds(double minWaitSeconds, double maxWaitSeconds) {

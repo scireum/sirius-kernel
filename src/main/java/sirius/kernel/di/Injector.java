@@ -30,22 +30,21 @@ import java.util.regex.Pattern;
  * Parts are commonly added via subclasses of {@link ClassLoadAction}. These scan each class in the classpath
  * and instantiate and insert them into the {@link MutableGlobalContext} if required. Most of these
  * <tt>ClassLoadAction</tt> implementations trigger on annotations. A prominent example is the
- * {@link sirius.kernel.di.std.AutoRegisterAction} which loads all classes wearing the {@link sirius.kernel.di.std.Register}
+ * {@link sirius.kernel.di.std.AutoRegisterAction} which loads all classes wearing the {@link sirius.kernel.di.std
+ * .Register}
  * annotation. Subclasses of <tt>ClassLoadAction</tt> are discovered automatically.
  * <p>
  * Accessing parts can be done in two ways. First, one can access the current {@link GlobalContext} via
  * {@link #context()}. This can be used to retrieve parts by class or by class and name. The second way
  * to access parts is to use marker annotations like {@link sirius.kernel.di.std.Part},
  * {@link sirius.kernel.di.std.Parts} or {@link sirius.kernel.di.std.Context}. Again,
- * these annotations are not processed by the micro kernel itself, but by subclasses of {@link FieldAnnotationProcessor}.
+ * these annotations are not processed by the micro kernel itself, but by subclasses of {@link
+ * FieldAnnotationProcessor}.
  * To process all annotations of a given Java object, {@link GlobalContext#wire(Object)} can be used. This will
  * be automatically called for each part which is auto-instantiated by a <tt>ClassLoadAction</tt>.
  * <p>
  * Also all annotations on static fields are processed on system startup. This is a simple trick to pass a
  * part to objects which are frequently created and destroyed.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class Injector {
 
@@ -61,6 +60,9 @@ public class Injector {
     private static Classpath cp;
     private static List<ClassLoadAction> actions;
 
+    private Injector() {
+    }
+
     /**
      * Initializes the framework. Must be only called once on system startup.
      * <p>
@@ -68,6 +70,7 @@ public class Injector {
      *
      * @param classpath the classpath used to enumerate all classes to be scanned
      */
+    @SuppressWarnings("Convert2streamapi")
     public static void init(@Nonnull final Classpath classpath) {
         ctx = new PartRegistry();
         cp = classpath;
@@ -148,7 +151,7 @@ public class Injector {
         if (packageFilter.isEmpty()) {
             return true;
         }
-        for(String filter : packageFilter) {
+        for (String filter : packageFilter) {
             if (className.startsWith(filter)) {
                 return true;
             }
@@ -176,5 +179,4 @@ public class Injector {
     public static List<Class<?>> getAllLoadedClasses() {
         return Collections.unmodifiableList(loadedClasses);
     }
-
 }

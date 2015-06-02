@@ -8,7 +8,6 @@
 
 package sirius.kernel.async;
 
-
 import sirius.kernel.commons.RateLimit;
 import sirius.kernel.commons.Strings;
 
@@ -22,9 +21,6 @@ import java.util.function.Consumer;
  * {@link sirius.kernel.async.CallContext#get(Class)}. This provides an interface to a monitoring system which
  * might be present (by calling {@link sirius.kernel.async.TaskContext#setAdapter(TaskContextAdapter)}. If no
  * monitoring is available, the default mechanisms of the platform are used.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/07
  */
 public class TaskContext implements SubContext {
     /**
@@ -42,13 +38,14 @@ public class TaskContext implements SubContext {
      * @see #setJob(String)
      */
     public static final String MDC_SYSTEM = "system";
+    private static final int STATE_UPDATE_INTERVAL = 5;
 
     private TaskContextAdapter adapter;
     private String system = GENERIC;
     private String subSystem = GENERIC;
     private String job = GENERIC;
     private String jobTitle = "";
-    private RateLimit stateUpdate = RateLimit.timeInterval(5, TimeUnit.SECONDS);
+    private RateLimit stateUpdate = RateLimit.timeInterval(STATE_UPDATE_INTERVAL, TimeUnit.SECONDS);
 
     public TaskContext() {
         this.adapter = new BasicTaskContextAdapter(this);
@@ -57,7 +54,7 @@ public class TaskContext implements SubContext {
     /**
      * Provides access to the <tt>TaskContext</tt> for the current thread.
      * <p>
-     * This is boilerplate for <code>CallContext.getCurrent().get(TaskContext.class)</code>
+     * This is boilerplate for {@code CallContext.getCurrent().get(TaskContext.class)}
      *
      * @return the task context for the current thread
      */
@@ -117,7 +114,7 @@ public class TaskContext implements SubContext {
     /**
      * Can be used to determine if the state should be refreshed.
      * <p>
-     * By calling <code>shouldUpdateState().check()</code> an inner loop can detect if a state update should be
+     * By calling {@code shouldUpdateState().check()} an inner loop can detect if a state update should be
      * performed. This will limit the number of updates to a reasonable value.
      *
      * @return a rate limit which limits the number of updates to a reasonable value
@@ -244,7 +241,6 @@ public class TaskContext implements SubContext {
         return subSystem;
     }
 
-
     /**
      * Sets the <tt>Sub-System</tt> component of the <tt>System String</tt>
      *
@@ -348,6 +344,5 @@ public class TaskContext implements SubContext {
 
     @Override
     public void detach() {
-
     }
 }

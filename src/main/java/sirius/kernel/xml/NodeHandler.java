@@ -11,9 +11,7 @@ package sirius.kernel.xml;
 /**
  * Called by the {@link XMLReader} for a parsed sub-DOM tree.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see XMLReader
- * @since 2013/08
  */
 public interface NodeHandler {
 

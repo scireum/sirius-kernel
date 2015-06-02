@@ -15,9 +15,6 @@ import java.time.Instant;
 
 /**
  * Contains a log message passed from {@link Log} to {@link LogTap}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 public class LogMessage {
     private String message;

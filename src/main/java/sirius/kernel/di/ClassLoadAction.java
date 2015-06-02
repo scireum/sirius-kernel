@@ -15,9 +15,6 @@ import java.lang.annotation.Annotation;
 /**
  * Implementations of this class will be automatically detected and applied to
  * all matching classes on startup.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface ClassLoadAction {
     /**
@@ -25,7 +22,7 @@ public interface ClassLoadAction {
      * interest.
      *
      * @return a class of an annotation which identifies classes processed by this implementation.
-     *         Returns <tt>null</tt> to process each class.
+     * Returns <tt>null</tt> to process each class.
      */
     @Nullable
     Class<? extends Annotation> getTrigger();

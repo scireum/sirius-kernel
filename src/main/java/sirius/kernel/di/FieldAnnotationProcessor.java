@@ -16,9 +16,6 @@ import java.lang.reflect.Field;
 /**
  * Implementations of this class will be automatically detected and used to wire objects
  * (to handle annotations placed on fields).
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface FieldAnnotationProcessor {
     /**
@@ -39,5 +36,4 @@ public interface FieldAnnotationProcessor {
      * @throws Exception if a part cannot be resolved or the field cannot be filled
      */
     void handle(@Nonnull MutableGlobalContext ctx, @Nullable Object object, @Nonnull Field field) throws Exception;
-
 }

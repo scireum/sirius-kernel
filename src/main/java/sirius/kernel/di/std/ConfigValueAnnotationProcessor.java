@@ -23,10 +23,8 @@ import java.util.List;
 /**
  * AnnotationProcessor which handles the {@link ConfigValue} annotation.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.kernel.di.FieldAnnotationProcessor
  * @see ConfigValue
- * @since 2013/08
  */
 @Register
 public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor {
@@ -66,5 +64,4 @@ public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor 
                               field.getName());
         }
     }
-
 }

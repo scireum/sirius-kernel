@@ -18,9 +18,6 @@ import java.text.DecimalFormatSymbols;
  * <p>
  * Provides a set of default formats and also describes the parameters used to format a number. This is used
  * by {@link Amount} to create string representations.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface NumberFormat {
 
@@ -33,7 +30,7 @@ public interface NumberFormat {
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */
-    public static final NumberFormat PERCENT = new NumberFormat() {
+    NumberFormat PERCENT = new NumberFormat() {
 
         @Override
         public String getSuffix() {
@@ -70,7 +67,7 @@ public interface NumberFormat {
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */
-    public static final NumberFormat TWO_DECIMAL_PLACES = new NumberFormat() {
+    NumberFormat TWO_DECIMAL_PLACES = new NumberFormat() {
 
         @Override
         public String getSuffix() {
@@ -96,7 +93,6 @@ public interface NumberFormat {
         public String toString() {
             return "TWO_DECIMAL_PLACES";
         }
-
     };
 
     /**
@@ -108,7 +104,7 @@ public interface NumberFormat {
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */
-    public static final NumberFormat NO_DECIMAL_PLACES = new NumberFormat() {
+    NumberFormat NO_DECIMAL_PLACES = new NumberFormat() {
 
         @Override
         public String getSuffix() {

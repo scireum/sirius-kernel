@@ -10,10 +10,16 @@ package sirius.kernel.extensions;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.typesafe.config.*;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigValue;
+import com.typesafe.config.ConfigValueFactory;
+import com.typesafe.config.ConfigValueType;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.PriorityCollector;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -34,7 +40,7 @@ import java.util.Map;
  * (see: {@link sirius.kernel.Sirius#setupConfiguration()}). These files will be merged together, so that extensions
  * like the following wil be put into one extension list reachable as "examples":
  * <pre>
- * <code>
+ * {@code
  *     File A:
  *
  *      examples {
@@ -52,33 +58,31 @@ import java.util.Map;
  *              otherKey = true
  *          }
  *      }
- * </code>
+ * }
  * </pre>
  * <p>
  * This permits frameworks to provide extension hooks which can be extended by sub modules, without having the
  * framework to "know" those modules. Using a loose coupled approach like this simplifies the task of building
  * modular and extensible systems.
  * <p>
- * The extensions defined above can be obtained calling <code>Extensions.getExtension("examples")</code>. Each
- * of those extensions can be read out calling <code>ext.getValue("key").asString()</code> or
- * <code>ext.getValue("otherKey").asBoolean()</code>
+ * The extensions defined above can be obtained calling {@code Extensions.getExtension("examples")}. Each
+ * of those extensions can be read out calling {@code ext.getValue("key").asString()} or
+ * {@code ext.getValue("otherKey").asBoolean()}
  * <p>
  * Another way of loading extensions is to place an {@link sirius.kernel.di.std.ExtensionList} annotation
  * on a field like:
  * <pre>
- * <code>
+ * {@code
  *     &#64;ExtensionList("examples")
  *     private List&lt;Extension&gt; examples;
- * </code>
+ * }
  * </pre>
  * This will be detected by the {@link sirius.kernel.di.std.ExtensionListAnnotationProcessor} as the
  * {@link sirius.kernel.di.Injector} starts up and filled with the appropriate list.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see Extension
  * @see Value
  * @see sirius.kernel.Sirius#setupConfiguration()
- * @since 2013/08
  */
 @ParametersAreNonnullByDefault
 public class Extensions {
@@ -97,7 +101,6 @@ public class Extensions {
      * Class must not be instantiated. All methods are static
      */
     private Extensions() {
-
     }
 
     /*
@@ -120,10 +123,8 @@ public class Extensions {
     @Nullable
     public static Extension getExtension(String type, String id) {
         if (!id.matches("[a-z0-9\\-]+")) {
-            LOG.WARN(
-                    "Bad extension id detected: '%s' (for type: %s). Names should only consist of lowercase letters, digits or '-'",
-                    id,
-                    type);
+            LOG.WARN("Bad extension id detected: '%s' (for type: %s). Names should only consist of lowercase letters," +
+                     " " + "digits or '-'", id, type);
         }
 
         Extension result = getExtensionMap(type).get(id);
@@ -199,6 +200,9 @@ public class Extensions {
         return getExtensionMap(type).values();
     }
 
+    /**
+     * Default implementation of <tt>Extension</tt>.
+     */
     static class BasicExtension implements Extension, Comparable<BasicExtension> {
 
         private final int priority;
@@ -277,6 +281,7 @@ public class Extensions {
             return ctx;
         }
 
+        @SuppressWarnings("Convert2streamapi")
         @Nonnull
         @Override
         public List<Config> getConfigs(String key) {
@@ -298,6 +303,7 @@ public class Extensions {
             try {
                 return config.toConfig().getMilliseconds(path);
             } catch (ConfigException.Missing e) {
+                Exceptions.ignore(e);
                 return def.toConfig().getMilliseconds(path);
             } catch (Exception e) {
                 throw Exceptions.handle(e);
@@ -353,15 +359,15 @@ public class Extensions {
 
         @Override
         public boolean equals(@Nullable Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             BasicExtension that = (BasicExtension) o;
-
-            if (id != null ? !id.equals(that.id) : that.id != null) return false;
-            if (type != null ? !type.equals(that.type) : that.type != null) return false;
-
-            return true;
+            return Strings.areEqual(id, that.id) && Strings.areEqual(type, that.type);
         }
 
         @Override

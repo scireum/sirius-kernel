@@ -9,11 +9,9 @@
 package sirius.kernel.async;
 
 /**
- * Implementations of this interface can be attached to a {@link sirius.kernel.async.TaskContext} of a thread to perform
+ * Implementations of this interface can be attached to a {@link sirius.kernel.async.TaskContext} of a thread to
+ * perform
  * monitoring and logging.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/07
  */
 public interface TaskContextAdapter {
     /**
@@ -31,7 +29,8 @@ public interface TaskContextAdapter {
     void trace(String message);
 
     /**
-     * Invoked if {@link sirius.kernel.async.TaskContext#setState(String, Object...)} is called in the attached context.
+     * Invoked if {@link sirius.kernel.async.TaskContext#setState(String, Object...)} is called in the attached
+     * context.
      *
      * @param message the message to set as state
      */

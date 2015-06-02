@@ -13,9 +13,6 @@ package sirius.kernel.health.metrics;
  * <p>
  * Instances of this class can be registered using the {@link sirius.kernel.di.std.Register} annotation which then
  * can provide metrics for various areas of the system.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/09
  */
 public interface MetricProvider {
 
@@ -25,5 +22,4 @@ public interface MetricProvider {
      * @param collector the interface used to provide metrics
      */
     void gather(MetricsCollector collector);
-
 }

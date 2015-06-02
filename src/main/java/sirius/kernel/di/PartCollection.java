@@ -17,8 +17,7 @@ import java.util.Collection;
  * <p>
  * This is the content of a field wearing the {@link sirius.kernel.di.std.Parts} annotation.
  *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
+ * @param <P> the type of objects in the collection
  */
 public interface PartCollection<P> extends Iterable<P> {
 
@@ -34,7 +33,7 @@ public interface PartCollection<P> extends Iterable<P> {
      * Returns all parts currently registered for the given class.
      *
      * @return all parts in the {@link GlobalContext} which were registered for the given class. If no parts are found,
-     *         and empty collection is returned.
+     * and empty collection is returned.
      */
     @Nonnull
     Collection<P> getParts();

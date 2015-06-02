@@ -16,11 +16,10 @@ package sirius.kernel.health;
  * which van be directly shown to the user.
  * <p>
  * Creating a <tt>HandledException</tt> is done by using one of the static methods of {@link Exceptions}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class HandledException extends RuntimeException {
+
+    private static final long serialVersionUID = 4460968279048068701L;
 
     /**
      * Creates a new instance with the given message and no exception attached

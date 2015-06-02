@@ -11,8 +11,7 @@ package sirius.kernel.commons;
 /**
  * Provides a simple callback which can be invoked with a value of the given type.
  *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
+ * @param <T> the type of the object passed to the callback
  */
 public interface Callback<T> {
     /**

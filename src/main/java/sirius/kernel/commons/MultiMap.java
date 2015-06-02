@@ -10,7 +10,14 @@ package sirius.kernel.commons;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -20,11 +27,10 @@ import java.util.stream.Stream;
 /**
  * Represents a map which contains a collection of elements per key.
  * <p>
- * Provides an implementation which simulates a <code>Map&lt;K, Collection&lt;V&gt;&gt;</code> by providing
+ * Provides an implementation which simulates a {@code Map&lt;K, Collection&lt;V&gt;&gt;} by providing
  * specific <tt>put</tt>, <tt>get</tt> and <tt>remove</tt> methods.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
+ * @param <K> the key type used by the map
+ * @param <V> the value type used by the map
  */
 public class MultiMap<K, V> {
 
@@ -193,6 +199,7 @@ public class MultiMap<K, V> {
      *
      * @return a list of all values stored for all keys
      */
+    @SuppressWarnings("Convert2streamapi")
     @Nonnull
     public List<V> values() {
         List<V> result = new ArrayList<V>();
@@ -230,9 +237,9 @@ public class MultiMap<K, V> {
     public MultiMap<K, V> merge(MultiMap<K, V> other) {
         if (other != null) {
             other.base.entrySet()
-                    .stream()
-                    .flatMap(e -> Tuple.flatten(e))
-                    .forEach(t -> put(t.getFirst(), t.getSecond()));
+                      .stream()
+                      .flatMap(e -> Tuple.flatten(e))
+                      .forEach(t -> put(t.getFirst(), t.getSecond()));
         }
         return this;
     }
@@ -249,10 +256,10 @@ public class MultiMap<K, V> {
     public static <K, V> Collector<V, MultiMap<K, V>, MultiMap<K, V>> groupingBy(Supplier<MultiMap<K, V>> supplier,
                                                                                  Function<V, K> classifier) {
         return Collector.of(supplier,
-                (map, value) -> map.put(classifier.apply(value), value),
-                (a, b) -> a.merge(b),
-                Function.identity(),
-                Collector.Characteristics.IDENTITY_FINISH);
+                            (map, value) -> map.put(classifier.apply(value), value),
+                            (a, b) -> a.merge(b),
+                            Function.identity(),
+                            Collector.Characteristics.IDENTITY_FINISH);
     }
 
     /**
@@ -270,10 +277,10 @@ public class MultiMap<K, V> {
     public static <K, V> Collector<V, MultiMap<K, V>, MultiMap<K, V>> groupingByMultiple(Supplier<MultiMap<K, V>> supplier,
                                                                                          Function<V, Collection<K>> classifier) {
         return Collector.of(supplier,
-                (map, value) -> classifier.apply(value).stream().forEach(key -> map.put(key, value)),
-                (a, b) -> a.merge(b),
-                Function.identity(),
-                Collector.Characteristics.IDENTITY_FINISH);
+                            (map, value) -> classifier.apply(value).stream().forEach(key -> map.put(key, value)),
+                            (a, b) -> a.merge(b),
+                            Function.identity(),
+                            Collector.Characteristics.IDENTITY_FINISH);
     }
 
     /**
@@ -288,5 +295,4 @@ public class MultiMap<K, V> {
     public Stream<Map.Entry<K, Collection<V>>> stream() {
         return getUnderlyingMap().entrySet().stream();
     }
-
 }

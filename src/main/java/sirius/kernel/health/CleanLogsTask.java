@@ -17,9 +17,6 @@ import java.time.Duration;
 
 /**
  * Automatically deletes old log files.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/03
  */
 @Register
 public class CleanLogsTask implements EveryDay {

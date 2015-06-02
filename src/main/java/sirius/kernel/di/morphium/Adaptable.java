@@ -25,12 +25,16 @@ import java.util.Optional;
  * classes or interfaces which might be extended by a consumer. If this class or interface derives from
  * <tt>Adaptable</tt>, the extended functionality can be easily accessed (with full type safety) where the framework
  * class or interface is available.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/01
  */
 public interface Adaptable {
 
+    /**
+     * Determines if this can be adapted to the given <tt>type</tt>.
+     *
+     * @param type the target type to check for
+     * @return <tt>true</tt> if this implements the type already or if an adapter is present to make this matching
+     * <tt>type</tt>
+     */
     default boolean is(@Nonnull Class<?> type) {
         if (type.isInstance(this)) {
             return true;
@@ -38,6 +42,14 @@ public interface Adaptable {
         return Adapters.canMake(this, type);
     }
 
+    /**
+     * Tries to adapt this into the given <tt>adapterType</tt>.
+     *
+     * @param adapterType the target type to adapt to
+     * @param <A>         the type of the adapter type
+     * @return an optional which either contains the adapted value matching the requested <tt>adapterType</tt> or
+     * an empty optional if no transformation was possible
+     */
     @SuppressWarnings("unchecked")
     default <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
         if (adapterType.isInstance(this)) {
@@ -46,6 +58,14 @@ public interface Adaptable {
         return Optional.ofNullable(Adapters.make(this, adapterType));
     }
 
+    /**
+     * Adapts this into the given <tt>adapterType</tt>.
+     *
+     * @param adapterType the target type to adapt to
+     * @param <A>         the type of the adapter type
+     * @return this adapted to match the requested <tt>adapterType</tt>
+     * @throws IllegalArgumentException if no transformation was possible
+     */
     default <A> A as(@Nonnull Class<A> adapterType) {
         Optional<A> result = tryAs(adapterType);
         if (result.isPresent()) {
@@ -56,5 +76,4 @@ public interface Adaptable {
                                                              adapterType.getName()));
         }
     }
-
 }

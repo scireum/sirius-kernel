@@ -18,9 +18,6 @@ import java.lang.annotation.Target;
  * <p>
  * Note that the {@link Register} annotation itself as ({@link Register#framework()} to specify
  * the framework required. So this annotation is intended for custom class load actions.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/05
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})

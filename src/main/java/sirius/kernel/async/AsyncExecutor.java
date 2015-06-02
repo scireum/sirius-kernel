@@ -14,16 +14,17 @@ import sirius.kernel.health.Average;
 import sirius.kernel.health.Counter;
 import sirius.kernel.health.Exceptions;
 
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents an executor used by sirius to schedule background tasks.
  * <p>
  * Instances of this class are created and managed by {@link Async}. This class is only made public so it can be
  * accessed for statistical reasons like ({@link #getBlocked()} or {@link #getDropped()}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecutionHandler {
 
@@ -33,10 +34,12 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
     protected Counter executed = new Counter();
     protected Average duration = new Average();
 
+    private static final long DEFAULT_KEEP_ALIVE_TIME = 10;
+
     AsyncExecutor(String category, int poolSize, int queueLength) {
         super(poolSize,
               poolSize,
-              10L,
+              DEFAULT_KEEP_ALIVE_TIME,
               TimeUnit.SECONDS,
               queueLength > 0 ? new LinkedBlockingQueue<>(queueLength) : new LinkedBlockingQueue<>());
         this.category = category;

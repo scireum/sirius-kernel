@@ -18,9 +18,6 @@ import java.util.List;
 
 /**
  * Represents an extension loaded via the {@link Extensions} framework.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface Extension {
 
@@ -39,7 +36,7 @@ public interface Extension {
     String getId();
 
     /**
-     * Returns the complete "dot separated" name like <code>[extension.path].[id]</code>
+     * Returns the complete "dot separated" name like {@code [extension.path].[id]}
      *
      * @return the complete access path used to identify this extension
      */
@@ -76,7 +73,6 @@ public interface Extension {
      */
     @Nonnull
     Context getContext();
-
 
     /**
      * Returns the sub config available for the given key.
@@ -154,5 +150,4 @@ public interface Extension {
      */
     @Nonnull
     Object make(String classProperty);
-
 }

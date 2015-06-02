@@ -8,12 +8,10 @@
 
 package sirius.kernel.health;
 
-
 import com.google.common.collect.Lists;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import sirius.kernel.Sirius;
-import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
@@ -31,7 +29,7 @@ import java.util.List;
  * <p>
  * In contrast to other approaches, it is not recommended to create a logger per class, but rather one per
  * framework or sub system. It should have a concise name, all lowercase without any dots. The log level of each
- * logger is read from the configuration using <code>logging.[NAME]</code>. It may be set to one of:
+ * logger is read from the configuration using {@code logging.[NAME]}. It may be set to one of:
  * <ul>
  * <li>DEBUG</li>
  * <li>INFO</li>
@@ -41,9 +39,6 @@ import java.util.List;
  * <p>
  * Internally uses log4j to perform all logging operations. Still it is recommended to only log through this facade
  * and not to rely on any log4j specific behaviour.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class Log {
 
@@ -106,23 +101,29 @@ public class Log {
     public static Level convertJuliLevel(java.util.logging.Level juliLevel) {
         if (juliLevel.equals(java.util.logging.Level.FINEST)) {
             return Level.TRACE;
-        } else if (juliLevel.equals(java.util.logging.Level.FINER)) {
+        }
+        if (juliLevel.equals(java.util.logging.Level.FINER)) {
             return Level.DEBUG;
-        } else if (juliLevel.equals(java.util.logging.Level.FINE)) {
+        }
+        if (juliLevel.equals(java.util.logging.Level.FINE)) {
             return Level.DEBUG;
-        } else if (juliLevel.equals(java.util.logging.Level.INFO)) {
+        }
+        if (juliLevel.equals(java.util.logging.Level.INFO)) {
             return Level.INFO;
-        } else if (juliLevel.equals(java.util.logging.Level.WARNING)) {
+        }
+        if (juliLevel.equals(java.util.logging.Level.WARNING)) {
             return Level.WARN;
-        } else if (juliLevel.equals(java.util.logging.Level.SEVERE)) {
+        }
+        if (juliLevel.equals(java.util.logging.Level.SEVERE)) {
             return Level.ERROR;
-        } else if (juliLevel.equals(java.util.logging.Level.ALL)) {
+        }
+        if (juliLevel.equals(java.util.logging.Level.ALL)) {
             return Level.ALL;
-        } else if (juliLevel.equals(java.util.logging.Level.OFF)) {
+        }
+        if (juliLevel.equals(java.util.logging.Level.OFF)) {
             return Level.OFF;
         }
         return Level.DEBUG;
-
     }
 
     /**
@@ -134,19 +135,26 @@ public class Log {
     public static java.util.logging.Level convertLog4jLevel(Level log4jLevel) {
         if (log4jLevel.equals(Level.TRACE)) {
             return java.util.logging.Level.FINEST;
-        } else if (log4jLevel.equals(Level.DEBUG)) {
+        }
+        if (log4jLevel.equals(Level.DEBUG)) {
             return java.util.logging.Level.FINER;
-        } else if (log4jLevel.equals(Level.INFO)) {
+        }
+        if (log4jLevel.equals(Level.INFO)) {
             return java.util.logging.Level.INFO;
-        } else if (log4jLevel.equals(Level.WARN)) {
+        }
+        if (log4jLevel.equals(Level.WARN)) {
             return java.util.logging.Level.WARNING;
-        } else if (log4jLevel.equals(Level.ERROR)) {
+        }
+        if (log4jLevel.equals(Level.ERROR)) {
             return java.util.logging.Level.SEVERE;
-        } else if (log4jLevel.equals(Level.FATAL)) {
+        }
+        if (log4jLevel.equals(Level.FATAL)) {
             return java.util.logging.Level.SEVERE;
-        } else if (log4jLevel.equals(Level.ALL)) {
+        }
+        if (log4jLevel.equals(Level.ALL)) {
             return java.util.logging.Level.ALL;
-        } else if (log4jLevel.equals(Level.OFF)) {
+        }
+        if (log4jLevel.equals(Level.OFF)) {
             return java.util.logging.Level.OFF;
         }
         return java.util.logging.Level.FINE;

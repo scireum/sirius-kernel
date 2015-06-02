@@ -21,13 +21,12 @@ import java.util.List;
  * Using a <tt>PriorityCollector</tt>, several methods can be supplied with the same instance and generate a list or a
  * custom (externally) ordering. This greatly simplifies creating extensible systems which are enhanced by
  * sub-components and where order of elements matter. The final list is sorted by comparing the priority.
- * Therefore if <code>a.priority &lt; b.priority</code> then <tt>a</tt> will occur before <tt>b</tt> in the list.
+ * Therefore if {@code a.priority &lt; b.priority} then <tt>a</tt> will occur before <tt>b</tt> in the list.
  * <p>
  * If the order of the provided elements does not matter, a {@link DataCollector} can be used.
  *
- * @author Andreas Haufler (aha@scireum.de)
+ * @param <T> the type of values to be collected
  * @see DataCollector
- * @since 2013/08
  */
 public class PriorityCollector<T> {
 
@@ -36,7 +35,7 @@ public class PriorityCollector<T> {
      * <p>
      * Boilerplate method, so one doesn't need to re-type the type parameters.
      *
-     * @param <T>  the type of value collect by the collector
+     * @param <T> the type of value collect by the collector
      * @return a new <tt>PriorityCollector</tt>
      */
     public static <T> PriorityCollector<T> create() {
@@ -77,7 +76,7 @@ public class PriorityCollector<T> {
     /**
      * Returns the list of added entities sorted by priority.
      * <p>
-     * The comparator used is &lt; - therefore if <code>a.priority &lt; b.priority</code>
+     * The comparator used is &lt; - therefore if {@code a.priority &lt; b.priority}
      * then <tt>a</tt> will occur before <tt>b</tt> in the list.
      *
      * @return the list of entities ordered by priority ascending

@@ -23,9 +23,6 @@ import java.util.Map;
  * Provides various methods to handle errors and exceptions. Each method returns a {@link HandledException} which
  * signals the developer that no further action is required (error is logged and reacted upon). Also, those
  * exceptions always contain a translated error message which can be directly shown to the user
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class Exceptions {
 
@@ -51,26 +48,7 @@ public class Exceptions {
      */
     private static ThreadLocal<Boolean> frozen = new ThreadLocal<Boolean>();
 
-    /*
-     * Adds the exception message and the exception class to the given params array. Handles null values for
-     * e gracefully
-     */
-    private static Object[] extendParams(Throwable e, Object[] params) {
-        Object[] newParams = null;
-        if (params == null) {
-            newParams = new Object[2];
-        } else {
-            newParams = new Object[params.length + 2];
-            System.arraycopy(params, 0, newParams, 0, params.length);
-        }
-        if (e != null) {
-            newParams[newParams.length - 2] = e.getMessage();
-            newParams[newParams.length - 1] = e.getClass().getName();
-        } else {
-            newParams[newParams.length - 2] = NLS.get("HandledException.unknownError");
-            newParams[newParams.length - 1] = "UnknownError";
-        }
-        return newParams;
+    private Exceptions() {
     }
 
     /**
@@ -78,14 +56,14 @@ public class Exceptions {
      * <p>
      * The intention is to use a call like:
      * <pre>
-     * <code>
+     * {@code
      *    Exceptions.handler()
      *      .error(anException)     // Sets the exception to handle
      *      .to(aLogger)            // Sets the logger to use for logging
      *      .withNLSKey("nls.key")  // Sets the i18n key to create the error message
      *      .set("param",value)     // Sets a named parameter which occurs in the message
      *      .handle();              // logs an creates the HandledException
-     * </code>
+     * }
      * </pre>
      * <p>
      * Since none of the methods must be called (except <tt>handle()</tt> of course), this provides a lot of
@@ -95,9 +73,6 @@ public class Exceptions {
      * The {@link #set(String, Object)} method can be called several times to set different parameters. The reason
      * why named parameters are used is because the resulting messages in the .properties files are easier to
      * translate and also the order of the parameters can be different in different languages.
-     *
-     * @author Andreas Haufler (aha@scireum.de)
-     * @since 2013/08
      */
     public static class ErrorHandler {
         private Log log = LOG;
@@ -166,7 +141,8 @@ public class Exceptions {
          *
          * @param englishMessagePattern contains a pattern used to generate the error message. May contain
          *                              placeholders as understood by {@link Strings#apply(String, Object...)}.
-         * @param params                parameters used to format the resulting error message based on the given pattern
+         * @param params                parameters used to format the resulting error message based on the given
+         *                              pattern
          * @return <tt>this</tt> in order to fluently call more methods on this handler
          */
         public ErrorHandler withSystemErrorMessage(String englishMessagePattern, Object... params) {
@@ -179,7 +155,7 @@ public class Exceptions {
          * Specifies a parameter which is replaced in the generated error message.
          *
          * @param parameter the name of the parameter which should be replaced. This must occur as
-         *                  <code>${parameter}</code> in the translated message to be replaced
+         *                  {@code ${parameter}} in the translated message to be replaced
          * @param value     the value to be used as replacement for the parameter. The given value will be converted
          *                  to a string using {@link NLS#toUserString(Object)}
          * @return <tt>this</tt> in order to fluently call more methods on this handler
@@ -199,71 +175,109 @@ public class Exceptions {
          * already been taken care of.
          */
         public HandledException handle() {
-            if (ex != null && ex instanceof HandledException) {
+            if (ex instanceof HandledException) {
                 return (HandledException) ex;
             }
             try {
-                String message = null;
-                if (Strings.isEmpty(systemErrorMessage)) {
-                    // Add exception infos
-                    set("errorMessage", ex == null ? NLS.get("HandledException.unknownError") : ex.getMessage());
-                    set("errorClass", ex == null ? "UnknownError" : ex.getClass().getName());
-                    // Format resulting error message
-                    message = NLS.fmtr(key).set(params).format();
-                } else {
-                    // Generate system error message and prefix with translated info about the system error
-                    message = NLS.apply("HandledException.systemError",
-                            Strings.apply(systemErrorMessage, extendParams(ex, systemErrorMessageParams)));
-                }
+                String message = computeMessage();
                 HandledException result = new HandledException(message, ex);
                 if (processError) {
                     log.SEVERE(result);
-
-                    // Injector might not have run yet
-                    if (handlers != null && !Boolean.TRUE.equals(frozen.get())) {
-                        try {
-                            frozen.set(Boolean.TRUE);
-                            String location = null;
-                            if (ex != null && ex.getStackTrace().length > 0) {
-                                location = formatStackTraceElement(ex.getStackTrace()[0]);
-                            } else if (result.getStackTrace().length > 0) {
-                                StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-                                int index = 1;
-                                while ((location == null || location.startsWith("sirius.kernel.health.Exceptions")) && index < trace.length) {
-                                    location = formatStackTraceElement(trace[index]);
-                                    index++;
-                                }
-                            }
-                            for (ExceptionHandler handler : handlers) {
-                                try {
-                                    handler.handle(new Incident(log.getName(),
-                                            location,
-                                            CallContext.getCurrent().getMDC(),
-                                            result));
-                                } catch (Throwable e) {
-                                    // Just log the exception - anything else might call a rather long infinite loop
-                                    LOG.SEVERE(new Exception(Strings.apply(
-                                            "An error occurred while calling the ExceptionHandler: %s - %s (%s)",
-                                            handler,
-                                            e.getMessage(),
-                                            e.getClass().getName()), e));
-                                }
-                            }
-                        } finally {
-                            frozen.set(Boolean.FALSE);
-                        }
-                    }
+                    notifyHandlers(result);
                 } else {
                     IGNORED_EXCEPTIONS_LOG.INFO(result);
                 }
                 return result;
             } catch (Throwable t) {
                 // We call as few external methods a possible here, since things are really messed up right now
+                //noinspection CallToPrintStackTrace
                 t.printStackTrace();
-                return new HandledException("Kernel Panic: Exception-Handling threw another exception: " + t.getMessage() + " (" + t
-                        .getClass()
-                        .getName() + ")", t);
+                return new HandledException("Kernel Panic: Exception-Handling threw another exception: "
+                                            + t.getMessage()
+                                            + " ("
+                                            + t.getClass().getName()
+                                            + ")", t);
             }
+        }
+
+        private String computeMessage() {
+            if (Strings.isFilled(systemErrorMessage)) {
+                // Generate system error message and prefix with translated info about the system error
+                return NLS.apply("HandledException.systemError",
+                                 Strings.apply(systemErrorMessage, extendParams(ex, systemErrorMessageParams)));
+            } else {
+                // Add exception infos
+                set("errorMessage", ex == null ? NLS.get("HandledException.unknownError") : ex.getMessage());
+                set("errorClass", ex == null ? "UnknownError" : ex.getClass().getName());
+                // Format resulting error message
+                return NLS.fmtr(key).set(params).format();
+            }
+        }
+
+        private void notifyHandlers(HandledException result) {
+            // Injector might not have run yet
+            if (handlers == null || Boolean.TRUE.equals(frozen.get())) {
+                return;
+            }
+            try {
+                frozen.set(Boolean.TRUE);
+                String location = computeLocation(result);
+                for (ExceptionHandler handler : handlers) {
+                    try {
+                        handler.handle(new Incident(log.getName(),
+                                                    location,
+                                                    CallContext.getCurrent().getMDC(),
+                                                    result));
+                    } catch (Throwable e) {
+                        // Just log the exception - anything else might call a rather long infinite loop
+                        LOG.SEVERE(new Exception(Strings.apply(
+                                "An error occurred while calling the ExceptionHandler: %s - %s (%s)",
+                                handler,
+                                e.getMessage(),
+                                e.getClass().getName()), e));
+                    }
+                }
+            } finally {
+                frozen.set(Boolean.FALSE);
+            }
+        }
+
+        private String computeLocation(HandledException result) {
+            String location = null;
+            if (ex != null && ex.getStackTrace().length > 0) {
+                location = formatStackTraceElement(ex.getStackTrace()[0]);
+            } else if (result.getStackTrace().length > 0) {
+                StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+                int index = 1;
+                while ((location == null || location.startsWith("sirius.kernel.health.Exceptions"))
+                       && index < trace.length) {
+                    location = formatStackTraceElement(trace[index]);
+                    index++;
+                }
+            }
+            return location;
+        }
+
+        /*
+         * Adds the exception message and the exception class to the given params array. Handles null values for
+         * e gracefully
+         */
+        private Object[] extendParams(Throwable e, Object[] params) {
+            Object[] newParams;
+            if (params == null) {
+                newParams = new Object[2];
+            } else {
+                newParams = new Object[params.length + 2];
+                System.arraycopy(params, 0, newParams, 0, params.length);
+            }
+            if (e != null) {
+                newParams[newParams.length - 2] = e.getMessage();
+                newParams[newParams.length - 1] = e.getClass().getName();
+            } else {
+                newParams[newParams.length - 2] = NLS.get("HandledException.unknownError");
+                newParams[newParams.length - 1] = "UnknownError";
+            }
+            return newParams;
         }
 
         /*
@@ -280,11 +294,11 @@ public class Exceptions {
         @Override
         public String toString() {
             return "ErrorHandler{" +
-                    "params=" + params +
-                    ", key='" + key + '\'' +
-                    ", systemErrorMessage='" + systemErrorMessage + '\'' +
-                    ", ex=" + ex +
-                    '}';
+                   "params=" + params +
+                   ", key='" + key + '\'' +
+                   ", systemErrorMessage='" + systemErrorMessage + '\'' +
+                   ", ex=" + ex +
+                   '}';
         }
     }
 
@@ -346,5 +360,4 @@ public class Exceptions {
     public static void ignore(Throwable t) {
         IGNORED_EXCEPTIONS_LOG.INFO(t);
     }
-
 }

@@ -19,8 +19,8 @@ import java.util.regex.Pattern;
 /**
  * An alternative for <tt>MessageFormat</tt> which generates strings by replacing named parameters in a given template.
  * <p>
- * A formatter is created for a given template string which contains named parameters like <code>${param1}</code>.
- * Using one of the <tt>set</tt> methods, values for the parameters can be supplied. Calling <code>#format</code>
+ * A formatter is created for a given template string which contains named parameters like {@code ${param1}}.
+ * Using one of the <tt>set</tt> methods, values for the parameters can be supplied. Calling {@code #format}
  * creates the output string.
  * <p>
  * Non string objects which are passed in as parameters, will be converted using {@link NLS#toUserString(Object)}
@@ -31,19 +31,17 @@ import java.util.regex.Pattern;
  * <p>
  * An example call might look like this:
  * <pre>
- * <code>
+ * {@code
  *         System.out.println(
  *              Formatter.create("Hello ${programmer}")
  *                       .set("programmer, "Obi Wan")
  *                       .format());
- * </code>
+ * }
  * </pre>
  * <p>
  * {@link NLS} uses this class by supplied translated patterns when calling {@link NLS#fmtr(String)}.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see NLS#fmtr(String)
- * @since 2013/08
  */
 public class Formatter {
     private boolean urlEncode = false;
@@ -51,7 +49,7 @@ public class Formatter {
     private Map<String, String> replacement = Maps.newTreeMap();
     private String pattern;
     private String lang;
-    public static final Pattern PARAM = Pattern.compile("\\$\\{([A-Za-z0-9\\.]+)\\}");
+    private static final Pattern PARAM = Pattern.compile("\\$\\{([A-Za-z0-9\\.]+)\\}");
 
     /**
      * Use the static factory methods <tt>create</tt> to obtain a new instance.
@@ -90,7 +88,6 @@ public class Formatter {
         result.lang = NLS.getCurrentLang();
         return result;
     }
-
 
     /**
      * Creates a new formatter with auto url encoding turned on.
@@ -171,7 +168,7 @@ public class Formatter {
     /**
      * Generates the formatted string.
      * <p>
-     * Applies all supplied replacement values on detected parameters formatted like <code>${param}</code>.
+     * Applies all supplied replacement values on detected parameters formatted like {@code ${param}}.
      *
      * @return the template string with all parameters replaced for which a value was supplied.
      * @throws java.lang.IllegalArgumentException if the pattern is malformed
@@ -183,11 +180,11 @@ public class Formatter {
     /**
      * Generates the formatted string using smart output formatting.
      * <p>
-     * Applies all supplied replacement values on detected parameters formatted like <code>${param}</code>.
+     * Applies all supplied replacement values on detected parameters formatted like {@code ${param}}.
      * Block can be formed using '[' and ']' a whole block is only output, if at least one replacement
      * was not empty.
      * <p>
-     * Consider the pattern <code>[${salutation} ][${firstname}] ${lastname}</code>. This will create
+     * Consider the pattern {@code [${salutation} ][${firstname}] ${lastname}}. This will create
      * <tt>Mr. Foo Bar</tt> if all three parameters are filled, but <tt>Mr. Bar</tt> if the first name is missing
      * or <tt>Foo Bar</tt> if the salutation is missing.
      *
@@ -275,15 +272,14 @@ public class Formatter {
     private Block endBlock(List<Block> blocks, Block currentBlock, int index) {
         if (blocks.size() == 1) {
             throw new IllegalArgumentException(Strings.apply("Unexpected ']' at index %d in '%s'", index + 1, pattern));
-        } else {
-            if (currentBlock.replacementFound) {
-                Block next = blocks.get(blocks.size() - 2);
-                next.output.append(currentBlock.output);
-                next.replacementFound = true;
-            }
-            currentBlock = blocks.get(blocks.size() - 2);
-            blocks.remove(blocks.size() - 1);
         }
+        if (currentBlock.replacementFound) {
+            Block next = blocks.get(blocks.size() - 2);
+            next.output.append(currentBlock.output);
+            next.replacementFound = true;
+        }
+        currentBlock = blocks.get(blocks.size() - 2);
+        blocks.remove(blocks.size() - 1);
         return currentBlock;
     }
 

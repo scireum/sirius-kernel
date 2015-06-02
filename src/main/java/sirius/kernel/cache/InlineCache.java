@@ -19,12 +19,10 @@ import java.util.function.Supplier;
  * <p>
  * A real lookup cache, with a Map like behaviour can be found here: {@link Cache}.
  * <p>
- * Use {@link CacheManager#createInlineCache(long, java.util.concurrent.TimeUnit, java.util.function.Supplier)}
+ * Use {@link CacheManager#createInlineCache(java.time.Duration, java.util.function.Supplier)}
  * to create a new inline cache.
  *
  * @param <E> the type of values being cached
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class InlineCache<E> {
     private E buffer;

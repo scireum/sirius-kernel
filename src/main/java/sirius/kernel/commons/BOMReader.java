@@ -15,9 +15,6 @@ import java.io.Reader;
  * Wraps a given reader and removes a BOM (byte order mark) if present.
  * <p>
  * MS Excel places such BOM in UTF-8 encoded CSV files (which is invalid). Therefore such bytes have to be removed.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/01
  */
 public class BOMReader extends Reader {
 
@@ -66,5 +63,4 @@ public class BOMReader extends Reader {
     public void close() throws IOException {
         delegate.close();
     }
-
 }

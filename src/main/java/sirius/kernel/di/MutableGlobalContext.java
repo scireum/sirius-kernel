@@ -11,11 +11,9 @@ package sirius.kernel.di;
 import javax.annotation.Nonnull;
 
 /**
- * Visible for instances of {@link sirius.kernel.di.ClassLoadAction} and {@link FieldAnnotationProcessor} during the system
+ * Visible for instances of {@link sirius.kernel.di.ClassLoadAction} and {@link FieldAnnotationProcessor} during the
+ * system
  * initialization to make parts visible in the <tt>GlobalContext</tt>
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface MutableGlobalContext extends GlobalContext {
     /**
@@ -42,5 +40,4 @@ public interface MutableGlobalContext extends GlobalContext {
      *                      part will be discarded.
      */
     void registerPart(@Nonnull String uniqueName, @Nonnull Object part, @Nonnull Class<?>... lookupClasses);
-
 }

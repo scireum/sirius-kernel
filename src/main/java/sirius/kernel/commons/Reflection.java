@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.commons;
 
 import sirius.kernel.health.Exceptions;
@@ -12,11 +20,11 @@ import java.util.List;
 
 /**
  * Helper class for generic reflection tasks.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/04
  */
 public class Reflection {
+
+    private Reflection() {
+    }
 
     /**
      * Converts the first character of a given string to upper case.
@@ -47,21 +55,23 @@ public class Reflection {
      * @throws IllegalArgumentException if the getter cannot be obtained
      */
     @Nonnull
-    public static Method getter(@Nonnull Class<? extends Object> clazz, @Nonnull String property) {
+    public static Method getter(@Nonnull Class<?> clazz, @Nonnull String property) {
         try {
             try {
-                return clazz.getMethod("get" + toFirstUpper(property), new Class[0]);
+                return clazz.getMethod("get" + toFirstUpper(property));
             } catch (NoSuchMethodException e) {
+                Exceptions.ignore(e);
                 try {
-                    return clazz.getMethod("is" + toFirstUpper(property), new Class[0]);
-                } catch (NoSuchMethodException e1) {
-                    return clazz.getMethod(property, new Class[0]);
+                    return clazz.getMethod("is" + toFirstUpper(property));
+                } catch (NoSuchMethodException ex) {
+                    Exceptions.ignore(ex);
+                    return clazz.getMethod(property);
                 }
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(Strings.apply("get-Method for Field %s not found: %s",
-                    property,
-                    e.getMessage()), e);
+                                                             property,
+                                                             e.getMessage()), e);
         }
     }
 
@@ -75,20 +85,20 @@ public class Reflection {
      * @return the <tt>Method</tt> which is used to get the value
      * @throws IllegalArgumentException if the setter cannot be obtained
      */
-    public static Method setter(Class<? extends Object> clazz, String property, Class<?> fieldType) {
+    public static Method setter(Class<?> clazz, String property, Class<?> fieldType) {
         try {
-            return clazz.getMethod("set" + toFirstUpper(property), new Class[]{fieldType});
+            return clazz.getMethod("set" + toFirstUpper(property), fieldType);
         } catch (Exception e) {
             throw new IllegalArgumentException(Strings.apply("set-Method for Field %s not found: %s",
-                    property,
-                    e.getMessage()), e);
+                                                             property,
+                                                             e.getMessage()), e);
         }
     }
 
     /**
      * Evaluates the given access path (dot separated getters) and returns the result.
      * <p>
-     * An access path can look like <tt>foo.bar.baz</tt> and represents: <code>root.getFoo().getBar().getBaz()</code>.
+     * An access path can look like <tt>foo.bar.baz</tt> and represents: {@code root.getFoo().getBar().getBaz()}.
      * If any of the getters returns <tt>null</tt>, <tt>null</tt> will also be the result of the evaluation.
      *
      * @param path the access path to evaluate
@@ -107,16 +117,24 @@ public class Reflection {
         try {
             return evalAccessPath(pair.getSecond(), m.invoke(root));
         } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(Strings.apply("Cannot invoke %s on %s (%s)", m.getName(), root, m.getDeclaringClass().getName()), e);
+            throw new IllegalArgumentException(Strings.apply("Cannot invoke %s on %s (%s)",
+                                                             m.getName(),
+                                                             root,
+                                                             m.getDeclaringClass().getName()), e);
         } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException(Strings.apply("Error invoking %s on %s (%s): %s (%s)", m.getName(), root, m.getDeclaringClass().getName(), e.getCause().getMessage(), e.getCause().getClass().getName()), e);
+            throw new IllegalArgumentException(Strings.apply("Error invoking %s on %s (%s): %s (%s)",
+                                                             m.getName(),
+                                                             root,
+                                                             m.getDeclaringClass().getName(),
+                                                             e.getCause().getMessage(),
+                                                             e.getCause().getClass().getName()), e);
         }
     }
 
     /**
      * Calls the given handler for each superclass of the given one.
      * <p>
-     * Calls the handler for the given class and each of its superclasses until <code>Object</code> is reached.
+     * Calls the handler for the given class and each of its superclasses until {@code Object} is reached.
      *
      * @param clazz   the class to start from
      * @param handler the handler to call for each superclass
@@ -135,7 +153,7 @@ public class Reflection {
      * private fields.
      *
      * @param clazz the class to collect the fields for
-     * @return a list of all defined fields of the given class and its superclasses (excluding <code>Object</code>)
+     * @return a list of all defined fields of the given class and its superclasses (excluding {@code Object})
      */
     @Nonnull
     public static List<Field> getAllFields(@Nonnull Class<?> clazz) {
@@ -152,7 +170,7 @@ public class Reflection {
      * Determines if the given <tt>superclass</tt> is the same or a superclass or superinterface of the given
      * <tt>classInQuestion</tt>.
      * <p>
-     * This is essentially a shortcut for <code>superclass.isAssignableFrom(classInQuestion)</code> which seems
+     * This is essentially a shortcut for {@code superclass.isAssignableFrom(classInQuestion)} which seems
      * to be more natural.
      *
      * @param superclass      the designated superclass or superinterface
@@ -163,5 +181,4 @@ public class Reflection {
     public static boolean isSubclassOf(@Nonnull Class<?> superclass, @Nonnull Class<?> classInQuestion) {
         return superclass.isAssignableFrom(classInQuestion);
     }
-
 }

@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.di.std;
 
 import java.lang.annotation.ElementType;
@@ -17,9 +25,6 @@ import java.lang.annotation.Target;
  * most cases.
  * <p>
  * Classes wearing this annotations must have a zero args constructor.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})

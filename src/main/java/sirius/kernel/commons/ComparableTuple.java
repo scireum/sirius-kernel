@@ -19,14 +19,13 @@ import java.util.Map;
  * <p>
  * Subclasses {@link Tuple} to implement <tt>Comparable</tt> based on the key, that is the first element of the tuple.
  *
- * @param <F> defines the first type of the tuple. The supplied class must implement <code>Comparable</code>
+ * @param <F> defines the first type of the tuple. The supplied class must implement {@code Comparable}
  * @param <S> defines the second type of the tuple
- * @author Andreas Haufler (aha@scireum.de)
  * @see Tuple
  * @see Comparable
- * @since 2013/08
  */
-public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S> implements Comparable<ComparableTuple<F, S>> {
+public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S>
+        implements Comparable<ComparableTuple<F, S>> {
 
     /**
      * Creates a new tuple without any values.
@@ -78,6 +77,7 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S> imp
      * @return a list of tuples, containing one tuple per map entry where the first component is the key,
      * and the second component is the value of the map entry.
      */
+    @SuppressWarnings("Convert2streamapi")
     public static <K extends Comparable<K>, V> List<ComparableTuple<K, V>> fromComparableMap(@Nonnull Map<K, V> map) {
         List<ComparableTuple<K, V>> result = new ArrayList<ComparableTuple<K, V>>(map.size());
         for (Map.Entry<K, V> e : map.entrySet()) {
@@ -93,7 +93,6 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S> imp
         super(first, second);
     }
 
-
     @Override
     public int compareTo(ComparableTuple<F, S> o) {
         if (o == null) {
@@ -101,7 +100,8 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S> imp
         }
         if (o.getFirst() == null && getFirst() != null) {
             return 1;
-        } else if (getFirst() == null) {
+        }
+        if (getFirst() == null) {
             return 0;
         }
         if (getFirst() == null) {
@@ -110,4 +110,26 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S> imp
         return getFirst().compareTo(o.getFirst());
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof ComparableTuple<?, ?>)) {
+            return false;
+        }
+        return compareTo((ComparableTuple<F, S>) obj) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        if (getFirst() == null) {
+            return 0;
+        }
+        return getFirst().hashCode();
+    }
 }

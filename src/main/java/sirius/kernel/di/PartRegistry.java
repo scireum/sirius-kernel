@@ -18,14 +18,17 @@ import sirius.kernel.commons.Tuple;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * An instance of PartRegistry is kept by {@link sirius.kernel.di.Injector} to track all registered
  * parts.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 class PartRegistry implements MutableGlobalContext {
 
@@ -125,23 +128,25 @@ class PartRegistry implements MutableGlobalContext {
      */
     private void wireClass(Class<?> clazz, Object object) {
         for (Field field : clazz.getDeclaredFields()) {
-            if ((!Modifier.isFinal(field.getModifiers())) && (object != null || Modifier.isStatic(field.getModifiers()))) {
+            if (!Modifier.isFinal(field.getModifiers()) && (object != null
+                                                            || Modifier.isStatic(field.getModifiers()))) {
                 field.setAccessible(true);
                 getParts(FieldAnnotationProcessor.class).stream()
                                                         .filter(p -> field.isAnnotationPresent(p.getTrigger()))
                                                         .forEach(p -> {
-                                                                     try {
-                                                                         p.handle(this, object, field);
-                                                                     } catch (Throwable e) {
-                                                                         Injector.LOG.WARN(
-                                                                                 "Cannot process annotation %s on %s.%s: %s (%s)",
-                                                                                 p.getTrigger().getName(),
-                                                                                 field.getDeclaringClass().getName(),
-                                                                                 field.getName(),
-                                                                                 e.getMessage(),
-                                                                                 e.getClass().getName());
-                                                                     }
-                                                                 });
+                                                            try {
+                                                                p.handle(this, object, field);
+                                                            } catch (Throwable e) {
+                                                                Injector.LOG.WARN(
+                                                                        "Cannot process annotation %s on %s.%s: %s "
+                                                                        + "(%s)",
+                                                                        p.getTrigger().getName(),
+                                                                        field.getDeclaringClass().getName(),
+                                                                        field.getName(),
+                                                                        e.getMessage(),
+                                                                        e.getClass().getName());
+                                                            }
+                                                        });
             }
         }
     }
@@ -152,9 +157,9 @@ class PartRegistry implements MutableGlobalContext {
         if (!Sirius.isActiveCustomization(customizationName)) {
             return;
         }
-        Class<?> predecessor = part.getClass().isAnnotationPresent(Replace.class) ? part.getClass()
-                                                                                        .getAnnotation(Replace.class)
-                                                                                        .value() : null;
+        Class<?> predecessor = part.getClass().isAnnotationPresent(Replace.class) ?
+                               part.getClass().getAnnotation(Replace.class).value() :
+                               null;
         if (predecessor != null && customizationName == null) {
             Injector.LOG.WARN("@Replace should be only used within a customization. %s (%s) seems to be a base class!",
                               part,
@@ -182,7 +187,6 @@ class PartRegistry implements MutableGlobalContext {
             shadowMap.put(predecessor, part);
         }
     }
-
 
     @Override
     @SuppressWarnings("unchecked")
@@ -231,7 +235,8 @@ class PartRegistry implements MutableGlobalContext {
                         return;
                     } else if (comp == 0) {
                         throw new IllegalArgumentException(Strings.apply(
-                                "The part '%s' cannot be registered as '%s' for class '%s'. The id is already taken by: %s (%s)",
+                                "The part '%s' cannot be registered as '%s' for class '%s'. The id is already taken "
+                                + "by: %s (%s)",
                                 part,
                                 clazz.getName(),
                                 uniqueName,
@@ -273,14 +278,13 @@ class PartRegistry implements MutableGlobalContext {
              .flatMap(e -> e.stream())
              .filter(part -> part instanceof Initializable && !initializedObjects.contains(part))
              .forEach(part -> {
-                          try {
-                              initializedObjects.add(part);
-                              ((Initializable) part).initialize();
-                          } catch (Exception e) {
-                              Injector.LOG.WARN("Error initializing %s (%s)", part, part.getClass().getName());
-                              Injector.LOG.WARN(e);
-                          }
-                      });
+                 try {
+                     initializedObjects.add(part);
+                     ((Initializable) part).initialize();
+                 } catch (Exception e) {
+                     Injector.LOG.WARN("Error initializing %s (%s)", part, part.getClass().getName());
+                     Injector.LOG.WARN(e);
+                 }
+             });
     }
-
 }

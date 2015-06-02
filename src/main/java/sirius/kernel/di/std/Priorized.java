@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.di.std;
 
 /**
@@ -5,9 +13,6 @@ package sirius.kernel.di.std;
  * <p>
  * Classes implementing this interface can be used by the {@link PriorityParts} annotation and will
  * be auto sorted (ascending) by priority before they are made available.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/02
  */
 public interface Priorized {
 
@@ -22,5 +27,4 @@ public interface Priorized {
      * @return the priority - lower is better (comes first)
      */
     int getPriority();
-
 }

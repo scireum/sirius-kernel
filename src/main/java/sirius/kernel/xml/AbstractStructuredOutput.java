@@ -18,16 +18,13 @@ import java.util.function.BiConsumer;
 
 /**
  * Basic implementation of <tt>StructuredOutput</tt>, taking care of all output independent boilerplate code.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public abstract class AbstractStructuredOutput implements StructuredOutput {
 
     /**
      * Types used by internal bookkeeping
      */
-    protected static enum ElementType {
+    protected enum ElementType {
         UNKNOWN, OBJECT, ARRAY
     }
 
@@ -60,7 +57,6 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         protected String getName() {
             return name;
         }
-
     }
 
     /**
@@ -68,7 +64,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
      *
      * @return the type of the current element
      */
-    public ElementType getCurrentType() {
+    protected ElementType getCurrentType() {
         if (nesting.isEmpty()) {
             return ElementType.UNKNOWN;
         }
@@ -182,9 +178,6 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
 
     /**
      * Used to fluently create a {@link #beginObject(String, Attribute...)}.
-     *
-     * @author Andreas Haufler (aha@scireum.de)
-     * @since 2013/08
      */
     public class TagBuilder {
         private List<Attribute> attributes = new ArrayList<Attribute>();
@@ -261,7 +254,8 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     @Override
     public void endResult() {
         if (!nesting.isEmpty()) {
-            throw new IllegalArgumentException("Invalid result structure. Cannot close result. Objects are still open.");
+            throw new IllegalArgumentException("Invalid result structure. Cannot close result. Objects are still " +
+                                               "open" + ".");
         }
     }
 
@@ -274,5 +268,4 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         nesting.get(0).setEmpty(false);
         return this;
     }
-
 }

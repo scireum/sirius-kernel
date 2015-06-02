@@ -15,14 +15,13 @@ import java.util.Vector;
 
 /**
  * Provides a {@link Properties} class with keys sorted lexicographically
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 class SortedProperties extends Properties {
 
+    private static final long serialVersionUID = -8585151811583014130L;
+
     @Override
-    @SuppressWarnings({"raw","unchecked"})
+    @SuppressWarnings({"unchecked", "rawtypes", "UseOfObsoleteCollectionType"})
     public synchronized Enumeration<Object> keys() {
         Enumeration<Object> keysEnum = super.keys();
         Vector keyList = new Vector();

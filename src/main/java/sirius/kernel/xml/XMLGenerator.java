@@ -32,9 +32,6 @@ import java.io.Writer;
 
 /**
  * Uses an XMLStructuredOutput with a temporary buffer to generate XML into a String.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @ParametersAreNonnullByDefault
 public class XMLGenerator extends XMLStructuredOutput {
@@ -91,10 +88,8 @@ public class XMLGenerator extends XMLStructuredOutput {
      *                           (<tt>false</tt>).
      * @throws javax.xml.transform.TransformerException if an exception during serialization occurs.
      */
-    public static void writeXML(Node doc,
-                                Writer writer,
-                                String encoding,
-                                boolean omitXMLDeclaration) throws TransformerException {
+    public static void writeXML(Node doc, Writer writer, String encoding, boolean omitXMLDeclaration)
+            throws TransformerException {
         StreamResult streamResult = new StreamResult(writer);
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer serializer = tf.newTransformer();

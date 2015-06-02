@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.commons;
 
 import sirius.kernel.async.Operation;
@@ -12,16 +20,16 @@ import java.time.Duration;
 
 /**
  * A robust wrapper around calls to external programs.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class Exec {
 
     /**
      * Can be used to log errors and infos when executing external programs.
      */
-    public static Log LOG = Log.get("exec");
+    public static final Log LOG = Log.get("exec");
+
+    private Exec() {
+    }
 
     /*
      * Reads the given stream in a separate thread.
@@ -92,7 +100,6 @@ public class Exec {
         public String getLog() {
             return log;
         }
-
     }
 
     /**
@@ -106,7 +113,6 @@ public class Exec {
         StringBuffer logger = new StringBuffer();
         Operation op = Operation.create("exec", () -> command, Duration.ofMinutes(5));
         try {
-
             Process p = Runtime.getRuntime().exec(command);
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger);

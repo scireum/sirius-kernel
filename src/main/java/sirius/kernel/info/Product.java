@@ -22,14 +22,14 @@ import java.util.List;
  * <p>
  * The product information is fetched from the "product" section in the system configuration. The modules
  * are fetched from product.modules.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/12
  */
 public class Product {
 
     private static Module product;
     private static List<Module> modules;
+
+    private Product() {
+    }
 
     /**
      * Returns the name and build infos for the current product
@@ -53,6 +53,7 @@ public class Product {
      *
      * @return a list containing the name and build environment of all modules
      */
+    @SuppressWarnings("Convert2streamapi")
     public static List<Module> getModules() {
         if (modules == null) {
             List<Module> result = Lists.newArrayList();
@@ -67,5 +68,4 @@ public class Product {
         }
         return modules;
     }
-
 }

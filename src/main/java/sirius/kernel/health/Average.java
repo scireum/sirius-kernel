@@ -10,14 +10,11 @@ package sirius.kernel.health;
 
 /**
  * Represents an average value over a given set of values.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class Average {
 
     private long count = 0;
-    private long[] values = new long[100];
+    private final long[] values = new long[100];
     private int index = 0;
     private int filled = 0;
 
@@ -76,7 +73,7 @@ public class Average {
             result -= min + max;
             return result / (filled - 2.0d);
         }
-        return result / (double) filled;
+        return result / filled;
     }
 
     /**
@@ -104,6 +101,6 @@ public class Average {
 
     @Override
     public String toString() {
-        return String.valueOf(getAvg()) + " (" + count + ")";
+        return getAvg() + " (" + count + ")";
     }
 }

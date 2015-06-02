@@ -22,16 +22,14 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * This is intended to replace code like:
  * <pre>
- * <code>
+ * {@code
  *             long start = System.currentTimeMillis();
  *             //do something
  *             System.out.println("Duration: "+(System.currentTimeMillis() - start));
- * </code>
+ * }
  * </pre>
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see System#nanoTime()
- * @since 2013/08
  */
 public class Watch {
 
@@ -93,7 +91,8 @@ public class Watch {
      * <p>
      * This method tries to generate a string which is as short as possible. Therefore, if the duration is
      * less than one microsecond, the number of nanoseconds is returned. If the duration is less than one millisecond,
-     * the number of microseconds (rounded) is returned. Otherwise, the value is rounded to milliseconds and returned as
+     * the number of microseconds (rounded) is returned. Otherwise, the value is rounded to milliseconds and returned
+     * as
      * formatted by {@link NLS#convertDuration(long)}.
      *
      * @param reset determines if the watch should be reset, after the duration has be computed.
@@ -124,7 +123,7 @@ public class Watch {
      * Submits the value for this watch to the {@link Microtiming} framework using the given key
      *
      * @param category selects the category for the given key
-     * @param key the key used to store the elapsed time for
+     * @param key      the key used to store the elapsed time for
      */
     public void submitMicroTiming(@Nonnull String category, @Nonnull String key) {
         long newTime = System.nanoTime();

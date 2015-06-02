@@ -14,8 +14,7 @@ package sirius.kernel.di.morphium;
  * Used by {@link sirius.kernel.di.morphium.Adapters} to generate adapters of a certain type for a given input. This
  * permits to transform existing classes into interfaces or other classes without modifying them.
  *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/01
+ * @param <A> the type of objects created by this adapter.
  */
 public interface AdapterFactory<A> {
 
@@ -34,5 +33,4 @@ public interface AdapterFactory<A> {
      * was possible
      */
     A make(Adaptable adaptable);
-
 }

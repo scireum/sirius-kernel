@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.commons;
 
 import java.util.function.Predicate;
@@ -12,7 +20,7 @@ import java.util.function.Predicate;
  * This class can be used to "page" through result lists. Having a page size of 25 and showing the 2nd page,
  * would lead to:
  * <pre>
- * <code>
+ * {@code
  *         Limit limit = new Limit(25,25); // Skip the 25 items of the first page, and show up to 25 items.
  *         List result = new ArrayList();
  *         for(Object o : someList) {
@@ -24,7 +32,7 @@ import java.util.function.Predicate;
  *                 return;
  *             }
  *         }
- * </code>
+ * }
  * </pre>
  */
 public class Limit {
@@ -50,10 +58,11 @@ public class Limit {
     }
 
     /**
-     * Creates a new <code>Limit</code> based on the given parameters.
+     * Creates a new {@code Limit} based on the given parameters.
      *
      * @param itemsToSkip denotes the number of items to skip.
-     * @param maxItems    determines the max number of items. Can be <tt>null</tt> or 0 to indicate that no limiting is active.
+     * @param maxItems    determines the max number of items. Can be <tt>null</tt> or 0 to indicate that no limiting
+     *                    is active.
      */
     public Limit(int itemsToSkip, Integer maxItems) {
         this.itemsToSkip = itemsToSkip > 0 ? itemsToSkip : 0;

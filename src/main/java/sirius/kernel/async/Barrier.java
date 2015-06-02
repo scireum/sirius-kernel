@@ -8,6 +8,9 @@
 
 package sirius.kernel.async;
 
+import sirius.kernel.health.Exceptions;
+
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -22,13 +25,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * The general call pattern looks like that:
  * <pre>
- * <code>
+ * {@code
  *      Barrier b = Barrier.create();
  *      b.add(somePromise);
  *      b.add(anotherPromise);
  *
  *      b.await(1, TimeUnit.MINUTE);
- * </code>
+ * }
  * </pre>
  * <p>
  * Always prefer {@link #await(long, java.util.concurrent.TimeUnit)} and specify a sane timeout since something
@@ -37,9 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * This barrier can also be used in a non-blocking way, by calling {@link #asFuture()} after the last call to
  * {@link #add(Promise)}. If possible, the non-block approach should always be preferred.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @ParametersAreNonnullByDefault
 public class Barrier {
@@ -76,7 +76,7 @@ public class Barrier {
 
         ((Promise<Object>) promise).onComplete(new CompletionHandler<Object>() {
             @Override
-            public void onSuccess(Object value) throws Exception {
+            public void onSuccess(@Nullable Object value) throws Exception {
                 semaphore.release();
                 if (!completionFuture.isCompleted()) {
                     if (promisesOpen.decrementAndGet() == 0) {
@@ -127,6 +127,7 @@ public class Barrier {
         try {
             return semaphore.tryAcquire(promisesMade.get(), time, unit);
         } catch (InterruptedException e) {
+            Exceptions.ignore(e);
             return false;
         }
     }

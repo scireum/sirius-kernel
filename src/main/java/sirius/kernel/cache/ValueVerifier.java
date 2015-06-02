@@ -16,8 +16,7 @@ import javax.annotation.Nullable;
  * Can be supplied to {@link CacheManager#createCache(String, ValueComputer, ValueVerifier)} when creating a cache
  * to verify values before returning them to the caller.
  *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
+ * @param <V> the value type determining the type of values stored in the cache
  */
 public interface ValueVerifier<V> {
 
@@ -28,5 +27,4 @@ public interface ValueVerifier<V> {
      * @return <tt>true</tt> if the value is still valid, <tt>false</tt> otherwise
      */
     boolean valid(@Nullable V value);
-
 }

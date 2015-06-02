@@ -12,19 +12,14 @@ import sirius.kernel.di.FieldAnnotationProcessor;
 import sirius.kernel.di.MutableGlobalContext;
 import sirius.kernel.extensions.Extensions;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 /**
  * Handles the {@link ExtensionList} annotation.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.kernel.di.FieldAnnotationProcessor
  * @see ExtensionList
- * @since 2013/08
  */
 @Register
 public class ExtensionListAnnotationProcessor implements FieldAnnotationProcessor {
@@ -38,5 +33,4 @@ public class ExtensionListAnnotationProcessor implements FieldAnnotationProcesso
         ExtensionList val = field.getAnnotation(ExtensionList.class);
         field.set(object, Extensions.getExtensions(val.value()));
     }
-
 }

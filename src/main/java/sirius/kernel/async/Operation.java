@@ -45,14 +45,12 @@ import java.util.function.Supplier;
  * <p>
  * To remove the runtime overhead, operations can be enabled or disabled by category using the system
  * configuration. By default all categories are enabled.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/04
  */
 public class Operation {
 
     private static Set<String> categories = null;
-    private static Set<Operation> ops = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    private static final Set<Operation> ops =
+            Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     @ConfigValue("async.operations.categories")
     private static List<String> enabledCategories;
@@ -72,9 +70,8 @@ public class Operation {
                                    @Nonnull Duration timeout) {
         if (categories == null) {
             synchronized (ops) {
-                categories = enabledCategories.stream()
-                                              .map(String::intern)
-                                              .collect(Lambdas.into(Sets.newIdentityHashSet()));
+                categories =
+                        enabledCategories.stream().map(String::intern).collect(Lambdas.into(Sets.newIdentityHashSet()));
             }
         }
         if (categories.isEmpty() || categories.contains(category)) {
@@ -113,6 +110,13 @@ public class Operation {
         return Lists.newArrayList(ops);
     }
 
+    /**
+     * Provides metrics of the operation monitoring.
+     * <p>
+     * The provided metrics are <tt>active-operations</tt>, which contains the number of active operations and
+     * <tt>hanging-operations</tt>, which contains the number of operations that take longer than expected
+     * (and therefore might hang).
+     */
     @Register
     public static class OperationMetrics implements MetricProvider {
 
@@ -158,5 +162,4 @@ public class Operation {
         }
         return result;
     }
-
 }

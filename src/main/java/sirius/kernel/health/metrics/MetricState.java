@@ -10,9 +10,6 @@ package sirius.kernel.health.metrics;
 
 /**
  * Represents an interpretation of a measured metric.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 public enum MetricState {
     /**
@@ -30,5 +27,5 @@ public enum MetricState {
     /**
      * Indicates a failure condition (system is failing or very likely to fail soon)
      */
-    RED;
+    RED
 }

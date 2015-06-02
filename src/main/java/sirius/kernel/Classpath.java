@@ -36,9 +36,6 @@ import java.util.stream.Stream;
  * then can be discovered using <tt>Class.getResources</tt>.
  * <p>
  * Once a file pattern is given, all files in the classpath are scanned, starting from the detected roots.
- *
- * @author Andreas Haufler (aha@sciruem.de)
- * @since 2013/08
  */
 public class Classpath {
 
@@ -149,17 +146,17 @@ public class Classpath {
                 addFiles(child, collector, reference);
             } else {
                 String path = null;
-                while (child != null && !Objects.equal(child, reference)) {
+                File iter = child;
+                while (iter != null && !Objects.equal(iter, reference)) {
                     if (path != null) {
-                        path = child.getName() + "/" + path;
+                        path = iter.getName() + "/" + path;
                     } else {
-                        path = child.getName();
+                        path = iter.getName();
                     }
-                    child = child.getParentFile();
+                    iter = iter.getParentFile();
                 }
                 collector.add(path);
             }
         }
     }
-
 }

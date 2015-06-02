@@ -40,9 +40,6 @@ import java.util.Optional;
  * Tasks which fork async subtasks will automatically pass on their current context. Therefore essential information
  * can be passed along, without having to provide a method parameter for each value. Since sub-contexts can be of any
  * type, this concept can be enhanced by additional frameworks or application programs.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @ParametersAreNonnullByDefault
 public class CallContext {
@@ -79,6 +76,7 @@ public class CallContext {
                 try {
                     nodeName = InetAddress.getLocalHost().getHostName();
                 } catch (UnknownHostException e) {
+                    Exceptions.ignore(e);
                     Async.LOG.WARN(Strings.apply(
                             "Cannot determine hostname - consider setting 'sirius.nodeName' in the configuration."));
                     nodeName = "unknown";
@@ -161,7 +159,6 @@ public class CallContext {
     public static CallContext initialize() {
         return initialize(getNodeName() + "/" + interactionCounter.getCount());
     }
-
 
     /**
      * Forks and creates a sub context which is then installed.
@@ -351,5 +348,4 @@ public class CallContext {
 
         return sb.toString();
     }
-
 }

@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.timer;
 
 import com.google.common.collect.Lists;
@@ -32,9 +40,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * <tt>EveryHour</tt>, <tt>EveryDay</tt>) and invokes them appropriately.
  * <p>
  * To access this class, a <tt>Part</tt> annotation can be used on a field of type <tt>TimerService</tt>.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @Register(classes = {TimerService.class, Lifecycle.class})
 public class TimerService implements Lifecycle {
@@ -75,16 +80,16 @@ public class TimerService implements Lifecycle {
         public void run() {
             try {
                 runTenSecondTimers();
-                if (TimeUnit.MINUTES.convert(System.currentTimeMillis() - lastOneMinuteExecution,
-                        TimeUnit.MILLISECONDS) >= 1) {
+                if (TimeUnit.MINUTES.convert(System.currentTimeMillis() - lastOneMinuteExecution, TimeUnit.MILLISECONDS)
+                    >= 1) {
                     runOneMinuteTimers();
                 }
                 if (TimeUnit.MINUTES.convert(System.currentTimeMillis() - lastTenMinutesExecution,
-                        TimeUnit.MILLISECONDS) >= 10) {
+                                             TimeUnit.MILLISECONDS) >= 10) {
                     runTenMinuteTimers();
                 }
-                if (TimeUnit.MINUTES.convert(System.currentTimeMillis() - lastHourExecution,
-                        TimeUnit.MILLISECONDS) >= 60) {
+                if (TimeUnit.MINUTES.convert(System.currentTimeMillis() - lastHourExecution, TimeUnit.MILLISECONDS)
+                    >= 60) {
                     runOneHourTimers();
                     runEveryDayTimers(false);
                 }
@@ -92,18 +97,16 @@ public class TimerService implements Lifecycle {
                 Exceptions.handle(LOG, t);
             }
         }
-
     }
 
     /*
      * Used to monitor a resource for changes
      */
-    private class WatchedResource {
+    private static class WatchedResource {
         private File file;
         private long lastModified;
         private Runnable callback;
     }
-
 
     /*
      * Contains the relative paths of all loaded files
@@ -172,7 +175,6 @@ public class TimerService implements Lifecycle {
         return NLS.toUserString(Instant.ofEpochMilli(lastHourExecution));
     }
 
-
     @Override
     public void started() {
         if (Sirius.isFrameworkEnabled("kernel.timer")) {
@@ -199,9 +201,9 @@ public class TimerService implements Lifecycle {
                                 res.callback.run();
                             } catch (Exception e) {
                                 Exceptions.handle()
-                                        .withSystemErrorMessage("Error reloading %s: %s (%s)", res.file.toString())
-                                        .error(e)
-                                        .handle();
+                                          .withSystemErrorMessage("Error reloading %s: %s (%s)", res.file.toString())
+                                          .error(e)
+                                          .handle();
                             }
                         }
                     }
@@ -267,16 +269,12 @@ public class TimerService implements Lifecycle {
             res.callback = callback;
             res.lastModified = file.lastModified();
             loadedFiles.add(res);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | URISyntaxException e) {
+            Exceptions.ignore(e);
             Exceptions.handle()
-                    .withSystemErrorMessage("Cannot monitor URL '%s' for changes: %s (%s)", url)
-                    .to(LOG)
-                    .handle();
-        } catch (URISyntaxException e) {
-            Exceptions.handle()
-                    .withSystemErrorMessage("Cannot monitor URL '%s' for changes: %s (%s)", url)
-                    .to(LOG)
-                    .handle();
+                      .withSystemErrorMessage("Cannot monitor URL '%s' for changes: %s (%s)", url)
+                      .to(LOG)
+                      .handle();
         }
     }
 
@@ -288,6 +286,7 @@ public class TimerService implements Lifecycle {
     /**
      * Executes all one minute timers (implementing <tt>EveryTenSeconds</tt>) now (out of schedule).
      */
+    @SuppressWarnings("Convert2streamapi")
     public void runTenSecondTimers() {
         for (final TimedTask task : everyTenSeconds.getParts()) {
             executeTask(task);
@@ -298,6 +297,7 @@ public class TimerService implements Lifecycle {
     /**
      * Executes all one minute timers (implementing <tt>EveryMinute</tt>) now (out of schedule).
      */
+    @SuppressWarnings("Convert2streamapi")
     public void runOneMinuteTimers() {
         for (final TimedTask task : everyMinute.getParts()) {
             executeTask(task);
@@ -312,15 +312,13 @@ public class TimerService implements Lifecycle {
             } catch (Throwable t) {
                 Exceptions.handle(LOG, t);
             }
-        }).dropOnOverload(() ->
-                        LOG.INFO("Dropping timer tasks due to system overload!")
-        ).execute();
-
+        }).dropOnOverload(() -> LOG.INFO("Dropping timer tasks due to system overload!")).execute();
     }
 
     /**
      * Executes all ten minutes timers (implementing <tt>EveryTenMinutes</tt>) now (out of schedule).
      */
+    @SuppressWarnings("Convert2streamapi")
     public void runTenMinuteTimers() {
         for (final TimedTask task : everyTenMinutes.getParts()) {
             executeTask(task);
@@ -331,6 +329,7 @@ public class TimerService implements Lifecycle {
     /**
      * Executes all one hour timers (implementing <tt>EveryHour</tt>) now (out of schedule).
      */
+    @SuppressWarnings("Convert2streamapi")
     public void runOneHourTimers() {
         for (final TimedTask task : everyHour.getParts()) {
             executeTask(task);
@@ -348,16 +347,15 @@ public class TimerService implements Lifecycle {
         for (final EveryDay task : everyDay.getParts()) {
             if (!Sirius.getConfig().hasPath("timer.daily." + task.getConfigKeyName())) {
                 LOG.WARN("Skipping daily timer %s as config key '%s' is missing!",
-                        task.getClass().getName(),
-                        "timer.daily." + task.getConfigKeyName());
+                         task.getClass().getName(),
+                         "timer.daily." + task.getConfigKeyName());
             } else {
-                if (outOfSchedule || Sirius.getConfig()
-                        .getInt("timer.daily." + task.getConfigKeyName()) == LocalTime.now()
-                        .getHour()) {
+                if (outOfSchedule
+                    || Sirius.getConfig().getInt("timer.daily." + task.getConfigKeyName()) == LocalTime.now()
+                                                                                                       .getHour()) {
                     executeTask(task);
                 }
             }
         }
     }
-
 }

@@ -18,10 +18,7 @@ import java.util.TreeMap;
 /**
  * Provides an execution context to scripts etc.
  * <p>
- * This is basically a wrapper for <code>Map&lt;String, Object&gt;</code>
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
+ * This is basically a wrapper for {@code Map&lt;String, Object&gt;}
  */
 public class Context implements Map<String, Object> {
 
@@ -86,7 +83,7 @@ public class Context implements Map<String, Object> {
     }
 
     @Override
-    public void putAll(Map<? extends String, ? extends Object> m) {
+    public void putAll(Map<? extends String, ?> m) {
         data.putAll(m);
     }
 
@@ -110,16 +107,6 @@ public class Context implements Map<String, Object> {
         return data.entrySet();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return data.equals(o);
-    }
-
-    @Override
-    public int hashCode() {
-        return data.hashCode();
-    }
-
     /**
      * Creates a new context
      *
@@ -128,7 +115,6 @@ public class Context implements Map<String, Object> {
     public static Context create() {
         return new Context();
     }
-
 
     /**
      * Associates the given <tt>value</tt> to the given <tt>key</tt>, while returning <tt>this</tt>

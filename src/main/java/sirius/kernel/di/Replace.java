@@ -8,12 +8,16 @@
 
 package sirius.kernel.di;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * Classes provided by customizations can be annotated with this to replace classes provided as a standard class.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/11
  */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
 public @interface Replace {
 
     /**
@@ -22,7 +26,4 @@ public @interface Replace {
      * @return the the standard class to be replaced
      */
     Class<?> value();
-
 }
-
-

@@ -11,7 +11,11 @@ package sirius.kernel;
 import com.google.common.base.Charsets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.log4j.*;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.DailyRollingFileAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggerRepository;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Log;
@@ -45,9 +49,6 @@ import java.util.logging.SimpleFormatter;
  * <li>Redirects all Java Logging to Log4J</li>
  * <li>Creates either a console or file appender for Log4J (PROD = file, DEV = console)</li>
  * </ul>
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/12
  */
 public class Setup {
 
@@ -223,7 +224,6 @@ public class Setup {
         return Value.of(System.getProperty(property));
     }
 
-
     /**
      * Initializes log4j as logging framework.
      * <p>
@@ -300,8 +300,8 @@ public class Setup {
 
         // The file must start with the log file name, but have an extension (we don't want to delete
         // the main log file).
-        Predicate<File> validLogFileName = f -> f.getName().startsWith(getLogFileName()) && !f.getName()
-                                                                                              .equals(getLogFileName());
+        Predicate<File> validLogFileName =
+                f -> f.getName().startsWith(getLogFileName()) && !f.getName().equals(getLogFileName());
 
         Predicate<File> isOldEnough = f -> System.currentTimeMillis() - f.lastModified() > retentionInMillis;
 
@@ -368,7 +368,7 @@ public class Setup {
             }
 
             @Override
-            public void close() throws SecurityException {
+            public void close() {
             }
         };
         handler.setLevel(java.util.logging.Level.ALL);

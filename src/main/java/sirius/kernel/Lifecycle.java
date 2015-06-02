@@ -13,12 +13,10 @@ import sirius.kernel.di.std.Priorized;
 /**
  * Classes implementing this interface get notified once the framework is started or being shut down.
  * <p>
- * In contrast to {@link sirius.kernel.di.Initializable} this might be called a bit later, since the system is first initialized
+ * In contrast to {@link sirius.kernel.di.Initializable} this might be called a bit later, since the system is first
+ * initialized
  * and then started up. However, one can assume that all annotations have been processed and dependent parts
  * can be accessed.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface Lifecycle extends Priorized {
 

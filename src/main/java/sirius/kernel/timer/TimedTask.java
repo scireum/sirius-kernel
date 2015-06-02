@@ -12,9 +12,6 @@ package sirius.kernel.timer;
  * Super-interface for timer intervals.
  * <p>
  * See subclasses for defined semantics.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface TimedTask {
 
@@ -25,5 +22,4 @@ public interface TimedTask {
      *                   {@link sirius.kernel.health.Exceptions}
      */
     void runTimer() throws Exception;
-
 }

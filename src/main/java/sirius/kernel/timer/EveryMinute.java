@@ -15,9 +15,6 @@ package sirius.kernel.timer;
  * {@link sirius.kernel.di.std.Register} annotation. Once the system is started, the method
  * {@link sirius.kernel.timer.TimedTask#runTimer()} is invoked once every minute (however no assumptions about the
  * exact length of the interval should be made - it will be "about" a minute, not exactly one minute).
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface EveryMinute extends TimedTask {
 }

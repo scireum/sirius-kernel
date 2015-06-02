@@ -25,21 +25,20 @@ import java.util.function.Consumer;
  * <p>
  * A typical use-case is:
  * <pre>
- * <code>
+ * {@code
  *             DataCollector&lt;String&gt; collector = new DataCollector&lt;String&gt;();
  *             computeStrings1(collector);
  *             computeStrings2(collector);
  *
  *             collector.getData(); // use values
- * </code>
+ * }
  * </pre>
  * <p>
  * If a sorted list is required which does not depend on insertion order but on a given priority of each entry
  * {@link PriorityCollector} can be used.
  *
- * @author Andreas Haufler (aha@scireum.de)
+ * @param <T> the type of objects to be collected
  * @see PriorityCollector
- * @since 2013/08
  */
 public class DataCollector<T> implements Consumer<T> {
 
@@ -65,7 +64,6 @@ public class DataCollector<T> implements Consumer<T> {
     public void add(T entity) {
         data.add(entity);
     }
-
 
     /**
      * Adds all values of the given collection to the collector

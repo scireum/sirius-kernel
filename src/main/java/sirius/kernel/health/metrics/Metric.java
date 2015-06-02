@@ -11,14 +11,13 @@ package sirius.kernel.health.metrics;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.NumberFormat;
 
+import java.util.Objects;
+
 /**
  * Represents a measured value, recorded by the metrics framework.
  * <p>
  * Basically this combines a name along with a value and unit. Additionally an interpretation of the value is
  * given as state.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/09
  */
 public class Metric implements Comparable<Metric> {
 
@@ -99,5 +98,22 @@ public class Metric implements Comparable<Metric> {
             return o.state.ordinal() - state.ordinal();
         }
         return name.compareTo(o.name);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Metric)) {
+            return false;
+        }
+        Metric metric = (Metric) o;
+        return Objects.equals(name, metric.name) && Objects.equals(state, metric.state);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, state);
     }
 }

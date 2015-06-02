@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.di.std;
 
 import java.lang.annotation.ElementType;
@@ -11,12 +19,10 @@ import java.lang.annotation.Target;
  * The references class must be an implementation of {@link Priorized} and all parts will
  * be sorted by their priority (ascending) before the list is inserted.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see Parts
- * @since 2013/08
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.FIELD)
+@Target(ElementType.FIELD)
 public @interface PriorityParts {
 
     /**

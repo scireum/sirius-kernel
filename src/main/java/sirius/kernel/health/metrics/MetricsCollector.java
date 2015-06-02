@@ -13,9 +13,6 @@ import javax.annotation.Nullable;
 
 /**
  * Used by implementations of {@link MetricProvider} to provide metrics to {@link Metrics}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 public interface MetricsCollector {
 

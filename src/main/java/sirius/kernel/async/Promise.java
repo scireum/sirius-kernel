@@ -32,8 +32,7 @@ import java.util.function.Function;
  * or aggregated ({@link Async#sequence(java.util.List)}, {@link Barrier}) complex computations can be glued
  * together using simple components.
  *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
+ * @param <V> contains the type of the value which is to be computed
  */
 public class Promise<V> {
 
@@ -322,7 +321,6 @@ public class Promise<V> {
 
             @Override
             public void onFailure(Throwable throwable) {
-
             }
         });
     }
@@ -364,6 +362,4 @@ public class Promise<V> {
     public Promise<V> handleErrors(@Nonnull final Log log) {
         return onFailure(value -> Exceptions.handle(log, value));
     }
-
-
 }

@@ -16,11 +16,12 @@ import java.util.Date;
 /**
  * Represents an entry of a <tt>Cache</tt>
  * <p>
- * Such entries are created and managed by the cache implementation. However, via {@link sirius.kernel.cache.Cache#getContents()}
+ * Such entries are created and managed by the cache implementation. However, via {@link sirius.kernel.cache
+ * .Cache#getContents()}
  * can be used to access the entries of a cache. These entries provide detailed information for each item in the cache.
  *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
+ * @param <K> the key type determining the type of the lookup values in the cache
+ * @param <V> the value type determining the type of values stored in the cache
  */
 public class CacheEntry<K, V> {
     /*

@@ -26,15 +26,15 @@ import java.util.stream.Collectors;
  * An example might be an SQL query which is executed in a loop to perform a file import. Since the SQL-Query is
  * always the same (in case or a prepared statement) the execution times will be added to an average which will
  * be stored until the next call to <tt>Microtiming.getTimings()</tt>.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class Microtiming {
 
     private static volatile boolean enabled = false;
     private static volatile long lastReset;
     private static Map<String, Timing> timings = Maps.newConcurrentMap();
+
+    private Microtiming() {
+    }
 
     /**
      * Simple value class which represents a measured timing.
@@ -108,7 +108,7 @@ public class Microtiming {
      * provides a kind of auto filtering which permits to enable this framework in production systems while
      * still getting reasonable small results.
      *
-     * @return all {@link sirius.kernel.health.Microtiming.Timing} values recorded which where submitted since the
+     * @return all {@link Timing} values recorded which where submitted since the
      * last call to <tt>getTimings()</tt>
      */
     public static List<Timing> getTimings() {
@@ -120,9 +120,11 @@ public class Microtiming {
      * <p>
      * Adds the average to the "live set" which will be output on the next call to {@link #getTimings()}
      * <p>
-     * A convenient way to call this method is to use {@link sirius.kernel.commons.Watch#submitMicroTiming(String, String)}
+     * A convenient way to call this method is to use {@link sirius.kernel.commons.Watch#submitMicroTiming(String,
+     * String)}
      *
-     * @param category        the category of the recorded timing. This permits grouping a microtimings of the same kind.
+     * @param category        the category of the recorded timing. This permits grouping a microtimings of the same
+     *                        kind.
      * @param key             the key for which the value should be submitted
      * @param durationInNanos the number of nanoseconds used as timing for the given key
      */
@@ -168,5 +170,4 @@ public class Microtiming {
     public static long getLastReset() {
         return lastReset;
     }
-
 }

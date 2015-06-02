@@ -16,7 +16,13 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -28,9 +34,6 @@ import java.util.Map;
  * <p>
  * This is basically a thin wrapper over <tt>HttpURLConnection</tt> which adds some boilder plate code and a bit
  * of logging / monitoring.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class Outcall {
 
@@ -166,8 +169,11 @@ public class Outcall {
      * @return the charset used by the server or <tt>UTF-8</tt> as default
      */
     public Charset getContentEncoding() {
+        if (connection.getContentEncoding() == null) {
+            return Charsets.UTF_8;
+        }
         try {
-            return connection.getContentEncoding() == null ? Charsets.UTF_8 : Charset.forName(connection.getContentEncoding());
+            return Charset.forName(connection.getContentEncoding());
         } catch (Exception e) {
             Exceptions.ignore(e);
             return Charsets.UTF_8;
@@ -185,5 +191,4 @@ public class Outcall {
             setRequestProperty("Cookie", name + "=" + value);
         }
     }
-
 }

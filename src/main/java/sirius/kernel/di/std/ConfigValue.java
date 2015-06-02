@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
  * component config (which then can be overridden in the application.conf or instance.conf).
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.FIELD)
+@Target(ElementType.FIELD)
 public @interface ConfigValue {
 
     /**

@@ -8,6 +8,7 @@
 
 package sirius.kernel.commons;
 
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.CheckReturnValue;
@@ -17,9 +18,18 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -29,18 +39,15 @@ import java.util.regex.Pattern;
  * Provides a generic wrapper for a value which is read from an untyped context
  * like HTTP parameters.
  * <p>
- * It supports elegant <code>null</code> handling and type
+ * It supports elegant {@code null} handling and type
  * conversions.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class Value {
 
     private Object data;
 
     /**
-     * Use <code>Amount.of</code> to create a new instance.
+     * Use {@code Amount.of} to create a new instance.
      */
     private Value() {
         super();
@@ -223,7 +230,7 @@ public class Value {
     }
 
     /**
-     * Boilerplate for <code>Optional.ofNullable(get(type, null))</code>.
+     * Boilerplate for {@code Optional.ofNullable(get(type, null))}.
      * <p>
      * Returns the internal value wrapped as Optional.
      *
@@ -260,7 +267,7 @@ public class Value {
     }
 
     /**
-     * Returns a value which wraps <code>this + separator + value</code>
+     * Returns a value which wraps {@code this + separator + value}
      * <p>
      * If the current value is empty, the given value is returned (without the separator). If the given
      * value is an empty string, the current value is returned (without the separator).
@@ -281,11 +288,11 @@ public class Value {
         if (separator == null) {
             separator = "";
         }
-        return Value.of(toString() + separator + value.toString());
+        return Value.of(toString() + separator + value);
     }
 
     /**
-     * Returns a value which wraps <code>value + separator + this</code>
+     * Returns a value which wraps {@code value + separator + this}
      * <p>
      * If the current value is empty, the given value is returned (without the separator). If the given
      * value is an empty string, the current value is returned (without the separator).
@@ -306,7 +313,7 @@ public class Value {
         if (separator == null) {
             separator = "";
         }
-        return Value.of(value.toString() + separator + toString());
+        return Value.of(value + separator + toString());
     }
 
     /**
@@ -321,12 +328,12 @@ public class Value {
      * <p>
      * This can be used to cut a string into sub strings of a given length:
      * <pre>
-     * <code>
+     * {@code
      *             Value v = Value.of("This is a long string...");
      *             while(v.isFilled()) {
      *                 System.out.println("Up to 5 chars of v: "+v.eat(5));
      *             }
-     * </code>
+     * }
      * </pre>
      *
      * @param maxNumberOfCharacters the max length of the string to cut from the wrapped value
@@ -357,7 +364,7 @@ public class Value {
      */
     public boolean isNumeric() {
         return data != null && (data instanceof Number ||
-                data instanceof Amount || NUMBER.matcher(asString("")).matches());
+                                data instanceof Amount || NUMBER.matcher(asString("")).matches());
     }
 
     /**
@@ -404,6 +411,23 @@ public class Value {
         if (targetClazz.isAssignableFrom(data.getClass())) {
             return (T) data;
         }
+        return continueCoerceWithBasicTypes(targetClazz, defaultValue);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T continueCoerceWithBasicTypes(Class<T> targetClazz, T defaultValue) {
+        if (Integer.class.equals(targetClazz) || int.class.equals(targetClazz)) {
+            if (data instanceof Double) {
+                return (T) (Integer) ((Long) Math.round((Double) data)).intValue();
+            }
+            return (T) getInteger();
+        }
+        if (Long.class.equals(targetClazz) || long.class.equals(targetClazz)) {
+            if (data instanceof Double) {
+                return (T) (Long) Math.round((Double) data);
+            }
+            return (T) getLong();
+        }
         if (String.class.equals(targetClazz)) {
             return (T) NLS.toMachineString(data);
         }
@@ -413,6 +437,11 @@ public class Value {
         if (Amount.class.equals(targetClazz)) {
             return (T) getAmount();
         }
+        return continueCoerceWithDateTypes(targetClazz, defaultValue);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T continueCoerceWithDateTypes(Class<T> targetClazz, T defaultValue) {
         if (LocalDate.class.equals(targetClazz)) {
             if (is(TemporalAccessor.class, Calendar.class, Date.class, java.sql.Date.class, Timestamp.class)) {
                 return (T) asLocalDate((LocalDate) defaultValue);
@@ -438,6 +467,11 @@ public class Value {
                 return (T) asLocalTime((LocalTime) defaultValue);
             }
         }
+        return continueCoerceWithEnumTypes(targetClazz, defaultValue);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T continueCoerceWithEnumTypes(Class<T> targetClazz, T defaultValue) {
         if (targetClazz.isEnum()) {
             try {
                 if (Strings.isEmpty(asString(""))) {
@@ -445,32 +479,24 @@ public class Value {
                 }
                 return (T) Enum.valueOf((Class<Enum>) targetClazz, asString(""));
             } catch (Exception e) {
+                Exceptions.ignore(e);
                 return (T) Enum.valueOf((Class<Enum>) targetClazz, asString("").toUpperCase());
             }
         }
+        return continueCoerceWithConversion(targetClazz, defaultValue);
+    }
+
+    private <T> T continueCoerceWithConversion(Class<T> targetClazz, T defaultValue) {
         if (data instanceof String) {
             try {
-                return (T) NLS.parseMachineString(targetClazz, data.toString().trim());
+                return NLS.parseMachineString(targetClazz, data.toString().trim());
             } catch (Throwable e) {
+                Exceptions.ignore(e);
                 return defaultValue;
             }
         }
-        if (Integer.class.equals(targetClazz) || int.class.equals(targetClazz)) {
-            if (data instanceof Double) {
-                return (T) (Integer) ((Long) Math.round((Double) data)).intValue();
-            }
-            return (T) getInteger();
-        }
-        if (Long.class.equals(targetClazz) || long.class.equals(targetClazz)) {
-            if (data instanceof Double) {
-                return (T) (Long) Math.round((Double) data);
-            }
-            return (T) getLong();
-        }
 
-        throw new IllegalArgumentException(Strings.apply("Cannot convert '%s' to target class: %s ",
-                                                         data,
-                                                         targetClazz));
+        throw new IllegalArgumentException(Strings.apply("Cannot convert '%s' to target class: %s ", data, targetClazz));
     }
 
     /**
@@ -539,8 +565,8 @@ public class Value {
      * while "smart rounding" ({@link NLS#smartRound(double)} <tt>Double</tt> and <tt>BigDecimal</tt> values.
      * <p>
      * This method behaves just like <tt>asString</tt>, except for <tt>Double</tt> and <tt>BigDecimal</tt> values
-     * where the output is "smart rounded". Therefore, 12.34 will be formatted as <code>12.34</code> but 1.000 will
-     * be formatted as <code>1</code>
+     * where the output is "smart rounded". Therefore, 12.34 will be formatted as {@code 12.34} but 1.000 will
+     * be formatted as {@code 1}
      *
      * @return a string representation of the wrapped object as generated by <tt>asString</tt>
      * except for <tt>Double</tt> or <tt>BigDecimal</tt> values, which are "smart rounded".
@@ -560,17 +586,16 @@ public class Value {
         return asString();
     }
 
-
     /**
      * Converts the wrapped value to a <tt>boolean</tt> or returns the given <tt>defaultValue</tt>
      * if no conversion is possible.
      * <p>
-     * To convert a value, {@link Boolean#parseBoolean(String)} is used, where <code>toString</code> is called on all
+     * To convert a value, {@link Boolean#parseBoolean(String)} is used, where {@code toString} is called on all
      * non-string objects.
      *
      * @param defaultValue the value to be used if the wrapped value cannot be converted to a boolean.
      * @return <tt>true</tt> if the wrapped value is <tt>true</tt>
-     * or if the string representation of it is <code>"true"</code>. Returns <tt>false</tt> otherwise,
+     * or if the string representation of it is {@code "true"}. Returns <tt>false</tt> otherwise,
      * especially if the wrapped value is <tt>null</tt>
      */
     public boolean asBoolean(boolean defaultValue) {
@@ -584,10 +609,10 @@ public class Value {
     }
 
     /**
-     * Boilerplate method for <code>asBoolean(false)</code>
+     * Boilerplate method for {@code asBoolean(false)}
      *
      * @return <tt>true</tt> if the wrapped value is <tt>true</tt>
-     * or if the string representation of it is <code>"true"</code>. Returns <tt>false</tt> otherwise,
+     * or if the string representation of it is {@code "true"}. Returns <tt>false</tt> otherwise,
      * especially if the wrapped value is <tt>null</tt>
      */
     public boolean asBoolean() {
@@ -622,6 +647,7 @@ public class Value {
 
             return Integer.parseInt(String.valueOf(data));
         } catch (NumberFormatException e) {
+            Exceptions.ignore(e);
             return defaultValue;
         }
     }
@@ -653,6 +679,7 @@ public class Value {
             }
             return Integer.parseInt(String.valueOf(data));
         } catch (NumberFormatException e) {
+            Exceptions.ignore(e);
             return null;
         }
     }
@@ -687,6 +714,7 @@ public class Value {
             }
             return Long.parseLong(String.valueOf(data));
         } catch (NumberFormatException e) {
+            Exceptions.ignore(e);
             return defaultValue;
         }
     }
@@ -715,6 +743,7 @@ public class Value {
             }
             return Long.parseLong(String.valueOf(data));
         } catch (NumberFormatException e) {
+            Exceptions.ignore(e);
             return null;
         }
     }
@@ -752,6 +781,7 @@ public class Value {
             }
             return Double.parseDouble(String.valueOf(data));
         } catch (NumberFormatException e) {
+            Exceptions.ignore(e);
             return defaultValue;
         }
     }
@@ -1038,7 +1068,7 @@ public class Value {
         if (temporal == null) {
             return defaultValue;
         }
-        return LocalDateTime.ofInstant(temporal, ZoneOffset.systemDefault());
+        return LocalDateTime.ofInstant(temporal, ZoneId.systemDefault());
     }
 
     /**
@@ -1054,7 +1084,7 @@ public class Value {
         if (temporal == null) {
             return defaultValue;
         }
-        return LocalDateTime.ofInstant(temporal, ZoneOffset.systemDefault());
+        return LocalDateTime.ofInstant(temporal, ZoneId.systemDefault());
     }
 
     /**
@@ -1090,8 +1120,9 @@ public class Value {
             if (data instanceof Integer) {
                 return BigDecimal.valueOf((Integer) data);
             }
-            return new BigDecimal(asString("").replace(",", "."), MathContext.UNLIMITED);
+            return new BigDecimal(asString("").replace(',', '.'), MathContext.UNLIMITED);
         } catch (NumberFormatException e) {
+            Exceptions.ignore(e);
             return defaultValue;
         }
     }
@@ -1129,6 +1160,7 @@ public class Value {
         try {
             return Enum.valueOf(clazz, String.valueOf(data));
         } catch (Exception e) {
+            Exceptions.ignore(e);
             return null;
         }
     }
@@ -1158,7 +1190,7 @@ public class Value {
     /**
      * Returns a trimmed version of the string representation of the wrapped value.
      * <p>
-     * The conversion method used is {@link #asString()}, therefore an empty value will yield <code>""</code>.
+     * The conversion method used is {@link #asString()}, therefore an empty value will yield {@code ""}.
      *
      * @return a string representing the wrapped value without leading or trailing spaces.
      */
@@ -1170,16 +1202,16 @@ public class Value {
     /**
      * Returns the first N (<tt>length</tt>) characters of the string representation of the wrapped value.
      * <p>
-     * If the wrapped value is <tt>null</tt>, <code>""</code> will be returned. If the string representation is
+     * If the wrapped value is <tt>null</tt>, {@code ""} will be returned. If the string representation is
      * shorter than <tt>length</tt>, the whole string is returned.
      * <p>
      * If <tt>length</tt> is negative, the string representation <b>without</b> the first N (<tt>length</tt>)
-     * characters is returned. If the string representation is too short, <code>""</code> is returned.
+     * characters is returned. If the string representation is too short, {@code ""} is returned.
      *
      * @param length the number of characters to return or to omit (if <tt>length</tt> is negative)
      * @return the first N characters (or less if the string representation of the wrapped value is shorter)
      * or the string representation without the first N characters (or "" if the representation is too short)
-     * if <tt>length is negative</tt>. Returns <code>""</code> if the wrapped value is <tt>null</tt>
+     * if <tt>length is negative</tt>. Returns {@code ""} if the wrapped value is <tt>null</tt>
      */
     @Nonnull
     public String left(int length) {
@@ -1204,16 +1236,16 @@ public class Value {
     /**
      * Returns the last N (<tt>length</tt>) characters of the string representation of the wrapped value.
      * <p>
-     * If the wrapped value is <tt>null</tt>, <code>""</code> will be returned. If the string representation is
+     * If the wrapped value is <tt>null</tt>, {@code ""} will be returned. If the string representation is
      * shorter than <tt>length</tt>, the whole string is returned.
      * <p>
      * If <tt>length</tt> is negative, the string representation <b>without</b> the last N (<tt>length</tt>)
-     * characters is returned. If the string representation is too short, <code>""</code> is returned.
+     * characters is returned. If the string representation is too short, {@code ""} is returned.
      *
      * @param length the number of characters to return or to omit (if <tt>length</tt> is negative)
      * @return the last N characters (or less if the string representation of the wrapped value is shorter)
      * or the string representation without the last N characters (or "" if the representation is too short)
-     * if <tt>length is negative</tt>. Returns <code>""</code> if the wrapped value is <tt>null</tt>
+     * if <tt>length is negative</tt>. Returns {@code ""} if the wrapped value is <tt>null</tt>
      */
     @Nonnull
     public String right(int length) {
@@ -1242,11 +1274,12 @@ public class Value {
      * <p>
      * An example would be:
      * <pre>
-     *         <code>Value.of("test.tmp.pdf").afterLast("."); // returns "pdf"</code>
+     *         {@code Value.of("test.tmp.pdf").afterLast("."); // returns "pdf"}
      * </pre>
      *
      * @param separator the separator string to search for
-     * @return the substring right after the last occurrence of the given separator. This will not include the separator itself.
+     * @return the substring right after the last occurrence of the given separator. This will not include the
+     * separator itself.
      */
     @Nonnull
     public String afterLast(@Nonnull String separator) {
@@ -1260,17 +1293,19 @@ public class Value {
     }
 
     /**
-     * Returns the substring of the internal value containing everything up to the last occurrence of the given separator.
+     * Returns the substring of the internal value containing everything up to the last occurrence of the given
+     * separator.
      * <p>
      * If the separator is not found in the string, or if the internal value is empty, "" is returned.
      * <p>
      * An example would be:
      * <pre>
-     *         <code>Value.of("test.tmp.pdf").beforeLast("."); // returns "test.tmp"</code>
+     *         {@code Value.of("test.tmp.pdf").beforeLast("."); // returns "test.tmp"}
      * </pre>
      *
      * @param separator the separator string to search for
-     * @return the substring up to the last occurrence of the given separator. This will not include the separator itself.
+     * @return the substring up to the last occurrence of the given separator. This will not include the separator
+     * itself.
      */
     @Nonnull
     public String beforeLast(@Nonnull String separator) {
@@ -1290,11 +1325,12 @@ public class Value {
      * <p>
      * An example would be:
      * <pre>
-     *         <code>Value.of("test.tmp.pdf").afterFirst("."); // returns "tmp.pdf"</code>
+     *         {@code Value.of("test.tmp.pdf").afterFirst("."); // returns "tmp.pdf"}
      * </pre>
      *
      * @param separator the separator string to search for
-     * @return the substring right after the first occurrence of the given separator. This will not include the separator itself.
+     * @return the substring right after the first occurrence of the given separator. This will not include the
+     * separator itself.
      */
     @Nonnull
     public String afterFirst(@Nonnull String separator) {
@@ -1308,17 +1344,19 @@ public class Value {
     }
 
     /**
-     * Returns the substring of the internal value containing everything up to the first occurrence of the given separator.
+     * Returns the substring of the internal value containing everything up to the first occurrence of the given
+     * separator.
      * <p>
      * If the separator is not found in the string, or if the internal value is empty, "" is returned.
      * <p>
      * An example would be:
      * <pre>
-     *         <code>Value.of("test.tmp.pdf").beforeFirst("."); // returns "test"</code>
+     *         {@code Value.of("test.tmp.pdf").beforeFirst("."); // returns "test"}
      * </pre>
      *
      * @param separator the separator string to search for
-     * @return the substring up to the first occurrence of the given separator. This will not include the separator itself.
+     * @return the substring up to the first occurrence of the given separator. This will not include the separator
+     * itself.
      */
     @Nonnull
     public String beforeFirst(@Nonnull String separator) {
@@ -1336,12 +1374,12 @@ public class Value {
      * <p>
      * Returns the substring starting at <tt>startIndex</tt> and ending at <tt>endIndex</tt>. If the given
      * end index is greater than the string length, the complete substring from <tt>startIndex</tt> to the end of
-     * the string is returned. If the <tt>startIndex</tt> is greater than the string length, <code>""</code> is
+     * the string is returned. If the <tt>startIndex</tt> is greater than the string length, {@code ""} is
      * returned.
      *
      * @param startIndex the index of the first character to be included in the sub string
      * @param endIndex   the index of the last character to be included in the sub string
-     * @return a substring like {@link String#substring(int, int)} or <code>""</code> if the wrapped value
+     * @return a substring like {@link String#substring(int, int)} or {@code ""} if the wrapped value
      */
     @Nonnull
     public String substring(int startIndex, int endIndex) {
@@ -1370,7 +1408,7 @@ public class Value {
     /**
      * Returns an uppercase version of the string representation of the wrapped value.
      *
-     * @return an uppercase version of the string representation of the wrapped value or <code>""</code> if the
+     * @return an uppercase version of the string representation of the wrapped value or {@code ""} if the
      * wrapped value is <tt>null</tt>
      */
     @Nonnull
@@ -1384,7 +1422,7 @@ public class Value {
     /**
      * Returns an lowercase version of the string representation of the wrapped value.
      *
-     * @return an lowercase version of the string representation of the wrapped value or <code>""</code> if the
+     * @return an lowercase version of the string representation of the wrapped value or {@code ""} if the
      * wrapped value is <tt>null</tt>
      */
     @Nonnull
@@ -1475,7 +1513,7 @@ public class Value {
     /**
      * Determines if the wrapped value is equal to one of the given objects.
      * <p>
-     * Instead of using <code>if (!value.in(...)) {}</code> consider {@link #notIn(Object...)}.
+     * Instead of using {@code if (!value.in(...)) {}} consider {@link #notIn(Object...)}.
      *
      * @param objects the set of objects to check against
      * @return <tt>true</tt> if the wrapped data is contained in the given objects array, <tt>false</tt> otherwise
@@ -1510,7 +1548,7 @@ public class Value {
      * Determines if the string representation of the wrapped value is equal to the string representation of the given
      * object.
      * <p>In this case equality does not take differences of upper and lower case characters into account. Therefore
-     * this is boilerplate for <code>asString().equalsIgnoreCase(otherString.toString())</code>
+     * this is boilerplate for {@code asString().equalsIgnoreCase(otherString.toString())}
      * (With proper <tt>null</tt> checks.)
      *
      * @param otherString the input to compare against
@@ -1535,7 +1573,7 @@ public class Value {
      * of the wrapped value as key.
      *
      * @return a <tt>Value</tt> containing a translated value by calling {@link NLS#get(String)}
-     * if the string representation of the wrapped value starts with <code>$</code>.
+     * if the string representation of the wrapped value starts with {@code $}.
      * The dollar sign is skipped when passing the key to <tt>NLS</tt>. Otherwise <tt>this</tt> is returned.
      * @see NLS#get(String)
      */

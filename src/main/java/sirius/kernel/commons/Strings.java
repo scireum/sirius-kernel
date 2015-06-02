@@ -31,9 +31,7 @@ import java.util.regex.Pattern;
  * <p>
  * This class can and should not be instantiated, as all methods are static.
  *
- * @author aha
  * @see Value
- * @since 2013/08
  */
 public class Strings {
 
@@ -41,7 +39,6 @@ public class Strings {
      * All methods are static, therefore no instances need to be created.
      */
     private Strings() {
-
     }
 
     /**
@@ -54,7 +51,7 @@ public class Strings {
         if (string == null) {
             return true;
         }
-        return string.toString() == null || "".equals(string.toString());
+        return string.toString() == null || string.toString().isEmpty();
     }
 
     /**
@@ -67,13 +64,13 @@ public class Strings {
         if (string == null) {
             return false;
         }
-        return !"".equals(string.toString());
+        return string.toString() != null && !string.toString().isEmpty();
     }
 
     /**
      * Compares the given <tt>Strings</tt> while treating upper- and lowercase characters as equal.
      * <p>
-     * This is essentially the same as <code>left.equalsIgnoreCase(right)</code>
+     * This is essentially the same as {@code left.equalsIgnoreCase(right)}
      * while gracefully handling <tt>null</tt> values.
      *
      * @param left  the first string to be compared
@@ -144,11 +141,11 @@ public class Strings {
      * <p>
      * This can be used to provide a default value or to check several sources for a value, e.g.:
      * <pre>
-     * <code>
+     * {@code
      *         String s = Strings.firstFilled(System.getProperty("foo.test"),
      *                                        System.getProperty("test"),
      *                                        "default");
-     * </code>
+     * }
      * </pre>
      *
      * @param values an array of string values to be scanned
@@ -230,7 +227,6 @@ public class Strings {
         return result;
     }
 
-
     /**
      * Limits the length of the given string to the given length.
      *
@@ -311,7 +307,37 @@ public class Strings {
         return generateCode(7);
     }
 
-    private static char[] validCodeChars = new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'z'};
+    private static char[] validCodeChars = {'1',
+                                            '2',
+                                            '3',
+                                            '4',
+                                            '5',
+                                            '6',
+                                            '7',
+                                            '8',
+                                            '9',
+                                            'a',
+                                            'b',
+                                            'c',
+                                            'd',
+                                            'e',
+                                            'f',
+                                            'g',
+                                            'h',
+                                            'i',
+                                            'j',
+                                            'k',
+                                            'm',
+                                            'n',
+                                            'p',
+                                            'q',
+                                            'r',
+                                            's',
+                                            't',
+                                            'u',
+                                            'v',
+                                            'w',
+                                            'z'};
 
     /**
      * Generates a string of the given length, containing random character.
@@ -395,9 +421,9 @@ public class Strings {
         return object.toString().trim();
     }
 
-
     /**
-     * shortens a string to the given number of chars, cutting of at most half of the string and adding ... if something
+     * shortens a string to the given number of chars, cutting of at most half of the string and adding ... if
+     * something
      * has been cut of.
      *
      * @param string   string to be cut of
@@ -426,8 +452,8 @@ public class Strings {
      * The regular expression is expected to have one explicit matching group which will be used as input for
      * the replacement function.
      * <p>
-     * To replace all occurrences of <code>#{X}</code> by <code>NLS.get("X")</code> one could use:
-     * <code>Strings.replaceAll(Pattern.compile("#\\{([^\\}]+)\\}"), someText, NLS::get)</code>
+     * To replace all occurrences of {@code #{X}} by {@code NLS.get("X")} one could use:
+     * {@code Strings.replaceAll(Pattern.compile("#\\{([^\\}]+)\\}"), someText, NLS::get)}
      *
      * @param regEx       the regular expression to replace in the given input
      * @param input       the input to scan

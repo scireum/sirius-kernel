@@ -19,10 +19,8 @@ import java.lang.reflect.Field;
 /**
  * Handles the {@link Part} annotation.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.kernel.di.FieldAnnotationProcessor
  * @see Part
- * @since 2013/08
  */
 @Register
 public class PartAnnotationProcessor implements FieldAnnotationProcessor {
@@ -49,5 +47,4 @@ public class PartAnnotationProcessor implements FieldAnnotationProcessor {
             }
         }
     }
-
 }

@@ -1,10 +1,15 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.commons;
 
 /**
  * Helper class for working with double numbers.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/09
  */
 public class Doubles {
     /**
@@ -12,6 +17,9 @@ public class Doubles {
      * constraints when using floating point numbers.
      */
     public static final double EPSILON = 0.000001d;
+
+    private Doubles() {
+    }
 
     /**
      * Returns the fractional part of the given value.
@@ -35,7 +43,7 @@ public class Doubles {
      * @param a the first number to compare
      * @param b the second number to compare
      * @return <tt>true</tt> if the absolute difference of the given numbers is less than {@link #EPSILON},
-     *         <tt>false</tt> otherwise
+     * <tt>false</tt> otherwise
      */
     public static boolean areEqual(double a, double b) {
         return Math.abs(a - b) < EPSILON;
@@ -49,7 +57,7 @@ public class Doubles {
      *
      * @param val the number to check if it is 0.
      * @return <tt>true</tt> if the absolute value of the given numbers is less than {@link #EPSILON},
-     *         <tt>false</tt> otherwise
+     * <tt>false</tt> otherwise
      */
     public static boolean isZero(double val) {
         return Math.abs(val) < EPSILON;

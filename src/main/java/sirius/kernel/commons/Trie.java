@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.commons;
 
 import com.google.common.collect.Lists;
@@ -18,7 +26,7 @@ import java.util.Set;
  * An Example: If we have a list of stop words: "one", "two", "three" and want to detect if these occur in a
  * given text, we can do the following:
  * <pre>
- * <code>
+ * {@code
  * Trie&lt;Boolean&gt; trie = Trie.create();
  *
  * trie.put("one", true);
@@ -38,12 +46,10 @@ import java.util.Set;
  *     }
  * }
  *
- * </code>
+ * }
  * </pre>
  *
  * @param <V> the type of values managed by the trie
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 public class Trie<V> {
 
@@ -139,10 +145,9 @@ public class Trie<V> {
          * case the iterator remains in the "reset" state and can be used as if <tt>reset()</tt> was called.
          */
         boolean resetWith(char c);
-
     }
 
-    /*
+    /**
      * Internal class representing a single node in the trie
      */
     class Node {
@@ -182,12 +187,10 @@ public class Trie<V> {
         @Override
         public boolean canContinue(char c) {
             int index = Collections.binarySearch(current.keys, c);
-            if (index < 0 || current.keys.get(index) != c) {
-                return false;
-            }
-            return true;
+            return !(index < 0 || current.keys.get(index) != c);
         }
 
+        @Override
         public boolean doContinue(char c) {
             int index = Collections.binarySearch(current.keys, c);
             if (index < 0 || current.keys.get(index) != c) {
@@ -318,15 +321,12 @@ public class Trie<V> {
         if (value == null) {
             throw new IllegalArgumentException("value");
         }
-        CharSequence seq = key;
         ContainmentIterator<V> iter = iterator();
-        for (int i = 0; i < seq.length(); i++) {
-            if (!iter.doContinue(seq.charAt(i))) {
-                ((ContainmentIteratorImpl) iter).addStep(seq.charAt(i));
+        for (int i = 0; i < key.length(); i++) {
+            if (!iter.doContinue(key.charAt(i))) {
+                ((ContainmentIteratorImpl) iter).addStep(key.charAt(i));
             }
         }
         iter.setValue(value);
     }
-
-
 }

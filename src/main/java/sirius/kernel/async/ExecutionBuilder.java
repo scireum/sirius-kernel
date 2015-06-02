@@ -25,12 +25,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * Most of the time this builder will be used to either call {@link #fork(Runnable)} or {@link #start(Runnable)}
  * to either fork the current <tt>CallContext</tt> or to start a sub task with a new one. Also a drop handler can be
  * supplied using {@link #dropOnOverload(Runnable)} to gracefully handle system overload conditions.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @ParametersAreNonnullByDefault
-public class ExecutionBuilder<R> {
+public class ExecutionBuilder {
 
     private static final String SYSTEM_ASYNC = "ASYNC";
 
@@ -109,7 +106,7 @@ public class ExecutionBuilder<R> {
      * @return this for fluent builder calls.
      */
     @CheckReturnValue
-    public ExecutionBuilder<R> fork(Runnable task) {
+    public ExecutionBuilder fork(Runnable task) {
         wrapper.runnable = task;
         wrapper.fork = true;
         return this;
@@ -124,7 +121,7 @@ public class ExecutionBuilder<R> {
      * @return this for fluent builder calls.
      */
     @CheckReturnValue
-    public ExecutionBuilder<R> start(Runnable task) {
+    public ExecutionBuilder start(Runnable task) {
         wrapper.runnable = task;
         wrapper.fork = false;
         return this;
@@ -140,7 +137,7 @@ public class ExecutionBuilder<R> {
      * @return this for fluent builder calls.
      */
     @CheckReturnValue
-    public ExecutionBuilder<R> dropOnOverload(Runnable dropHandler) {
+    public ExecutionBuilder dropOnOverload(Runnable dropHandler) {
         wrapper.dropHandler = dropHandler;
         return this;
     }
@@ -154,5 +151,4 @@ public class ExecutionBuilder<R> {
         Async.execute(wrapper);
         return wrapper.promise;
     }
-
 }

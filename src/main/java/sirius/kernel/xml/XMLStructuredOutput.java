@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
@@ -28,9 +29,6 @@ import java.io.OutputStream;
  * Represents a {@link StructuredOutput} emitting XML data.
  * <p>
  * Can be used to construct XML using the <tt>StructuredOutput</tt> interface.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class XMLStructuredOutput extends AbstractStructuredOutput {
 
@@ -57,7 +55,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         try {
             this.out = output;
             StreamResult streamResult = new StreamResult(out);
-            SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
+            SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
             hd = tf.newTransformerHandler();
             Transformer serializer = hd.getTransformer();
             if (doctype != null) {
@@ -89,7 +87,6 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             throw Exceptions.handle(e);
         }
     }
-
 
     @Override
     public StructuredOutput beginResult() {
@@ -161,7 +158,6 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         return buildObject(rootElement);
     }
 
-
     /**
      * Closes the output and this XML document.
      */
@@ -172,9 +168,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             try {
                 hd.endDocument();
                 out.close();
-            } catch (SAXException e) {
-                throw Exceptions.handle(e);
-            } catch (IOException e) {
+            } catch (SAXException | IOException e) {
                 throw Exceptions.handle(e);
             }
         }
@@ -193,7 +187,6 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             throw Exceptions.handle(e);
         }
     }
-
 
     @Override
     protected void startObject(String name, Attribute... attributes) {
@@ -252,5 +245,4 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     public void close() throws IOException {
         out.close();
     }
-
 }

@@ -30,12 +30,11 @@ import java.util.Map.Entry;
  *
  * @param <K> the type of the keys used by this cache
  * @param <V> the type of the values supported by this cache
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object> {
 
     protected static final int MAX_HISTORY = 25;
+    private static final double ONE_HUNDERT_PERCENT = 100d;
     protected List<Long> usesHistory = new ArrayList<Long>(MAX_HISTORY);
     protected List<Long> hitRateHistory = new ArrayList<Long>(MAX_HISTORY);
 
@@ -87,7 +86,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         }
         this.verificationInterval = cacheInfo.getMilliseconds(CONFIG_KEY_VERIFICATION);
         this.timeToLive = cacheInfo.getMilliseconds(CONFIG_KEY_TTL);
-        this.maxSize = cacheInfo.get(CONFIG_KEY_MAX_SIZE).asInt(100);
+        this.maxSize = cacheInfo.get(CONFIG_KEY_MAX_SIZE).getInteger();
         if (maxSize > 0) {
             this.data = CacheBuilder.newBuilder().maximumSize(maxSize).removalListener(this).build();
         } else {
@@ -122,33 +121,22 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     public Long getHitRate() {
         long h = hits.getCount();
         long m = misses.getCount();
-        return h + m == 0L ? 0L : Math.round(100d * (double) h / (double) (h + m));
+        return h + m == 0L ? 0L : Math.round(ONE_HUNDERT_PERCENT * h / (h + m));
     }
 
     @Override
     public Date getLastEvictionRun() {
-        return lastEvictionRun;
+        return (Date) lastEvictionRun.clone();
     }
 
-    @Override
-    public void runEviction() {
+    protected void runEviction() {
         if (data == null) {
             return;
         }
-        usesHistory.add(getUses());
-        if (usesHistory.size() > MAX_HISTORY) {
-            usesHistory.remove(0);
-        }
-        hitRateHistory.add(getHitRate());
-        if (hitRateHistory.size() > MAX_HISTORY) {
-            hitRateHistory.remove(0);
-        }
-        hits.reset();
-        misses.reset();
-        lastEvictionRun = new Date();
         if (timeToLive <= 0) {
             return;
         }
+        lastEvictionRun = new Date();
         // Remove all outdated entries...
         long now = System.currentTimeMillis();
         int numEvicted = 0;
@@ -163,6 +151,19 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         if (numEvicted > 0 && CacheManager.LOG.isFINE()) {
             CacheManager.LOG.FINE("Evicted %d entries from %s", numEvicted, name);
         }
+    }
+
+    protected void updateStatistics() {
+        usesHistory.add(getUses());
+        if (usesHistory.size() > MAX_HISTORY) {
+            usesHistory.remove(0);
+        }
+        hitRateHistory.add(getHitRate());
+        if (hitRateHistory.size() > MAX_HISTORY) {
+            hitRateHistory.remove(0);
+        }
+        hits.reset();
+        misses.reset();
     }
 
     @Override
@@ -200,21 +201,11 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
                 init();
             }
 
-            long now = System.currentTimeMillis();
             CacheEntry<K, V> entry = data.getIfPresent(key);
 
             if (entry != null) {
-                // Verify age of entry
-                if (entry.getMaxAge() > 0 && entry.getMaxAge() < now) {
-                    data.invalidate(key);
-                    entry = null;
-                    // Apply verifier if present
-                } else if (verifier != null && entry != null && verificationInterval > 0 && entry.getNextVerification() < now) {
-                    if (!verifier.valid(entry.getValue())) {
-                        data.invalidate(key);
-                        entry = null;
-                    }
-                }
+                long now = System.currentTimeMillis();
+                entry = verifyEntry(entry, now);
             }
 
             if (entry != null) {
@@ -224,14 +215,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
             } else {
                 // No entry was found, try to compute one if possible
                 misses.inc();
-                if (computer != null) {
-                    V value = computer.compute(key);
-                    entry = new CacheEntry<K, V>(key,
-                                                 value,
-                                                 timeToLive > 0 ? timeToLive + System.currentTimeMillis() : 0,
-                                                 verificationInterval + System.currentTimeMillis());
-                    data.put(key, entry);
-                }
+                entry = tryComputeEntry(key, computer);
             }
 
             if (entry != null) {
@@ -239,10 +223,37 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
             } else {
                 return null;
             }
-
         } catch (Throwable e) {
             throw Exceptions.handle(CacheManager.LOG, e);
         }
+    }
+
+    private CacheEntry<K, V> tryComputeEntry(K key, ValueComputer<K, V> computer) {
+        if (computer == null) {
+            return null;
+        }
+        V value = computer.compute(key);
+        CacheEntry<K, V> entry = new CacheEntry<>(key,
+                                                  value,
+                                                  timeToLive > 0 ? timeToLive + System.currentTimeMillis() : 0,
+                                                  verificationInterval + System.currentTimeMillis());
+        data.put(key, entry);
+        return entry;
+    }
+
+    private CacheEntry<K, V> verifyEntry(CacheEntry<K, V> entry, long now) {
+        // Verify age of entry
+        if (entry.getMaxAge() > 0 && entry.getMaxAge() < now) {
+            data.invalidate(entry.getKey());
+            entry = null;
+            // Apply verifier if present
+        } else if (verifier != null && entry != null && verificationInterval > 0 && entry.getNextVerification() < now) {
+            if (!verifier.valid(entry.getValue())) {
+                data.invalidate(entry.getKey());
+                entry = null;
+            }
+        }
+        return entry;
     }
 
     @Override

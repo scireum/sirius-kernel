@@ -17,9 +17,6 @@ import java.time.LocalDate;
  * Reports build-time information about a loaded SIRIUS module.
  * <p>
  * This is used to keep track of loaded modules in the system.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/12
  */
 public class Module {
 

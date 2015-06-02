@@ -11,9 +11,6 @@ package sirius.kernel.di;
 /**
  * Classes implementing this interface will be invoked, once the {@link Injector} is fully initialized (all annotations
  * are processed).
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public interface Initializable {
     /**

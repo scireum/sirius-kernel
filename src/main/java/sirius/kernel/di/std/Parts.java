@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.di.std;
 
 import java.lang.annotation.ElementType;
@@ -12,12 +20,9 @@ import java.lang.annotation.Target;
  * This is the central extension mechanism to permit other modules to add functionality to the current one, as yet
  * unknown classes can be registered for the given lookup class. Using this yields in loose coupling and extensible
  * software design.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.FIELD)
+@Target(ElementType.FIELD)
 public @interface Parts {
 
     /**

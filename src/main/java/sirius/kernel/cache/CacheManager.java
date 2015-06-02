@@ -8,8 +8,11 @@
 
 package sirius.kernel.cache;
 
+import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -24,9 +27,6 @@ import java.util.function.Supplier;
  * <p>
  * Additionally instances of {@link InlineCache} can be created, which can be used to compute a single value,
  * which is then cached for a given amount of time.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class CacheManager {
 
@@ -34,7 +34,6 @@ public class CacheManager {
      * This class has only static members and is not intended to be instantiated
      */
     private CacheManager() {
-
     }
 
     /*
@@ -45,14 +44,14 @@ public class CacheManager {
     /*
      * Lists all known caches.
      */
-    private static List<Cache<?, ?>> caches = new CopyOnWriteArrayList<>();
+    private static List<ManagedCache<?, ?>> caches = new CopyOnWriteArrayList<>();
 
     /**
      * Returns a list of all known caches
      *
      * @return a list of all caches created so far
      */
-    public static List<Cache<?, ?>> getCaches() {
+    public static List<ManagedCache<?, ?>> getCaches() {
         return Collections.unmodifiableList(caches);
     }
 
@@ -86,9 +85,21 @@ public class CacheManager {
     public static <K, V> Cache<K, V> createCache(String name,
                                                  ValueComputer<K, V> valueComputer,
                                                  ValueVerifier<V> verifier) {
-        Cache<K, V> result = new ManagedCache<>(name, valueComputer, verifier);
+        verifyUniquenessOfName(name);
+        ManagedCache<K, V> result = new ManagedCache<>(name, valueComputer, verifier);
         caches.add(result);
         return result;
+    }
+
+    private static void verifyUniquenessOfName(String name) {
+        for (ManagedCache<?, ?> other : caches) {
+            if (Strings.areEqual(name, other.getName())) {
+                throw Exceptions.handle()
+                                .to(LOG)
+                                .withSystemErrorMessage("A cache named '%s' has already been created!", name)
+                                .handle();
+            }
+        }
     }
 
     /**
@@ -107,25 +118,25 @@ public class CacheManager {
         return createCache(name, null, null);
     }
 
-
     /**
      * Creates a new {@link InlineCache} with the given TTL and computer.
      * <p>
      * An inline cache can be used to compute a single value, which is then cached for a certain amount of time.
      *
-     * @param ttl      specifies the number of time units which the computed value will be cached
-     * @param ttlUnit  specifies the unit of time in which the ttl value is expressed
+     * @param ttl      specifies the duration which the computed value will be cached
      * @param computer the provider which is used to re-compute the value once it expired
      * @param <E>      the type of values being cached
      * @return an inline cache which keeps a computed value for the given amount of time and then uses the provided
      * computer to re-compute the value
      */
-    public static <E> InlineCache<E> createInlineCache(long ttl, TimeUnit ttlUnit, Supplier<E> computer) {
-        return new InlineCache<>(computer, TimeUnit.MILLISECONDS.convert(ttl, ttlUnit));
+    public static <E> InlineCache<E> createInlineCache(Duration ttl, Supplier<E> computer) {
+        return new InlineCache<>(computer, TimeUnit.MILLISECONDS.convert(ttl.getNano(), TimeUnit.NANOSECONDS));
     }
 
+    private static final Duration INLINE_CACHE_DEFAULT_TTL = Duration.ofSeconds(10);
+
     /**
-     * Boilerplate method for {@link #createInlineCache(long, java.util.concurrent.TimeUnit, Supplier)}
+     * Boilerplate method for {@link #createInlineCache(Duration, Supplier)}
      * which keeps the computed value for up to 10 seconds.
      *
      * @param computer the provider which is used to re-compute the value once it expired
@@ -134,6 +145,6 @@ public class CacheManager {
      * computer to re-compute the value
      */
     public static <E> InlineCache<E> createTenSecondsInlineCache(Supplier<E> computer) {
-        return new InlineCache<>(computer, TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
+        return createInlineCache(INLINE_CACHE_DEFAULT_TTL, computer);
     }
 }

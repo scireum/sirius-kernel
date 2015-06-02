@@ -10,9 +10,6 @@ package sirius.kernel.health;
 
 /**
  * Instances registered for this interface will be notified about every exception handled by {@link Exceptions}
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 public interface ExceptionHandler {
     /**

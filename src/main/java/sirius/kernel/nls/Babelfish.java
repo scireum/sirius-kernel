@@ -22,7 +22,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
@@ -34,12 +40,10 @@ import java.util.stream.Stream;
  * Internal translation engine used by {@link NLS}.
  * <p>
  * Loads all .properties files in the given {@link Classpath} which match the pattern
- * <code>name_lang.properties</code>. Where <tt>name</tt> is any string (must not contain "_") and <tt>lang</tt>
+ * {@code name_lang.properties}. Where <tt>name</tt> is any string (must not contain "_") and <tt>lang</tt>
  * is a two letter language code.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see NLS
- * @since 2013/08
  */
 public class Babelfish {
 
@@ -146,7 +150,7 @@ public class Babelfish {
      * This list enumerates directories not to enter, since they either contain a copy of the file or might
      * be too large to search through
      */
-    private static final String[] IGNORED_DIRECTORIES = new String[]{"bin", "out", "target", "build", "data", "dist"};
+    private static final String[] IGNORED_DIRECTORIES = {"bin", "out", "target", "build", "data", "dist"};
 
     /*
      * Tries to find a source file for the given path, starting from current.
@@ -193,6 +197,7 @@ public class Babelfish {
         for (int i = 1; i < path.length; i++) {
             result = new File(result, path[i]);
         }
+        //noinspection UnnecessaryParentheses
         if (result.exists() && result.isFile() || (path.length > 1 && result.getParentFile().exists())) {
             return result;
         }
@@ -336,11 +341,9 @@ public class Babelfish {
         public long getTimeToLive(String baseName, Locale locale) {
             return ResourceBundle.Control.TTL_DONT_CACHE;
         }
-
     }
 
-    private static ResourceBundle.Control CONTROL = new NonCachingControl();
-
+    private static final ResourceBundle.Control CONTROL = new NonCachingControl();
 
     private void importProperties(String relativePath, String baseName, String lang) {
         ResourceBundle bundle = ResourceBundle.getBundle(baseName + "_" + lang, CONTROL);

@@ -12,13 +12,15 @@ import sirius.kernel.commons.Wait;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.health.Exceptions;
 
+import java.time.Duration;
+
 /**
  * Executes a {@link BackgroundTaskQueue}
- *
- * @author Andreas Haufler (aha@scieum.de)
- * @since 2015/04
  */
 class BackgroundQueueWorker implements Runnable {
+
+    private static final Duration SLEEP_INTERVAL = Duration.ofSeconds(15);
+
     private BackgroundTaskQueue tq;
     private Watch w = Watch.start();
     private volatile boolean active;
@@ -57,13 +59,14 @@ class BackgroundQueueWorker implements Runnable {
                               .handle();
                 }
             } else {
-                Wait.seconds(15);
+                Wait.duration(SLEEP_INTERVAL);
             }
         }
     }
 
     /**
      * Returns the state of the background worker as string
+     *
      * @return a string representation of the current state of the worker
      */
     public String getState() {

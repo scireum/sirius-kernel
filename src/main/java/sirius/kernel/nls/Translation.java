@@ -17,9 +17,6 @@ import java.util.Map;
  * Describes a translated property.
  * <p>
  * Used by {@link Babelfish} to manage all translations available.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 public class Translation {
     private boolean autocreated;
@@ -85,10 +82,10 @@ public class Translation {
     public void addTranslation(String lang, String value, boolean silent) {
         if (!silent && translationTable.containsKey(lang) && !Strings.areEqual(translationTable.get(lang), value)) {
             Babelfish.LOG.WARN("Overriding translation for '%s' in language %s: '%s' --> '%s'",
-                    key,
-                    lang,
-                    translationTable.get(lang),
-                    value);
+                               key,
+                               lang,
+                               translationTable.get(lang),
+                               value);
         }
         translationTable.put(lang, value);
     }

@@ -18,12 +18,10 @@ import java.lang.annotation.Target;
  * <p>
  * This is a shortcut for {@link sirius.kernel.extensions.Extensions#getExtensions(String)}.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.kernel.extensions.Extensions
- * @since 2013/08
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.FIELD)
+@Target(ElementType.FIELD)
 public @interface ExtensionList {
 
     /**
@@ -32,5 +30,4 @@ public @interface ExtensionList {
      * @return a dot separated path defining the config-map to load the extensions from.
      */
     String value();
-
 }
