@@ -470,7 +470,7 @@ public class Value {
         return continueCoerceWithEnumTypes(targetClazz, defaultValue);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private <T> T continueCoerceWithEnumTypes(Class<T> targetClazz, T defaultValue) {
         if (targetClazz.isEnum()) {
             try {

@@ -6,8 +6,6 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius;
-
 import com.googlecode.junittoolbox.SuiteClasses;
 import com.googlecode.junittoolbox.WildcardPatternSuite;
 import org.junit.AfterClass;

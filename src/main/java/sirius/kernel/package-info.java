@@ -16,7 +16,6 @@
  * The {@link sirius.kernel.Classpath} is responsible for discovering all classes and resources within the
  * classpath of the application. It will scan all classpath roots which contain a <tt>component.marker</tt>
  * file.
- * <p>
  * <h3>Discovery Based Programming</h3>
  * The whole SIRIUS framework ist built around the concept of <b>Discovery Based Programming</b>. Therefore
  * many components don't actively call other services but rather implement an interface. This is
@@ -37,7 +36,6 @@
  * Also note that the annotations <tt>Part</tt>, <tt>Parts</tt> and <tt>Register</tt> are itself extensions
  * to the IoC (inversion of control) micro kernel (see {@link sirius.kernel.di.std}).
  * Therefore own annotations can be easily added.
- * <p>
  * <h3>System Configuration</h3>
  * Sirius provides a flexible way of building up a system configuration using the <b>Typesafe Config Library</b>. The
  * config can be accessed in three ways. The raw configuration is available via
@@ -78,7 +76,6 @@
  * <p>
  * Using this layout, all default values can be declared in the appropriate <tt>component-[name].conf</tt> rather
  * than be buried somewhere in the Java code. This makes maintaining and discovering them quite easy.
- * <p>
  * <h3>Frameworks</h3>
  * Sirius modules are split up into frameworks which can be dis- or enabled. The kernel module for example provides
  * <tt>timer</tt> as a framework. So if an application does not require a timer service, this framework can be
@@ -87,7 +84,6 @@
  * has to be defined in the <tt>component-[name].conf</tt>). Then it can be used as
  * {@link sirius.kernel.di.std.Register#framework()} in the appropriate components. If the framework is not enabled,
  * these component will be ignored by SIRIUS.
- * <p>
  * <h3>Customizations</h3>
  * Often it is necessary to add or change the behaviour of an application for specific customers. In order to still
  * keep the whole code in one code base (which permits refactorings etc.), SIRIUS supports <b>customizations</b>.

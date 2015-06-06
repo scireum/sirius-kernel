@@ -15,9 +15,6 @@ import spock.lang.Specification
 /**
  * Base class for all specs that require the Sirius framework to be setup.
  * Extending specifications can be run from their respective Suites or stand alone without any additional configuration.
- *
- * @author Markus Günther (mgu@scireum.com)
- * @since 2014/09
  */
 class BaseSpecification extends Specification {
 
