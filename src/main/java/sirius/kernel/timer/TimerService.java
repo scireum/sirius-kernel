@@ -11,8 +11,10 @@ package sirius.kernel.timer;
 import com.google.common.collect.Lists;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
-import sirius.kernel.async.Async;
+import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Watch;
 import sirius.kernel.di.PartCollection;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Priorized;
 import sirius.kernel.di.std.Register;
@@ -46,6 +48,9 @@ public class TimerService implements Lifecycle {
 
     protected static final Log LOG = Log.get("timer");
     private static final String TIMER = "timer";
+
+    @Part
+    private Tasks tasks;
 
     @Parts(EveryTenSeconds.class)
     private PartCollection<EveryTenSeconds> everyTenSeconds;
@@ -306,13 +311,25 @@ public class TimerService implements Lifecycle {
     }
 
     private void executeTask(final TimedTask task) {
-        Async.executor(TIMER).start(() -> {
-            try {
-                task.runTimer();
-            } catch (Throwable t) {
-                Exceptions.handle(LOG, t);
-            }
-        }).dropOnOverload(() -> LOG.INFO("Dropping timer tasks due to system overload!")).execute();
+        tasks.executor(TIMER)
+             .dropOnOverload(() -> LOG.WARN("Dropping timer task '%s' (%s) due to system overload!",
+                                            task,
+                                            task.getClass()))
+             .start(() -> {
+                 try {
+                     Watch w = Watch.start();
+                     task.runTimer();
+                     if (w.elapsed(TimeUnit.SECONDS, false) > 1) {
+                         LOG.WARN(
+                                 "TimedTask '%s' (%s) took over a second to complete! "
+                                 + "Consider executing the work in a separate executor!",
+                                 task,
+                                 task.getClass());
+                     }
+                 } catch (Throwable t) {
+                     Exceptions.handle(LOG, t);
+                 }
+             });
     }
 
     /**

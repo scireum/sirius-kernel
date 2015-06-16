@@ -11,7 +11,9 @@ package sirius.kernel.health.metrics;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.Sirius;
+import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.DataCollector;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -65,8 +67,15 @@ public class Metrics implements EveryMinute {
      */
     private Map<String, Double> differentials = Maps.newHashMap();
 
+    @Part
+    private Tasks tasks;
+
     @Override
     public synchronized void runTimer() throws Exception {
+        tasks.defaultExecutor().start(this::collectMetrics);
+    }
+
+    private void collectMetrics() {
         final DataCollector<Metric> collector = DataCollector.create();
         for (MetricProvider provider : providers) {
             try {

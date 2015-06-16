@@ -77,7 +77,7 @@ public class CallContext {
                     nodeName = InetAddress.getLocalHost().getHostName();
                 } catch (UnknownHostException e) {
                     Exceptions.ignore(e);
-                    Async.LOG.WARN(Strings.apply(
+                    Tasks.LOG.WARN(Strings.apply(
                             "Cannot determine hostname - consider setting 'sirius.nodeName' in the configuration."));
                     nodeName = "unknown";
                 }

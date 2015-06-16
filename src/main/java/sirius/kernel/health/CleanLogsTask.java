@@ -9,7 +9,9 @@
 package sirius.kernel.health;
 
 import sirius.kernel.Sirius;
+import sirius.kernel.async.Tasks;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.timer.EveryDay;
 
@@ -29,8 +31,11 @@ public class CleanLogsTask implements EveryDay {
         return "logCleanupHour";
     }
 
+    @Part
+    private Tasks tasks;
+
     @Override
     public void runTimer() throws Exception {
-        Sirius.getSetup().cleanOldLogFiles(logFileRetention.toMillis());
+        tasks.defaultExecutor().start(() -> Sirius.getSetup().cleanOldLogFiles(logFileRetention.toMillis()));
     }
 }

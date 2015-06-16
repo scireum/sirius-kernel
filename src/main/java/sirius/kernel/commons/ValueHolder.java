@@ -66,4 +66,6 @@ public class ValueHolder<T> implements Supplier<T>, Consumer<T> {
     public void accept(T t) {
         this.value = t;
     }
+
+
 }

@@ -9,7 +9,7 @@
 /**
  * Provides a framework for asynchronous execution of given tasks.
  * <p>
- * Most of the functionality is accessed via the {@link sirius.kernel.async.Async} class. This can be used to
+ * Most of the functionality is accessed via the {@link sirius.kernel.async.Tasks} class. This can be used to
  * submit tasks to executors which are configured via the extension <tt>async.executor</tt>.
  * <p>
  * Another central class is the {@link sirius.kernel.async.CallContext}. This is attached to a thread and will be

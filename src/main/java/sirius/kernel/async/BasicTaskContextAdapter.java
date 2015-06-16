@@ -29,13 +29,13 @@ public class BasicTaskContextAdapter implements TaskContextAdapter {
 
     @Override
     public void log(String message) {
-        Async.LOG.INFO(ctx.getSystemString() + ": " + message);
+        Tasks.LOG.INFO(ctx.getSystemString() + ": " + message);
     }
 
     @Override
     public void trace(String message) {
-        if (Async.LOG.isFINE()) {
-            Async.LOG.FINE(ctx.getSystemString() + ": " + message);
+        if (Tasks.LOG.isFINE()) {
+            Tasks.LOG.FINE(ctx.getSystemString() + ": " + message);
         }
     }
 

@@ -26,14 +26,16 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * Static helper for managing and scheduling asynchronous background tasks.
@@ -49,7 +51,8 @@ import java.util.stream.Collectors;
  * main interaction model when dealing with async and non-blocking execution.
  */
 @ParametersAreNonnullByDefault
-public class Async {
+@Register(classes = {Tasks.class, Lifecycle.class})
+public class Tasks implements Lifecycle {
 
     /**
      * Contains the name of the default executor.
@@ -61,19 +64,15 @@ public class Async {
      */
     public static final int LIFECYCLE_PRIORITY = 25;
 
-    protected static final Log LOG = Log.get("async");
-    protected static final Map<String, AsyncExecutor> executors = Maps.newConcurrentMap();
-    protected static List<BackgroundQueueWorker> backgroundWorkers = Lists.newArrayList();
+    protected static final Log LOG = Log.get("tasks");
+    protected final Map<String, AsyncExecutor> executors = Maps.newConcurrentMap();
 
     // If sirius is not started yet, we still consider it running already as the intention of this flag
     // is to detect a system halt and not to check if the startup sequence has finished.
-    private static volatile boolean running = true;
+    private volatile boolean running = true;
 
-    @Parts(BackgroundTaskQueue.class)
-    private static PartCollection<BackgroundTaskQueue> backgroundQueues;
-
-    private Async() {
-    }
+    @Parts(BackgroundLoop.class)
+    private static PartCollection<BackgroundLoop> backgroundLoops;
 
     /**
      * Returns the executor for the given category.
@@ -84,8 +83,8 @@ public class Async {
      * @param category the category of the task to be executed, which implies the executor to use.
      * @return the execution builder which submits tasks to the appropriate executor.
      */
-    public static ExecutionBuilder executor(String category) {
-        return new ExecutionBuilder(category);
+    public ExecutionBuilder executor(String category) {
+        return new ExecutionBuilder(this, category);
     }
 
     /**
@@ -93,31 +92,155 @@ public class Async {
      *
      * @return the execution builder which submits tasks to the default executor.
      */
-    public static ExecutionBuilder defaultExecutor() {
-        return new ExecutionBuilder(DEFAULT);
+    public ExecutionBuilder defaultExecutor() {
+        return new ExecutionBuilder(this, DEFAULT);
     }
 
     /*
      * Executes a given TaskWrapper by fetching or creating the appropriate executor and submitting the wrapper.
      */
-    protected static void execute(ExecutionBuilder.TaskWrapper wrapper) {
+    protected void execute(ExecutionBuilder.TaskWrapper wrapper) {
+        if (wrapper.synchronizer == null) {
+            executeNow(wrapper);
+        } else {
+            schedule(wrapper);
+        }
+    }
+
+    private void executeNow(ExecutionBuilder.TaskWrapper wrapper) {
         wrapper.prepare();
-        AsyncExecutor exec = executors.get(wrapper.category);
+        AsyncExecutor exec = findExecutor(wrapper.category);
+        wrapper.jobNumber = exec.executed.inc();
+        wrapper.durationAverage = exec.duration;
+        if (wrapper.synchronizer != null) {
+            scheduleTable.put(wrapper.synchronizer, System.nanoTime());
+        }
+        exec.execute(wrapper);
+    }
+
+    private AsyncExecutor findExecutor(String category) {
+        AsyncExecutor exec = executors.get(category);
         if (exec == null) {
             synchronized (executors) {
-                exec = executors.get(wrapper.category);
+                exec = executors.get(category);
                 if (exec == null) {
-                    Extension config = Extensions.getExtension("async.executor", wrapper.category);
-                    exec = new AsyncExecutor(wrapper.category,
+                    Extension config = Extensions.getExtension("async.executor", category);
+                    exec = new AsyncExecutor(category,
                                              config.get("poolSize").getInteger(),
                                              config.get("queueLength").getInteger());
-                    executors.put(wrapper.category, exec);
+                    executors.put(category, exec);
                 }
             }
         }
-        wrapper.jobNumber = exec.executed.inc();
-        wrapper.durationAverage = exec.duration;
-        exec.execute(wrapper);
+        return exec;
+    }
+
+    private Map<Object, Long> scheduleTable = new ConcurrentHashMap<>();
+    private List<ExecutionBuilder.TaskWrapper> schedulerQueue = Lists.newArrayList();
+    private static final Object SCHEDULER_MONITOR = new Object();
+
+    private synchronized void schedule(ExecutionBuilder.TaskWrapper wrapper) {
+        // As tasks often create a loop by calling itself (e.g. BackgroundLoop), we drop
+        // scheduled tasks if the async framework is no longer running, as the tasks would be rejected and
+        // dropped anyway...
+        if (!running) {
+            return;
+        }
+        Long lastInvocation = scheduleTable.get(wrapper.synchronizer);
+        if (lastInvocation == null || (System.nanoTime() - lastInvocation) > wrapper.intervalMinLength) {
+            executeNow(wrapper);
+        } else {
+            if (dropIfAlreadyScheduled(wrapper)) {
+                LOG.FINE(
+                        "Dropping a scheduled task (%s), as for its synchronizer (%s) another task is already scheduled",
+                        wrapper.runnable,
+                        wrapper.synchronizer);
+                return;
+            }
+            wrapper.waitUntil = lastInvocation + wrapper.intervalMinLength;
+            synchronized (schedulerQueue) {
+                schedulerQueue.add(wrapper);
+            }
+            // Wake up schedulerLoop to re-compute the wait-time...
+            synchronized (SCHEDULER_MONITOR) {
+                SCHEDULER_MONITOR.notify();
+            }
+        }
+    }
+
+    private boolean dropIfAlreadyScheduled(ExecutionBuilder.TaskWrapper wrapper) {
+        synchronized (schedulerQueue) {
+            for (ExecutionBuilder.TaskWrapper other : schedulerQueue) {
+                if (wrapper.synchronizer.equals(other.synchronizer)) {
+                    wrapper.drop();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void schedulerLoop() {
+        while (running) {
+            try {
+                synchronized (schedulerQueue) {
+                    Iterator<ExecutionBuilder.TaskWrapper> iter = schedulerQueue.iterator();
+                    long now = System.nanoTime();
+                    while (iter.hasNext()) {
+                        ExecutionBuilder.TaskWrapper wrapper = iter.next();
+                        if (wrapper.waitUntil <= now) {
+                            executeNow(wrapper);
+                            iter.remove();
+                        }
+                    }
+                }
+                idle();
+            } catch (Throwable t) {
+                Exceptions.handle(LOG, t);
+            }
+        }
+    }
+
+    private void idle() {
+        try {
+            synchronized (SCHEDULER_MONITOR) {
+                long waitTime = computeWaitTime();
+                if (waitTime == 0) {
+                    SCHEDULER_MONITOR.wait();
+                } else {
+                    SCHEDULER_MONITOR.wait(waitTime);
+                }
+            }
+        } catch (InterruptedException e) {
+            Exceptions.ignore(e);
+        }
+    }
+
+    private long computeWaitTime() {
+        long waitTime = 0;
+        long now = System.nanoTime();
+        synchronized (schedulerQueue) {
+            for (ExecutionBuilder.TaskWrapper wrapper : schedulerQueue) {
+                long delta = TimeUnit.NANOSECONDS.toMillis(wrapper.waitUntil - now);
+                if (delta < waitTime || waitTime == 0) {
+                    waitTime = delta;
+                }
+            }
+        }
+        return waitTime;
+    }
+
+    private void startScheduler() {
+        Thread schedulerThread = new Thread(this::schedulerLoop);
+        schedulerThread.setName("TaskScheduler");
+        schedulerThread.start();
+    }
+
+    private void stopScheduler() {
+        // Wake up from waiting to leave the schedulderLoop
+        synchronized (SCHEDULER_MONITOR) {
+            SCHEDULER_MONITOR.notify();
+        }
     }
 
     /**
@@ -134,16 +257,16 @@ public class Async {
      * @param <V>         the type of the resulting value
      * @return a promise which will either be eventually supplied with the result of the computation or with an error
      */
-    public static <V> Promise<V> fork(String category, final Supplier<V> computation) {
+    public <V> Promise<V> fork(String category, final Supplier<V> computation) {
         final Promise<V> result = promise();
 
-        executor(category).fork(() -> {
+        executor(category).dropOnOverload(() -> result.fail(new RejectedExecutionException())).fork(() -> {
             try {
                 result.success(computation.get());
             } catch (Throwable t) {
                 result.fail(t);
             }
-        }).dropOnOverload(() -> result.fail(new RejectedExecutionException())).execute();
+        });
 
         return result;
     }
@@ -256,17 +379,8 @@ public class Async {
      *
      * @return a collection of all executors which have been used by the system.
      */
-    public static Collection<AsyncExecutor> getExecutors() {
+    public Collection<AsyncExecutor> getExecutors() {
         return Collections.unmodifiableCollection(executors.values());
-    }
-
-    /**
-     * Returns a list of all background workers
-     *
-     * @return a list of the state of all background workers
-     */
-    public static Collection<String> getBackgroundWorkers() {
-        return backgroundWorkers.stream().map(Object::toString).collect(Collectors.toList());
     }
 
     /**
@@ -276,78 +390,73 @@ public class Async {
      *
      * @return <tt>true</tt> if the system is running, <tt>false</tt> if a shutdown is in progress
      */
-    public static boolean isRunning() {
+    public boolean isRunning() {
         return running;
     }
 
+    @Override
+    public void started() {
+        running = true;
+        startScheduler();
+        startBackgroundLoops();
+    }
+
+    private void startBackgroundLoops() {
+        backgroundLoops.forEach(BackgroundLoop::loop);
+    }
+
+    @Override
+    public void stopped() {
+        running = false;
+        stopScheduler();
+        // Try an ordered (fair) shutdown...
+        for (AsyncExecutor exec : executors.values()) {
+            exec.shutdown();
+        }
+    }
+
     /**
-     * Ensures that all thread pools are halted, when the system shuts down.
+     * Determines the duration we wait for an executor to shut down normally
+     * (after having called {@link ThreadPoolExecutor#shutdown()})
      */
-    @Register
-    public static class AsyncLifecycle implements Lifecycle {
+    private static final Duration EXECUTOR_SHUTDOWN_WAIT = Duration.ofSeconds(60);
 
-        @Override
-        public void started() {
-            running = true;
-            for (BackgroundTaskQueue tq : backgroundQueues) {
-                backgroundWorkers.add(new BackgroundQueueWorker(tq).start());
-            }
-        }
+    /**
+     * Determines the duration we wait for an executor to shut down forced
+     * (after having called {@link ThreadPoolExecutor#shutdownNow()})
+     */
+    private static final Duration EXECUTOR_TERMINATION_WAIT = Duration.ofSeconds(30);
 
-        @SuppressWarnings("Convert2streamapi")
-        @Override
-        public void stopped() {
-            running = false;
-            // Try an ordered (fair) shutdown...
-            for (AsyncExecutor exec : executors.values()) {
-                exec.shutdown();
-            }
-        }
-
-        /**
-         * Determines the duration we wait for an executor to shut down normally
-         * (after having called {@link ThreadPoolExecutor#shutdown()})
-         */
-        private static final Duration EXECUTOR_SHUTDOWN_WAIT = Duration.ofSeconds(60);
-
-        /**
-         * Determines the duration we wait for an executor to shut down forced
-         * (after having called {@link ThreadPoolExecutor#shutdownNow()})
-         */
-        private static final Duration EXECUTOR_TERMINATION_WAIT = Duration.ofSeconds(30);
-
-        @Override
-        public void awaitTermination() {
-            for (Map.Entry<String, AsyncExecutor> e : executors.entrySet()) {
-                AsyncExecutor exec = e.getValue();
-                if (!exec.isTerminated()) {
-                    LOG.INFO("Waiting for async executor '%s' to terminate...", e.getKey());
-                    try {
-                        if (!exec.awaitTermination(EXECUTOR_SHUTDOWN_WAIT.getSeconds(), TimeUnit.SECONDS)) {
-                            LOG.SEVERE(Strings.apply("Executor '%s' did not terminate within 60s. Interrupting "
-                                                     + "tasks...", e.getKey()));
-                            exec.shutdownNow();
-                            if (!exec.awaitTermination(EXECUTOR_TERMINATION_WAIT.getSeconds(), TimeUnit.SECONDS)) {
-                                LOG.SEVERE(Strings.apply("Executor '%s' did not terminate after another 30s!",
-                                                         e.getKey()));
-                            }
+    @Override
+    public void awaitTermination() {
+        for (Map.Entry<String, AsyncExecutor> e : executors.entrySet()) {
+            AsyncExecutor exec = e.getValue();
+            if (!exec.isTerminated()) {
+                LOG.INFO("Waiting for async executor '%s' to terminate...", e.getKey());
+                try {
+                    if (!exec.awaitTermination(EXECUTOR_SHUTDOWN_WAIT.getSeconds(), TimeUnit.SECONDS)) {
+                        LOG.SEVERE(Strings.apply("Executor '%s' did not terminate within 60s. Interrupting "
+                                                 + "tasks...", e.getKey()));
+                        exec.shutdownNow();
+                        if (!exec.awaitTermination(EXECUTOR_TERMINATION_WAIT.getSeconds(), TimeUnit.SECONDS)) {
+                            LOG.SEVERE(Strings.apply("Executor '%s' did not terminate after another 30s!", e.getKey()));
                         }
-                    } catch (InterruptedException ex) {
-                        Exceptions.ignore(ex);
-                        LOG.SEVERE(Strings.apply("Interrupted while waiting for '%s' to terminate!", e.getKey()));
                     }
+                } catch (InterruptedException ex) {
+                    Exceptions.ignore(ex);
+                    LOG.SEVERE(Strings.apply("Interrupted while waiting for '%s' to terminate!", e.getKey()));
                 }
             }
         }
+    }
 
-        @Override
-        public String getName() {
-            return "async (Async Execution Engine)";
-        }
+    @Override
+    public String getName() {
+        return "tasks (Async Execution Engine)";
+    }
 
-        @Override
-        public int getPriority() {
-            return LIFECYCLE_PRIORITY;
-        }
+    @Override
+    public int getPriority() {
+        return LIFECYCLE_PRIORITY;
     }
 }

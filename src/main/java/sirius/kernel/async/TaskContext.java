@@ -10,6 +10,7 @@ package sirius.kernel.async;
 
 import sirius.kernel.commons.RateLimit;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.std.Part;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -47,6 +48,9 @@ public class TaskContext implements SubContext {
     private String jobTitle = "";
     private RateLimit stateUpdate = RateLimit.timeInterval(STATE_UPDATE_INTERVAL, TimeUnit.SECONDS);
 
+    @Part
+    private static Tasks tasks;
+
     public TaskContext() {
         this.adapter = new BasicTaskContextAdapter(this);
     }
@@ -74,7 +78,7 @@ public class TaskContext implements SubContext {
         if (adapter != null) {
             adapter.log(Strings.apply(message, args));
         } else {
-            Async.LOG.INFO(getSystemString() + ": " + Strings.apply(message, args));
+            Tasks.LOG.INFO(getSystemString() + ": " + Strings.apply(message, args));
         }
     }
 
@@ -155,7 +159,7 @@ public class TaskContext implements SubContext {
      * @return <tt>true</tt> as long as the task is expected to be executed, <tt>false</tt> otherwise
      */
     public boolean isActive() {
-        return adapter.isActive() && Async.isRunning();
+        return adapter.isActive() && tasks.isRunning();
     }
 
     /**
@@ -189,7 +193,7 @@ public class TaskContext implements SubContext {
      * <p>
      * This will consist of three parts: System, Sub-System and Job. It is used to provide information which
      * module is currently active. Therefore the <tt>System</tt> will provide a raw information which module is
-     * active. This might be <b>HTTP</b> for the web server or the category of an executor in {@link Async}.
+     * active. This might be <b>HTTP</b> for the web server or the category of an executor in {@link Tasks}.
      * <p>
      * The <tt>Sub-System</tt> will provide a more detailed information, like the class name or the name of
      * a component which is currently active.

@@ -14,11 +14,14 @@ import sirius.kernel.health.Exceptions;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.time.Duration;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Builder pattern for forking or starting sub tasks.
  * <p>
- * Used by {@link Async#executor(String)} to construct an execution for a given subtask. Can be used to specify whether
+ * Used by {@link Tasks#executor(String)} to construct an execution for a given subtask. Can be used to specify whether
  * the current {@link CallContext} is forked, or if a new one is started. Also one can specify whether and how a given
  * task might be dropped on system overload conditions.
  * <p>
@@ -30,20 +33,69 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class ExecutionBuilder {
 
     private static final String SYSTEM_ASYNC = "ASYNC";
+    private Tasks tasks;
 
     /**
      * Internal class which takes care of passing along the CallContext and for storing the configuration made by the
      * ExecutionBuilder.
      */
     static class TaskWrapper implements Runnable {
+        /**
+         * Determines the executor (thread pool to use)
+         */
         String category;
+
+        /**
+         * Contains the work to do
+         */
         Runnable runnable;
+
+        /**
+         * Keep the current {@link CallContext} or create a new one?
+         */
         boolean fork;
+
+        /**
+         * What to do if the we drop the task because the system is overloaded
+         */
         Runnable dropHandler;
+
+        /**
+         * The {@code CallContext} to use when {@code fork} is <tt>true</tt>.
+         */
         CallContext parentContext;
-        Future promise = Async.future();
+
+        /**
+         * Used to communicate the completion / abort of the task
+         */
+        Future promise = Tasks.future();
+
+        /**
+         * Contains the inertnally computed task number
+         */
         long jobNumber;
+
+        /**
+         * Filled by {@link Tasks#execute(TaskWrapper)} with the appropriate {@code Average} of the
+         * underlying executor to measure throughput.
+         */
         Average durationAverage;
+
+        /**
+         * If a synchorinzer is present this can be used to limit the call frequency of a task
+         */
+        long intervalMinLength;
+
+        /**
+         * Once the timestamp of the last invocation is known, this will contain the earliest possible
+         * timestamp to execute this task
+         */
+        long waitUntil;
+
+        /**
+         * The synchronizer to use when {@code frequency} is set
+         */
+        Object synchronizer;
 
         /**
          * Prepares the execution of this task while checking all preconditions.
@@ -75,7 +127,7 @@ public class ExecutionBuilder {
                     durationAverage.addValue(w.elapsedMillis());
                 }
             } catch (Throwable t) {
-                Exceptions.handle(Async.LOG, t);
+                Exceptions.handle(Tasks.LOG, t);
                 promise.fail(t);
             }
         }
@@ -83,6 +135,14 @@ public class ExecutionBuilder {
         @Override
         public String toString() {
             return category;
+        }
+
+        protected void drop() {
+            if (dropHandler != null) {
+                dropHandler.run();
+            }
+            promise.doNotLogErrors();
+            promise.fail(new RejectedExecutionException());
         }
     }
 
@@ -93,45 +153,40 @@ public class ExecutionBuilder {
      *
      * @param category the category which is used to determine which executor to use
      */
-    ExecutionBuilder(String category) {
+    ExecutionBuilder(Tasks tasks, String category) {
+        this.tasks = tasks;
         wrapper.category = category;
     }
 
     /**
      * Specifies to fork the current CallContext while executing the given task.
-     * <p>
-     * Note that {@link #execute()} has to be called to actually start the task.
      *
      * @param task the task to execute.
-     * @return this for fluent builder calls.
+     * @return a {@code Future} representing the execution created by this builder.
      */
-    @CheckReturnValue
-    public ExecutionBuilder fork(Runnable task) {
+    public Future fork(Runnable task) {
         wrapper.runnable = task;
         wrapper.fork = true;
-        return this;
+        tasks.execute(wrapper);
+        return wrapper.promise;
     }
 
     /**
      * Specifies to create a new CallContext while executing the given task.
-     * <p>
-     * Note that {@link #execute()} has to be called to actually start the task.
      *
      * @param task the task to execute.
-     * @return this for fluent builder calls.
+     * @return a {@code Future} representing the execution created by this builder.
      */
-    @CheckReturnValue
-    public ExecutionBuilder start(Runnable task) {
+    public Future start(Runnable task) {
         wrapper.runnable = task;
         wrapper.fork = false;
-        return this;
+        tasks.execute(wrapper);
+        return wrapper.promise;
     }
 
     /**
      * Specifies that the given task can be dropped (ignored) in system overload conditions, if at least the given
      * handler is called.
-     * <p>
-     * Note that {@link #execute()} has to be called to actually start the task.
      *
      * @param dropHandler the handler which is informed if the task is dropped due to system overload conditions.
      * @return this for fluent builder calls.
@@ -142,13 +197,14 @@ public class ExecutionBuilder {
         return this;
     }
 
-    /**
-     * Creates and submits a task based on the made specifications
-     *
-     * @return a Future representing the execution created by this builder.
-     */
-    public Future execute() {
-        Async.execute(wrapper);
-        return wrapper.promise;
+    public ExecutionBuilder minInterval(Object synchronizer, Duration minimalIntervalDuration) {
+        this.wrapper.intervalMinLength =
+                TimeUnit.SECONDS.toNanos(minimalIntervalDuration.getSeconds()) + minimalIntervalDuration.getNano();
+        this.wrapper.synchronizer = synchronizer;
+        return this;
+    }
+
+    public ExecutionBuilder frequency(Object synchronizer, double ticksPerSecond) {
+        return minInterval(synchronizer, Duration.ofNanos(Math.round(1_000_000_000d / ticksPerSecond)));
     }
 }

@@ -13,13 +13,14 @@ import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.log4j.Level;
-import sirius.kernel.async.Async;
 import sirius.kernel.async.Barrier;
 import sirius.kernel.async.Operation;
+import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.Injector;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -64,6 +65,9 @@ public class Sirius {
 
     @PriorityParts(Lifecycle.class)
     private static List<Lifecycle> lifecycleParticipants;
+
+    @Part
+    private static Tasks tasks;
 
     private Sirius() {
     }
@@ -160,7 +164,7 @@ public class Sirius {
         started = true;
         Barrier barrier = Barrier.create();
         for (final Lifecycle lifecycle : lifecycleParticipants) {
-            barrier.add(Async.defaultExecutor().fork(() -> {
+            barrier.add(tasks.defaultExecutor().fork(() -> {
                 LOG.INFO("Starting: %s", lifecycle.getName());
                 try {
                     lifecycle.started();
@@ -171,7 +175,7 @@ public class Sirius {
                               .withSystemErrorMessage("Startup of: %s failed!", lifecycle.getName())
                               .handle();
                 }
-            }).execute());
+            }));
         }
 
         if (!barrier.await(1, TimeUnit.MINUTES)) {
@@ -242,7 +246,6 @@ public class Sirius {
         outputActiveOperations();
         stopLifecycleParticipants();
         outputActiveOperations();
-        outputBackgroundWorkers();
         waitForLifecyclePaticipants();
         outputThreadState();
         started = false;
@@ -274,17 +277,6 @@ public class Sirius {
                           .withSystemErrorMessage("Termination of: %s failed!", lifecycle.getName())
                           .handle();
             }
-        }
-    }
-
-    private static void outputBackgroundWorkers() {
-        if (!Async.getBackgroundWorkers().isEmpty()) {
-            LOG.INFO("Background Task Queues");
-            LOG.INFO("---------------------------------------------------------");
-            for (String queue : Async.getBackgroundWorkers()) {
-                LOG.INFO(queue);
-            }
-            LOG.INFO("---------------------------------------------------------");
         }
     }
 

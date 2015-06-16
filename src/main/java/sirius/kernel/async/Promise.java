@@ -8,6 +8,7 @@
 
 package sirius.kernel.async;
 
+import com.google.common.collect.Lists;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.health.Exceptions;
@@ -16,8 +17,13 @@ import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -29,7 +35,7 @@ import java.util.function.Function;
  * the computation is completed.
  * <p>
  * Since promises can be chained ({@link #chain(Promise)}, {@link #failChain(Promise, sirius.kernel.commons.Callback)})
- * or aggregated ({@link Async#sequence(java.util.List)}, {@link Barrier}) complex computations can be glued
+ * or aggregated ({@link Tasks#sequence(java.util.List)}, {@link Barrier}) complex computations can be glued
  * together using simple components.
  *
  * @param <V> contains the type of the value which is to be computed
@@ -38,8 +44,8 @@ public class Promise<V> {
 
     private ValueHolder<V> value;
     private Throwable failure;
-    private boolean hasFailureHandler;
-    private List<CompletionHandler<V>> handlers = new ArrayList<CompletionHandler<V>>(1);
+    private volatile boolean logErrors = true;
+    private List<CompletionHandler<V>> handlers = Lists.newArrayListWithCapacity(2);
 
     /**
      * Returns the value of the promise or <tt>null</tt> if not completed yet.
@@ -70,7 +76,7 @@ public class Promise<V> {
         try {
             handler.onSuccess(value);
         } catch (Throwable e) {
-            Exceptions.handle(Async.LOG, e);
+            Exceptions.handle(Tasks.LOG, e);
         }
     }
 
@@ -81,10 +87,10 @@ public class Promise<V> {
      */
     public void fail(@Nonnull final Throwable exception) {
         this.failure = exception;
-        if (!hasFailureHandler) {
-            Exceptions.handle(Async.LOG, exception);
-        } else if (Async.LOG.isFINE() && !(exception instanceof HandledException)) {
-            Async.LOG.FINE(Exceptions.createHandled().error(exception));
+        if (logErrors) {
+            Exceptions.handle(Tasks.LOG, exception);
+        } else if (Tasks.LOG.isFINE() && !(exception instanceof HandledException)) {
+            Tasks.LOG.FINE(Exceptions.createHandled().error(exception));
         }
         for (final CompletionHandler<V> handler : handlers) {
             failHandler(exception, handler);
@@ -98,7 +104,7 @@ public class Promise<V> {
         try {
             handler.onFailure(exception);
         } catch (Throwable e) {
-            Exceptions.handle(Async.LOG, e);
+            Exceptions.handle(Tasks.LOG, e);
         }
     }
 
@@ -127,6 +133,60 @@ public class Promise<V> {
      */
     public boolean isSuccessful() {
         return value != null;
+    }
+
+    /**
+     * Waits until the promise is completed.
+     *
+     * @param timeout the maximal time to wait for the completion of this promise.
+     */
+    public void await(Duration timeout) {
+        if (isCompleted()) {
+            return;
+        }
+
+        awaitBlocking(timeout);
+    }
+
+    /*
+     * Waits for a yet uncompleted promise by blocking the current thread via a Condition.
+     */
+    private void awaitBlocking(Duration timeout) {
+        Lock lock = new ReentrantLock();
+        Condition completed = lock.newCondition();
+
+        onComplete(new CompletionHandler<V>() {
+            @Override
+            public void onSuccess(@Nullable Object value) throws Exception {
+                lock.lock();
+                try {
+                    completed.signalAll();
+                } finally {
+                    lock.unlock();
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) throws Exception {
+                lock.lock();
+                try {
+                    completed.signalAll();
+                } finally {
+                    lock.unlock();
+                }
+            }
+        });
+
+        if (!isCompleted()) {
+            lock.lock();
+            try {
+                completed.await(timeout.getSeconds(), TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Exceptions.ignore(e);
+            } finally {
+                lock.unlock();
+            }
+        }
     }
 
     /**
@@ -291,8 +351,8 @@ public class Promise<V> {
                 failHandler(getFailure(), handler);
             } else {
                 this.handlers.add(handler);
+                logErrors = false;
             }
-            hasFailureHandler = true;
         }
 
         return this;
@@ -326,6 +386,33 @@ public class Promise<V> {
     }
 
     /**
+     * Adds a completion handler to this promise which only handles the successful completion of the promise.
+     * <p>
+     * If the promise is already completed, the handler is immediately invoked.
+     *
+     * @param successHandler the handler to be notified once the promise is completed. A promise can notify more than
+     *                       one handler.
+     * @return <tt>this</tt> for fluent method chaining
+     */
+    @Nonnull
+    public Promise<V> onSuccess(@Nonnull final Consumer<V> successHandler) {
+        return onComplete(new CompletionHandler<V>() {
+            @Override
+            public void onSuccess(V value) throws Exception {
+                try {
+                    successHandler.accept(value);
+                } catch (Throwable t) {
+                    fail(t);
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+            }
+        });
+    }
+
+    /**
      * Adds a completion handler to this promise which only handles the failed completion of the promise.
      * <p>
      * If the promise is already completed, the handler is immediately invoked.
@@ -336,7 +423,7 @@ public class Promise<V> {
      */
     @Nonnull
     public Promise<V> onFailure(@Nonnull final Callback<Throwable> failureHandler) {
-        hasFailureHandler = true;
+        logErrors = false;
         return onComplete(new CompletionHandler<V>() {
             @Override
             public void onSuccess(V value) throws Exception {
@@ -350,6 +437,40 @@ public class Promise<V> {
     }
 
     /**
+     * Adds a completion handler to this promise which only handles the failed completion of the promise.
+     * <p>
+     * If the promise is already completed, the handler is immediately invoked.
+     *
+     * @param failureHandler the handler to be notified once the promise is completed. A promise can notify more than
+     *                       one handler.
+     * @return <tt>this</tt> for fluent method chaining
+     */
+    @Nonnull
+    public Promise<V> onFailure(@Nonnull final Consumer<Throwable> failureHandler) {
+        logErrors = false;
+        return onComplete(new CompletionHandler<V>() {
+            @Override
+            public void onSuccess(V value) throws Exception {
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) throws Exception {
+                failureHandler.accept(throwable);
+            }
+        });
+    }
+
+    /**
+     * Disables the error logging even if no failure handlers are present.
+     *
+     * @return <tt>this</tt> for fluent method chaining
+     */
+    public Promise<V> doNotLogErrors() {
+        logErrors = false;
+        return this;
+    }
+
+    /**
      * Adds an error handler, which handles failures by logging them to the given {@link Log}
      * <p>
      * By default, if no explicit completion handler is present, all failures are logged using the <tt>async</tt>
@@ -360,6 +481,6 @@ public class Promise<V> {
      */
     @Nonnull
     public Promise<V> handleErrors(@Nonnull final Log log) {
-        return onFailure(value -> Exceptions.handle(log, value));
+        return onFailure((Consumer<Throwable>) value -> Exceptions.handle(log, value));
     }
 }

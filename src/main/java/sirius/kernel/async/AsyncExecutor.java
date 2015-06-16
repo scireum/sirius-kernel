@@ -14,16 +14,17 @@ import sirius.kernel.health.Average;
 import sirius.kernel.health.Counter;
 import sirius.kernel.health.Exceptions;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Represents an executor used by sirius to schedule background tasks.
  * <p>
- * Instances of this class are created and managed by {@link Async}. This class is only made public so it can be
+ * Instances of this class are created and managed by {@link Tasks}. This class is only made public so it can be
  * accessed for statistical reasons like ({@link #getBlocked()} or {@link #getDropped()}.
  */
 public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecutionHandler {
@@ -37,14 +38,24 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
     private static final long DEFAULT_KEEP_ALIVE_TIME = 10;
 
     AsyncExecutor(String category, int poolSize, int queueLength) {
-        super(poolSize,
-              poolSize,
-              DEFAULT_KEEP_ALIVE_TIME,
-              TimeUnit.SECONDS,
-              queueLength > 0 ? new LinkedBlockingQueue<>(queueLength) : new LinkedBlockingQueue<>());
+        super(poolSize, poolSize, DEFAULT_KEEP_ALIVE_TIME, TimeUnit.SECONDS, createWorkQueue(queueLength));
         this.category = category;
         setThreadFactory(new ThreadFactoryBuilder().setNameFormat(category + "-%d").build());
         setRejectedExecutionHandler(this);
+    }
+
+    private static BlockingQueue<Runnable> createWorkQueue(int queueLength) {
+        // Create queue with the given max. queue length
+        if (queueLength > 0) {
+            return new LinkedBlockingQueue<>(queueLength);
+        }
+        // Create a queue which will not hold any elements (no work queue)
+        if (queueLength < 0) {
+            return new SynchronousQueue<>();
+        }
+
+        // Create an unbounded queue
+        return new LinkedBlockingQueue<>();
     }
 
     @Override
@@ -52,10 +63,9 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
         try {
             ExecutionBuilder.TaskWrapper wrapper = (ExecutionBuilder.TaskWrapper) r;
             if (wrapper.dropHandler != null) {
-                wrapper.dropHandler.run();
-                wrapper.promise.fail(new RejectedExecutionException());
+                wrapper.drop();
                 dropped.inc();
-            } else {
+            } else if (wrapper.synchronizer == null) {
                 CallContext current = CallContext.getCurrent();
                 try {
                     wrapper.run();
@@ -63,9 +73,19 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
                     CallContext.setCurrent(current);
                 }
                 blocked.inc();
+            } else {
+                Exceptions.handle()
+                          .to(Tasks.LOG)
+                          .withSystemErrorMessage(
+                                  "The execution of a frequency scheduled task '%s' (%s) synchronized on '%s' was rejected by: %s - Aborting!",
+                                  wrapper.runnable,
+                                  wrapper.runnable.getClass(),
+                                  wrapper.synchronizer,
+                                  category)
+                          .handle();
             }
         } catch (Throwable t) {
-            Exceptions.handle(Async.LOG, t);
+            Exceptions.handle(Tasks.LOG, t);
         }
     }
 
