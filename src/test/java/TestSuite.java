@@ -11,7 +11,7 @@ import com.googlecode.junittoolbox.WildcardPatternSuite;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
-import sirius.kernel.BaseSpecification;
+import sirius.kernel.TestHelper;
 
 @RunWith(WildcardPatternSuite.class)
 @SuiteClasses({"**/*Test.class", "**/*Spec.class"})
@@ -19,13 +19,11 @@ public class TestSuite {
 
     @BeforeClass
     public static void setUp() {
-        BaseSpecification.setupSiriusTestEnvironment();
+        TestHelper.setUp();
     }
-
 
     @AfterClass
     public static void tearDown() {
-        BaseSpecification.cleanupSiriusTestEnvironment();
+        TestHelper.tearDown();
     }
-
 }

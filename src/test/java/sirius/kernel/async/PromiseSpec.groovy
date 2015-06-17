@@ -9,7 +9,6 @@
 package sirius.kernel.async
 
 import sirius.kernel.BaseSpecification
-import sirius.kernel.commons.Callback
 import sirius.kernel.commons.ValueHolder
 
 import java.util.function.Function

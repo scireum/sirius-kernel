@@ -13,7 +13,6 @@ import sirius.kernel.commons.ValueHolder
 import sirius.kernel.di.std.Part
 
 import java.time.Duration
-import java.util.function.Consumer
 
 class TasksSpec extends BaseSpecification {
 

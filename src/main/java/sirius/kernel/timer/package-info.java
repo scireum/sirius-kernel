@@ -9,7 +9,7 @@
 /**
  * Support for executing tasks in regular intervals.
  * <p>
- * Provides a {@link sirius.kernel.timer.TimerService} which executes all parts in the
+ * Provides a {@link sirius.kernel.timer.Timers} which executes all parts in the
  * {@link sirius.kernel.di.GlobalContext}, registered for one of the timer interfaces (<tt>EveryMinute</tt>,
  * <tt>EveryTenMinutes</tt>, <tt>EveryHour</tt>, <tt>EveryDay</tt>) in their appropriate interval.
  * <p>

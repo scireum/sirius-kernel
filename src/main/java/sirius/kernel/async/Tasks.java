@@ -414,7 +414,6 @@ public class Tasks implements Lifecycle {
     public void stopped() {
         running = false;
         wakeSchedulerLoop();
-        
         // Try an ordered (fair) shutdown...
         for (AsyncExecutor exec : executors.values()) {
             exec.shutdown();

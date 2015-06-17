@@ -9,7 +9,6 @@
 package sirius.kernel
 
 import sirius.kernel.async.CallContext
-import sirius.kernel.nls.NLS
 import spock.lang.Specification
 
 /**
@@ -19,25 +18,10 @@ import spock.lang.Specification
 class BaseSpecification extends Specification {
 
     /**
-     * indicates whether this class initially started the framework (and thus is responsible for shutting it down again).
+     * Indicates whether this class initially started the framework (and thus is responsible for shutting it down again).
      */
     static Class initialFrameworkStarter = null;
 
-    /**
-     * handles all initial Sirius setup.
-     */
-    static def setupSiriusTestEnvironment() {
-        Sirius.start(new Setup(Setup.Mode.TEST, Sirius.class.getClassLoader()))
-        NLS.setDefaultLanguage("de")
-    }
-
-    /**
-     * handles all operations necessary after the tests are done.
-     */
-    static def cleanupSiriusTestEnvironment() {
-        Sirius.stop()
-        NLS.getTranslationEngine().reportMissingTranslations()
-    }
 
     /**
      * Will be executed once before every spec class.
@@ -46,7 +30,7 @@ class BaseSpecification extends Specification {
     def setupSpec() {
         if (!Sirius.startedAsTest) {
             initialFrameworkStarter = getClass()
-            setupSiriusTestEnvironment()
+            TestHelper.setUp();
         }
     }
 
@@ -63,7 +47,7 @@ class BaseSpecification extends Specification {
      */
     def cleanupSpec() {
         if (initialFrameworkStarter == getClass()) {
-            cleanupSiriusTestEnvironment()
+            TestHelper.tearDown();
         }
     }
 

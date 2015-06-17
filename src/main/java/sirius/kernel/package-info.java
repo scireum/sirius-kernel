@@ -21,7 +21,7 @@
  * many components don't actively call other services but rather implement an interface. This is
  * <b>discovered</b> at runtime and the appropriate service is activated.
  * <p>
- * An example is the {@link sirius.kernel.timer.TimerService} which calls components in regular intervals.
+ * An example is the {@link sirius.kernel.timer.Timers} which calls components in regular intervals.
  * In order to use this service, an appropriate interface like {@link sirius.kernel.timer.EveryMinute}
  * has be implemented. Everything else is take care of be the framework.
  * <p>
