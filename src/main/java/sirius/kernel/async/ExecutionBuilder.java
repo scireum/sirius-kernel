@@ -197,6 +197,17 @@ public class ExecutionBuilder {
         return this;
     }
 
+    /**
+     * Determines the minimal interval which has to elapse between two consecutive tasks scheduled for the given
+     * {@code synchronizer}.
+     * <p>
+     * If the execution is requested 'too early' the scheduler will put the task into a queue and defer its execution.
+     * If a task for the same synchronizer is deferred already, this task will be dropped completely.
+     *
+     * @param synchronizer            the object to synchronize on
+     * @param minimalIntervalDuration the minimal duration of the interval
+     * @return this for fluent builder calls.
+     */
     public ExecutionBuilder minInterval(Object synchronizer, Duration minimalIntervalDuration) {
         this.wrapper.intervalMinLength =
                 TimeUnit.SECONDS.toNanos(minimalIntervalDuration.getSeconds()) + minimalIntervalDuration.getNano();
@@ -204,6 +215,16 @@ public class ExecutionBuilder {
         return this;
     }
 
+    /**
+     * Determines the maximal call frequency for tasks scheduled for the given {@code synchronizer}.
+     * <p>
+     * If the execution is requested 'too early' the scheduler will put the task into a queue and defer its execution.
+     * If a task for the same synchronizer is deferred already, this task will be dropped completely.
+     *
+     * @param synchronizer   the object to synchronize on
+     * @param ticksPerSecond the call frequency in Hertz.
+     * @return this for fluent builder calls.
+     */
     public ExecutionBuilder frequency(Object synchronizer, double ticksPerSecond) {
         return minInterval(synchronizer, Duration.ofNanos(Math.round(1_000_000_000d / ticksPerSecond)));
     }

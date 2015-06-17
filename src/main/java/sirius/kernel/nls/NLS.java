@@ -19,7 +19,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.Injector;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.timer.TimerService;
+import sirius.kernel.timer.Timers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -229,7 +229,7 @@ public class NLS {
      * @param classpath the classpath used to resolve .properties files
      */
     public static void startMonitoring(Classpath classpath) {
-        TimerService timer = Injector.context().getPart(TimerService.class);
+        Timers timer = Injector.context().getPart(Timers.class);
         for (String name : blubb.getLoadedResourceBundles()) {
             URL resource = classpath.getLoader().getResource(name);
             if ("file".equals(resource.getProtocol()) && !resource.getFile().contains("!")) {

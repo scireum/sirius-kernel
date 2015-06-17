@@ -48,6 +48,8 @@ public abstract class BackgroundLoop {
 
     /**
      * Executes the actual work.
+     *
+     * @throws Exception in case of any error. The outer loop has a catch all rule to log exceptions.
      */
     protected abstract void doWork() throws Exception;
 

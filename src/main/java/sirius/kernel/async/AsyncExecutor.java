@@ -77,7 +77,8 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
                 Exceptions.handle()
                           .to(Tasks.LOG)
                           .withSystemErrorMessage(
-                                  "The execution of a frequency scheduled task '%s' (%s) synchronized on '%s' was rejected by: %s - Aborting!",
+                                  "The execution of a frequency scheduled task '%s' (%s) synchronized on '%s' "
+                                  + "was rejected by: %s - Aborting!",
                                   wrapper.runnable,
                                   wrapper.runnable.getClass(),
                                   wrapper.synchronizer,

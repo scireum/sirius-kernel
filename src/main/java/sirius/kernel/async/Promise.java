@@ -368,7 +368,7 @@ public class Promise<V> {
      * @return <tt>this</tt> for fluent method chaining
      */
     @Nonnull
-    public Promise<V> onSuccess(@Nonnull final Callback<V> successHandler) {
+    public Promise<V> onSuccessCallback(@Nonnull final Callback<V> successHandler) {
         return onComplete(new CompletionHandler<V>() {
             @Override
             public void onSuccess(V value) throws Exception {
@@ -422,7 +422,7 @@ public class Promise<V> {
      * @return <tt>this</tt> for fluent method chaining
      */
     @Nonnull
-    public Promise<V> onFailure(@Nonnull final Callback<Throwable> failureHandler) {
+    public Promise<V> onFailureCallback(@Nonnull final Callback<Throwable> failureHandler) {
         logErrors = false;
         return onComplete(new CompletionHandler<V>() {
             @Override

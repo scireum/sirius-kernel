@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +34,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
@@ -135,9 +137,10 @@ public class Tasks implements Lifecycle {
         return exec;
     }
 
-    private Map<Object, Long> scheduleTable = new ConcurrentHashMap<>();
-    private List<ExecutionBuilder.TaskWrapper> schedulerQueue = Lists.newArrayList();
-    private static final Object SCHEDULER_MONITOR = new Object();
+    private final Map<Object, Long> scheduleTable = new ConcurrentHashMap<>();
+    private final List<ExecutionBuilder.TaskWrapper> schedulerQueue = Lists.newArrayList();
+    private final Lock schedulerLock = new ReentrantLock();
+    private final Condition workAvailable = schedulerLock.newCondition();
 
     private synchronized void schedule(ExecutionBuilder.TaskWrapper wrapper) {
         // As tasks often create a loop by calling itself (e.g. BackgroundLoop), we drop
@@ -161,10 +164,7 @@ public class Tasks implements Lifecycle {
             synchronized (schedulerQueue) {
                 schedulerQueue.add(wrapper);
             }
-            // Wake up schedulerLoop to re-compute the wait-time...
-            synchronized (SCHEDULER_MONITOR) {
-                SCHEDULER_MONITOR.notify();
-            }
+            wakeSchedulerLoop();
         }
     }
 
@@ -203,13 +203,16 @@ public class Tasks implements Lifecycle {
 
     private void idle() {
         try {
-            synchronized (SCHEDULER_MONITOR) {
+            schedulerLock.lock();
+            try {
                 long waitTime = computeWaitTime();
                 if (waitTime == 0) {
-                    SCHEDULER_MONITOR.wait();
+                    workAvailable.await();
                 } else {
-                    SCHEDULER_MONITOR.wait(waitTime);
+                    workAvailable.await(waitTime, TimeUnit.MILLISECONDS);
                 }
+            } finally {
+                schedulerLock.unlock();
             }
         } catch (InterruptedException e) {
             Exceptions.ignore(e);
@@ -236,10 +239,12 @@ public class Tasks implements Lifecycle {
         schedulerThread.start();
     }
 
-    private void stopScheduler() {
-        // Wake up from waiting to leave the schedulderLoop
-        synchronized (SCHEDULER_MONITOR) {
-            SCHEDULER_MONITOR.notify();
+    private void wakeSchedulerLoop() {
+        schedulerLock.lock();
+        try {
+            workAvailable.signalAll();
+        } finally {
+            schedulerLock.unlock();
         }
     }
 
@@ -408,7 +413,8 @@ public class Tasks implements Lifecycle {
     @Override
     public void stopped() {
         running = false;
-        stopScheduler();
+        wakeSchedulerLoop();
+        
         // Try an ordered (fair) shutdown...
         for (AsyncExecutor exec : executors.values()) {
             exec.shutdown();

@@ -18,8 +18,8 @@ import static org.junit.Assert.*;
 
 public class BOMReaderTest {
 
-    private byte[] WITH_UTF8_BOM = new byte[]{(byte) 239, (byte) 187, (byte) 191, 'H', 'E', 'L', 'L', 'O'};
-    private byte[] WITHOUT_BOM = new byte[]{'H', 'E', 'L', 'L', 'O'};
+    private static final byte[] WITH_UTF8_BOM = {(byte) 239, (byte) 187, (byte) 191, 'H', 'E', 'L', 'L', 'O'};
+    private static final byte[] WITHOUT_BOM = {'H', 'E', 'L', 'L', 'O'};
 
     @Test
     public void readBOM() throws IOException {

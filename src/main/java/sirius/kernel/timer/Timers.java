@@ -43,8 +43,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>
  * To access this class, a <tt>Part</tt> annotation can be used on a field of type <tt>TimerService</tt>.
  */
-@Register(classes = {TimerService.class, Lifecycle.class})
-public class TimerService implements Lifecycle {
+@Register(classes = {Timers.class, Lifecycle.class})
+public class Timers implements Lifecycle {
 
     protected static final Log LOG = Log.get("timer");
     private static final String TIMER = "timer";
@@ -258,7 +258,7 @@ public class TimerService implements Lifecycle {
     }
 
     /**
-     * Adds the given file to the list of watched resources in DEVELOP mode ({@link sirius.kernel.Sirius#isDev()}.
+     * Adds the given file to the list of watched resources in DEVELOP mode ({@link Sirius#isDev()}.
      * <p>
      * This is used to reload files like properties in development environments. In production systems, no
      * reloading will be performed.
@@ -291,7 +291,6 @@ public class TimerService implements Lifecycle {
     /**
      * Executes all one minute timers (implementing <tt>EveryTenSeconds</tt>) now (out of schedule).
      */
-    @SuppressWarnings("Convert2streamapi")
     public void runTenSecondTimers() {
         for (final TimedTask task : everyTenSeconds.getParts()) {
             executeTask(task);
@@ -302,7 +301,6 @@ public class TimerService implements Lifecycle {
     /**
      * Executes all one minute timers (implementing <tt>EveryMinute</tt>) now (out of schedule).
      */
-    @SuppressWarnings("Convert2streamapi")
     public void runOneMinuteTimers() {
         for (final TimedTask task : everyMinute.getParts()) {
             executeTask(task);
@@ -312,19 +310,20 @@ public class TimerService implements Lifecycle {
 
     private void executeTask(final TimedTask task) {
         tasks.executor(TIMER)
-             .dropOnOverload(() -> LOG.WARN("Dropping timer task '%s' (%s) due to system overload!",
-                                            task,
-                                            task.getClass()))
+             .dropOnOverload(() -> Exceptions.handle()
+                                             .to(LOG)
+                                             .withSystemErrorMessage(
+                                                     "Dropping timer task '%s' (%s) due to system overload!",
+                                                     task,
+                                                     task.getClass())
+                                             .handle())
              .start(() -> {
                  try {
                      Watch w = Watch.start();
                      task.runTimer();
                      if (w.elapsed(TimeUnit.SECONDS, false) > 1) {
-                         LOG.WARN(
-                                 "TimedTask '%s' (%s) took over a second to complete! "
-                                 + "Consider executing the work in a separate executor!",
-                                 task,
-                                 task.getClass());
+                         LOG.WARN("TimedTask '%s' (%s) took over a second to complete! "
+                                  + "Consider executing the work in a separate executor!", task, task.getClass());
                      }
                  } catch (Throwable t) {
                      Exceptions.handle(LOG, t);
@@ -335,7 +334,6 @@ public class TimerService implements Lifecycle {
     /**
      * Executes all ten minutes timers (implementing <tt>EveryTenMinutes</tt>) now (out of schedule).
      */
-    @SuppressWarnings("Convert2streamapi")
     public void runTenMinuteTimers() {
         for (final TimedTask task : everyTenMinutes.getParts()) {
             executeTask(task);
@@ -346,7 +344,6 @@ public class TimerService implements Lifecycle {
     /**
      * Executes all one hour timers (implementing <tt>EveryHour</tt>) now (out of schedule).
      */
-    @SuppressWarnings("Convert2streamapi")
     public void runOneHourTimers() {
         for (final TimedTask task : everyHour.getParts()) {
             executeTask(task);
