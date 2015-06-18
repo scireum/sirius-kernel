@@ -42,24 +42,24 @@ class TasksSpec extends BaseSpecification {
 
     def "An executor drops tasks (if possible) when full"() {
         given: "a future the synchronize the threads"
-        Future thread2Finished = Tasks.future();
+        Future thread2Finishedx = Tasks.future();
         and: "a place to store the fact that the task was dropped"
         ValueHolder<Boolean> dropped = ValueHolder.of(null);
         when: "we start one tasks which blocks the executor"
         Future task1Future = tasks.executor("test-limited").start({
             Tasks.LOG.INFO(">1: "+Thread.currentThread().getName());
-            thread2Finished.await(DEFAULT_TIMEOUT) });
+            thread2Finishedx.await(DEFAULT_TIMEOUT) });
             Tasks.LOG.INFO("<1: "+Thread.currentThread().getName());
         and: "we start another task for the blocked executor"
         Future task2Future = tasks.executor("test-limited").dropOnOverload({
             Tasks.LOG.INFO(">!2: "+Thread.currentThread().getName());
             dropped.set(true);
-            thread2Finished.success();
+            thread2Finishedx.success();
             Tasks.LOG.INFO("<!2: "+Thread.currentThread().getName());
         }).start({
             Tasks.LOG.INFO(">2: "+Thread.currentThread().getName());
             dropped.set(false);
-            thread2Finished.success();
+            thread2Finishedx.success();
             Tasks.LOG.INFO("<2: "+Thread.currentThread().getName());
         });
         and: "we wait until all background tasks are done"
