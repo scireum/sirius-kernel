@@ -481,6 +481,6 @@ public class Promise<V> {
      */
     @Nonnull
     public Promise<V> handleErrors(@Nonnull final Log log) {
-        return onFailure((Consumer<Throwable>) value -> Exceptions.handle(log, value));
+        return onFailure(value -> Exceptions.handle(log, value));
     }
 }

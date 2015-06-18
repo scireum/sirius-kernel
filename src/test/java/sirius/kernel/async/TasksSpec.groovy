@@ -27,13 +27,14 @@ class TasksSpec extends BaseSpecification {
         and: "a place to store the thread id of the thread which executes the 2nd task"
         ValueHolder<Long> executorThread = ValueHolder.of(null);
         when: "we start one tasks which blocks the executor"
-        tasks.executor("test-limited").start({ thread2Finished.await(DEFAULT_TIMEOUT) });
+        Future task1Future = tasks.executor("test-limited").start({ thread2Finished.await(DEFAULT_TIMEOUT) });
         and: "we start another task for the blocked executor"
         Future task2Future = tasks.executor("test-limited").start({
             executorThread.set(Thread.currentThread().getId());
             thread2Finished.success();
         });
         and: "we wait until all background tasks are done"
+        task1Future.await(DEFAULT_TIMEOUT);
         task2Future.await(DEFAULT_TIMEOUT);
         then: "we expect the second task to be executed in the calling thread"
         Thread.currentThread().getId() == executorThread.get();
@@ -46,14 +47,20 @@ class TasksSpec extends BaseSpecification {
         ValueHolder<Boolean> dropped = ValueHolder.of(null);
         when: "we start one tasks which blocks the executor"
         Future task1Future = tasks.executor("test-limited").start({
+            Tasks.LOG.INFO(">1: "+Thread.currentThread().getName());
             thread2Finished.await(DEFAULT_TIMEOUT) });
+            Tasks.LOG.INFO("<1: "+Thread.currentThread().getName());
         and: "we start another task for the blocked executor"
         Future task2Future = tasks.executor("test-limited").dropOnOverload({
+            Tasks.LOG.INFO(">!2: "+Thread.currentThread().getName());
             dropped.set(true);
             thread2Finished.success();
+            Tasks.LOG.INFO("<!2: "+Thread.currentThread().getName());
         }).start({
+            Tasks.LOG.INFO(">2: "+Thread.currentThread().getName());
             dropped.set(false);
             thread2Finished.success();
+            Tasks.LOG.INFO("<2: "+Thread.currentThread().getName());
         });
         and: "we wait until all background tasks are done"
         task2Future.await(DEFAULT_TIMEOUT);
