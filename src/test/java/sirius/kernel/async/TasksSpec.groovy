@@ -55,7 +55,7 @@ class TasksSpec extends BaseSpecification {
             thread2Finished.success();
         });
         and: "we wait until all background tasks are done"
-        thread2Finished.await(DEFAULT_TIMEOUT);
+        task2Future.await(DEFAULT_TIMEOUT);
         then: "we expect the task the be dropped"
         dropped.get() == true
         and: "we expecte the task1 to have successfully completed"
