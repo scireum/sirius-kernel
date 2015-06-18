@@ -20,7 +20,7 @@ public class FastTestLoop extends BackgroundLoop {
 
     @Override
     protected double maxCallFrequency() {
-        return 10;
+        return 1;
     }
 
     @Nonnull

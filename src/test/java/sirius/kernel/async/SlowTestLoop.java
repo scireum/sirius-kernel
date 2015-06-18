@@ -21,7 +21,7 @@ public class SlowTestLoop extends BackgroundLoop {
 
     @Override
     protected double maxCallFrequency() {
-        return 10;
+        return 1;
     }
 
     @Nonnull
@@ -33,6 +33,6 @@ public class SlowTestLoop extends BackgroundLoop {
     @Override
     protected void doWork() throws Exception {
         counter.incrementAndGet();
-        Wait.millis(500);
+        Wait.seconds(2);
     }
 }

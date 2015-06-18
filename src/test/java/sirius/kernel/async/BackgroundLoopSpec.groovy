@@ -17,23 +17,23 @@ class BackgroundLoopSpec extends BaseSpecification {
         given:
         int currentCounter = FastTestLoop.counter;
         when:
-        Wait.seconds(2);
+        Wait.seconds(10);
         int delta = FastTestLoop.counter - currentCounter;
-        then: "the background loop executed enough calls (should be 20 but we're a bit tolerant here)"
-        delta > 18
-        and: "the background loop was limited not to execute too often (should be 20 but we're a bit tolerant here)"
-        delta < 22
+        then: "the background loop executed enough calls (should be 10 but we're a bit tolerant here)"
+        delta >= 8
+        and: "the background loop was limited not to execute too often (should be 10 but we're a bit tolerant here)"
+        delta <= 12
     }
 
     def "BackgroundLoop executes as fast as possible if loop is slow"() {
         given:
         int currentCounter = SlowTestLoop.counter;
         when:
-        Wait.seconds(2);
+        Wait.seconds(10);
         int delta = SlowTestLoop.counter - currentCounter;
-        then: "the background loop executed enough calls (should be 4 but we're a bit tolerant here)"
+        then: "the background loop executed enough calls (should be 5 but we're a bit tolerant here)"
         delta >= 3
-        and: "the background loop was limited not to execute too often (should be 4 but we're a bit tolerant here)"
-        delta < 6
+        and: "the background loop was limited not to execute too often (should be 5 but we're a bit tolerant here)"
+        delta <= 6
     }
 }
