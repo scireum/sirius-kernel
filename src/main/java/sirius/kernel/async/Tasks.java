@@ -154,17 +154,30 @@ public class Tasks implements Lifecycle {
             executeNow(wrapper);
         } else {
             if (dropIfAlreadyScheduled(wrapper)) {
-                LOG.FINE(
-                        "Dropping a scheduled task (%s), as for its synchronizer (%s) another task is already scheduled",
-                        wrapper.runnable,
-                        wrapper.synchronizer);
+                if (LOG.isFINE()) {
+                    LOG.FINE(
+                            "Dropping a scheduled task (%s), as for its synchronizer (%s) another task is already scheduled",
+                            wrapper.runnable,
+                            wrapper.synchronizer);
+                }
                 return;
             }
             wrapper.waitUntil = lastInvocation + wrapper.intervalMinLength;
-            synchronized (schedulerQueue) {
-                schedulerQueue.add(wrapper);
-            }
+            addToSchedulerQueue(wrapper);
             wakeSchedulerLoop();
+        }
+    }
+
+    private void addToSchedulerQueue(ExecutionBuilder.TaskWrapper wrapper) {
+        // The scheduler queue is sorted by waitUntil -> add at correct position
+        synchronized (schedulerQueue) {
+            for (int index = 0; index < schedulerQueue.size(); index++) {
+                if (schedulerQueue.get(index).waitUntil > wrapper.waitUntil) {
+                    schedulerQueue.add(index, wrapper);
+                    return;
+                }
+            }
+            schedulerQueue.add(wrapper);
         }
     }
 
@@ -183,20 +196,28 @@ public class Tasks implements Lifecycle {
     private void schedulerLoop() {
         while (running) {
             try {
-                synchronized (schedulerQueue) {
-                    Iterator<ExecutionBuilder.TaskWrapper> iter = schedulerQueue.iterator();
-                    long now = System.nanoTime();
-                    while (iter.hasNext()) {
-                        ExecutionBuilder.TaskWrapper wrapper = iter.next();
-                        if (wrapper.waitUntil <= now) {
-                            executeNow(wrapper);
-                            iter.remove();
-                        }
-                    }
-                }
+                executeWaitingTasks();
                 idle();
             } catch (Throwable t) {
                 Exceptions.handle(LOG, t);
+            }
+        }
+    }
+
+    private void executeWaitingTasks() {
+        synchronized (schedulerQueue) {
+            Iterator<ExecutionBuilder.TaskWrapper> iter = schedulerQueue.iterator();
+            long now = System.nanoTime();
+            while (iter.hasNext()) {
+                ExecutionBuilder.TaskWrapper wrapper = iter.next();
+                if (wrapper.waitUntil <= now) {
+                    executeNow(wrapper);
+                    iter.remove();
+                } else {
+                    // The scheduler queue is sorted by "waitUntil" -> as soon as we discover the
+                    // first task which can not run yet, we can abort...
+                    return;
+                }
             }
         }
     }
@@ -206,9 +227,12 @@ public class Tasks implements Lifecycle {
             schedulerLock.lock();
             try {
                 long waitTime = computeWaitTime();
-                if (waitTime == 0) {
+                if (waitTime < 0) {
+                    // No work available -> wait for something to do...
                     workAvailable.await();
-                } else {
+                } else if (waitTime > 0) {
+                    // No task can be executed in the next millisecond. Sleep for
+                    // "waitTime" (or more work) unteil the next check for executable work...
                     workAvailable.await(waitTime, TimeUnit.MILLISECONDS);
                 }
             } finally {
@@ -220,17 +244,19 @@ public class Tasks implements Lifecycle {
     }
 
     private long computeWaitTime() {
-        long waitTime = 0;
-        long now = System.nanoTime();
         synchronized (schedulerQueue) {
-            for (ExecutionBuilder.TaskWrapper wrapper : schedulerQueue) {
-                long delta = TimeUnit.NANOSECONDS.toMillis(wrapper.waitUntil - now);
-                if (delta < waitTime || waitTime == 0) {
-                    waitTime = delta;
-                }
+            if (schedulerQueue.isEmpty()) {
+                // No task is waiting -> wait forever...
+                return -1;
             }
+            long now = System.nanoTime();
+
+            // The first task in the scheduler queue is the next to be executed. Compute how long
+            // we can idle before we must start the execution. As we convert from nano seconds to millis,
+            // this method might return 0 (if the next task can be run in less than 1 ms). In this case
+            // we do not idle at all and directly check for executable tasks again.
+            return TimeUnit.NANOSECONDS.toMillis(schedulerQueue.get(0).waitUntil - now);
         }
-        return waitTime;
     }
 
     private void startScheduler() {
