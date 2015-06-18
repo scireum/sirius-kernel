@@ -43,7 +43,7 @@ class TasksSpec extends BaseSpecification {
         given: "a future the synchronize the threads"
         Future thread2Finished = Tasks.future();
         and: "a place to store the fact that the task was dropped"
-        ValueHolder<Boolean> dropped = ValueHolder.of(false);
+        ValueHolder<Boolean> dropped = ValueHolder.of(null);
         when: "we start one tasks which blocks the executor"
         Future task1Future = tasks.executor("test-limited").start({ thread2Finished.await(DEFAULT_TIMEOUT) });
         and: "we start another task for the blocked executor"
