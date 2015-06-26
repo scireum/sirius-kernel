@@ -176,7 +176,7 @@ class PartRegistry implements MutableGlobalContext {
                 parts.put(iFace, part);
                 if (predecessor != null) {
                     synchronized (parts) {
-                        parts.getUnderlyingMap().get(iFace).remove(predecessor);
+                        parts.getUnderlyingMap().get(iFace).removeIf(p -> p.getClass().equals(predecessor));
                     }
                 }
             } else {
