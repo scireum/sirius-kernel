@@ -161,9 +161,14 @@ class PartRegistry implements MutableGlobalContext {
                                part.getClass().getAnnotation(Replace.class).value() :
                                null;
         if (predecessor != null && customizationName == null) {
-            Injector.LOG.WARN("@Replace should be only used within a customization. %s (%s) seems to be a base class!",
-                              part,
-                              part.getClass());
+            if (Sirius.isStartedAsTest() && part.getClass().getSimpleName().endsWith("Mock")) {
+                Injector.LOG.WARN("%s is mocked by %s", predecessor, part.getClass());
+            } else {
+                Injector.LOG.WARN(
+                        "@Replace should be only used within a customization. %s (%s) seems to be a base class!",
+                        part,
+                        part.getClass());
+            }
         }
         Object successor = shadowMap.get(part.getClass());
         for (Class<?> iFace : implementedInterfaces) {
