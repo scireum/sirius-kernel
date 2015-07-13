@@ -38,7 +38,7 @@ public class Exec {
 
         private final InputStream stream;
         private final StringBuffer logger;
-        private final ValueHolder<IOException> exHolder = new ValueHolder<IOException>(null);
+        private final ValueHolder<IOException> exHolder = new ValueHolder<>(null);
 
         StreamEater(InputStream stream, StringBuffer log) {
             this.stream = stream;
@@ -117,7 +117,11 @@ public class Exec {
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger);
             try {
-                p.waitFor();
+                int code = p.waitFor();
+                if (code != 0) {
+                    Exception root = new Exception("Command returned with exit code " + code);
+                    throw new ExecException(root, logger.toString());
+                }
             } catch (InterruptedException e) {
                 throw new ExecException(e, logger.toString());
             }
