@@ -43,6 +43,7 @@ import java.util.List;
 public class Log {
 
     private final Logger logger;
+    private Boolean fineLogging;
     private static final List<Log> all = Lists.newCopyOnWriteArrayList();
 
     @Parts(LogTap.class)
@@ -90,6 +91,13 @@ public class Log {
 
         // Setup java.util.logging
         java.util.logging.Logger.getLogger(logger).setLevel(convertLog4jLevel(level));
+
+        // Clear cached "isFINE" flag to be consistently re-computed on the next access.
+        for (Log log : all) {
+            if (log.getName().equals(logger)) {
+                log.fineLogging = null;
+            }
+        }
     }
 
     /**
@@ -346,7 +354,10 @@ public class Log {
      * @return <tt>true</tt> if this logger logs FINE message, <tt>false</tt> otherwise
      */
     public boolean isFINE() {
-        return logger.isDebugEnabled();
+        if (fineLogging == null) {
+            fineLogging = logger.isDebugEnabled();
+        }
+        return fineLogging;
     }
 
     /**
