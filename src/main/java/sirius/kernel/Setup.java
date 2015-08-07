@@ -17,6 +17,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggerRepository;
+import org.hyperic.sigar.Sigar;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Log;
 
@@ -24,6 +25,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -174,6 +176,20 @@ public class Setup {
     protected void outputJVMInfo() {
         RuntimeMXBean mx = ManagementFactory.getRuntimeMXBean();
         Sirius.LOG.INFO("%s (%s, %s, %s)", mx.getVmName(), mx.getSpecVersion(), mx.getVmVendor(), mx.getVmVersion());
+
+        OperatingSystemMXBean osx = ManagementFactory.getOperatingSystemMXBean();
+        if (osx.getAvailableProcessors() > 1) {
+            Sirius.LOG.INFO("%s (%s) on %d CPUs (%s)",
+                            osx.getName(),
+                            osx.getVersion(),
+                            osx.getAvailableProcessors(),
+                            osx.getArch());
+        } else {
+            Sirius.LOG.INFO("%s (%s) on a %s CPU",
+                            osx.getName(),
+                            osx.getVersion(),
+                            osx.getArch());
+        }
     }
 
     /**
