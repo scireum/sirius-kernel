@@ -267,29 +267,29 @@ class PartRegistry implements MutableGlobalContext {
         return part;
     }
 
-    /**
+    /*
      * Processes all annotations of all known parts.
      */
     void processAnnotations() {
-        parts.getUnderlyingMap().values().stream().flatMap(e -> e.stream()).forEach(this::wire);
-        initializeParts();
+        Set<Object> initializedObjects = Collections.synchronizedSet(Sets.newHashSet());
+        parts.getUnderlyingMap().values().parallelStream().flatMap(e -> e.stream()).forEach(part -> {
+            wire(part);
+            if (part instanceof Initializable) {
+                initialize(part, initializedObjects);
+            }
+        });
     }
 
-    private void initializeParts() {
-        Set<Object> initializedObjects = Sets.newHashSet();
-        parts.getUnderlyingMap()
-             .values()
-             .stream()
-             .flatMap(e -> e.stream())
-             .filter(part -> part instanceof Initializable && !initializedObjects.contains(part))
-             .forEach(part -> {
-                 try {
-                     initializedObjects.add(part);
-                     ((Initializable) part).initialize();
-                 } catch (Exception e) {
-                     Injector.LOG.WARN("Error initializing %s (%s)", part, part.getClass().getName());
-                     Injector.LOG.WARN(e);
-                 }
-             });
+    private void initialize(Object part, Set<Object> initializedObjects) {
+        if (initializedObjects.contains(part)) {
+            return;
+        }
+        try {
+            initializedObjects.add(part);
+            ((Initializable) part).initialize();
+        } catch (Exception e) {
+            Injector.LOG.WARN("Error initializing %s (%s)", part, part.getClass().getName());
+            Injector.LOG.WARN(e);
+        }
     }
 }

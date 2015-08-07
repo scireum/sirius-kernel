@@ -83,29 +83,10 @@ public class Injector {
         classpath.find(Pattern.compile(".*?\\.class")).forEach(Injector::loadClass);
 
         LOG.INFO("~ Applying %d class load actions on %d classes...", actions.size(), loadedClasses.size());
-        for (Class<?> clazz : loadedClasses) {
-            for (ClassLoadAction action : actions) {
-                if (action.getTrigger() == null || clazz.isAnnotationPresent(action.getTrigger())) {
-                    LOG.FINE("Auto-installing class: %s based on %s", clazz.getName(), action.getClass().getName());
-                    try {
-                        action.handle(ctx, clazz);
-                    } catch (Throwable e) {
-                        Exceptions.handle()
-                                  .error(e)
-                                  .to(LOG)
-                                  .withSystemErrorMessage("Failed to auto-load: %s with ClassLoadAction: %s: %s (%s)",
-                                                          clazz.getName(),
-                                                          action.getClass().getSimpleName())
-                                  .handle();
-                    }
-                }
-            }
-        }
+        loadedClasses.parallelStream().forEach(Injector::applyClassLoadActions);
 
         LOG.INFO("~ Initializing static parts-references...");
-        for (Class<?> clazz : loadedClasses) {
-            ctx.wireClass(clazz);
-        }
+        loadedClasses.parallelStream().forEach(ctx::wireClass);
 
         LOG.INFO("~ Initializing parts...");
         ctx.processAnnotations();
@@ -118,7 +99,9 @@ public class Injector {
             return;
         }
         try {
-            LOG.FINE("Found class: " + className);
+            if (LOG.isFINE()) {
+                LOG.FINE("Found class: " + className);
+            }
             Class<?> clazz = Class.forName(className, true, cp.getLoader());
             if (ClassLoadAction.class.isAssignableFrom(clazz) && !clazz.isInterface()) {
                 try {
@@ -144,6 +127,27 @@ public class Injector {
                       .to(LOG)
                       .withSystemErrorMessage("Failed to load class %s: %s (%s)", className)
                       .handle();
+        }
+    }
+
+    private static void applyClassLoadActions(Class<?> clazz) {
+        for (ClassLoadAction action : actions) {
+            if (action.getTrigger() == null || clazz.isAnnotationPresent(action.getTrigger())) {
+                if (LOG.isFINE()) {
+                    LOG.FINE("Auto-installing class: %s based on %s", clazz.getName(), action.getClass().getName());
+                }
+                try {
+                    action.handle(ctx, clazz);
+                } catch (Throwable e) {
+                    Exceptions.handle()
+                              .error(e)
+                              .to(LOG)
+                              .withSystemErrorMessage("Failed to auto-load: %s with ClassLoadAction: %s: %s (%s)",
+                                                      clazz.getName(),
+                                                      action.getClass().getSimpleName())
+                              .handle();
+                }
+            }
         }
     }
 
