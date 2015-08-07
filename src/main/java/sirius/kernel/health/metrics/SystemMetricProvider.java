@@ -17,6 +17,7 @@ import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -36,10 +37,14 @@ public class SystemMetricProvider implements MetricProvider {
     private List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
     private Sigar sigar = new Sigar();
     private volatile boolean sigarEnabled = true;
+    private volatile boolean openFilesChecked;
     private static final Log LOG = Log.get("sigar");
 
     @Part
     private MemoryBasedHealthMonitor monitor;
+
+    @ConfigValue("health.minimalOpenFilesLimit")
+    private long minimalOpenFilesLimit;
 
     @Override
     public void gather(MetricsCollector collector) {
@@ -68,6 +73,25 @@ public class SystemMetricProvider implements MetricProvider {
                 gatherCPUandMem(collector);
                 gatherNetworkStats(collector);
                 gatherFS(collector);
+
+                if (!openFilesChecked) {
+                    openFilesChecked = true;
+                    long maxOpenFiles = sigar.getResourceLimit().getOpenFilesMax();
+                    if (maxOpenFiles > 0 && minimalOpenFilesLimit > 0 && maxOpenFiles < minimalOpenFilesLimit) {
+                        Exceptions.handle()
+                                  .withSystemErrorMessage(
+                                          "The ulimit -f (number of open files) is too low: %d - It should be at least: %d",
+                                          maxOpenFiles,
+                                          minimalOpenFilesLimit)
+                                  .to(LOG)
+                                  .handle();
+                    } else {
+                        LOG.INFO(
+                                "The maximal number of open files on this system is good (%d, Required are at least: %d)",
+                                maxOpenFiles,
+                                minimalOpenFilesLimit);
+                    }
+                }
             }
         } catch (SigarException e) {
             Exceptions.handle(LOG, e);
