@@ -84,6 +84,7 @@ public class StructuredNode {
      *
      * @return returns the name of the node represented by this object
      */
+    @Nonnull
     public String getNodeName() {
         return node.getNodeName();
     }
@@ -93,6 +94,7 @@ public class StructuredNode {
      *
      * @return the underlying node
      */
+    @Nonnull
     public Node getNode() {
         return node;
     }
@@ -146,6 +148,7 @@ public class StructuredNode {
      * @return the node returned by the given xpath expression
      * @throws IllegalArgumentException if an invalid xpath was given
      */
+    @Nullable
     public StructuredNode queryNode(String xpath) {
         try {
             Node result = (Node) compile(xpath).evaluate(node, XPathConstants.NODE);
@@ -165,6 +168,7 @@ public class StructuredNode {
      * @return the list of nodes returned by the given xpath expression
      * @throws IllegalArgumentException if an invalid xpath was given
      */
+    @Nonnull
     public List<StructuredNode> queryNodeList(String xpath) {
         try {
             NodeList result = (NodeList) compile(xpath).evaluate(node, XPathConstants.NODESET);
@@ -185,6 +189,7 @@ public class StructuredNode {
      * @return a string representation of the value returned by the given xpath expression
      * @throws IllegalArgumentException if an invalid xpath was given
      */
+    @Nullable
     public String queryString(String path) {
         try {
             Object result = compile(path).evaluate(node, XPathConstants.NODE);
@@ -211,6 +216,7 @@ public class StructuredNode {
      * @return a Value wrapping the value returned by the given xpath expression
      * @throws java.lang.IllegalArgumentException if an invalid xpath was given
      */
+    @Nonnull
     public Value queryValue(String path) {
         return Value.of(queryString(path));
     }
@@ -223,6 +229,7 @@ public class StructuredNode {
      * @return a string representing the xml sub-tree returned by the given xpath expression
      * @throws IllegalArgumentException if an invalid xpath was given
      */
+    @Nullable
     public String queryXMLString(String path) {
         try {
             XPath xpath = XPATH.newXPath();
