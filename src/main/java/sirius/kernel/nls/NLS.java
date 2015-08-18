@@ -1093,7 +1093,7 @@ public class NLS {
         }
         if (includeSeconds) {
             if (duration > SECOND || (!includeMillis && duration > 0)) {
-                appendDurationValue(result, "NLS.second", "NLS.second", duration / SECOND);
+                appendDurationValue(result, "NLS.second", "NLS.seconds", duration / SECOND);
                 duration = duration % SECOND;
             }
             if (includeMillis && duration > 0) {
