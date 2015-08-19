@@ -103,13 +103,25 @@ public class Exec {
     }
 
     /**
-     * Executes the given command and returns a transcript of stderr and stdout.
+     * Executes the given command and returns a transcript of stderr and stdout
      *
      * @param command the command to execute
      * @return the transcript of stderr and stdout produced by the executed command
-     * @throws ExecException in case the external program fails
+     * @throws ExecException in case the external program fails or returns an exit code other than 0.
      */
     public static String exec(String command) throws ExecException {
+        return exec(command, false);
+    }
+
+    /**
+     * Executes the given command and returns a transcript of stderr and stdout.
+     *
+     * @param command the command to execute
+     * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
+     * @return the transcript of stderr and stdout produced by the executed command
+     * @throws ExecException in case the external program fails
+     */
+    public static String exec(String command, boolean ignoreExitCodes) throws ExecException {
         StringBuffer logger = new StringBuffer();
         Operation op = Operation.create("exec", () -> command, Duration.ofMinutes(5));
         try {
@@ -118,7 +130,7 @@ public class Exec {
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger);
             try {
                 int code = p.waitFor();
-                if (code != 0) {
+                if (code != 0 && !ignoreExitCodes) {
                     Exception root = new Exception("Command returned with exit code " + code);
                     throw new ExecException(root, logger.toString());
                 }
