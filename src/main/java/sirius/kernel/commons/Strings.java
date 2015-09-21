@@ -19,6 +19,7 @@ import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -381,13 +382,13 @@ public class Strings {
      * ASCII sequences.
      *
      * @param input the filename to fix
-     * @return the transformed filename
+     * @return the transformed filename wrapped as Optional or an empty Optional if the filename is not filled
      */
     @Nonnull
-    public static String toSaneFileName(@Nonnull String input) {
+    public static Optional<String> toSaneFileName(@Nonnull String input) {
         input = trim(input);
         if (Strings.isEmpty(input)) {
-            throw new IllegalArgumentException("A filename must not be empty!");
+            return Optional.empty();
         }
 
         input = input.replace("ä", "ae")
@@ -400,10 +401,10 @@ public class Strings {
                      .replaceAll("[^a-zA-Z0-9\\-_\\.]", "_");
         Tuple<String, String> nameAndSuffix = splitAtLast(input, ".");
         if (nameAndSuffix.getSecond() == null) {
-            return input;
+            return Optional.of(input);
         }
 
-        return nameAndSuffix.getFirst().replace(".", "_") + "." + nameAndSuffix.getSecond();
+        return Optional.of(nameAndSuffix.getFirst().replace(".", "_") + "." + nameAndSuffix.getSecond());
     }
 
     /**
