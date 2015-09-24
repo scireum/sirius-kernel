@@ -16,6 +16,7 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
+import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -155,7 +156,8 @@ public class Operation {
             name = nameProvider.get();
         }
 
-        String result = name + " (" + w.duration() + "/" + timeout + ")";
+        String result =
+                name + " (" + w.duration() + "/" + NLS.convertDuration(timeout.getSeconds(), true, false) + ")";
 
         if (isOvertime()) {
             result += " OVERTIME!";
