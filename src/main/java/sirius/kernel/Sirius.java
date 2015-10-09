@@ -14,9 +14,11 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.log4j.Level;
 import sirius.kernel.async.Barrier;
+import sirius.kernel.async.Future;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.Injector;
@@ -163,23 +165,35 @@ public class Sirius {
         }
         started = true;
         Barrier barrier = Barrier.create();
+        List<Tuple<Lifecycle, Future>> startingLifecycles = Lists.newArrayList();
         for (final Lifecycle lifecycle : lifecycleParticipants) {
-            barrier.add(tasks.defaultExecutor().fork(() -> {
-                LOG.INFO("Starting: %s", lifecycle.getName());
-                try {
-                    lifecycle.started();
-                } catch (Throwable e) {
-                    Exceptions.handle()
-                              .error(e)
-                              .to(LOG)
-                              .withSystemErrorMessage("Startup of: %s failed!", lifecycle.getName())
-                              .handle();
-                }
-            }));
+            Future future = tasks.defaultExecutor().fork(() -> startLifecycle(lifecycle));
+            startingLifecycles.add(Tuple.create(lifecycle, future));
+            barrier.add(future);
         }
 
         if (!barrier.await(1, TimeUnit.MINUTES)) {
             LOG.WARN("System initialization did not complete in one minute! Continuing...");
+            for (Tuple<Lifecycle, Future> tuple : startingLifecycles) {
+                if (!tuple.getSecond().isCompleted()) {
+                    LOG.WARN("Lifecycle not started yet: " + tuple.getFirst() + " (" + tuple.getFirst()
+                                                                                            .getClass()
+                                                                                            .getName() + ")");
+                }
+            }
+        }
+    }
+
+    private static void startLifecycle(Lifecycle lifecycle) {
+        LOG.INFO("Starting: %s", lifecycle.getName());
+        try {
+            lifecycle.started();
+        } catch (Throwable e) {
+            Exceptions.handle()
+                      .error(e)
+                      .to(LOG)
+                      .withSystemErrorMessage("Startup of: %s failed!", lifecycle.getName())
+                      .handle();
         }
     }
 
