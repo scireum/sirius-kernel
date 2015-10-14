@@ -103,6 +103,27 @@ public class Operation {
     }
 
     /**
+     * Boilerpalte method to cover a single call in an <tt>Operation</tt>.
+     *
+     * @param category  the categores used to determine if monitoring is enabled or not
+     * @param name      the supplier used to compute a user readable name if the operation is rendered somewhere
+     * @param timeout   the timeout. If the duration is longer than the given timeout,
+     *                  this operation is considered "hanging"
+     * @param operation the actual call to wrap in an operation
+     */
+    public static void cover(@Nonnull String category,
+                             @Nonnull Supplier<String> name,
+                             @Nonnull Duration timeout,
+                             Runnable operation) {
+        Operation op = create(category, name, timeout);
+        try {
+            operation.run();
+        } finally {
+            release(op);
+        }
+    }
+
+    /**
      * Returns a list of all currently active operations
      *
      * @return a list of all known operations
@@ -156,8 +177,7 @@ public class Operation {
             name = nameProvider.get();
         }
 
-        String result =
-                name + " (" + w.duration() + "/" + NLS.convertDuration(timeout.getSeconds(), true, false) + ")";
+        String result = name + " (" + w.duration() + "/" + NLS.convertDuration(timeout.getSeconds(), true, false) + ")";
 
         if (isOvertime()) {
             result += " OVERTIME!";
