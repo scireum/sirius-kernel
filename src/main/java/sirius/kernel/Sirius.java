@@ -181,6 +181,8 @@ public class Sirius {
                                                                                             .getName() + ")");
                 }
             }
+
+            outputActiveOperations();
         }
     }
 
