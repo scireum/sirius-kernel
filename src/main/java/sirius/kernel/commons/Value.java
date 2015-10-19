@@ -28,6 +28,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -389,6 +390,25 @@ public class Value {
     }
 
     /**
+     * If the underlying data is a {@link Collection} this will return the first element wrapped as value. Otherwise
+     * <tt>this</tt> is returned.
+     *
+     * @return the first element of the underlying collection or the element itself wrapped as value
+     */
+    @Nonnull
+    public Value first() {
+        if (data != null && data instanceof Collection) {
+            Iterator<?> iter = ((Collection) data).iterator();
+            if (iter.hasNext()) {
+                return Value.of(iter.next());
+            }
+            return EMPTY;
+        }
+
+        return this;
+    }
+
+    /**
      * Converts or casts the wrapped object to the given <tt>targetClazz</tt>
      *
      * @param targetClazz  the desired class to which the wrapped value should be converted or casted.
@@ -496,7 +516,9 @@ public class Value {
             }
         }
 
-        throw new IllegalArgumentException(Strings.apply("Cannot convert '%s' to target class: %s ", data, targetClazz));
+        throw new IllegalArgumentException(Strings.apply("Cannot convert '%s' to target class: %s ",
+                                                         data,
+                                                         targetClazz));
     }
 
     /**
