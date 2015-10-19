@@ -26,6 +26,7 @@ import sirius.kernel.health.MemoryBasedHealthMonitor;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
 import java.util.List;
 
 /**
@@ -35,6 +36,7 @@ import java.util.List;
 public class SystemMetricProvider implements MetricProvider {
 
     private List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
+    private List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
     private Sigar sigar = new Sigar();
     private volatile boolean sigarEnabled = true;
     private volatile boolean openFilesChecked;
@@ -48,6 +50,14 @@ public class SystemMetricProvider implements MetricProvider {
 
     @Override
     public void gather(MetricsCollector collector) {
+        for (MemoryPoolMXBean pool : pools) {
+            if (pool.getName().toLowerCase().contains("old") && pool.getUsage().getMax() > 0) {
+                collector.metric("jvm-old-heap",
+                                 "JVM Heap (" + pool.getName() + ")",
+                                 100d * pool.getUsage().getUsed() / pool.getUsage().getMax(),
+                                 "%");
+            }
+        }
         for (GarbageCollectorMXBean gc : gcs) {
             collector.differentialMetric("jvm-gc-" + gc.getName(),
                                          "jvm-gc",
