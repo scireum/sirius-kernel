@@ -140,12 +140,12 @@ public class Promise<V> {
      *
      * @param timeout the maximal time to wait for the completion of this promise.
      */
-    public void await(Duration timeout) {
-        if (isCompleted()) {
-            return;
+    public boolean await(Duration timeout) {
+        if (!isCompleted()) {
+            awaitBlocking(timeout);
         }
 
-        awaitBlocking(timeout);
+        return isCompleted();
     }
 
     /*

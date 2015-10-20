@@ -13,7 +13,6 @@ import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.log4j.Level;
-import sirius.kernel.async.Barrier;
 import sirius.kernel.async.Future;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
@@ -31,6 +30,7 @@ import sirius.kernel.nls.NLS;
 import javax.annotation.Nullable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -164,24 +164,18 @@ public class Sirius {
             stop();
         }
         started = true;
-        Barrier barrier = Barrier.create();
-        List<Tuple<Lifecycle, Future>> startingLifecycles = Lists.newArrayList();
+        boolean startFailed = false;
         for (final Lifecycle lifecycle : lifecycleParticipants) {
             Future future = tasks.defaultExecutor().fork(() -> startLifecycle(lifecycle));
-            startingLifecycles.add(Tuple.create(lifecycle, future));
-            barrier.add(future);
+            if (!future.await(Duration.ofMinutes(1))) {
+                LOG.WARN("Lifecycle '%s' (%s) did not start within one minute....",
+                         lifecycle,
+                         lifecycle.getClass().getName());
+                startFailed = true;
+            }
         }
 
-        if (!barrier.await(1, TimeUnit.MINUTES)) {
-            LOG.WARN("System initialization did not complete in one minute! Continuing...");
-            for (Tuple<Lifecycle, Future> tuple : startingLifecycles) {
-                if (!tuple.getSecond().isCompleted()) {
-                    LOG.WARN("Lifecycle not started yet: " + tuple.getFirst() + " (" + tuple.getFirst()
-                                                                                            .getClass()
-                                                                                            .getName() + ")");
-                }
-            }
-
+        if (startFailed) {
             outputActiveOperations();
         }
     }
@@ -301,18 +295,27 @@ public class Sirius {
         LOG.INFO("---------------------------------------------------------");
         for (int i = lifecycleParticipants.size() - 1; i >= 0; i--) {
             Lifecycle lifecycle = lifecycleParticipants.get(i);
-            LOG.INFO("Stopping: %s", lifecycle.getName());
-            try {
-                lifecycle.stopped();
-            } catch (Throwable e) {
-                Exceptions.handle()
-                          .error(e)
-                          .to(LOG)
-                          .withSystemErrorMessage("Stop of: %s failed!", lifecycle.getName())
-                          .handle();
+            Future future = tasks.defaultExecutor().fork(() -> stopLifecycle(lifecycle));
+            if (!future.await(Duration.ofSeconds(10))) {
+                LOG.WARN("Lifecycle '%s' (%s) did not stop within 10 seconds....",
+                         lifecycle,
+                         lifecycle.getClass().getName());
             }
         }
         LOG.INFO("---------------------------------------------------------");
+    }
+
+    private static void stopLifecycle(Lifecycle lifecycle) {
+        LOG.INFO("Stopping: %s", lifecycle.getName());
+        try {
+            lifecycle.stopped();
+        } catch (Throwable e) {
+            Exceptions.handle()
+                      .error(e)
+                      .to(LOG)
+                      .withSystemErrorMessage("Stop of: %s failed!", lifecycle.getName())
+                      .handle();
+        }
     }
 
     private static void outputActiveOperations() {
