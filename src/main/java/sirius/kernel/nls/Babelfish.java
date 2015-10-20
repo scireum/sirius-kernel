@@ -91,13 +91,13 @@ public class Babelfish {
      */
     public void writeProperties() {
         LOG.INFO("Writing properties back to source files...");
-        final MultiMap<String, Translation> mm = MultiMap.create();
+        final MultiMap<String, Translation> translationsByFile = MultiMap.create();
         final ValueHolder<Integer> propertiesWithoutFile = ValueHolder.of(0);
         getTranslations(null).forEach(entity -> {
             if (entity.getFile() == null) {
                 propertiesWithoutFile.set(propertiesWithoutFile.get() + 1);
             } else {
-                mm.put(entity.getFile(), entity);
+                translationsByFile.put(entity.getFile(), entity);
             }
         });
         if (propertiesWithoutFile.get() > 0) {
@@ -107,18 +107,19 @@ public class Babelfish {
         int properties = 0;
         int totalFiles = 0;
         int updatedFiles = 0;
-        for (Map.Entry<String, Collection<Translation>> e : mm.getUnderlyingMap().entrySet()) {
+        for (Map.Entry<String, Collection<Translation>> fileAndTranslations : translationsByFile.getUnderlyingMap()
+                                                                                                .entrySet()) {
             Map<String, SortedProperties> propMap = Maps.newTreeMap();
-            for (Translation entry : e.getValue()) {
+            for (Translation entry : fileAndTranslations.getValue()) {
                 properties++;
                 entry.writeTo(propMap);
             }
-            for (Map.Entry<String, SortedProperties> entry : propMap.entrySet()) {
+            for (Map.Entry<String, SortedProperties> propertiesByLanguage : propMap.entrySet()) {
                 try {
-                    File file = findSource(e.getKey() + "_" + entry.getKey() + ".properties");
+                    File file = findSource(fileAndTranslations.getKey(), propertiesByLanguage.getKey());
                     if (file != null) {
                         try (FileOutputStream out = new FileOutputStream(file)) {
-                            entry.getValue().store(out, null);
+                            propertiesByLanguage.getValue().store(out, null);
                             updatedFiles++;
                         }
                     }
@@ -126,7 +127,9 @@ public class Babelfish {
                     Exceptions.handle()
                               .error(ex)
                               .to(LOG)
-                              .withSystemErrorMessage("Error writing properties of: %s - %s (%s)", entry.getKey())
+                              .withSystemErrorMessage("Error writing properties of: %s_%s - %s (%s)",
+                                                      fileAndTranslations.getKey(),
+                                                      propertiesByLanguage.getKey())
                               .handle();
                 }
                 totalFiles++;
@@ -135,14 +138,9 @@ public class Babelfish {
         LOG.INFO("Wrote %d properties in %d of %d files", properties, updatedFiles, totalFiles);
     }
 
-    private File findSource(String fileName) {
-        String[] path = fileName.split("/");
-        if (path.length == 0) {
-            return null;
-        }
-
+    private File findSource(String baseName, String language) {
         File baseDir = new File(System.getProperty("user.dir"));
-        return findFile(baseDir.getParentFile(), path);
+        return findFile(baseDir.getParentFile(), baseName, language);
     }
 
     /*
@@ -155,7 +153,9 @@ public class Babelfish {
     /*
      * Tries to find a source file for the given path, starting from current.
      */
-    private File findFile(File current, String[] path) {
+    private File findFile(File current, String baseName, String language) {
+        String fileName = baseName + "_" + language + ".properties";
+
         if (!current.isDirectory() || !current.exists()) {
             return null;
         }
@@ -163,30 +163,52 @@ public class Babelfish {
         if (files == null) {
             return null;
         }
+
+        boolean foundSibling = false;
         for (File child : files) {
-            // We need a directory...
-            if (!child.isDirectory()) {
-                break;
-            }
-            // Don't step into hidden directories
-            if (child.isHidden() || child.getName().startsWith(".")) {
-                break;
-            }
-            // Don't step into one of the generally ignored directories
-            for (String ignoredDir : IGNORED_DIRECTORIES) {
-                if (child.getName().startsWith(ignoredDir)) {
-                    break;
+            if (child.exists() && child.isFile()) {
+                if (child.getName().equals(fileName)) {
+                    return child;
+                }
+                if (child.getName().startsWith(baseName) && child.getName().endsWith(".properties")) {
+                    foundSibling = true;
                 }
             }
-            if (child.getName().equals(path[0])) {
-                File result = completeFile(child, path);
+
+            if (shouldWalkInfo(child)) {
+                File result = findFile(child, baseName, language);
                 if (result != null) {
                     return result;
                 }
             }
         }
 
+        if (foundSibling) {
+            return new File(current, fileName);
+        }
+
         return null;
+    }
+
+    private boolean shouldWalkInfo(File child) {
+        // We need a directory...
+        if (!child.isDirectory()) {
+            return false;
+        }
+
+        // Don't step into hidden directories
+        if (child.isHidden() || child.getName().startsWith(".")) {
+            return false;
+        }
+
+        // Don't step into one of the generally ignored directories
+        for (String ignoredDir : IGNORED_DIRECTORIES) {
+            if (child.getName().startsWith(ignoredDir)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /*
@@ -352,7 +374,7 @@ public class Babelfish {
             Map<String, Translation> copy = new TreeMap<>(translationMap);
             for (String key : bundle.keySet()) {
                 String value = bundle.getString(key);
-                importProperty(copy, lang, relativePath, key, value);
+                importProperty(copy, lang, baseName, key, value);
             }
             translationMap = copy;
         } finally {

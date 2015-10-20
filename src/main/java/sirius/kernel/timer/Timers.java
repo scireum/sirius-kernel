@@ -16,7 +16,6 @@ import sirius.kernel.commons.Watch;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
-import sirius.kernel.di.std.Priorized;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -74,9 +73,15 @@ public class Timers implements Lifecycle {
     private Timer timer;
     private ReentrantLock timerLock = new ReentrantLock();
 
+    /**
+     * Determines the start and stop order of the timers lifecycle. Exposed as public so that
+     * dependent lifecycles can determine their own priority based on this.
+     */
+    public static int LIFECYCLE_PRIORITY = 1000;
+
     @Override
     public int getPriority() {
-        return Priorized.DEFAULT_PRIORITY + 100;
+        return LIFECYCLE_PRIORITY;
     }
 
     private class InnerTimerTask extends TimerTask {
