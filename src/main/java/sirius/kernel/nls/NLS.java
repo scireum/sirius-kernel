@@ -558,6 +558,14 @@ public class NLS {
         return dateTimeFormatters.computeIfAbsent(lang,
                                                   l -> DateTimeFormatter.ofPattern(get("NLS.patternDateTime", l)));
     }
+    /**
+     * Returns the format for the current language to format decimal numbers
+     *
+     * @return a format initialized with the pattern described by the given language
+     */
+    public static java.text.NumberFormat getDecimalFormat() {
+        return getDecimalFormat(getCurrentLang());
+    }
 
     /**
      * Returns the format for the given language to format decimal numbers
