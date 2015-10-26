@@ -561,7 +561,7 @@ public class NLS {
     /**
      * Returns the format for the current language to format decimal numbers
      *
-     * @return a format initialized with the pattern described by the given language
+     * @return a format initialized with the pattern described by the current language
      */
     public static java.text.NumberFormat getDecimalFormat() {
         return getDecimalFormat(getCurrentLang());
