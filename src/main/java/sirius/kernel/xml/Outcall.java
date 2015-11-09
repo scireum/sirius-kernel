@@ -150,6 +150,34 @@ public class Outcall {
     }
 
     /**
+     * Sets a specified timeout value, in milliseconds, to be used
+     * when opening a communications link to the resource referenced
+     * by this outcall. If the timeout expires before the
+     * connection can be established, a
+     * java.net.SocketTimeoutException is raised. A timeout of zero is
+     * interpreted as an infinite timeout.
+     *
+     * @param timeoutMillis specifies the connect timeout value in milliseconds
+     */
+    public void setConnectTimeout(int timeoutMillis) {
+        connection.setConnectTimeout(timeoutMillis);
+    }
+
+    /**
+     * Sets the read timeout to a specified timeout, in
+     * milliseconds. A non-zero value specifies the timeout when
+     * reading from Input stream when a connection is established to a
+     * resource. If the timeout expires before there is data available
+     * for read, a java.net.SocketTimeoutException is raised. A
+     * timeout of zero is interpreted as an infinite timeout.
+     *
+     * @param timeoutMillis specifies the timeout value to be used in milliseconds
+     */
+    public void setReadTimeout(int timeoutMillis) {
+        connection.setReadTimeout(timeoutMillis);
+    }
+
+    /**
      * Returns the result of the call as String.
      *
      * @return a String containing the complete result of the call
@@ -160,6 +188,7 @@ public class Outcall {
         InputStreamReader reader = new InputStreamReader(getInput(), getContentEncoding());
         CharStreams.copy(reader, writer);
         reader.close();
+
         return writer.toString();
     }
 
