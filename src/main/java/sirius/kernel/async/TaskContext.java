@@ -128,19 +128,6 @@ public class TaskContext implements SubContext {
     }
 
     /**
-     * Increments the given performance counter and adds the given duration to its average.
-     * <p>
-     * Updates the named performance counter of the monitor. Also the duration given in milliseconds is added to
-     * compute the average duration. Use {@link sirius.kernel.commons.Watch#elapsedMillis()} to obtain such a value.
-     *
-     * @param counter  the counter to update
-     * @param duration the duration the measured section took to execute. Use <tt>0d</tt> if no duration is available
-     */
-    public void inc(String counter, long duration) {
-        adapter.inc(counter, duration);
-    }
-
-    /**
      * Signals the monitor that the execution had an error.
      * <p>
      * Although an error is signaled, this will not cancel or interrupt the execution of the task. This is merely
@@ -289,43 +276,9 @@ public class TaskContext implements SubContext {
         return this;
     }
 
-    /**
-     * Returns the title of the currently active job.
-     * <p>
-     * This is independent of the <tt>System String</tt> and merely used to provide a nicely formatted title
-     * to the user.
-     *
-     * @return the title of the currently active job
-     */
-    public String getJobTitle() {
-        return jobTitle;
-    }
-
-    /**
-     * Sets the title of the currently active job.
-     *
-     * @param jobTitle the job title to set
-     * @return the task context itself for fluent method calls
-     */
-    public TaskContext setJobTitle(String jobTitle) {
-        if (Strings.isEmpty(jobTitle)) {
-            this.jobTitle = null;
-        } else {
-            this.jobTitle = jobTitle;
-        }
-        if (adapter != null) {
-            adapter.setJobTitle(jobTitle);
-        }
-        return this;
-    }
-
     @Override
     public String toString() {
-        if (jobTitle != null) {
-            return getSystemString() + ": " + getJobTitle();
-        } else {
-            return getSystemString();
-        }
+        return getSystemString();
     }
 
     /**

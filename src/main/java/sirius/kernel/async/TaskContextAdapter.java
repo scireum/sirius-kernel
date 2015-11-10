@@ -37,14 +37,6 @@ public interface TaskContextAdapter {
     void setState(String message);
 
     /**
-     * Invoked if {@link sirius.kernel.async.TaskContext#inc(String, long)} is called in the attached context.
-     *
-     * @param counter  the name of the counter to increment
-     * @param duration the duration in milliseconds to be added to the average duration
-     */
-    void inc(String counter, long duration);
-
-    /**
      * Invoked if {@link TaskContext#markErroneous()} is called in the attached context.
      */
     void markErroneous();
@@ -53,13 +45,6 @@ public interface TaskContextAdapter {
      * Invoked if {@link sirius.kernel.async.TaskContext#cancel()} is called in the attached context.
      */
     void cancel();
-
-    /**
-     * Invoked if {@link TaskContext#setJobTitle(String)} is called in the attached context.
-     *
-     * @param jobTitle the new job title
-     */
-    void setJobTitle(String jobTitle);
 
     /**
      * Determines if the current task is still "active" and processing should continue.

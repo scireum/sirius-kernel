@@ -45,11 +45,6 @@ public class BasicTaskContextAdapter implements TaskContextAdapter {
     }
 
     @Override
-    public void inc(String counter, long duration) {
-        // IGNORED
-    }
-
-    @Override
     public void markErroneous() {
         erroneous = true;
     }
@@ -57,11 +52,6 @@ public class BasicTaskContextAdapter implements TaskContextAdapter {
     @Override
     public void cancel() {
         cancelled = true;
-    }
-
-    @Override
-    public void setJobTitle(String jobTitle) {
-        // IGNORED
     }
 
     @Override
