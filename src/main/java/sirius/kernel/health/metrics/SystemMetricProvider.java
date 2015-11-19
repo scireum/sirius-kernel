@@ -17,6 +17,7 @@ import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Monoflop;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -39,7 +40,7 @@ public class SystemMetricProvider implements MetricProvider {
     private List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
     private Sigar sigar = new Sigar();
     private volatile boolean sigarEnabled = true;
-    private volatile boolean openFilesChecked;
+    private Monoflop openFilesChecked;
     private static final Log LOG = Log.get("sigar");
 
     @Part
@@ -50,21 +51,10 @@ public class SystemMetricProvider implements MetricProvider {
 
     @Override
     public void gather(MetricsCollector collector) {
-        for (MemoryPoolMXBean pool : pools) {
-            if (pool.getName().toLowerCase().contains("old") && pool.getUsage().getMax() > 0) {
-                collector.metric("jvm-old-heap",
-                                 "JVM Heap (" + pool.getName() + ")",
-                                 100d * pool.getUsage().getUsed() / pool.getUsage().getMax(),
-                                 "%");
-            }
-        }
-        for (GarbageCollectorMXBean gc : gcs) {
-            collector.differentialMetric("jvm-gc-" + gc.getName(),
-                                         "jvm-gc",
-                                         "GC - " + gc.getName(),
-                                         gc.getCollectionCount(),
-                                         "/min");
-        }
+        gatherMemoryMetrics(collector);
+        gatherGCMetrics(collector);
+        gatherOSMetrics(collector);
+
         collector.differentialMetric("sys-interactions",
                                      "sys-interactions",
                                      "Interactions",
@@ -77,37 +67,68 @@ public class SystemMetricProvider implements MetricProvider {
                                      "Unique Incidents",
                                      monitor.getNumUniqueIncidents(),
                                      "/min");
+    }
 
+    private void gatherOSMetrics(MetricsCollector collector) {
         try {
             if (sigarEnabled) {
                 gatherCPUandMem(collector);
                 gatherNetworkStats(collector);
                 gatherFS(collector);
-
-                if (!openFilesChecked) {
-                    openFilesChecked = true;
-                    long maxOpenFiles = sigar.getResourceLimit().getOpenFilesMax();
-                    if (maxOpenFiles > 0 && minimalOpenFilesLimit > 0 && maxOpenFiles < minimalOpenFilesLimit) {
-                        Exceptions.handle()
-                                  .withSystemErrorMessage(
-                                          "The ulimit -f (number of open files) is too low: %d - It should be at least: %d",
-                                          maxOpenFiles,
-                                          minimalOpenFilesLimit)
-                                  .to(LOG)
-                                  .handle();
-                    } else {
-                        LOG.INFO(
-                                "The maximal number of open files on this system is good (%d, Required are at least: %d)",
-                                maxOpenFiles,
-                                minimalOpenFilesLimit);
-                    }
-                }
+                checkMaxNumberOfOpenFiles();
             }
         } catch (SigarException e) {
             Exceptions.handle(LOG, e);
         } catch (UnsatisfiedLinkError e) {
             Exceptions.ignore(e);
             sigarEnabled = false;
+        }
+    }
+
+    /*
+     * We check the max number of open files for the underlying system as this is commonly too
+     * low on many linux machines and causes ugly errors.
+     *
+     * As we rely on sigar anyway and don't want to risk an link error / exception on startup, we check
+     * this value on the first run of the metrics collector
+     */
+    private void checkMaxNumberOfOpenFiles() throws SigarException {
+        if (openFilesChecked.firstCall()) {
+            long maxOpenFiles = sigar.getResourceLimit().getOpenFilesMax();
+            if (maxOpenFiles > 0 && minimalOpenFilesLimit > 0 && maxOpenFiles < minimalOpenFilesLimit) {
+                Exceptions.handle()
+                          .withSystemErrorMessage(
+                                  "The ulimit -f (number of open files) is too low: %d - It should be at least: %d",
+                                  maxOpenFiles,
+                                  minimalOpenFilesLimit)
+                          .to(LOG)
+                          .handle();
+            } else {
+                LOG.INFO("The maximal number of open files on this system is good (%d, Required are at least: %d)",
+                         maxOpenFiles,
+                         minimalOpenFilesLimit);
+            }
+        }
+    }
+
+    private void gatherGCMetrics(MetricsCollector collector) {
+        for (GarbageCollectorMXBean gc : gcs) {
+            collector.differentialMetric("jvm-gc-" + gc.getName(),
+                                         "jvm-gc",
+                                         "GC - " + gc.getName(),
+                                         gc.getCollectionCount(),
+                                         "/min");
+        }
+    }
+
+    private void gatherMemoryMetrics(MetricsCollector collector) {
+        for (MemoryPoolMXBean pool : pools) {
+            if (pool.getName().toLowerCase().contains("old") && pool.getUsage().getMax() > 0) {
+                collector.metric("jvm-old-heap",
+                                 "JVM Heap (" + pool.getName() + ")",
+                                 100d * pool.getUsage().getUsed() / pool.getUsage().getMax(),
+                                 "%");
+            }
         }
     }
 

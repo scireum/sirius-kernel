@@ -397,8 +397,8 @@ public class Value {
      */
     @Nonnull
     public Value first() {
-        if (data != null && data instanceof Collection) {
-            Iterator<?> iter = ((Collection) data).iterator();
+        if (data instanceof Collection) {
+            Iterator<?> iter = ((Collection<?>) data).iterator();
             if (iter.hasNext()) {
                 return Value.of(iter.next());
             }

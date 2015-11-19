@@ -654,14 +654,18 @@ public class NLS {
             return String.valueOf(data);
         }
         if (data instanceof Throwable) {
-            StringWriter writer = new StringWriter();
-            PrintWriter pw = new PrintWriter(writer);
-            ((Throwable) data).printStackTrace(pw);
-            String result = writer.toString();
-            pw.close();
-            return result;
+            return writeThreadStrace((Throwable) data);
         }
         return String.valueOf(data);
+    }
+
+    private static String writeThreadStrace(Throwable data) {
+        StringWriter writer = new StringWriter();
+        PrintWriter pw = new PrintWriter(writer);
+        data.printStackTrace(pw);
+        String result = writer.toString();
+        pw.close();
+        return result;
     }
 
     /**
@@ -739,12 +743,7 @@ public class NLS {
             return getDecimalFormat(lang).format(data);
         }
         if (data instanceof Throwable) {
-            StringWriter writer = new StringWriter();
-            PrintWriter pw = new PrintWriter(writer);
-            ((Throwable) data).printStackTrace(pw);
-            String result = writer.toString();
-            pw.close();
-            return result;
+            return writeThreadStrace((Throwable) data);
         }
         return String.valueOf(data);
     }
