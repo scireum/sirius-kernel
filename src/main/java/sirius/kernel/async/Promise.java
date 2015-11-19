@@ -139,6 +139,7 @@ public class Promise<V> {
      * Waits until the promise is completed.
      *
      * @param timeout the maximal time to wait for the completion of this promise.
+     * @return <tt>true</tt> if the promise was completed within the given timeout, <tt>false</tt> otherwise
      */
     public boolean await(Duration timeout) {
         if (!isCompleted()) {
@@ -210,21 +211,7 @@ public class Promise<V> {
     @Nonnull
     public <X> Promise<X> map(@Nonnull final Function<V, X> mapper) {
         final Promise<X> result = new Promise<X>();
-        onComplete(new CompletionHandler<V>() {
-            @Override
-            public void onSuccess(V value) throws Exception {
-                try {
-                    result.success(mapper.apply(value));
-                } catch (Throwable throwable) {
-                    result.fail(throwable);
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                result.fail(throwable);
-            }
-        });
+        mapChain(result, mapper);
 
         return result;
     }

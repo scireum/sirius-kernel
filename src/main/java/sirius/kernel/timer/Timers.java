@@ -77,7 +77,7 @@ public class Timers implements Lifecycle {
      * Determines the start and stop order of the timers lifecycle. Exposed as public so that
      * dependent lifecycles can determine their own priority based on this.
      */
-    public static int LIFECYCLE_PRIORITY = 1000;
+    public static final int LIFECYCLE_PRIORITY = 1000;
 
     @Override
     public int getPriority() {
