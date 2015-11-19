@@ -36,15 +36,18 @@ public class RateLimit {
         TIME_BASED, CALL_BASED
     }
 
-    private long interval;
+    private final long interval;
     private final Mode mode;
-    private long state;
+    private final long permitsPerInterval;
+    private volatile long state;
+    private volatile long permits;
 
     /*
      * Use the static constructor static factory method
      */
-    private RateLimit(long interval, Mode mode) {
+    private RateLimit(long interval, long permitsPerInterval, Mode mode) {
         this.interval = interval;
+        this.permitsPerInterval = permitsPerInterval;
         this.mode = mode;
         if (mode == Mode.CALL_BASED) {
             state = interval;
@@ -63,7 +66,7 @@ public class RateLimit {
      * @return a new call based rate limit
      */
     public static RateLimit everyNthCall(long n) {
-        return new RateLimit(n, Mode.CALL_BASED);
+        return new RateLimit(n, 0, Mode.CALL_BASED);
     }
 
     /**
@@ -77,7 +80,22 @@ public class RateLimit {
      * @return a new time based rate limit
      */
     public static RateLimit timeInterval(long interval, TimeUnit unit) {
-        return new RateLimit(TimeUnit.MILLISECONDS.convert(interval, unit), Mode.TIME_BASED);
+        return nTimesPerInterval(interval, unit, 1);
+    }
+
+    /**
+     * Creates a new time based rate limit which permits up to N calls per interval.
+     * <p>
+     * Calling {@link #check()} on will only return <tt>true</tt> N times in every given interval,
+     * <tt>false</tt> otherwise.
+     *
+     * @param interval           the amount of time after a call to {@link #check()} returns <tt>true</tt> again
+     * @param unit               the unit for amount
+     * @param permitsPerInterval the number of times to return <tt>true</tt> per interval
+     * @return a new time based rate limit
+     */
+    public static RateLimit nTimesPerInterval(long interval, TimeUnit unit, int permitsPerInterval) {
+        return new RateLimit(TimeUnit.MILLISECONDS.convert(interval, unit), permitsPerInterval, Mode.TIME_BASED);
     }
 
     /**
@@ -94,8 +112,9 @@ public class RateLimit {
         } else {
             if (System.currentTimeMillis() - state > interval) {
                 state = System.currentTimeMillis();
-                return true;
+                permits = permitsPerInterval;
             }
+            return permits-- > 0;
         }
         return false;
     }
