@@ -25,8 +25,8 @@ import java.util.List;
 @Register(classes = {MemoryBasedHealthMonitor.class, LogTap.class, ExceptionHandler.class})
 public class MemoryBasedHealthMonitor implements ExceptionHandler, LogTap {
 
-    private final List<Incident> incidents = Collections.synchronizedList(new ArrayList<Incident>());
-    private final List<LogMessage> messages = Collections.synchronizedList(new ArrayList<LogMessage>());
+    protected final List<Incident> incidents = Collections.synchronizedList(new ArrayList<Incident>());
+    protected final List<LogMessage> messages = Collections.synchronizedList(new ArrayList<LogMessage>());
 
     @ConfigValue("health.memory.max-errors")
     private int maxErrors;
@@ -78,7 +78,7 @@ public class MemoryBasedHealthMonitor implements ExceptionHandler, LogTap {
      * @return all recorded incidents
      */
     public List<Incident> getIncidents() {
-        return incidents;
+        return Collections.unmodifiableList(incidents);
     }
 
     /**
@@ -87,7 +87,7 @@ public class MemoryBasedHealthMonitor implements ExceptionHandler, LogTap {
      * @return all recorded messages
      */
     public List<LogMessage> getMessages() {
-        return messages;
+        return Collections.unmodifiableList(messages);
     }
 
     /**

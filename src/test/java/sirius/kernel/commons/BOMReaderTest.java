@@ -38,7 +38,7 @@ public class BOMReaderTest {
     @Test
     public void readArray0BOM() throws IOException {
         BOMReader in = new BOMReader(new InputStreamReader(new ByteArrayInputStream(WITH_UTF8_BOM)));
-        char[] buf = new char[0];
+        char[] buf =  new char[0];
         assertEquals(0, in.read(buf));
     }
 
