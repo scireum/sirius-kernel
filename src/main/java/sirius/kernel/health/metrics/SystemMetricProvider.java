@@ -40,7 +40,7 @@ public class SystemMetricProvider implements MetricProvider {
     private List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
     private Sigar sigar = new Sigar();
     private volatile boolean sigarEnabled = true;
-    private Monoflop openFilesChecked;
+    private Monoflop openFilesChecked = Monoflop.create();
     private static final Log LOG = Log.get("sigar");
 
     @Part
