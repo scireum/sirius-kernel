@@ -23,12 +23,12 @@ public class ExceptionsTest {
 
     @BeforeClass
     public static void setUp() {
-        TestHelper.setUp();
+        TestHelper.setUp(ExceptionsTest.class);
     }
 
     @AfterClass
     public static void tearDown() {
-        TestHelper.tearDown();
+        TestHelper.tearDown(ExceptionsTest.class);
     }
 
     @Test

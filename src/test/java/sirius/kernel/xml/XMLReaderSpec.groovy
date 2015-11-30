@@ -8,10 +8,10 @@
 
 package sirius.kernel.xml
 
+import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.ValueHolder
 import sirius.kernel.health.Counter
 import sirius.kernel.health.Exceptions
-import sirius.kernel.BaseSpecification
 
 import javax.xml.xpath.XPathExpressionException
 
