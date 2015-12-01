@@ -80,7 +80,7 @@ public class Counter {
      */
     public long getDuration(TimeUnit unit) {
         long delta = System.currentTimeMillis() - startTimeMillis;
-        return TimeUnit.MILLISECONDS.convert(delta, unit);
+        return unit.convert(delta, TimeUnit.MILLISECONDS);
     }
 
     /**
