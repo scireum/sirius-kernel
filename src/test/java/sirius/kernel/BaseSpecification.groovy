@@ -17,7 +17,7 @@ import spock.lang.Specification
 class BaseSpecification extends Specification {
 
     /*
-     * Executed bafore each class. Will ensure that Sirius is ready
+     * Executed before each class. Will ensure that Sirius is ready
      */
 
     def setupSpec() {

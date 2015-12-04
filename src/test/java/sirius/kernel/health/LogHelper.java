@@ -14,7 +14,7 @@ import sirius.kernel.di.std.Part;
 import java.util.regex.Pattern;
 
 /**
- * Helps the create tests which expect certain kind of log messages to be created.
+ * Helps to create tests which expect certain kind of log messages to be created.
  */
 public class LogHelper {
 
