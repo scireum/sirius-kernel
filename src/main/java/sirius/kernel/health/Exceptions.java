@@ -37,6 +37,13 @@ public class Exceptions {
      */
     protected static final Log IGNORED_EXCEPTIONS_LOG = Log.get("ignored");
 
+    /**
+     * Used to log warnings if deprecated APIs are called.
+     *
+     * @see #logDeprecatedMethodUse()
+     */
+    protected static final Log DEPRECATION_LOG = Log.get("deprecated");
+
     /*
      * Filled by the Injector - contains all handles which participate in the exception handling process
      */
@@ -312,19 +319,6 @@ public class Exceptions {
     }
 
     /**
-     * Generates a new {@link ErrorHandler} which creates a <tt>HandledException</tt> without actually logging or
-     * processing it.
-     * <p>
-     * This can be used to generate a <tt>HandledException</tt> based on a user error (invalid input)
-     * which doesn't need to be logged.
-     *
-     * @return a new <tt>ErrorHandler</tt> to handle an error or exception
-     */
-    public static ErrorHandler createHandled() {
-        return new ErrorHandler(false);
-    }
-
-    /**
      * Boilerplate method the directly handle the given exception without a special message or logger
      *
      * @param e the exception to handle
@@ -348,6 +342,19 @@ public class Exceptions {
     }
 
     /**
+     * Generates a new {@link ErrorHandler} which creates a <tt>HandledException</tt> without actually logging or
+     * processing it.
+     * <p>
+     * This can be used to generate a <tt>HandledException</tt> based on a user error (invalid input)
+     * which doesn't need to be logged.
+     *
+     * @return a new <tt>ErrorHandler</tt> to handle an error or exception
+     */
+    public static ErrorHandler createHandled() {
+        return new ErrorHandler(false);
+    }
+
+    /**
      * Can be used to mark an exception as ignored.
      * <p>
      * Instead of leading a try / catch block empty, the method can be invoked. Therefore it is known, that the
@@ -359,5 +366,26 @@ public class Exceptions {
      */
     public static void ignore(Throwable t) {
         IGNORED_EXCEPTIONS_LOG.INFO(t);
+    }
+
+    /**
+     * Can be used to log if a deprecated method has been called.
+     * <p>
+     * This method must be called from the deprecated one and will report the name of the deprecated method
+     * and its caller.
+     */
+    public static void logDeprecatedMethodUse() {
+        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        if (stack.length < 4) {
+            Exceptions.handle().withSystemErrorMessage("Cannot log deprecated API call for short stacktrace!").handle();
+        }
+
+        StackTraceElement deprecatedMethod = stack[2];
+        StackTraceElement caller = stack[3];
+        DEPRECATION_LOG.WARN("The deprecated method '%s.%s' was called by '%s.%s'",
+                             deprecatedMethod.getClassName(),
+                             deprecatedMethod.getMethodName(),
+                             caller.getClassName(),
+                             caller.getMethodName());
     }
 }

@@ -271,8 +271,8 @@ class PartRegistry implements MutableGlobalContext {
      * Processes all annotations of all known parts.
      */
     void processAnnotations() {
-        Set<Object> initializedObjects = Collections.synchronizedSet(Sets.newHashSet());
-        parts.getUnderlyingMap().values().parallelStream().flatMap(e -> e.stream()).forEach(part -> {
+        Set<Object> initializedObjects = Sets.newHashSet();
+        parts.getUnderlyingMap().values().stream().flatMap(e -> e.stream()).forEach(part -> {
             wire(part);
             if (part instanceof Initializable) {
                 initialize(part, initializedObjects);

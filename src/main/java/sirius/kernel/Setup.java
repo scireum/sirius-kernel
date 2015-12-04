@@ -66,8 +66,8 @@ public class Setup {
     protected boolean logToConsole;
     protected boolean logToFile;
     protected Level defaultLevel = Level.INFO;
-    protected String consoleLogFormat = "%d{HH:mm:ss.SSS} %-5p [%X{flow}|%t] %c - %m%n";
-    protected String fileLogFormat = "%d %-5p [%X{flow}|%t] %c - %m%n";
+    protected String consoleLogFormat = "%d{HH:mm:ss.SSS} %-5p [%t%X{flow}] %c - %m%n";
+    protected String fileLogFormat = "%d %-5p [%t%X{flow}] %c - %m%n";
 
     /**
      * Creates a new setup for the given mode and class loader.
