@@ -353,8 +353,12 @@ public class NLS {
      * @param key    the key used to lookup the translated text
      * @param params parameters used to replace arguments
      * @return a translated and formatted string as defined in <tt>Strings.apply</tt>
+     * @deprecated As it can be easily confused with {@link Strings#apply(String, Object...)}.
+     * Also using {@link NLS#fmtr(String)} is strongly encouraged.
      */
+    @Deprecated
     public static String apply(String key, Object... params) {
+        Exceptions.logDeprecatedMethodUse();
         return Strings.apply(get(key), params);
     }
 
@@ -1117,9 +1121,9 @@ public class NLS {
             result.append(", ");
         }
         if (value == 1) {
-            result.append(NLS.apply(oneKey, 1));
+            result.append(Strings.apply(NLS.get(oneKey), 1));
         } else {
-            result.append(NLS.apply(manyKey, value));
+            result.append(Strings.apply(NLS.get(manyKey), value));
         }
     }
 

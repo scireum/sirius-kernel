@@ -210,8 +210,9 @@ public class Exceptions {
         private String computeMessage() {
             if (Strings.isFilled(systemErrorMessage)) {
                 // Generate system error message and prefix with translated info about the system error
-                return NLS.apply("HandledException.systemError",
-                                 Strings.apply(systemErrorMessage, extendParams(ex, systemErrorMessageParams)));
+                return NLS.fmtr("HandledException.systemError")
+                          .set("error", Strings.apply(systemErrorMessage, extendParams(ex, systemErrorMessageParams)))
+                          .format();
             } else {
                 // Add exception infos
                 set("errorMessage", ex == null ? NLS.get("HandledException.unknownError") : ex.getMessage());
