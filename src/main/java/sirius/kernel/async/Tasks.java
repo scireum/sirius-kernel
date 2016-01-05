@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
@@ -23,6 +24,9 @@ import sirius.kernel.health.Log;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -115,7 +119,7 @@ public class Tasks implements Lifecycle {
         wrapper.jobNumber = exec.executed.inc();
         wrapper.durationAverage = exec.duration;
         if (wrapper.synchronizer != null) {
-            scheduleTable.put(wrapper.synchronizer, System.nanoTime());
+            scheduleTable.put(wrapper.synchronizer, System.currentTimeMillis());
         }
         exec.execute(wrapper);
     }
@@ -150,7 +154,7 @@ public class Tasks implements Lifecycle {
             return;
         }
         Long lastInvocation = scheduleTable.get(wrapper.synchronizer);
-        if (lastInvocation == null || (System.nanoTime() - lastInvocation) > wrapper.intervalMinLength) {
+        if (lastInvocation == null || (System.currentTimeMillis() - lastInvocation) > wrapper.intervalMinLength) {
             executeNow(wrapper);
         } else {
             if (dropIfAlreadyScheduled(wrapper)) {
@@ -207,7 +211,7 @@ public class Tasks implements Lifecycle {
     private void executeWaitingTasks() {
         synchronized (schedulerQueue) {
             Iterator<ExecutionBuilder.TaskWrapper> iter = schedulerQueue.iterator();
-            long now = System.nanoTime();
+            long now = System.currentTimeMillis();
             while (iter.hasNext()) {
                 ExecutionBuilder.TaskWrapper wrapper = iter.next();
                 if (wrapper.waitUntil <= now) {
@@ -249,13 +253,9 @@ public class Tasks implements Lifecycle {
                 // No task is waiting -> wait forever...
                 return -1;
             }
-            long now = System.nanoTime();
 
-            // The first task in the scheduler queue is the next to be executed. Compute how long
-            // we can idle before we must start the execution. As we convert from nano seconds to millis,
-            // this method might return 0 (if the next task can be run in less than 1 ms). In this case
-            // we do not idle at all and directly check for executable tasks again.
-            return TimeUnit.NANOSECONDS.toMillis(schedulerQueue.get(0).waitUntil - now);
+            long now = System.currentTimeMillis();
+            return Math.max(0, schedulerQueue.get(0).waitUntil - now);
         }
     }
 
@@ -423,6 +423,28 @@ public class Tasks implements Lifecycle {
      */
     public boolean isRunning() {
         return running;
+    }
+
+    /**
+     * Returns a list containing the name and estimated execution time of all scheduled tasks which
+     * are waiting for their execution.
+     * <p>
+     * A scheduled task in this case is one which has
+     * {@link sirius.kernel.async.ExecutionBuilder.TaskWrapper#minInterval(Object, Duration)} or
+     * {@link sirius.kernel.async.ExecutionBuilder.TaskWrapper#frequency(Object, double)} set.
+     *
+     * @return a list of all scheduled tasks
+     */
+    public List<Tuple<String, LocalDateTime>> getScheduledTasks() {
+        synchronized (schedulerQueue) {
+            List<Tuple<String, LocalDateTime>> result = Lists.newArrayList();
+            for (ExecutionBuilder.TaskWrapper wrapper : schedulerQueue) {
+                result.add(Tuple.create(wrapper.category + " / " + wrapper.synchronizer.getClass().getName(),
+                                        LocalDateTime.ofInstant(Instant.ofEpochMilli(wrapper.waitUntil),
+                                                                ZoneId.systemDefault())));
+            }
+            return result;
+        }
     }
 
     @Override
