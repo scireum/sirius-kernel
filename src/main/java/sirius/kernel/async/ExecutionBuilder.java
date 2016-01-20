@@ -210,7 +210,8 @@ public class ExecutionBuilder {
      */
     public ExecutionBuilder minInterval(Object synchronizer, Duration minimalIntervalDuration) {
         this.wrapper.intervalMinLength =
-                TimeUnit.SECONDS.toMillis(minimalIntervalDuration.getSeconds()) + TimeUnit.NANOSECONDS.toMillis(minimalIntervalDuration.getNano());
+                TimeUnit.SECONDS.toMillis(minimalIntervalDuration.getSeconds()) + TimeUnit.NANOSECONDS.toMillis(
+                        minimalIntervalDuration.getNano());
         this.wrapper.synchronizer = synchronizer;
         return this;
     }
