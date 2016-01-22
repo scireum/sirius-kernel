@@ -25,7 +25,7 @@ import java.util.function.Consumer;
  * a value. The default character used to signal quaotation is <tt>&quot;</tt>. Note that the quotation symbol has to
  * be
  * the first non-whitespace character in the column to be detected as such (or the very first character if
- * {@link #notIgnoringWhitespaces()} was called during initialisation.
+ * {@link #notIgnoringWhitespaces()} was called during initialisation).
  * <p>
  * Furthermore escaping can be used to embed a column separator or a quotation character in a column value.
  * By default <tt>\</tt> is used as escape character.
@@ -35,7 +35,7 @@ import java.util.function.Consumer;
  * <p>
  * An example use case would be:
  * <code>
- * new CSVReader(someInput).execute(row -> doSomethingSmartPerRow(row));
+ * new CSVReader(someInput).execute(row -&gt; doSomethingSmartPerRow(row));
  * </code>
  * <p>
  * Note that this class checks the {@link TaskContext} during execution. Therefore if the underlying task is cancelled,
