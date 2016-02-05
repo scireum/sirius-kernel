@@ -182,4 +182,22 @@ class CSVReaderSpec extends BaseSpecification {
         output.get(0).at("C") == ":c"
     }
 
+    def "quoted strings treat double quotes as escaped quote"() {
+        given:
+        def data = '"test""X""";"a";b""';
+        when:
+        List<Values> output = [];
+        and:
+        new CSVReader(new StringReader(data))
+                .execute(({ row -> output.add(row) } as Consumer<Values>))
+        then:
+        output.size() == 1
+        and:
+        output.get(0).at("A") == 'test"X"'
+        and:
+        output.get(0).at("B") == "a"
+        and:
+        output.get(0).at("C") == 'b""'
+    }
+
 }
