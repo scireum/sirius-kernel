@@ -197,6 +197,7 @@ public class CSVReader {
                 result = new StringBuilder();
             }
         }
+
         while (shouldContinueField(inQuote)) {
             if (buffer == escape) {
                 read();
@@ -208,8 +209,7 @@ public class CSVReader {
             }
             read();
         }
-        if (inQuote && buffer == quotation) {
-            read();
+        if (inQuote) {
             while (buffer == ' ' || buffer == '\t') {
                 read();
             }
@@ -221,12 +221,16 @@ public class CSVReader {
     /*
      * Determines if the current buffer value should be added to the field (column) content.
      */
-    private boolean shouldContinueField(boolean inQuote) {
+    private boolean shouldContinueField(boolean inQuote) throws IOException {
         if (isEOF()) {
             return false;
         }
 
         if (inQuote) {
+            if (buffer == quotation) {
+                read();
+                return buffer == quotation;
+            }
             return buffer != quotation;
         } else {
             return buffer != separator && !isAtNewline();
