@@ -52,7 +52,7 @@ public class StringsTest {
     @Test
     public void apply() {
         assertEquals("B A", Strings.apply("%s A", "B"));
-        assertEquals("A null", Strings.apply("A %s", (String)null));
+        assertEquals("A null", Strings.apply("A %s", (String) null));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class StringsTest {
         assertEquals("A", Strings.firstFilled("", "A"));
         assertEquals("A", Strings.firstFilled(null, null, "A"));
         assertNull(Strings.firstFilled());
-        assertNull(Strings.firstFilled((String)null));
+        assertNull(Strings.firstFilled((String) null));
         assertNull(Strings.firstFilled(""));
     }
 
@@ -83,6 +83,15 @@ public class StringsTest {
     }
 
     @Test
+    public void join() {
+        assertEquals("A,B,C", Strings.join(",", "A", "B", "C"));
+        assertEquals("A,C", Strings.join(",", "A", null, "", "C"));
+        assertEquals("A", Strings.join(",", "A"));
+        assertEquals("", Strings.join(","));
+        assertEquals("ABC", Strings.join("", "A", "B", "C"));
+    }
+
+    @Test
     public void toSaneFilename() {
         assertEquals(Strings.toSaneFileName("test.pdf").orElse(""), "test.pdf");
         assertEquals(Strings.toSaneFileName("test").orElse(""), "test");
@@ -99,5 +108,4 @@ public class StringsTest {
         assertEquals(Strings.toSaneFileName("   "), Optional.<String>empty());
         assertEquals(Strings.toSaneFileName(""), Optional.<String>empty());
     }
-
 }

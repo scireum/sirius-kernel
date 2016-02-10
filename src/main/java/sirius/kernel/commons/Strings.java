@@ -271,7 +271,8 @@ public class Strings {
      * Returns a string concatenation of the given lists items.
      * <p>
      * Generates a string which contains the string representation of each item separated by the given separator.
-     * The conversion method for the list items used is {@link NLS#toMachineString(Object)}.
+     * The conversion method for the list items used is {@link NLS#toMachineString(Object)}. This method will filter
+     * empty values (<tt>""</tt> or <tt>null</tt>) and ignore those.
      *
      * @param list      the list items to join
      * @param separator the separator to place between the items
@@ -284,10 +285,12 @@ public class Strings {
         if (list != null) {
             Monoflop mf = Monoflop.create();
             for (Object item : list) {
-                if (mf.successiveCall()) {
-                    result.append(separator);
+                if (Strings.isFilled(item)) {
+                    if (mf.successiveCall()) {
+                        result.append(separator);
+                    }
+                    result.append(NLS.toMachineString(item));
                 }
-                result.append(NLS.toMachineString(item));
             }
         }
 
