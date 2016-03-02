@@ -627,7 +627,7 @@ public class Value {
         if (data instanceof Boolean) {
             return (Boolean) data;
         }
-        return Boolean.parseBoolean(String.valueOf(data));
+        return Boolean.parseBoolean(String.valueOf(data).trim());
     }
 
     /**
@@ -667,7 +667,7 @@ public class Value {
                 return (int) ((BigDecimal) data).longValue();
             }
 
-            return Integer.parseInt(String.valueOf(data));
+            return Integer.parseInt(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
             return defaultValue;
@@ -699,7 +699,7 @@ public class Value {
             if (data instanceof BigDecimal) {
                 return (int) ((BigDecimal) data).longValue();
             }
-            return Integer.parseInt(String.valueOf(data));
+            return Integer.parseInt(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
             return null;
@@ -734,7 +734,7 @@ public class Value {
             if (data instanceof BigDecimal) {
                 return ((BigDecimal) data).longValue();
             }
-            return Long.parseLong(String.valueOf(data));
+            return Long.parseLong(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
             return defaultValue;
@@ -763,7 +763,7 @@ public class Value {
             if (data instanceof Long) {
                 return (Long) data;
             }
-            return Long.parseLong(String.valueOf(data));
+            return Long.parseLong(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
             return null;
@@ -801,7 +801,7 @@ public class Value {
             if (data instanceof BigDecimal) {
                 return ((BigDecimal) data).doubleValue();
             }
-            return Double.parseDouble(String.valueOf(data));
+            return Double.parseDouble(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
             return defaultValue;
@@ -1142,7 +1142,7 @@ public class Value {
             if (data instanceof Integer) {
                 return BigDecimal.valueOf((Integer) data);
             }
-            return new BigDecimal(asString("").replace(',', '.'), MathContext.UNLIMITED);
+            return new BigDecimal(asString().replace(',', '.').trim(), MathContext.UNLIMITED);
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
             return defaultValue;
@@ -1180,7 +1180,7 @@ public class Value {
             return (E) data;
         }
         try {
-            return Enum.valueOf(clazz, String.valueOf(data));
+            return Enum.valueOf(clazz, String.valueOf(data).trim());
         } catch (Exception e) {
             Exceptions.ignore(e);
             return null;
