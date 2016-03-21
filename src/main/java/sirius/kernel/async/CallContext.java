@@ -170,6 +170,7 @@ public class CallContext {
         newCtx.watch = watch;
         newCtx.mdc.put(MDC_PARENT, mdc.get(TaskContext.MDC_SYSTEM));
         newCtx.subContext.putAll(subContext);
+        newCtx.lang = lang;
     }
 
     /**
