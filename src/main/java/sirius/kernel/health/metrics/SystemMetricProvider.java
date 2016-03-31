@@ -16,6 +16,7 @@ import org.hyperic.sigar.NetInterfaceStat;
 import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
+import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Monoflop;
 import sirius.kernel.di.std.ConfigValue;
@@ -67,6 +68,11 @@ public class SystemMetricProvider implements MetricProvider {
                                      "Unique Incidents",
                                      monitor.getNumUniqueIncidents(),
                                      "/min");
+
+        collector.metric("sys-log-size",
+                         "Log files size",
+                         Sirius.getSetup().estimateLogFilesSize() / 1024d / 1024d,
+                         "mb");
     }
 
     private void gatherOSMetrics(MetricsCollector collector) {

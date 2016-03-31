@@ -17,7 +17,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggerRepository;
-import org.hyperic.sigar.Sigar;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Log;
 
@@ -185,10 +184,7 @@ public class Setup {
                             osx.getAvailableProcessors(),
                             osx.getArch());
         } else {
-            Sirius.LOG.INFO("%s (%s) on a %s CPU",
-                            osx.getName(),
-                            osx.getVersion(),
-                            osx.getArch());
+            Sirius.LOG.INFO("%s (%s) on a %s CPU", osx.getName(), osx.getVersion(), osx.getArch());
         }
     }
 
@@ -327,6 +323,28 @@ public class Setup {
               .filter(validLogFileName)
               .filter(isOldEnough)
               .forEach(File::delete);
+    }
+
+    /**
+     * Estimazes the total size of all log files.
+     *
+     * @return the size in bytes of all log files
+     */
+    public long estimateLogFilesSize() {
+        if (!shouldLogToFile()) {
+            return 0L;
+        }
+
+        File logsDir = new File(getLogsDirectory());
+        if (!logsDir.exists()) {
+            return 0L;
+        }
+        File[] children = logsDir.listFiles();
+        if (children == null) {
+            return 0L;
+        }
+
+        return Arrays.asList(children).stream().filter(File::isFile).mapToLong(f -> f.length()).sum();
     }
 
     /**
