@@ -326,7 +326,7 @@ public class Setup {
     }
 
     /**
-     * Estimazes the total size of all log files.
+     * Estimates the total size of all log files.
      *
      * @return the size in bytes of all log files
      */
