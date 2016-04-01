@@ -10,6 +10,7 @@ package sirius.kernel.commons;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
@@ -170,14 +171,16 @@ public class Strings {
      * @param value the value to be encoded.
      * @return an url encoded representation of value, using UTF-8 as character encoding.
      */
-    public static String urlEncode(String value) {
-        try {
-            return URLEncoder.encode(value, Charsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            // Cannot happen if Java-Version is > 1.4....
-
-            return value;
+    public static String urlEncode(@Nullable String value) {
+        if (isFilled(value)) {
+            try {
+                return URLEncoder.encode(value, Charsets.UTF_8.name());
+            } catch (UnsupportedEncodingException e) {
+                // Cannot happen if Java-Version is > 1.4....
+                Exceptions.ignore(e);
+            }
         }
+        return value;
     }
 
     /**
