@@ -72,7 +72,7 @@ public class SystemMetricProvider implements MetricProvider {
         collector.metric("sys-log-size",
                          "Log files size",
                          Sirius.getSetup().estimateLogFilesSize() / 1024d / 1024d,
-                         "mb");
+                         "MB");
     }
 
     private void gatherOSMetrics(MetricsCollector collector) {
