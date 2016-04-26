@@ -8,6 +8,7 @@
 
 package sirius.kernel.health.console;
 
+import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import sirius.kernel.di.std.Register;
 
@@ -26,7 +27,7 @@ public class MD5Command implements Command {
         } else {
             output.line("Input: " + params[0]);
             output.line("Timestamp: " + System.currentTimeMillis() / 1000);
-            output.line("MD5: " + Hashing.md5().hashString(params[0]).toString());
+            output.line("MD5: " + Hashing.md5().hashString(params[0], Charsets.UTF_8).toString());
         }
     }
 
