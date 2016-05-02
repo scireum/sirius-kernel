@@ -16,7 +16,7 @@ import sirius.kernel.health.Exceptions;
 
 /**
  * Event bus handling fired events.
- * <p>
+ *
  * Checks every fired event against all registered
  * {@link EventHandler} and triggers the handle function
  * in the matching handlers.
