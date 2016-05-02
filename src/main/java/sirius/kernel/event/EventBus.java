@@ -16,7 +16,7 @@ import sirius.kernel.health.Exceptions;
 
 /**
  * Event bus handling fired events.
- * <p/>
+ * <p>
  * Checks every fired event against all registered
  * {@link EventHandler} and triggers the handle function
  * in the matching handlers.
@@ -25,30 +25,28 @@ import sirius.kernel.health.Exceptions;
 @Register(classes = EventBus.class)
 public class EventBus {
 
-    /**
-     * Contains all registered {@link EventHandler}
-     */
     @Parts(EventHandler.class)
     private PartCollection<EventHandler> handlers;
 
     /**
      * Forwards the given object to the matching handler
      *
-     * @param event  name of the event {@link EventHandler} is listening on
+     * @param event  name of the event the {@link EventHandler} is listening on
      * @param object passed to the matching {@link EventHandler}
      */
     public void fireEvent(String event, Object object) {
-        if (Strings.isFilled(event)) {
-            for (EventHandler handler : handlers.getParts()) {
-                if (Strings.areEqual(event, handler.getEvent())) {
-                    try {
-                        handler.handle(event, object);
-                    } catch (Throwable e) {
-                        Exceptions.handle()
-                                  .withSystemErrorMessage("Error while handling event '%s': %s (%s)", event)
-                                  .error(e)
-                                  .handle();
-                    }
+        if (Strings.isEmpty(event)) {
+            return;
+        }
+        for (EventHandler handler : handlers.getParts()) {
+            if (Strings.areEqual(event, handler.getEvent())) {
+                try {
+                    handler.handle(event, object);
+                } catch (Throwable e) {
+                    Exceptions.handle()
+                              .withSystemErrorMessage("Error while handling event '%s': %s (%s)", event)
+                              .error(e)
+                              .handle();
                 }
             }
         }

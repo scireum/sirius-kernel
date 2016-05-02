@@ -12,7 +12,7 @@ import sirius.kernel.BaseSpecification
 import sirius.kernel.di.std.Part
 
 
-class FireEventTest extends BaseSpecification{
+class FireEventSpec extends BaseSpecification {
 
     @Part
     private static EventBus eventBus;

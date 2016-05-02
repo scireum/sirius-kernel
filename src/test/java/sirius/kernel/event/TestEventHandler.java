@@ -10,7 +10,7 @@ package sirius.kernel.event;
 
 import sirius.kernel.di.std.Register;
 
-@Register(classes = EventHandler.class)
+@Register
 public class TestEventHandler implements EventHandler<String>{
 
     public static String testString = "beforeTest";

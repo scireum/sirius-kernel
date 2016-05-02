@@ -9,9 +9,10 @@
 package sirius.kernel.event;
 
 /**
- * Interface of EventHandler handling an event
- * The implementing class needs to be registered
- * as {@link EventHandler} in order to be
+ * Handles events dispatched by the {@link EventHandler}
+ * <p>
+ * Implementing classes need to be registered using
+ * {@link sirius.kernel.di.std.Register} in order to be
  * recognized by the {@link EventBus}
  *
  * @param <E> type of class handled by the implementing handler
@@ -20,7 +21,6 @@ public interface EventHandler<E> {
 
     /**
      * Name of event the handler is listening on
-     * {@link EventBus}
      *
      * @return name of event
      */
