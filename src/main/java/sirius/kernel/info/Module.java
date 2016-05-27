@@ -8,10 +8,13 @@
 
 package sirius.kernel.info;
 
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
 
 import java.time.LocalDate;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Reports build-time information about a loaded SIRIUS module.
@@ -54,6 +57,22 @@ public class Module {
                              fix(build, "-"),
                              fix(date, NLS.toMachineString(LocalDate.now())),
                              fix(vcs, "-"));
+    }
+
+    private static final String RANDOM_REPLACEMENT = String.valueOf(ThreadLocalRandom.current().nextInt());
+
+    /**
+     * Creates a string which is unqiue for each released version (based on its commit hash and build number.
+     * <p>
+     * For development and test systems which have neigther of both, a random string is created for each
+     * running instance.
+     *
+     * @return a unique version string per release or instance
+     */
+    public String getUniqueVersionString() {
+        return Hashing.md5()
+                      .hashString(fix(vcs, RANDOM_REPLACEMENT) + fix(build, RANDOM_REPLACEMENT), Charsets.UTF_8)
+                      .toString();
     }
 
     /**
