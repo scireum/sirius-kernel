@@ -10,7 +10,7 @@ package sirius.kernel.event;
 
 /**
  * Handles events dispatched by the {@link EventHandler}
- * 
+ * <p>
  * Implementing classes need to be registered using
  * {@link sirius.kernel.di.std.Register} in order to be
  * recognized by the {@link EventBus}

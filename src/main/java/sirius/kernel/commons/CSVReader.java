@@ -34,9 +34,7 @@ import java.util.function.Consumer;
  * using the {@link Values} which is used to represent a parsed row.
  * <p>
  * An example use case would be:
- * <code>
- * new CSVReader(someInput).execute(row -&gt; doSomethingSmartPerRow(row));
- * </code>
+ * {@code new CSVReader(someInput).execute(row -&gt; doSomethingSmartPerRow(row)); }
  * <p>
  * Note that this class checks the {@link TaskContext} during execution. Therefore if the underlying task is cancelled,
  * the parser will stop after the current row has been processed.

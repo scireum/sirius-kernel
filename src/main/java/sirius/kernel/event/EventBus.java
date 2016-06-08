@@ -16,17 +16,16 @@ import sirius.kernel.health.Exceptions;
 
 /**
  * Event bus handling fired events.
- *
- * Checks every fired event against all registered
- * {@link EventHandler} and triggers the handle function
- * in the matching handlers.
+ * <p>
+ * Checks every fired event against all registered {@link EventHandler}s and triggers the handle function in the
+ * matching handlers.
  */
 
 @Register(classes = EventBus.class)
 public class EventBus {
 
     @Parts(EventHandler.class)
-    private PartCollection<EventHandler> handlers;
+    private PartCollection<EventHandler<? super Object>> handlers;
 
     /**
      * Forwards the given object to the matching handler
@@ -38,7 +37,7 @@ public class EventBus {
         if (Strings.isEmpty(event)) {
             return;
         }
-        for (EventHandler handler : handlers.getParts()) {
+        for (EventHandler<? super Object> handler : handlers.getParts()) {
             if (Strings.areEqual(event, handler.getEvent())) {
                 try {
                     handler.handle(event, object);
