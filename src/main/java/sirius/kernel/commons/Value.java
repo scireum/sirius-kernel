@@ -91,7 +91,7 @@ public class Value {
         if (collection instanceof List) {
             return Value.of(((List<?>) collection).get(index));
         }
-        return Value.of(collection.stream().skip(index).findFirst().get());
+        return Value.of(collection.stream().skip(index).findFirst().orElse(null));
     }
 
     /**

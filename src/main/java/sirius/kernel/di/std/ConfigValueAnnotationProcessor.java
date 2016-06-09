@@ -8,9 +8,11 @@
 
 package sirius.kernel.di.std;
 
+import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueType;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.FieldAnnotationProcessor;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.MutableGlobalContext;
@@ -28,6 +30,7 @@ import java.util.List;
  */
 @Register
 public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor {
+
     @Override
     public Class<? extends Annotation> getTrigger() {
         return ConfigValue.class;
@@ -36,32 +39,69 @@ public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor 
     @Override
     public void handle(MutableGlobalContext ctx, Object object, Field field) throws Exception {
         ConfigValue val = field.getAnnotation(ConfigValue.class);
-        if (Sirius.getConfig().hasPath(val.value())) {
-            if (String.class.equals(field.getType())) {
-                field.set(object, Sirius.getConfig().getString(val.value()));
-            } else if (int.class.equals(field.getType()) || Integer.class.equals(field.getType())) {
-                field.set(object, Sirius.getConfig().getInt(val.value()));
-            } else if (long.class.equals(field.getType()) || Long.class.equals(field.getType())) {
-                if (Sirius.getConfig().getValue(val.value()).valueType() == ConfigValueType.NUMBER) {
-                    field.set(object, Sirius.getConfig().getLong(val.value()));
-                } else {
-                    field.set(object, Sirius.getConfig().getBytes(val.value()));
-                }
-            } else if (boolean.class.equals(field.getType()) || Boolean.class.equals(field.getType())) {
-                field.set(object, Sirius.getConfig().getBoolean(val.value()));
-            } else if (List.class.equals(field.getType())) {
-                field.set(object, Sirius.getConfig().getStringList(val.value()));
-            } else if (Duration.class.equals(field.getType())) {
-                field.set(object, Duration.ofMillis(Sirius.getConfig().getMilliseconds(val.value())));
-            } else {
-                throw new IllegalArgumentException(Strings.apply("Cannot fill field of type %s with a config value!",
-                                                                 field.getType().getName()));
-            }
-        } else if (val.required()) {
+
+        String key = val.value();
+        Config config = Sirius.getConfig();
+
+        if (!injectValueFromConfig(object, field, key, config) && val.required()) {
             Injector.LOG.WARN("Missing config value: %s in (%s.%s)!",
-                              val.value(),
+                              key,
                               field.getDeclaringClass().getName(),
                               field.getName());
+        }
+    }
+
+    /**
+     * Injects the value selected by 'key' out of the given config into the given field of the given target.
+     *
+     * @param target the target object to populate
+     * @param field  the field to fill
+     * @param key    the key to read
+     * @param config the config object to read from
+     * @return <tt>true</tt> if a value was present and injected, <tt>false</tt> otherwise
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static boolean injectValueFromConfig(Object target, Field field, String key, Config config) {
+        if (!config.hasPath(key)) {
+            return false;
+        }
+
+        field.setAccessible(true);
+
+        try {
+            if (String.class.equals(field.getType())) {
+                field.set(target, config.getString(key));
+            } else if (int.class.equals(field.getType()) || Integer.class.equals(field.getType())) {
+                field.set(target, config.getInt(key));
+            } else if (long.class.equals(field.getType()) || Long.class.equals(field.getType())) {
+                if (config.getValue(key).valueType() == ConfigValueType.NUMBER) {
+                    field.set(target, config.getLong(key));
+                } else {
+                    field.set(target, config.getBytes(key));
+                }
+            } else if (boolean.class.equals(field.getType()) || Boolean.class.equals(field.getType())) {
+                field.set(target, config.getBoolean(key));
+            } else if (List.class.equals(field.getType())) {
+                field.set(target, config.getStringList(key));
+            } else if (Duration.class.equals(field.getType())) {
+                field.set(target, Duration.ofMillis(config.getMilliseconds(key)));
+            } else if (field.getType().isEnum()) {
+                field.set(target, Value.of(config.getString(key)).asEnum((Class<? extends Enum>) field.getType()));
+            } else {
+                throw new IllegalArgumentException(Strings.apply(
+                        "Cannot fill field '%s.%s' of type %s with a config value!",
+                        field.getDeclaringClass().getName(),
+                        field.getName(),
+                        field.getType().getName()));
+            }
+
+            return true;
+        } catch (IllegalAccessException e) {
+            // This should not happen, as we set the field to be accessible
+            throw new IllegalArgumentException(Strings.apply("Cannot fill field '%s.%s' of type %s with a config value!",
+                                                             field.getDeclaringClass().getName(),
+                                                             field.getName(),
+                                                             field.getType().getName()), e);
         }
     }
 }
