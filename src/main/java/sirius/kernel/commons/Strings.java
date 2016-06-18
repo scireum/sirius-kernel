@@ -389,8 +389,10 @@ public class Strings {
      *
      * @param input the filename to fix
      * @return the transformed filename wrapped as Optional or an empty Optional if the filename is not filled
+     * @deprecated Moved to <tt>Files</tt>, use {@link Files#toSaneFileName(String)} instead
      */
     @Nonnull
+    @Deprecated
     public static Optional<String> toSaneFileName(@Nonnull String input) {
         input = trim(input);
         if (Strings.isEmpty(input)) {
