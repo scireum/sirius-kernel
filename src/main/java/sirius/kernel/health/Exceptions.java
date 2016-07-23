@@ -301,12 +301,18 @@ public class Exceptions {
 
         @Override
         public String toString() {
-            return "ErrorHandler{" +
-                   "params=" + params +
-                   ", key='" + key + '\'' +
-                   ", systemErrorMessage='" + systemErrorMessage + '\'' +
-                   ", ex=" + ex +
-                   '}';
+            return "ErrorHandler{"
+                   + "params="
+                   + params
+                   + ", key='"
+                   + key
+                   + '\''
+                   + ", systemErrorMessage='"
+                   + systemErrorMessage
+                   + '\''
+                   + ", ex="
+                   + ex
+                   + '}';
         }
     }
 

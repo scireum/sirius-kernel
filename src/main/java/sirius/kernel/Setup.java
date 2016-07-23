@@ -317,8 +317,7 @@ public class Setup {
 
         Predicate<File> isOldEnough = f -> System.currentTimeMillis() - f.lastModified() > retentionInMillis;
 
-        Arrays.asList(children)
-              .stream()
+        Arrays.stream(children)
               .filter(File::isFile)
               .filter(validLogFileName)
               .filter(isOldEnough)
@@ -344,7 +343,7 @@ public class Setup {
             return 0L;
         }
 
-        return Arrays.asList(children).stream().filter(File::isFile).mapToLong(f -> f.length()).sum();
+        return Arrays.stream(children).filter(File::isFile).mapToLong(f -> f.length()).sum();
     }
 
     /**

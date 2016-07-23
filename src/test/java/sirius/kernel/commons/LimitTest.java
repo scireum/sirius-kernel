@@ -11,9 +11,9 @@ package sirius.kernel.commons;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -84,8 +84,7 @@ public class LimitTest {
     @Test
     public void testPredicate() {
         // Use as predicate to filter a sublist of the given stream to compute a test sum
-        int sum = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-                        .stream()
+        int sum = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
                         .filter(new Limit(2, 4).asPredicate())
                         .collect(Collectors.summingInt(i -> i));
         assertEquals(3 + 4 + 5 + 6, sum);
