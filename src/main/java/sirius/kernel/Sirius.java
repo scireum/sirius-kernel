@@ -203,15 +203,23 @@ public class Sirius {
 
         if (isStartedAsTest()) {
             // Load test configurations (will override component configs)
-            classpath.find(Pattern.compile("component-test-([^\\-]*?)\\.conf"))
-                     .forEach(value -> config =
-                             config.withFallback(ConfigFactory.load(setup.getLoader(), value.group())));
+            classpath.find(Pattern.compile("component-test-([^\\-]*?)\\.conf")).forEach(value -> {
+                try {
+                    config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
+                } catch (Throwable e) {
+                    Sirius.LOG.WARN("Cannot load %s: %s", value.group(), e.getMessage());
+                }
+            });
         }
 
         // Load component configurations
         classpath.find(Pattern.compile("component-([^\\-]*?)\\.conf")).forEach(value -> {
             if (!"test".equals(value.group(1))) {
-                config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
+                try {
+                    config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
+                } catch (Throwable e) {
+                    Sirius.LOG.WARN("Cannot load %s: %s", value.group(), e.getMessage());
+                }
             }
         });
 
@@ -484,8 +492,12 @@ public class Sirius {
         for (String conf : customizations) {
             if (Sirius.class.getResource("/customizations/" + conf + "/settings.conf") != null) {
                 LOG.INFO("loading settings.conf for customization '" + conf + "'");
-                config = ConfigFactory.load(setup.getLoader(), "customizations/" + conf + "/settings.conf")
-                                      .withFallback(config);
+                String configName = "customizations/" + conf + "/settings.conf";
+                try {
+                    config = ConfigFactory.load(setup.getLoader(), configName).withFallback(config);
+                } catch (Throwable e) {
+                    Sirius.LOG.WARN("Cannot load %s: %s", configName, e.getMessage());
+                }
             } else {
                 LOG.INFO("customization '" + conf + "' has no settings.conf...");
             }
