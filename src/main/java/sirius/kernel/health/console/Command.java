@@ -69,8 +69,8 @@ public interface Command extends Named {
      * @param output provides access to the output interface used to generate output
      * @param params provides the parameters entered in the console
      * @throws Exception in case of an error. Throw a {@link sirius.kernel.health.HandledException} to
-     *                             signal, that all logging and handling has already been performed.
-     *                             Any other exception will be logged and reported as system error.
+     *                   signal, that all logging and handling has already been performed.
+     *                   Any other exception will be logged and reported as system error.
      */
     void execute(Output output, String... params) throws Exception;
 

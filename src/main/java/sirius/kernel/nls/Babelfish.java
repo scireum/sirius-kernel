@@ -311,7 +311,7 @@ public class Babelfish {
         });
 
         // Apply translations in correct order
-        customizations.stream().forEach(value -> loadMatchedResource(value));
+        customizations.forEach(value -> loadMatchedResource(value));
     }
 
     private void loadMatchedResource(Matcher value) {

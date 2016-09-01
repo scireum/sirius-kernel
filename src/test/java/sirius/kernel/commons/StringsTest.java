@@ -2,7 +2,7 @@ package sirius.kernel.commons;
 
 import org.junit.Test;
 
-import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
@@ -92,20 +92,10 @@ public class StringsTest {
     }
 
     @Test
-    public void toSaneFilename() {
-        assertEquals(Strings.toSaneFileName("test.pdf").orElse(""), "test.pdf");
-        assertEquals(Strings.toSaneFileName("test").orElse(""), "test");
-        assertEquals(Strings.toSaneFileName(".pdf").orElse(""), ".pdf");
-        assertEquals(Strings.toSaneFileName("test.").orElse(""), "test.");
-        assertEquals(Strings.toSaneFileName("test..").orElse(""), "test_.");
-        assertEquals(Strings.toSaneFileName("..test").orElse(""), "_.test");
-        assertEquals(Strings.toSaneFileName("Test pdf").orElse(""), "Test_pdf");
-        assertEquals(Strings.toSaneFileName("Hallöle").orElse(""), "Halloele");
-        assertEquals(Strings.toSaneFileName("test/datei").orElse(""), "test_datei");
-        assertEquals(Strings.toSaneFileName("test-datei").orElse(""), "test-datei");
-        assertEquals(Strings.toSaneFileName(" test ").orElse(""), "test");
-        assertEquals(Strings.toSaneFileName("test.datei.pdf").orElse(""), "test_datei.pdf");
-        assertEquals(Strings.toSaneFileName("   "), Optional.<String>empty());
-        assertEquals(Strings.toSaneFileName(""), Optional.<String>empty());
+    public void replaceAll() {
+        assertEquals("A&lt;B&amp;C&amp;&amp;D&amp;;&amp;E",
+                     Strings.replaceAll(Pattern.compile("&([a-zA-Z0-9]{0,6};?)"),
+                                        "A&lt;B&C&&D&;&E",
+                                        s -> (s.endsWith(";") && !s.startsWith(";") ? "&" : "&amp;") + s));
     }
 }

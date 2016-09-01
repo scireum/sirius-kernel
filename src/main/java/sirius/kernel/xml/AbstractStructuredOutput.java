@@ -254,8 +254,9 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     @Override
     public void endResult() {
         if (!nesting.isEmpty()) {
-            throw new IllegalArgumentException("Invalid result structure. Cannot close result. Objects are still " +
-                                               "open" + ".");
+            throw new IllegalArgumentException("Invalid result structure. Cannot close result. Objects are still "
+                                               + "open"
+                                               + ".");
         }
     }
 

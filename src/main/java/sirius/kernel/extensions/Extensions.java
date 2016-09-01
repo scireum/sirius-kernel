@@ -123,8 +123,9 @@ public class Extensions {
     @Nullable
     public static Extension getExtension(String type, String id) {
         if (!id.matches("[a-z0-9\\-]+")) {
-            LOG.WARN("Bad extension id detected: '%s' (for type: %s). Names should only consist of lowercase letters," +
-                     " " + "digits or '-'", id, type);
+            LOG.WARN("Bad extension id detected: '%s' (for type: %s). Names should only consist of lowercase letters,"
+                     + " "
+                     + "digits or '-'", id, type);
         }
 
         Extension result = getExtensionMap(type).get(id);

@@ -310,7 +310,7 @@ public class StructuredNode {
             if (nodeHandler != null) {
                 nodeHandler.accept(this);
             }
-            getChildren().stream().forEach(c -> c.visit(nodeHandler, textNodeHandler));
+            getChildren().forEach(c -> c.visit(nodeHandler, textNodeHandler));
         }
     }
 

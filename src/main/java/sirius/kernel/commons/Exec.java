@@ -116,7 +116,7 @@ public class Exec {
     /**
      * Executes the given command and returns a transcript of stderr and stdout.
      *
-     * @param command the command to execute
+     * @param command         the command to execute
      * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
      * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails

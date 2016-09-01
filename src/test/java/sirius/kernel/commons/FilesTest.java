@@ -10,6 +10,8 @@ package sirius.kernel.commons;
 
 import org.junit.Test;
 
+import java.util.Optional;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -60,5 +62,23 @@ public class FilesTest {
         assertNull(Files.getFilenameWithoutExtension("/"));
         assertNull(Files.getFilenameWithoutExtension(""));
         assertNull(Files.getFilenameWithoutExtension(null));
+    }
+
+    @Test
+    public void toSaneFilename() {
+        assertEquals(Files.toSaneFileName("test.pdf").orElse(""), "test.pdf");
+        assertEquals(Files.toSaneFileName("test").orElse(""), "test");
+        assertEquals(Files.toSaneFileName(".pdf").orElse(""), ".pdf");
+        assertEquals(Files.toSaneFileName("test.").orElse(""), "test.");
+        assertEquals(Files.toSaneFileName("test..").orElse(""), "test_.");
+        assertEquals(Files.toSaneFileName("..test").orElse(""), "_.test");
+        assertEquals(Files.toSaneFileName("Test pdf").orElse(""), "Test_pdf");
+        assertEquals(Files.toSaneFileName("Hallöle").orElse(""), "Halloele");
+        assertEquals(Files.toSaneFileName("test/datei").orElse(""), "test_datei");
+        assertEquals(Files.toSaneFileName("test-datei").orElse(""), "test-datei");
+        assertEquals(Files.toSaneFileName(" test ").orElse(""), "test");
+        assertEquals(Files.toSaneFileName("test.datei.pdf").orElse(""), "test_datei.pdf");
+        assertEquals(Files.toSaneFileName("   "), Optional.empty());
+        assertEquals(Files.toSaneFileName(""), Optional.empty());
     }
 }
