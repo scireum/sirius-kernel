@@ -2,8 +2,6 @@ package sirius.kernel.commons;
 
 import org.junit.Test;
 
-import java.util.Optional;
-
 import static org.junit.Assert.*;
 
 public class StringsTest {
@@ -91,21 +89,4 @@ public class StringsTest {
         assertEquals("ABC", Strings.join("", "A", "B", "C"));
     }
 
-    @Test
-    public void toSaneFilename() {
-        assertEquals(Strings.toSaneFileName("test.pdf").orElse(""), "test.pdf");
-        assertEquals(Strings.toSaneFileName("test").orElse(""), "test");
-        assertEquals(Strings.toSaneFileName(".pdf").orElse(""), ".pdf");
-        assertEquals(Strings.toSaneFileName("test.").orElse(""), "test.");
-        assertEquals(Strings.toSaneFileName("test..").orElse(""), "test_.");
-        assertEquals(Strings.toSaneFileName("..test").orElse(""), "_.test");
-        assertEquals(Strings.toSaneFileName("Test pdf").orElse(""), "Test_pdf");
-        assertEquals(Strings.toSaneFileName("Hallöle").orElse(""), "Halloele");
-        assertEquals(Strings.toSaneFileName("test/datei").orElse(""), "test_datei");
-        assertEquals(Strings.toSaneFileName("test-datei").orElse(""), "test-datei");
-        assertEquals(Strings.toSaneFileName(" test ").orElse(""), "test");
-        assertEquals(Strings.toSaneFileName("test.datei.pdf").orElse(""), "test_datei.pdf");
-        assertEquals(Strings.toSaneFileName("   "), Optional.<String>empty());
-        assertEquals(Strings.toSaneFileName(""), Optional.<String>empty());
-    }
 }

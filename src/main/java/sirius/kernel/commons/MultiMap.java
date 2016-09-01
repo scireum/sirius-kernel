@@ -277,7 +277,7 @@ public class MultiMap<K, V> {
     public static <K, V> Collector<V, MultiMap<K, V>, MultiMap<K, V>> groupingByMultiple(Supplier<MultiMap<K, V>> supplier,
                                                                                          Function<V, Collection<K>> classifier) {
         return Collector.of(supplier,
-                            (map, value) -> classifier.apply(value).stream().forEach(key -> map.put(key, value)),
+                            (map, value) -> classifier.apply(value).forEach(key -> map.put(key, value)),
                             (a, b) -> a.merge(b),
                             Function.identity(),
                             Collector.Characteristics.IDENTITY_FINISH);
