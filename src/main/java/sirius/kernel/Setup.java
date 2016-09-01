@@ -317,12 +317,7 @@ public class Setup {
 
         Predicate<File> isOldEnough = f -> System.currentTimeMillis() - f.lastModified() > retentionInMillis;
 
-        Arrays.asList(children)
-              .stream()
-              .filter(File::isFile)
-              .filter(validLogFileName)
-              .filter(isOldEnough)
-              .forEach(File::delete);
+        Arrays.stream(children).filter(File::isFile).filter(validLogFileName).filter(isOldEnough).forEach(File::delete);
     }
 
     /**
@@ -344,7 +339,7 @@ public class Setup {
             return 0L;
         }
 
-        return Arrays.asList(children).stream().filter(File::isFile).mapToLong(f -> f.length()).sum();
+        return Arrays.stream(children).filter(File::isFile).mapToLong(f -> f.length()).sum();
     }
 
     /**
@@ -423,7 +418,11 @@ public class Setup {
         Config result = ConfigFactory.empty();
         if (Sirius.class.getResource("/application.conf") != null) {
             Sirius.LOG.INFO("using application.conf from classpath...");
-            result = ConfigFactory.load(loader, "application.conf").withFallback(result);
+            try {
+                result = ConfigFactory.load(loader, "application.conf").withFallback(result);
+            } catch (Throwable e) {
+                Sirius.LOG.WARN("Cannot load application.conf: %s", e.getMessage());
+            }
         } else {
             Sirius.LOG.INFO("application.conf not present in classpath");
         }
@@ -443,7 +442,12 @@ public class Setup {
     public Config applyTestConfig(@Nonnull Config config) {
         if (Sirius.class.getResource("/test.conf") != null) {
             Sirius.LOG.INFO("using test.conf from classpath...");
-            return ConfigFactory.load(loader, "test.conf").withFallback(config);
+            try {
+                return ConfigFactory.load(loader, "test.conf").withFallback(config);
+            } catch (Throwable e) {
+                Sirius.LOG.WARN("Cannot load test.conf: %s", e.getMessage());
+                return config;
+            }
         } else {
             Sirius.LOG.INFO("test.conf not present in classpath");
             return config;
@@ -482,7 +486,12 @@ public class Setup {
     public Config loadInstanceConfig() {
         if (new File("instance.conf").exists()) {
             Sirius.LOG.INFO("using instance.conf from filesystem...");
-            return ConfigFactory.parseFile(new File("instance.conf"));
+            try {
+                return ConfigFactory.parseFile(new File("instance.conf"));
+            } catch (Throwable e) {
+                Sirius.LOG.WARN("Cannot load instance.conf: %s", e.getMessage());
+                return null;
+            }
         } else {
             Sirius.LOG.INFO("instance.conf not present work in directory");
             return null;
