@@ -16,7 +16,7 @@ class AmountSpec extends BaseSpecification {
         Amount.MINUS_ONE.isNonZero()
         Amount.MINUS_ONE.isNegative()
         Amount.TEN.isPositive()
-        Amount.TEN.compareTo(Amount.ONE) > 0
+        Amount.TEN > Amount.ONE
     }
 
     def "Amount.of converts various types correctly"() {

@@ -21,22 +21,22 @@ class FireEventSpec extends BaseSpecification {
         given:
         TestEventHandler.testString = "String-call"
         and:
-        "String-call".equals(TestEventHandler.testString)
+        "String-call" == TestEventHandler.testString
         when:
         eventBus.fireEvent("String-call", "String-call_completed")
         then: "Event should be handled"
-        "String-call_completed".equals(TestEventHandler.testString)
+        "String-call_completed" == TestEventHandler.testString
     }
 
     def "Fire non-matching event"() {
         given:
         TestEventHandler.testString = "String-call"
         and:
-        "String-call".equals(TestEventHandler.testString)
+        "String-call" == TestEventHandler.testString
         when:
         eventBus.fireEvent("non-String-call", "non-String-call_completed")
         then: "Event should not be handled"
-        "String-call".equals(TestEventHandler.testString)
+        "String-call" == TestEventHandler.testString
     }
 
 }

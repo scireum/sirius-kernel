@@ -364,8 +364,8 @@ public class Value {
      * if it is a string which can be converted to a long or double
      */
     public boolean isNumeric() {
-        return data != null && (data instanceof Number ||
-                                data instanceof Amount || NUMBER.matcher(asString("")).matches());
+        return data != null && (data instanceof Number || data instanceof Amount || NUMBER.matcher(asString(""))
+                                                                                          .matches());
     }
 
     /**

@@ -29,6 +29,7 @@ import java.util.stream.Stream;
  * <p>
  * Provides an implementation which simulates a {@code Map&lt;K, Collection&lt;V&gt;&gt;} by providing
  * specific <tt>put</tt>, <tt>get</tt> and <tt>remove</tt> methods.
+ *
  * @param <K> the key type used by the map
  * @param <V> the value type used by the map
  */

@@ -240,11 +240,15 @@ public class Log {
             frozen.set(Boolean.TRUE);
             if (taps != null) {
                 for (LogTap tap : taps) {
-                    tap.handleLogMessage(new LogMessage(NLS.toUserString(msg),
-                                                        level,
-                                                        this,
-                                                        wouldLog,
-                                                        Thread.currentThread().getName()));
+                    try {
+                        tap.handleLogMessage(new LogMessage(NLS.toUserString(msg),
+                                                            level,
+                                                            this,
+                                                            wouldLog,
+                                                            Thread.currentThread().getName()));
+                    } catch (Throwable e) {
+                        // Ignored - if we can't log s.th. let's just give up...
+                    }
                 }
             }
         } finally {

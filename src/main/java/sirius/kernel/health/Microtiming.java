@@ -120,8 +120,7 @@ public class Microtiming {
      * <p>
      * Adds the average to the "live set" which will be output on the next call to {@link #getTimings()}
      * <p>
-     * A convenient way to call this method is to use {@link sirius.kernel.commons.Watch#submitMicroTiming(String,
-     * String)}
+     * A convenient way to call this method is to use {@link sirius.kernel.commons.Watch#submitMicroTiming(String, String)}
      *
      * @param category        the category of the recorded timing. This permits grouping a microtimings of the same
      *                        kind.

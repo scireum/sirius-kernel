@@ -2,6 +2,8 @@ package sirius.kernel.commons;
 
 import org.junit.Test;
 
+import java.util.regex.Pattern;
+
 import static org.junit.Assert.*;
 
 public class StringsTest {
@@ -89,4 +91,11 @@ public class StringsTest {
         assertEquals("ABC", Strings.join("", "A", "B", "C"));
     }
 
+    @Test
+    public void replaceAll() {
+        assertEquals("A&lt;B&amp;C&amp;&amp;D&amp;;&amp;E",
+                     Strings.replaceAll(Pattern.compile("&([a-zA-Z0-9]{0,6};?)"),
+                                        "A&lt;B&C&&D&;&E",
+                                        s -> (s.endsWith(";") && !s.startsWith(";") ? "&" : "&amp;") + s));
+    }
 }
