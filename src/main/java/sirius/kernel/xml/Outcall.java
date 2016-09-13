@@ -16,6 +16,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -60,7 +61,9 @@ public class Outcall {
      * @param url    the url to call
      * @param params the parameters to POST.
      * @throws IOException in case of any IO error
+     * @deprecated use {@code new Outcall(url).postData(params, Charsets.UTF_8)} instead
      */
+    @Deprecated
     public Outcall(URL url, Context params) throws IOException {
         this(url, params, Charsets.UTF_8);
     }
@@ -72,7 +75,9 @@ public class Outcall {
      * @param params  the parameters to POST.
      * @param charset determines the charset to use when encoding the uploaded data
      * @throws IOException in case of any IO error
+     * @deprecated use {@code new Outcall(url).postData(params, charset)} instead
      */
+    @Deprecated
     public Outcall(URL url, Context params, Charset charset) throws IOException {
         this.url = url;
         this.charset = charset;
@@ -81,6 +86,18 @@ public class Outcall {
         connection.setDoInput(true);
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=" + charset.name());
+        postData(params, charset);
+    }
+
+    /**
+     * Sents the given context as POST to the designated server.
+     *
+     * @param params the data to POST
+     * @param charset the charset to use when encoding the post data
+     * @return the outcall itself for fluent method calls
+     * @throws IOException in case of any IO error
+     */
+    public Outcall postData(Context params, Charset charset) throws IOException {
         OutputStreamWriter writer = new OutputStreamWriter(getOutput(), charset.name());
         StringBuilder sb = new StringBuilder();
         boolean first = true;
@@ -95,6 +112,8 @@ public class Outcall {
         }
         writer.write(sb.toString());
         writer.flush();
+
+        return this;
     }
 
     /**
@@ -190,6 +209,17 @@ public class Outcall {
         reader.close();
 
         return writer.toString();
+    }
+
+    /**
+     * Returns the response header with the given name.
+     *
+     * @param name the name of the header to fetch
+     * @return the value of the given header in the response or <tt>null</tt> if no header with this name was submitted.
+     */
+    @Nullable
+    public String getHeaderField(String name) {
+        return connection.getHeaderField(name);
     }
 
     /**

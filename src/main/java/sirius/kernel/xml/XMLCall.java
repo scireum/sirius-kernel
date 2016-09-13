@@ -49,9 +49,20 @@ public class XMLCall {
      *
      * @param name  name of the field
      * @param value value of the field
+     * @return returns the XML call itself for fluent method calls
      */
-    public void addHeader(String name, String value) {
+    public XMLCall addHeader(String name, String value) {
         outcall.setRequestProperty(name, value);
+        return this;
+    }
+
+    /**
+     * Returns the underlying <tt>Outcall</tt>.
+     *
+     * @return the underlying outcall
+     */
+    public Outcall getOutcall() {
+        return outcall;
     }
 
     /**
