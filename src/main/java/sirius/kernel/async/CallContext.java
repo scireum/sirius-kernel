@@ -169,7 +169,7 @@ public class CallContext {
         CallContext newCtx = initialize(mdc.get(MDC_FLOW));
         newCtx.watch = watch;
         newCtx.mdc.put(MDC_PARENT, mdc.get(TaskContext.MDC_SYSTEM));
-        newCtx.subContext.putAll(subContext);
+        subContext.entrySet().forEach(e -> newCtx.subContext.put(e.getKey(), e.getValue().fork()));
         newCtx.lang = lang;
     }
 

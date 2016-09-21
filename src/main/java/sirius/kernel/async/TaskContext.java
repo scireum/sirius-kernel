@@ -300,6 +300,14 @@ public class TaskContext implements SubContext {
     }
 
     @Override
+    public SubContext fork() {
+        TaskContext child = new TaskContext();
+        child.adapter = adapter;
+
+        return child;
+    }
+
+    @Override
     public void detach() {
     }
 }
