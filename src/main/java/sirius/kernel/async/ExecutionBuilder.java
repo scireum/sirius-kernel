@@ -63,7 +63,7 @@ public class ExecutionBuilder {
         /**
          * The {@code CallContext} to use when {@code fork} is <tt>true</tt>.
          */
-        CallContext parentContext;
+        CallContext ctx;
 
         /**
          * Used to communicate the completion / abort of the task
@@ -102,7 +102,7 @@ public class ExecutionBuilder {
          */
         void prepare() {
             if (fork) {
-                parentContext = CallContext.getCurrent();
+                ctx = CallContext.getCurrent().fork();
             }
             if (runnable == null) {
                 throw new IllegalArgumentException("Please provide a runnable for me to execute!");
@@ -114,10 +114,10 @@ public class ExecutionBuilder {
             try {
                 Watch w = Watch.start();
                 try {
-                    if (parentContext == null) {
+                    if (ctx == null) {
                         CallContext.initialize();
                     } else {
-                        parentContext.forkAndInstall();
+                        CallContext.setCurrent(ctx);
                     }
                     TaskContext.get().setSystem(SYSTEM_ASYNC).setSubSystem(category).setJob(String.valueOf(jobNumber));
                     runnable.run();
