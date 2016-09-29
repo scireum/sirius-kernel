@@ -129,11 +129,14 @@ public class CallContext {
     /*
      * Initializes a new context, either with a new flow-id or with the given one.
      */
-    private static CallContext initialize(String externalFlowId) {
+    private static CallContext initialize(boolean install, String externalFlowId) {
         CallContext ctx = new CallContext();
         ctx.addToMDC(MDC_FLOW, externalFlowId);
         interactionCounter.inc();
-        setCurrent(ctx);
+        if (install) {
+            setCurrent(ctx);
+        }
+
         return ctx;
     }
 
@@ -157,20 +160,21 @@ public class CallContext {
      * @return the newly created CallContext, which is already attached to the current thread.
      */
     public static CallContext initialize() {
-        return initialize(getNodeName() + "/" + interactionCounter.getCount());
+        return initialize(true, getNodeName() + "/" + interactionCounter.getCount());
     }
 
     /**
-     * Forks and creates a sub context which is then installed.
+     * Forks and creates a sub context.
      * <p>
-     * All instantiated sub contexts are copied, the MDC is re-initialized.
+     * All instantiated sub contexts are forked, the MDC is re-initialized.
      */
-    public void forkAndInstall() {
-        CallContext newCtx = initialize(mdc.get(MDC_FLOW));
+    public CallContext fork() {
+        CallContext newCtx = initialize(false, mdc.get(MDC_FLOW));
         newCtx.watch = watch;
         newCtx.mdc.put(MDC_PARENT, mdc.get(TaskContext.MDC_SYSTEM));
         subContext.entrySet().forEach(e -> newCtx.subContext.put(e.getKey(), e.getValue().fork()));
         newCtx.lang = lang;
+        return newCtx;
     }
 
     /**
