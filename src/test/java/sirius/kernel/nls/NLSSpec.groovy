@@ -10,6 +10,7 @@ package sirius.kernel.nls
 
 import sirius.kernel.async.CallContext
 import sirius.kernel.BaseSpecification
+import sirius.kernel.commons.Amount
 
 import java.time.Instant
 import java.time.LocalDate
@@ -162,5 +163,12 @@ class NLSSpec extends BaseSpecification {
         then:
         NLS.parseUserString(LocalTime.class, input).getHour() == 9;
         NLS.parseUserString(LocalTime.class, inputWithSeconds).getHour() == 9;
+    }
+
+    def "parseUserString for an Amount works"() {
+        when:
+        def input = "34,54";
+        then:
+        NLS.parseUserString(Amount.class, input).toString() == "34,54";
     }
 }
