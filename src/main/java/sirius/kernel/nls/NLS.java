@@ -14,6 +14,7 @@ import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.AdvancedDateParser;
+import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -379,9 +380,7 @@ public class NLS {
      */
     public enum CommonKeys {
 
-        YES, NO, OK, CANCEL, NAME, EDIT, DELETE, SEARCH, SEARCHKEY, REFRESH, CLOSE, DESCRIPTION, SAVE, NEW, BACK,
-        FILTER, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, JANUARY, FEBRUARY, MARCH, APRIL, MAY,
-        JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER;
+        YES, NO, OK, CANCEL, NAME, EDIT, DELETE, SEARCH, SEARCHKEY, REFRESH, CLOSE, DESCRIPTION, SAVE, NEW, BACK, FILTER, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER;
 
         /**
          * Returns the fully qualified key to retrieve the translation
@@ -971,6 +970,9 @@ public class NLS {
         }
         if (Double.class.equals(clazz) || double.class.equals(clazz)) {
             return (V) parseDecimalNumberFromUser(value, lang);
+        }
+        if (Amount.class.equals(clazz)) {
+            return (V) Amount.of(parseDecimalNumberFromUser(value, lang));
         }
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
             if (CommonKeys.YES.translated().equalsIgnoreCase(value)) {
