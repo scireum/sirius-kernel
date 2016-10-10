@@ -167,6 +167,9 @@ public class CallContext {
      * Forks and creates a sub context.
      * <p>
      * All instantiated sub contexts are forked, the MDC is re-initialized.
+     *
+     * @return a copy of the current call context including a fork of all available sub contexts.
+     * @see SubContext#fork()
      */
     public CallContext fork() {
         CallContext newCtx = initialize(false, mdc.get(MDC_FLOW));
