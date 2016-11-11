@@ -22,7 +22,7 @@ public interface Transformable {
      * Determines if this can be transformed to the given <tt>type</tt>.
      *
      * @param type the target type to check for
-     * @return <tt>true</tt> if this implements the type already or if can be transformed into the given
+     * @return <tt>true</tt> if this implements the type already or it can be transformed into the given
      * <tt>type</tt>
      */
     boolean is(@Nonnull Class<?> type);

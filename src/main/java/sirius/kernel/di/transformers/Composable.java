@@ -20,7 +20,7 @@ import java.util.Optional;
  * Provides a basic implementation fo {@link Transformable} which supports a composition pattern.
  * <p>
  * Next to the <tt>Adapter Pattern</tt> supported via {@link Transformers}, this implementation permits to
- * add components via the <tt>attach</tt> methods which can later be queries via <tt>tryAs, as</tt> and <tt>is</tt>.
+ * add components via the <tt>attach</tt> methods which can later be queried via <tt>tryAs, as</tt> and <tt>is</tt>.
  */
 public class Composable implements Transformable {
 
@@ -106,7 +106,7 @@ public class Composable implements Transformable {
     }
 
     /**
-     * Adds tghe given component as instace for its class.
+     * Adds the given component as instance for its class.
      * <p>
      * This is a boilerplate method for {@code attach(component.getClass(), component)}.
      *

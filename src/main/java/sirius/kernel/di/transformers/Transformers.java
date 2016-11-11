@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Helper class to utilize available {@link Transformer} instances to perform conversions.
  * <p>
- * This class is automatically utilized by {@link Composable} but kept public in case custom implementation need to
+ * This class is automatically utilized by {@link Composable} but kept public in case custom implementations need to
  * access this functionality.
  */
 @Register(classes = Transformers.class)
