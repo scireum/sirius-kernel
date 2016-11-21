@@ -355,7 +355,7 @@ public class Value {
         return value.substring(0, maxNumberOfCharacters);
     }
 
-    private static final Pattern NUMBER = Pattern.compile("\\d+(\\.\\d+)?");
+    private static final Pattern NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     /**
      * Checks if the current value is numeric (integer or double).
