@@ -383,7 +383,12 @@ public class Extensions {
             if (o == null) {
                 return -1;
             }
-            return priority - o.priority;
+            int result = priority - o.priority;
+            if (result == 0 && id != null && o.id != null) {
+                return id.compareTo(o.id);
+            } else {
+                return result;
+            }
         }
     }
 }
