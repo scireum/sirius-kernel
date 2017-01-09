@@ -99,11 +99,7 @@ public class MultiMap<K, V> {
      * @param value the value which is added to the list of values for this key
      */
     public void put(@Nonnull K key, @Nullable V value) {
-        Collection<V> list = base.get(key);
-        if (list == null) {
-            list = createValueList();
-            base.put(key, list);
-        }
+        Collection<V> list = base.computeIfAbsent(key, k -> createValueList());
         list.add(value);
     }
 

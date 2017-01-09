@@ -21,7 +21,7 @@ class BaseSpecification extends Specification {
      */
 
     def setupSpec() {
-        TestHelper.setUp(getClass());
+        TestHelper.setUp(getClass())
     }
 
     /*
@@ -37,7 +37,7 @@ class BaseSpecification extends Specification {
      */
 
     def cleanupSpec() {
-        TestHelper.tearDown(getClass());
+        TestHelper.tearDown(getClass())
     }
 
 }

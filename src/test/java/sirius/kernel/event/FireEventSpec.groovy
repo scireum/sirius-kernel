@@ -15,7 +15,7 @@ import sirius.kernel.di.std.Part
 class FireEventSpec extends BaseSpecification {
 
     @Part
-    private static EventBus eventBus;
+    private static EventBus eventBus
 
     def "Fire matching event"() {
         given:

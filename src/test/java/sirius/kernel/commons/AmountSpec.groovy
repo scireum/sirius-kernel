@@ -21,7 +21,7 @@ class AmountSpec extends BaseSpecification {
 
     def "Amount.of converts various types correctly"() {
         when:
-        CallContext.getCurrent().setLang("en");
+        CallContext.getCurrent().setLang("en")
         then:
         Amount.ONE == x
 
@@ -61,7 +61,7 @@ class AmountSpec extends BaseSpecification {
         Amount.NOTHING.computeIfNull(new Supplier<Amount>(){
             @Override
             Amount get() {
-                return Amount.TEN;
+                return Amount.TEN
             }
         }) == Amount.TEN
     }
@@ -81,7 +81,7 @@ class AmountSpec extends BaseSpecification {
 
     def "formatting works as expected"() {
         when:
-        CallContext.getCurrent().setLang("en");
+        CallContext.getCurrent().setLang("en")
         then:
         Amount.ofMachineString("0.1").toPercent().toPercentString() == "10 %"
         Amount.of(1.23).toRoundedString() == "1"

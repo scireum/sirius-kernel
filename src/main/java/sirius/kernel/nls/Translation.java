@@ -176,11 +176,7 @@ public class Translation {
     protected void writeTo(Map<String, SortedProperties> propMap) {
         for (Map.Entry<String, String> entry : translationTable.entrySet()) {
             if (Strings.isFilled(entry.getValue())) {
-                SortedProperties props = propMap.get(entry.getKey());
-                if (props == null) {
-                    props = new SortedProperties();
-                    propMap.put(entry.getKey(), props);
-                }
+                SortedProperties props = propMap.computeIfAbsent(entry.getKey(), k -> new SortedProperties());
                 props.setProperty(key, entry.getValue());
             }
         }
