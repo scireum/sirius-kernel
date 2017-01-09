@@ -16,43 +16,43 @@ class CSVWriterSpec extends BaseSpecification {
 
     def "simple data is output as CSV"() {
         given:
-        StringWriter output = new StringWriter();
+        StringWriter output = new StringWriter()
         and:
-        CSVWriter writer = new CSVWriter(output);
+        CSVWriter writer = new CSVWriter(output)
         when:
-        writer.writeArray("a", "b", "c");
-        writer.writeArray(1, 2, 3);
-        writer.writeList(Arrays.asList("d", "e", "f"));
+        writer.writeArray("a", "b", "c")
+        writer.writeArray(1, 2, 3)
+        writer.writeList(Arrays.asList("d", "e", "f"))
         and:
-        output.close();
+        output.close()
         then:
         output.toString() == "a;b;c\n1;2;3\nd;e;f"
     }
 
     def "quotation works for separator and new line"() {
         given:
-        StringWriter output = new StringWriter();
+        StringWriter output = new StringWriter()
         and:
-        CSVWriter writer = new CSVWriter(output);
+        CSVWriter writer = new CSVWriter(output)
         when:
-        writer.writeArray("a;", "b", "c");
+        writer.writeArray("a;", "b", "c")
         and:
-        writer.writeArray("1", "2\n2", "3");
+        writer.writeArray("1", "2\n2", "3")
         and:
-        output.close();
+        output.close()
         then:
         output.toString() == '"a;";b;c\n1;"2\n2";3'
     }
 
     def "escaping works for escape character and quotation"() {
         given:
-        StringWriter output = new StringWriter();
+        StringWriter output = new StringWriter()
         and:
-        CSVWriter writer = new CSVWriter(output);
+        CSVWriter writer = new CSVWriter(output)
         when:
-        writer.writeArray("a;b\"", "\\", "c");
+        writer.writeArray("a;b\"", "\\", "c")
         and:
-        output.close();
+        output.close()
         then:
         output.toString() == '"a;b\\"";\\\\;c'
     }

@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -83,13 +82,7 @@ public class XMLReader extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String name) throws SAXException {
         // Delegate to active handlers and deletes them if they are finished...
-        Iterator<SAX2DOMHandler> iter = activeHandlers.iterator();
-        while (iter.hasNext()) {
-            SAX2DOMHandler handler = iter.next();
-            if (handler.endElement(uri, name)) {
-                iter.remove();
-            }
-        }
+        activeHandlers.removeIf(handler -> handler.endElement(uri, name));
     }
 
     @Override

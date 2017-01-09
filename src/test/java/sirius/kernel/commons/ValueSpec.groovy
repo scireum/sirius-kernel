@@ -6,7 +6,7 @@ class ValueSpec extends Specification {
 
     def "Test isFilled"() {
         expect:
-        Value.of(input).isFilled() == output;
+        Value.of(input).isFilled() == output
         where:
         input  | output
         1      | true

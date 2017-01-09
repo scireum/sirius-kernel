@@ -15,7 +15,6 @@ import sirius.kernel.di.MutableGlobalContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,7 +39,7 @@ public class PriorityPartsAnnotationProcessor implements FieldAnnotationProcesso
                         "PriorityParts annotations may only be used with classes implementing 'Priorized'");
             }
             List<Priorized> result = Lists.newArrayList(ctx.getParts(parts.value()));
-            Collections.sort(result, (o1, o2) -> {
+            result.sort((o1, o2) -> {
                 if (o1 == o2) {
                     return 0;
                 }

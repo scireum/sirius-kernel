@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -304,7 +303,7 @@ public class Babelfish {
         });
 
         // Sort configurations according to system config
-        Collections.sort(customizations, (a, b) -> {
+        customizations.sort((a, b) -> {
             String confA = Sirius.getCustomizationName(a.group());
             String confB = Sirius.getCustomizationName(b.group());
             return Sirius.compareCustomizations(confA, confB);

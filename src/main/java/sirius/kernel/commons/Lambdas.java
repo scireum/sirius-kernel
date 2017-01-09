@@ -10,7 +10,6 @@ package sirius.kernel.commons;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -70,14 +69,11 @@ public class Lambdas {
      * @param <T>        the type of the elements within the collection
      * @param <C>        the type of the collection which is processed
      * @return the filtered (modified) collection
+     * @deprecated simply use {@link Collection#removeIf(Predicate)}.
      */
+    @Deprecated
     public static <T, C extends Collection<T>> C remove(C collection, Predicate<T> filter) {
-        Iterator<T> iter = collection.iterator();
-        while (iter.hasNext()) {
-            if (filter.test(iter.next())) {
-                iter.remove();
-            }
-        }
+        collection.removeIf(filter);
         return collection;
     }
 

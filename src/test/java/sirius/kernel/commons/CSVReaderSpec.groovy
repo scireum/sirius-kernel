@@ -18,7 +18,7 @@ class CSVReaderSpec extends BaseSpecification {
         given:
         def data = "a;b;c\n1;2;3\r\n4;5;6"
         when:
-        List<Values> output = [];
+        List<Values> output = []
         and:
         new CSVReader(new StringReader(data)).execute(({ row -> output.add(row) } as Consumer<Values>))
         then:
@@ -46,9 +46,9 @@ class CSVReaderSpec extends BaseSpecification {
 
     def "empty cells become an empty string"() {
         given:
-        def data = "a;;c";
+        def data = "a;;c"
         when:
-        List<Values> output = [];
+        List<Values> output = []
         and:
         new CSVReader(new StringReader(data)).execute(({ row -> output.add(row) } as Consumer<Values>))
         then:
@@ -63,9 +63,9 @@ class CSVReaderSpec extends BaseSpecification {
 
     def "quotation is detected and handled correctly"() {
         given:
-        def data = '"a";"b;";1/4";d';
+        def data = '"a";"b;";1/4";d'
         when:
-        List<Values> output = [];
+        List<Values> output = []
         and:
         new CSVReader(new StringReader(data)).execute(({ row -> output.add(row) } as Consumer<Values>))
         then:
@@ -82,9 +82,9 @@ class CSVReaderSpec extends BaseSpecification {
 
     def "escaping works"() {
         given:
-        def data = '\\"a;\\;;\\\\;x';
+        def data = '\\"a;\\;;\\\\;x'
         when:
-        List<Values> output = [];
+        List<Values> output = []
         and:
         new CSVReader(new StringReader(data)).execute(({ row -> output.add(row) } as Consumer<Values>))
         then:
@@ -101,9 +101,9 @@ class CSVReaderSpec extends BaseSpecification {
 
     def "empty cells work with and without quotation"() {
         given:
-        def data = 'a;;"";d';
+        def data = 'a;;"";d'
         when:
-        List<Values> output = [];
+        List<Values> output = []
         and:
         new CSVReader(new StringReader(data)).execute(({ row -> output.add(row) } as Consumer<Values>))
         then:
@@ -120,9 +120,9 @@ class CSVReaderSpec extends BaseSpecification {
 
     def "multiline values work"() {
         given:
-        def data = '"a\nb";"c\r\nd";e\nf';
+        def data = '"a\nb";"c\r\nd";e\nf'
         when:
-        List<Values> output = [];
+        List<Values> output = []
         and:
         new CSVReader(new StringReader(data)).execute(({ row -> output.add(row) } as Consumer<Values>))
         then:
@@ -139,9 +139,9 @@ class CSVReaderSpec extends BaseSpecification {
 
     def "ignoring whitespaces works"() {
         given:
-        def data = '  a  ; "b" ;\t"c"\t; " \td\t ";\te\t;f ';
+        def data = '  a  ; "b" ;\t"c"\t; " \td\t ";\te\t;f '
         when:
-        List<Values> output = [];
+        List<Values> output = []
         and:
         new CSVReader(new StringReader(data)).execute(({ row -> output.add(row) } as Consumer<Values>))
         then:
@@ -162,9 +162,9 @@ class CSVReaderSpec extends BaseSpecification {
 
     def "modified settings work"() {
         given:
-        def data = '!a! : !b! :&:c';
+        def data = '!a! : !b! :&:c'
         when:
-        List<Values> output = [];
+        List<Values> output = []
         and:
         new CSVReader(new StringReader(data))
                 .withSeparator(':' as char)
@@ -184,9 +184,9 @@ class CSVReaderSpec extends BaseSpecification {
 
     def "quoted strings treat double quotes as escaped quote"() {
         given:
-        def data = '"test""X""";"a";b""';
+        def data = '"test""X""";"a";b""'
         when:
-        List<Values> output = [];
+        List<Values> output = []
         and:
         new CSVReader(new StringReader(data))
                 .execute(({ row -> output.add(row) } as Consumer<Values>))
