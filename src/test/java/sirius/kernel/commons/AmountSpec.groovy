@@ -26,13 +26,13 @@ class AmountSpec extends BaseSpecification {
         Amount.ONE == x
 
         where:
-        x << [ Amount.of(1.0D),
-               Amount.of(1L),
-               Amount.of(Integer.valueOf(1)),
-               Amount.of(Long.valueOf(1L)),
-               Amount.of(Double.valueOf(1D)),
-               Amount.ofMachineString("1.0"),
-               Amount.ofUserString("1.0") ]
+        x << [Amount.of(1.0D),
+              Amount.of(1L),
+              Amount.of(Integer.valueOf(1)),
+              Amount.of(Long.valueOf(1L)),
+              Amount.of(Double.valueOf(1D)),
+              Amount.ofMachineString("1.0"),
+              Amount.ofUserString("1.0")]
     }
 
     def "Computations with NOTHING result in expected values"() {
@@ -58,7 +58,7 @@ class AmountSpec extends BaseSpecification {
         expect:
         Amount.TEN == Amount.NOTHING.fill(Amount.TEN)
         Amount.TEN == Amount.TEN.fill(Amount.ONE)
-        Amount.NOTHING.computeIfNull(new Supplier<Amount>(){
+        Amount.NOTHING.computeIfNull(new Supplier<Amount>() {
             @Override
             Amount get() {
                 return Amount.TEN
@@ -90,6 +90,27 @@ class AmountSpec extends BaseSpecification {
         Amount.of(1.23).toSmartRoundedString(NumberFormat.TWO_DECIMAL_PLACES).asString() == "1.23"
         Amount.of(0.012).toScientificString(0, "") == "12 m"
         Amount.of(1200).toScientificString(1, "") == "1.2 K"
+    }
+
+    def "min selects the lower value and handles null and NOTHING gracefully"() {
+        expect:
+        Amount.ONE.min(Amount.TEN) == Amount.ONE
+        Amount.TEN.min(Amount.ONE) == Amount.ONE
+        Amount.NOTHING.min(Amount.ONE) == Amount.ONE
+        Amount.ONE.min(Amount.NOTHING) == Amount.ONE
+        Amount.NOTHING.min(Amount.NOTHING) == Amount.NOTHING
+        Amount.TEN.min(null) == Amount.TEN
+    }
+
+    def "max selects the higher value and handles null and NOTHING gracefully"() {
+        expect:
+        Amount.ONE.max(Amount.TEN) == Amount.TEN
+        Amount.TEN.max(Amount.ONE) == Amount.TEN
+        Amount.NOTHING.max(Amount.ONE) == Amount.ONE
+        Amount.ONE.max(Amount.NOTHING) == Amount.ONE
+        Amount.NOTHING.max(Amount.NOTHING) == Amount.NOTHING
+        Amount.TEN.max(null) == Amount.TEN
+
     }
 
 }
