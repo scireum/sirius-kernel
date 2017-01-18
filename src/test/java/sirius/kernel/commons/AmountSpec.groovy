@@ -100,6 +100,7 @@ class AmountSpec extends BaseSpecification {
         Amount.ONE.min(Amount.NOTHING) == Amount.ONE
         Amount.NOTHING.min(Amount.NOTHING) == Amount.NOTHING
         Amount.TEN.min(null) == Amount.TEN
+        Amount.ZERO.min(Amount.NOTHING) == Amount.ZERO
     }
 
     def "max selects the higher value and handles null and NOTHING gracefully"() {
@@ -110,7 +111,7 @@ class AmountSpec extends BaseSpecification {
         Amount.ONE.max(Amount.NOTHING) == Amount.ONE
         Amount.NOTHING.max(Amount.NOTHING) == Amount.NOTHING
         Amount.TEN.max(null) == Amount.TEN
-
+        Amount.ZERO.max(Amount.NOTHING) == Amount.ZERO
     }
 
 }

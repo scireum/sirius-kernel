@@ -515,7 +515,7 @@ public class Amount implements Comparable<Amount> {
      * If either of the amounts is empty, the filled one is returned. If both are empty, an empty amount is returned.
      *
      * @param other the amount to compare against
-     * @return the amount with the lower value or an empty amount, of both amounts are empty
+     * @return the amount with the lower value or an empty amount, if both amounts are empty
      */
     @Nonnull
     public Amount min(@Nullable Amount other) {
@@ -538,7 +538,7 @@ public class Amount implements Comparable<Amount> {
      * If either of the amounts is empty, the filled one is returned. If both are empty, an empty amount is returned.
      *
      * @param other the amount to compare against
-     * @return the amount with the higher value or an empty amount, of both amounts are empty
+     * @return the amount with the higher value or an empty amount, if both amounts are empty
      */
     @Nonnull
     public Amount max(@Nullable Amount other) {
