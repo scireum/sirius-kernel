@@ -509,6 +509,52 @@ public class Amount implements Comparable<Amount> {
         return amount != null ? amount.hashCode() : 0;
     }
 
+    /**
+     * Compares this amount against the given amount and returns the one with the lower value.
+     * <p>
+     * If either of the amounts is empty, the filled one is returned. If both are empty, an empty amount is returned.
+     *
+     * @param other the amount to compare against
+     * @return the amount with the lower value or an empty amount, if both amounts are empty
+     */
+    @Nonnull
+    public Amount min(@Nullable Amount other) {
+        if (other == this || other == null) {
+            return this;
+        }
+        if (isEmpty()) {
+            return other;
+        }
+        if (other.isEmpty()) {
+            return this;
+        }
+
+        return this.amount.compareTo(other.amount) < 0 ? this : other;
+    }
+
+    /**
+     * Compares this amount against the given amount and returns the one with the higher value.
+     * <p>
+     * If either of the amounts is empty, the filled one is returned. If both are empty, an empty amount is returned.
+     *
+     * @param other the amount to compare against
+     * @return the amount with the higher value or an empty amount, if both amounts are empty
+     */
+    @Nonnull
+    public Amount max(@Nullable Amount other) {
+        if (other == this || other == null) {
+            return this;
+        }
+        if (isEmpty()) {
+            return other;
+        }
+        if (other.isEmpty()) {
+            return this;
+        }
+
+        return this.amount.compareTo(other.amount) > 0 ? this : other;
+    }
+
     @Override
     public String toString() {
         return toSmartRoundedString(NumberFormat.TWO_DECIMAL_PLACES).toString();
