@@ -6,10 +6,10 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>3.5.1</version>
+        <version>3.7.1</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
-    <version>3.4</version>
+    <version>3.5</version>
     <name>Sirius Kernel</name>
     <description>Provides common core classes and the microkernel powering all Sirius applications</description>
 
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>21.0</version>
         </dependency>
 
         <!-- The logging framework we use -->
