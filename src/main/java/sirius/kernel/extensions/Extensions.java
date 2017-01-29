@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Extension system based on the system configuration, providing simple access to extension lists.
@@ -302,10 +303,10 @@ public class Extensions {
         @Override
         public long getMilliseconds(String path) {
             try {
-                return config.toConfig().getMilliseconds(path);
+                return config.toConfig().getDuration(path, TimeUnit.MILLISECONDS);
             } catch (ConfigException.Missing e) {
                 Exceptions.ignore(e);
-                return def.toConfig().getMilliseconds(path);
+                return def.toConfig().getDuration(path, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 throw Exceptions.handle(e);
             }
