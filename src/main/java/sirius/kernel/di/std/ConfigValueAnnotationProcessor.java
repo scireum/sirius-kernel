@@ -21,6 +21,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * AnnotationProcessor which handles the {@link ConfigValue} annotation.
@@ -84,7 +85,7 @@ public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor 
             } else if (List.class.equals(field.getType())) {
                 field.set(target, config.getStringList(key));
             } else if (Duration.class.equals(field.getType())) {
-                field.set(target, Duration.ofMillis(config.getMilliseconds(key)));
+                field.set(target, Duration.ofMillis(config.getDuration(key, TimeUnit.MILLISECONDS)));
             } else if (field.getType().isEnum()) {
                 field.set(target, Value.of(config.getString(key)).asEnum((Class<? extends Enum>) field.getType()));
             } else {

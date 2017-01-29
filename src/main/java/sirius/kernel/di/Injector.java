@@ -37,9 +37,8 @@ import java.util.regex.Pattern;
  * Accessing parts can be done in two ways. First, one can access the current {@link GlobalContext} via
  * {@link #context()}. This can be used to retrieve parts by class or by class and name. The second way
  * to access parts is to use marker annotations like {@link sirius.kernel.di.std.Part},
- * {@link sirius.kernel.di.std.Parts} or {@link sirius.kernel.di.std.Context}. Again,
- * these annotations are not processed by the micro kernel itself, but by subclasses of {@link
- * FieldAnnotationProcessor}.
+ * {@link sirius.kernel.di.std.Parts}. Again, these annotations are not processed by the micro kernel itself, but by
+ * subclasses of {@link FieldAnnotationProcessor}.
  * To process all annotations of a given Java object, {@link GlobalContext#wire(Object)} can be used. This will
  * be automatically called for each part which is auto-instantiated by a <tt>ClassLoadAction</tt>.
  * <p>
@@ -73,6 +72,8 @@ public class Injector {
     @SuppressWarnings("Convert2streamapi")
     public static void init(@Nonnull final Classpath classpath) {
         ctx = new PartRegistry();
+        // Make the context itself visible for GlobalContext...
+        ctx.registerPart(ctx, GlobalContext.class);
         cp = classpath;
         loadedClasses = Lists.newArrayList();
         actions = Lists.newArrayList();
@@ -167,7 +168,8 @@ public class Injector {
     /**
      * Provides access to the global context, containing all parts
      * <p>
-     * This can also be loaded into a class field using the {@link sirius.kernel.di.std.Context} annotation
+     * This can also be loaded into a class field using the {@link sirius.kernel.di.std.Part} annotation and
+     * <tt>GlobalContext</tt> as field type.
      *
      * @return the global context containing all parts known to the system
      */

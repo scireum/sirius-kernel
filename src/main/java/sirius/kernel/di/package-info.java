@@ -25,7 +25,6 @@
  * <h3>Accessing Components</h3>
  * To access components without using annotations, the {@link sirius.kernel.di.Injector} class can be used. If
  * provides access to the {@link sirius.kernel.di.GlobalContext} which contains all registered parts (components).
- * Note that the <tt>GlobalContext</tt> can also be accessed using the {@link sirius.kernel.di.std.Context}
- * annotation.
+ * Note that the <tt>GlobalContext</tt> can also be injected using a {@link sirius.kernel.di.std.Part} annotation.
  */
 package sirius.kernel.di;

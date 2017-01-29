@@ -9,7 +9,7 @@
 package sirius.kernel.health.console;
 
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.std.Context;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
 
@@ -23,7 +23,8 @@ import java.util.List;
  */
 @Register
 public class HelpCommand implements Command {
-    @Context
+
+    @Part
     private GlobalContext ctx;
 
     @Override
