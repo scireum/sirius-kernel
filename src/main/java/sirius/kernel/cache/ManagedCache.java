@@ -80,9 +80,8 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         }
 
         Extension cacheInfo = Extensions.getExtension(EXTENSION_TYPE_CACHE, name);
-        if (cacheInfo == null) {
+        if (cacheInfo.isDefault()) {
             CacheManager.LOG.WARN("Cache %s does not exist! Using defaults...", name);
-            cacheInfo = Extensions.getExtension(EXTENSION_TYPE_CACHE, Extensions.DEFAULT);
         }
         this.verificationInterval = cacheInfo.getMilliseconds(CONFIG_KEY_VERIFICATION);
         this.timeToLive = cacheInfo.getMilliseconds(CONFIG_KEY_TTL);

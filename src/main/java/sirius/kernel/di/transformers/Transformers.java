@@ -50,7 +50,7 @@ public class Transformers {
      * @param <T>    the generic type of the target
      * @return <tt>true</tt> if a conversion (adaption) is possible, <tt>false</tt> otherwise
      */
-    public <T> boolean canMake(Transformable source, Class<T> target) {
+    public <T> boolean canMake(Object source, Class<T> target) {
         return make(source, target) != null;
     }
 
@@ -63,9 +63,9 @@ public class Transformers {
      * @return a transformed object matching the given type or <tt>null</tt> to indicate that no conversion was possible
      */
     @SuppressWarnings("unchecked")
-    public <T> T make(Transformable source, Class<T> target) {
+    public <T> T make(Object source, Class<T> target) {
         for (Transformer<?, ?> adapterFactory : getFactories(source.getClass(), target)) {
-            Transformer<Transformable, T> next = (Transformer<Transformable, T>) adapterFactory;
+            Transformer<? super Object, T> next = (Transformer<? super Object, T>) adapterFactory;
             T result = next.make(source);
             if (result != null) {
                 return result;

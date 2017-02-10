@@ -45,7 +45,6 @@ public class TaskContext implements SubContext {
     private String system = GENERIC;
     private String subSystem = GENERIC;
     private String job = GENERIC;
-    private String jobTitle = "";
     private RateLimit stateUpdate = RateLimit.timeInterval(STATE_UPDATE_INTERVAL, TimeUnit.SECONDS);
 
     @Part

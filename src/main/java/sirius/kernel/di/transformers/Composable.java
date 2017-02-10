@@ -21,9 +21,14 @@ import java.util.Optional;
  * <p>
  * Next to the <tt>Adapter Pattern</tt> supported via {@link Transformers}, this implementation permits to
  * add components via the <tt>attach</tt> methods which can later be queried via <tt>tryAs, as</tt> and <tt>is</tt>.
+ * <p>
+ * This class can be used as base class or embedded into another class (using {@link #Composable(Object)}) to
+ * make it <tt>Transformable</tt>.
+ * </p>
  */
 public class Composable implements Transformable {
 
+    private Object source;
     protected Map<Class<?>, Object> components;
 
     private static final Object NULL = new Object();
@@ -31,9 +36,25 @@ public class Composable implements Transformable {
     @Part
     private static Transformers adapters;
 
+    /**
+     * Default constructor used, when <tt>Composable</tt> is used as parent class.
+     */
+    public Composable() {
+        this.source = this;
+    }
+
+    /**
+     * Provides a constructor which can be used to support the composition pattern.
+     *
+     * @param source the class or object which is made {@link Transformable}.
+     */
+    public Composable(Object source) {
+        this.source = source;
+    }
+
     @Override
     public boolean is(@Nonnull Class<?> type) {
-        if (this.getClass().isAssignableFrom(type)) {
+        if (source.getClass().isAssignableFrom(type)) {
             return true;
         }
 
@@ -48,7 +69,7 @@ public class Composable implements Transformable {
     @SuppressWarnings("unchecked")
     @Override
     public <A> A as(@Nonnull Class<A> adapterType) {
-        if (this.getClass().isAssignableFrom(adapterType)) {
+        if (source.getClass().isAssignableFrom(adapterType)) {
             return (A) this;
         }
 
@@ -62,7 +83,7 @@ public class Composable implements Transformable {
     @SuppressWarnings("unchecked")
     @Override
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
-        if (this.getClass().isAssignableFrom(adapterType)) {
+        if (source.getClass().isAssignableFrom(adapterType)) {
             return Optional.of((A) this);
         }
 
@@ -73,7 +94,7 @@ public class Composable implements Transformable {
             }
         }
 
-        Object result = adapters.make(this, adapterType);
+        Object result = adapters.make(source, adapterType);
         if (result == null) {
             result = NULL;
         }
