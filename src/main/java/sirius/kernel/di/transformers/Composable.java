@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 public class Composable implements Transformable {
 
-    private Object target;
+    private Object source;
     protected Map<Class<?>, Object> components;
 
     private static final Object NULL = new Object();
@@ -40,21 +40,21 @@ public class Composable implements Transformable {
      * Default constructor used, when <tt>Composable</tt> is used as parent class.
      */
     public Composable() {
-        this.target = this;
+        this.source = this;
     }
 
     /**
      * Provides a constructor which can be used to support the composition pattern.
      *
-     * @param target the class or object which is made {@link Transformable}.
+     * @param source the class or object which is made {@link Transformable}.
      */
-    public Composable(Object target) {
-        this.target = target;
+    public Composable(Object source) {
+        this.source = source;
     }
 
     @Override
     public boolean is(@Nonnull Class<?> type) {
-        if (target.getClass().isAssignableFrom(type)) {
+        if (source.getClass().isAssignableFrom(type)) {
             return true;
         }
 
@@ -69,7 +69,7 @@ public class Composable implements Transformable {
     @SuppressWarnings("unchecked")
     @Override
     public <A> A as(@Nonnull Class<A> adapterType) {
-        if (target.getClass().isAssignableFrom(adapterType)) {
+        if (source.getClass().isAssignableFrom(adapterType)) {
             return (A) this;
         }
 
@@ -83,7 +83,7 @@ public class Composable implements Transformable {
     @SuppressWarnings("unchecked")
     @Override
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
-        if (target.getClass().isAssignableFrom(adapterType)) {
+        if (source.getClass().isAssignableFrom(adapterType)) {
             return Optional.of((A) this);
         }
 
@@ -94,7 +94,7 @@ public class Composable implements Transformable {
             }
         }
 
-        Object result = adapters.make(target, adapterType);
+        Object result = adapters.make(source, adapterType);
         if (result == null) {
             result = NULL;
         }
