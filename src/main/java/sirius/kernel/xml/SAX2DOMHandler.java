@@ -44,7 +44,7 @@ class SAX2DOMHandler {
         return currentNode.equals(root);
     }
 
-    private void createElement(String name, Attributes attributes) {
+    protected void createElement(String name, Attributes attributes) {
         Element element = document.createElement(name);
         for (int i = 0; i < attributes.getLength(); i++) {
             String attrName = attributes.getLocalName(i);
@@ -66,10 +66,6 @@ class SAX2DOMHandler {
 
     public Node getRoot() {
         return root;
-    }
-
-    protected void startElement(String uri, String name, Attributes attributes) {
-        createElement(name, attributes);
     }
 
     protected void processingInstruction(String target, String data) {

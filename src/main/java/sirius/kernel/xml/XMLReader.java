@@ -97,13 +97,13 @@ public class XMLReader extends DefaultHandler {
     public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
         // Delegate to active handlers...
         for (SAX2DOMHandler handler : activeHandlers) {
-            handler.startElement(uri, name, attributes);
+            handler.createElement(name, attributes);
         }
         // Start a new handler is necessary
         NodeHandler handler = handlers.get(name);
         if (handler != null) {
             SAX2DOMHandler saxHandler = new SAX2DOMHandler(handler, documentBuilder.newDocument());
-            saxHandler.startElement(uri, name, attributes);
+            saxHandler.createElement(name, attributes);
             activeHandlers.add(saxHandler);
         }
         // Check if the user tried to interrupt parsing....

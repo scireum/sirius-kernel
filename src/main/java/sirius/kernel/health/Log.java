@@ -64,7 +64,7 @@ public class Log {
         Log result = new Log(Logger.getLogger(name));
         all.add(result);
         if (!name.matches("[a-z0-9\\-]+")) {
-            System.err.printf("Invalid logger name: %s. Only numbers, lowercase letters and - are allowed!%n", name);
+            result.WARN("Invalid logger name: %s. Only numbers, lowercase letters and - are allowed!%n", name);
         }
         return result;
     }

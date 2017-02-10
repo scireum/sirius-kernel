@@ -40,7 +40,6 @@ public class Outcall {
 
     private HttpURLConnection connection;
     private Charset charset = Charsets.UTF_8;
-    private final URL url;
 
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
@@ -49,7 +48,6 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public Outcall(URL url) throws IOException {
-        this.url = url;
         connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
         connection.setDoOutput(true);
@@ -79,7 +77,6 @@ public class Outcall {
      */
     @Deprecated
     public Outcall(URL url, Context params, Charset charset) throws IOException {
-        this.url = url;
         this.charset = charset;
         connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
