@@ -37,6 +37,42 @@ import java.util.regex.Pattern;
  */
 public class Strings {
 
+    /**
+     * Contains all characters which can safely be used for codes without too much confusion (e.g. 0 vs O are
+     * excluded).
+     */
+    private static final char[] VALID_CODE_CHARS = {'1',
+                                                    '2',
+                                                    '3',
+                                                    '4',
+                                                    '5',
+                                                    '6',
+                                                    '7',
+                                                    '8',
+                                                    '9',
+                                                    'a',
+                                                    'b',
+                                                    'c',
+                                                    'd',
+                                                    'e',
+                                                    'f',
+                                                    'g',
+                                                    'h',
+                                                    'i',
+                                                    'j',
+                                                    'k',
+                                                    'm',
+                                                    'n',
+                                                    'p',
+                                                    'q',
+                                                    'r',
+                                                    's',
+                                                    't',
+                                                    'u',
+                                                    'v',
+                                                    'w',
+                                                    'z'};
+
     /*
      * All methods are static, therefore no instances need to be created.
      */
@@ -285,15 +321,17 @@ public class Strings {
     @Nonnull
     public static String join(@Nullable Iterable<?> list, @Nonnull String separator) {
         StringBuilder result = new StringBuilder();
-        if (list != null) {
-            Monoflop mf = Monoflop.create();
-            for (Object item : list) {
-                if (Strings.isFilled(item)) {
-                    if (mf.successiveCall()) {
-                        result.append(separator);
-                    }
-                    result.append(NLS.toMachineString(item));
+        if (list == null) {
+            return "";
+        }
+
+        Monoflop mf = Monoflop.create();
+        for (Object item : list) {
+            if (Strings.isFilled(item)) {
+                if (mf.successiveCall()) {
+                    result.append(separator);
                 }
+                result.append(NLS.toMachineString(item));
             }
         }
 
@@ -314,38 +352,6 @@ public class Strings {
         return generateCode(7);
     }
 
-    private static char[] validCodeChars = {'1',
-                                            '2',
-                                            '3',
-                                            '4',
-                                            '5',
-                                            '6',
-                                            '7',
-                                            '8',
-                                            '9',
-                                            'a',
-                                            'b',
-                                            'c',
-                                            'd',
-                                            'e',
-                                            'f',
-                                            'g',
-                                            'h',
-                                            'i',
-                                            'j',
-                                            'k',
-                                            'm',
-                                            'n',
-                                            'p',
-                                            'q',
-                                            'r',
-                                            's',
-                                            't',
-                                            'u',
-                                            'v',
-                                            'w',
-                                            'z'};
-
     /**
      * Generates a string of the given length, containing random character.
      *
@@ -356,7 +362,7 @@ public class Strings {
         StringBuilder sb = new StringBuilder();
         SecureRandom rnd = new SecureRandom();
         for (int i = 0; i < length; i++) {
-            sb.append(validCodeChars[rnd.nextInt(validCodeChars.length)]);
+            sb.append(VALID_CODE_CHARS[rnd.nextInt(VALID_CODE_CHARS.length)]);
         }
         return sb.toString();
     }
