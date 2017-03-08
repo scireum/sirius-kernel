@@ -10,7 +10,6 @@ package sirius.kernel.commons;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 /**
  * Used to succesively build URLs.
@@ -38,8 +37,6 @@ public class URLBuilder {
      * @param baseURL the base url to stat with in a form like <tt>http://somehost.com</tt>
      */
     public URLBuilder(@Nonnull String baseURL) {
-        Objects.nonNull(baseURL);
-
         url = new StringBuilder();
         if (baseURL.endsWith("/")) {
             url.append(baseURL.substring(0, baseURL.length() - 1));
@@ -55,9 +52,6 @@ public class URLBuilder {
      * @param host     the host to target.
      */
     public URLBuilder(@Nonnull String protocol, @Nonnull String host) {
-        Objects.nonNull(protocol);
-        Objects.nonNull(host);
-
         url = new StringBuilder();
         url.append(protocol);
         url.append("://");
@@ -100,6 +94,18 @@ public class URLBuilder {
      * @return the builder itself for fluent method calls
      */
     public URLBuilder addParameter(@Nonnull String key, @Nullable Object value) {
+        return addParameter(key, value, true);
+    }
+
+    /**
+     * Adds a parameter to the url.
+     *
+     * @param key       the name of the parameter
+     * @param value     the value of the parameter . If the given value is <tt>null</tt> an empty parameter will be added.
+     * @param urlEncode <tt>true</tt> if the given value should be url encoded before adding
+     * @return the builder itself for fluent method calls
+     */
+    public URLBuilder addParameter(@Nonnull String key, @Nullable Object value, boolean urlEncode) {
         if (questionMark.firstCall()) {
             url.append("?");
         } else {
@@ -107,7 +113,11 @@ public class URLBuilder {
         }
         url.append(key);
         url.append("=");
-        url.append(Strings.urlEncode(value == null ? "" : value.toString()));
+        String stringValue = value == null ? "" : value.toString();
+        if (urlEncode) {
+            stringValue = Strings.urlEncode(stringValue);
+        }
+        url.append(stringValue);
 
         return this;
     }
