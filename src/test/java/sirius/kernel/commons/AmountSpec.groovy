@@ -114,4 +114,14 @@ class AmountSpec extends BaseSpecification {
         Amount.ZERO.max(Amount.NOTHING) == Amount.ZERO
     }
 
+    def "compare returns which amount is higher"() {
+        expect:
+        Amount.NOTHING.compareTo(Amount.NOTHING) == 0
+        Amount.ONE.compareTo(Amount.NOTHING) > 0
+        Amount.NOTHING.compareTo(Amount.ONE) < 0
+        Amount.ONE.compareTo(Amount.ONE) == 0
+        Amount.ONE.compareTo(Amount.MINUS_ONE) > 0
+        Amount.MINUS_ONE.compareTo(Amount.ONE) < 0
+    }
+
 }

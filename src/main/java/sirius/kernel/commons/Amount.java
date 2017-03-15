@@ -481,6 +481,9 @@ public class Amount implements Comparable<Amount> {
         if (Objects.equals(amount, o.amount)) {
             return 0;
         }
+        if (o.amount == null) {
+            return 1;
+        }
         if (amount == null) {
             return -1;
         }
