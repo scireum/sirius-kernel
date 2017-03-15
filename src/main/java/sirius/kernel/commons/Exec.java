@@ -9,6 +9,7 @@
 package sirius.kernel.commons;
 
 import sirius.kernel.async.Operation;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
@@ -85,7 +86,7 @@ public class Exec {
     public static class ExecException extends Exception {
 
         private static final long serialVersionUID = -4736872491172480346L;
-        private String log;
+        private final String log;
 
         ExecException(Throwable root, String log) {
             super(root);
@@ -123,20 +124,11 @@ public class Exec {
      */
     public static String exec(String command, boolean ignoreExitCodes) throws ExecException {
         StringBuffer logger = new StringBuffer();
-        Operation op = Operation.create("exec", () -> command, Duration.ofMinutes(5));
-        try {
+        try (Operation op = new Operation(() -> command, Duration.ofMinutes(5))) {
             Process p = Runtime.getRuntime().exec(command);
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger);
-            try {
-                int code = p.waitFor();
-                if (code != 0 && !ignoreExitCodes) {
-                    Exception root = new Exception("Command returned with exit code " + code);
-                    throw new ExecException(root, logger.toString());
-                }
-            } catch (InterruptedException e) {
-                throw new ExecException(e, logger.toString());
-            }
+            doExec(ignoreExitCodes, logger, p);
             if (errEater.exHolder.get() != null) {
                 throw new ExecException(errEater.exHolder.get(), logger.toString());
             }
@@ -144,10 +136,21 @@ public class Exec {
                 throw new ExecException(outEater.exHolder.get(), logger.toString());
             }
             return logger.toString();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new ExecException(e, logger.toString());
-        } finally {
-            Operation.release(op);
+        }
+    }
+
+    public static void doExec(boolean ignoreExitCodes, StringBuffer logger, Process p) throws ExecException {
+        try {
+            int code = p.waitFor();
+            if (code != 0 && !ignoreExitCodes) {
+                Exception root = new Exception("Command returned with exit code " + code);
+                throw new ExecException(root, logger.toString());
+            }
+        } catch (InterruptedException e) {
+            Exceptions.ignore(e);
+            Thread.currentThread().interrupt();
         }
     }
 }

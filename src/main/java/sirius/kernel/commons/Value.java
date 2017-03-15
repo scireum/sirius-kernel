@@ -510,7 +510,7 @@ public class Value {
         if (data instanceof String) {
             try {
                 return NLS.parseMachineString(targetClazz, data.toString().trim());
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Exceptions.ignore(e);
                 return defaultValue;
             }

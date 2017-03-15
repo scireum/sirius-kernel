@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggerRepository;
 import sirius.kernel.commons.Value;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
@@ -52,6 +53,9 @@ import java.util.logging.SimpleFormatter;
  * </ul>
  */
 public class Setup {
+
+    private static final String LOGS_DIRECTORY = "logs";
+    private static final String DEFAULT_LOG_FILE_NAME = "application.log";
 
     /**
      * Determines the mode in which the framework should run. This mainly effects logging and the configuration.
@@ -279,7 +283,7 @@ public class Setup {
      * @return the name of the log directory
      */
     protected String getLogsDirectory() {
-        return "logs";
+        return LOGS_DIRECTORY;
     }
 
     /**
@@ -339,7 +343,7 @@ public class Setup {
             return 0L;
         }
 
-        return Arrays.stream(children).filter(File::isFile).mapToLong(f -> f.length()).sum();
+        return Arrays.stream(children).filter(File::isFile).mapToLong(File::length).sum();
     }
 
     /**
@@ -348,7 +352,7 @@ public class Setup {
      * @return the name of the log file
      */
     protected String getLogFileName() {
-        return "application.log";
+        return DEFAULT_LOG_FILE_NAME;
     }
 
     /**
@@ -394,10 +398,12 @@ public class Setup {
 
             @Override
             public void flush() {
+                // Not required
             }
 
             @Override
             public void close() {
+                // Not required
             }
         };
         handler.setLevel(java.util.logging.Level.ALL);
@@ -420,7 +426,8 @@ public class Setup {
             Sirius.LOG.INFO("using application.conf from classpath...");
             try {
                 result = ConfigFactory.load(loader, "application.conf").withFallback(result);
-            } catch (Throwable e) {
+            } catch (Exception e) {
+                Exceptions.ignore(e);
                 Sirius.LOG.WARN("Cannot load application.conf: %s", e.getMessage());
             }
         } else {
@@ -444,7 +451,8 @@ public class Setup {
             Sirius.LOG.INFO("using test.conf from classpath...");
             try {
                 return ConfigFactory.load(loader, "test.conf").withFallback(config);
-            } catch (Throwable e) {
+            } catch (Exception e) {
+                Exceptions.ignore(e);
                 Sirius.LOG.WARN("Cannot load test.conf: %s", e.getMessage());
                 return config;
             }
@@ -488,7 +496,8 @@ public class Setup {
             Sirius.LOG.INFO("using instance.conf from filesystem...");
             try {
                 return ConfigFactory.parseFile(new File("instance.conf"));
-            } catch (Throwable e) {
+            } catch (Exception e) {
+                Exceptions.ignore(e);
                 Sirius.LOG.WARN("Cannot load instance.conf: %s", e.getMessage());
                 return null;
             }

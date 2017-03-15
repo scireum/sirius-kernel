@@ -20,7 +20,6 @@ import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +35,42 @@ import java.util.regex.Pattern;
  * @see Value
  */
 public class Strings {
+
+    /**
+     * Contains all characters which can safely be used for codes without too much confusion (e.g. 0 vs O are
+     * excluded).
+     */
+    private static final char[] VALID_CODE_CHARS = {'1',
+                                                    '2',
+                                                    '3',
+                                                    '4',
+                                                    '5',
+                                                    '6',
+                                                    '7',
+                                                    '8',
+                                                    '9',
+                                                    'a',
+                                                    'b',
+                                                    'c',
+                                                    'd',
+                                                    'e',
+                                                    'f',
+                                                    'g',
+                                                    'h',
+                                                    'i',
+                                                    'j',
+                                                    'k',
+                                                    'm',
+                                                    'n',
+                                                    'p',
+                                                    'q',
+                                                    'r',
+                                                    's',
+                                                    't',
+                                                    'u',
+                                                    'v',
+                                                    'w',
+                                                    'z'};
 
     /*
      * All methods are static, therefore no instances need to be created.
@@ -285,15 +320,17 @@ public class Strings {
     @Nonnull
     public static String join(@Nullable Iterable<?> list, @Nonnull String separator) {
         StringBuilder result = new StringBuilder();
-        if (list != null) {
-            Monoflop mf = Monoflop.create();
-            for (Object item : list) {
-                if (Strings.isFilled(item)) {
-                    if (mf.successiveCall()) {
-                        result.append(separator);
-                    }
-                    result.append(NLS.toMachineString(item));
+        if (list == null) {
+            return "";
+        }
+
+        Monoflop mf = Monoflop.create();
+        for (Object item : list) {
+            if (Strings.isFilled(item)) {
+                if (mf.successiveCall()) {
+                    result.append(separator);
                 }
+                result.append(NLS.toMachineString(item));
             }
         }
 
@@ -314,38 +351,6 @@ public class Strings {
         return generateCode(7);
     }
 
-    private static char[] validCodeChars = {'1',
-                                            '2',
-                                            '3',
-                                            '4',
-                                            '5',
-                                            '6',
-                                            '7',
-                                            '8',
-                                            '9',
-                                            'a',
-                                            'b',
-                                            'c',
-                                            'd',
-                                            'e',
-                                            'f',
-                                            'g',
-                                            'h',
-                                            'i',
-                                            'j',
-                                            'k',
-                                            'm',
-                                            'n',
-                                            'p',
-                                            'q',
-                                            'r',
-                                            's',
-                                            't',
-                                            'u',
-                                            'v',
-                                            'w',
-                                            'z'};
-
     /**
      * Generates a string of the given length, containing random character.
      *
@@ -356,7 +361,7 @@ public class Strings {
         StringBuilder sb = new StringBuilder();
         SecureRandom rnd = new SecureRandom();
         for (int i = 0; i < length; i++) {
-            sb.append(validCodeChars[rnd.nextInt(validCodeChars.length)]);
+            sb.append(VALID_CODE_CHARS[rnd.nextInt(VALID_CODE_CHARS.length)]);
         }
         return sb.toString();
     }
@@ -378,41 +383,6 @@ public class Strings {
         textToReplace = textToReplace.replace("Ä", "&Auml;");
         textToReplace = textToReplace.replace("Ü", "&Uuml;");
         return textToReplace;
-    }
-
-    /**
-     * Converts the given string to a valid and sane filename.
-     * <p>
-     * The result will only consist of letters, digits '-' and '_'. Everything else will be
-     * replaced by a '_'. German umlauts like 'ä', 'ö', 'ü' are replaced the appropriate
-     * ASCII sequences.
-     *
-     * @param input the filename to fix
-     * @return the transformed filename wrapped as Optional or an empty Optional if the filename is not filled
-     * @deprecated Moved to <tt>Files</tt>, use {@link Files#toSaneFileName(String)} instead
-     */
-    @Nonnull
-    @Deprecated
-    public static Optional<String> toSaneFileName(@Nonnull String input) {
-        input = trim(input);
-        if (Strings.isEmpty(input)) {
-            return Optional.empty();
-        }
-
-        input = input.replace("ä", "ae")
-                     .replace("ö", "oe")
-                     .replace("ü", "ue")
-                     .replace("Ä", "Ae")
-                     .replace("Ö", "Oe")
-                     .replace("Ü", "Ue")
-                     .replace("ß", "ss")
-                     .replaceAll("[^a-zA-Z0-9\\-_\\.]", "_");
-        Tuple<String, String> nameAndSuffix = splitAtLast(input, ".");
-        if (nameAndSuffix.getSecond() == null) {
-            return Optional.of(input);
-        }
-
-        return Optional.of(nameAndSuffix.getFirst().replace(".", "_") + "." + nameAndSuffix.getSecond());
     }
 
     /**

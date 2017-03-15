@@ -75,7 +75,7 @@ public class Promise<V> {
     private void completeHandler(final V value, final CompletionHandler<V> handler) {
         try {
             handler.onSuccess(value);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.handle(Tasks.LOG, e);
         }
     }
@@ -103,7 +103,7 @@ public class Promise<V> {
     private void failHandler(final Throwable exception, final CompletionHandler<V> handler) {
         try {
             handler.onFailure(exception);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.handle(Tasks.LOG, e);
         }
     }
@@ -281,7 +281,7 @@ public class Promise<V> {
             public void onSuccess(V value) throws Exception {
                 try {
                     promise.success(mapper.apply(value));
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     promise.fail(e);
                 }
             }
@@ -308,7 +308,7 @@ public class Promise<V> {
             public void onSuccess(V value) throws Exception {
                 try {
                     successHandler.invoke(value);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     promise.fail(e);
                 }
             }

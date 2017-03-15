@@ -246,7 +246,7 @@ public class Log {
                                                             this,
                                                             wouldLog,
                                                             Thread.currentThread().getName()));
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         // Ignored - if we can't log s.th. let's just give up...
                     }
                 }

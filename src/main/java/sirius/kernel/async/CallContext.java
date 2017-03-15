@@ -211,7 +211,7 @@ public class CallContext {
         for (SubContext ctx : subContext.values()) {
             try {
                 ctx.detach();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Exceptions.handle()
                           .error(e)
                           .withSystemErrorMessage("Error detaching sub context '%s': %s (%s)", ctx.getClass().getName())
@@ -298,7 +298,7 @@ public class CallContext {
             }
 
             return (C) result;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw Exceptions.handle()
                             .error(e)
                             .withSystemErrorMessage("Cannot get instance of %s from current CallContext: %s (%s)",

@@ -21,6 +21,8 @@ import java.util.function.BiConsumer;
  */
 public abstract class AbstractStructuredOutput implements StructuredOutput {
 
+    protected List<Element> nesting = new ArrayList<>();
+
     /**
      * Types used by internal bookkeeping
      */
@@ -37,17 +39,17 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         private String name;
         private boolean empty = true;
 
+        protected Element(ElementType type, String name) {
+            this.type = type;
+            this.name = name;
+        }
+
         protected boolean isEmpty() {
             return empty;
         }
 
         protected void setEmpty(boolean empty) {
             this.empty = empty;
-        }
-
-        protected Element(ElementType type, String name) {
-            this.type = type;
-            this.name = name;
         }
 
         protected ElementType getType() {
@@ -82,8 +84,6 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         }
         return nesting.get(0).isEmpty();
     }
-
-    protected List<Element> nesting = new ArrayList<Element>();
 
     @Override
     public StructuredOutput beginArray(String name) {
@@ -180,7 +180,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
      * Used to fluently create a {@link #beginObject(String, Attribute...)}.
      */
     public class TagBuilder {
-        private List<Attribute> attributes = new ArrayList<Attribute>();
+        private List<Attribute> attributes = new ArrayList<>();
         private String name;
 
         /**

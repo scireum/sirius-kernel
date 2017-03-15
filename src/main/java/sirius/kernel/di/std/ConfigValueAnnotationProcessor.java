@@ -20,7 +20,9 @@ import sirius.kernel.di.MutableGlobalContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -61,7 +63,6 @@ public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor 
      * @param config the config object to read from
      * @return <tt>true</tt> if a value was present and injected, <tt>false</tt> otherwise
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public static boolean injectValueFromConfig(Object target, Field field, String key, Config config) {
         if (!config.hasPath(key)) {
             return false;
@@ -70,31 +71,7 @@ public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor 
         field.setAccessible(true);
 
         try {
-            if (String.class.equals(field.getType())) {
-                field.set(target, config.getString(key));
-            } else if (int.class.equals(field.getType()) || Integer.class.equals(field.getType())) {
-                field.set(target, config.getInt(key));
-            } else if (long.class.equals(field.getType()) || Long.class.equals(field.getType())) {
-                if (config.getValue(key).valueType() == ConfigValueType.NUMBER) {
-                    field.set(target, config.getLong(key));
-                } else {
-                    field.set(target, config.getBytes(key));
-                }
-            } else if (boolean.class.equals(field.getType()) || Boolean.class.equals(field.getType())) {
-                field.set(target, config.getBoolean(key));
-            } else if (List.class.equals(field.getType())) {
-                field.set(target, config.getStringList(key));
-            } else if (Duration.class.equals(field.getType())) {
-                field.set(target, Duration.ofMillis(config.getDuration(key, TimeUnit.MILLISECONDS)));
-            } else if (field.getType().isEnum()) {
-                field.set(target, Value.of(config.getString(key)).asEnum((Class<? extends Enum>) field.getType()));
-            } else {
-                throw new IllegalArgumentException(Strings.apply(
-                        "Cannot fill field '%s.%s' of type %s with a config value!",
-                        field.getDeclaringClass().getName(),
-                        field.getName(),
-                        field.getType().getName()));
-            }
+            injectIntoField(target, field, key, config);
 
             return true;
         } catch (IllegalAccessException e) {
@@ -103,6 +80,41 @@ public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor 
                                                              field.getDeclaringClass().getName(),
                                                              field.getName(),
                                                              field.getType().getName()), e);
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void injectIntoField(Object target, Field field, String key, Config config)
+            throws IllegalAccessException {
+        if (String.class.equals(field.getType())) {
+            field.set(target, config.getString(key));
+        } else if (int.class.equals(field.getType()) || Integer.class.equals(field.getType())) {
+            field.set(target, config.getInt(key));
+        } else if (long.class.equals(field.getType()) || Long.class.equals(field.getType())) {
+            if (config.getValue(key).valueType() == ConfigValueType.NUMBER) {
+                field.set(target, config.getLong(key));
+            } else {
+                field.set(target, config.getBytes(key));
+            }
+        } else if (boolean.class.equals(field.getType()) || Boolean.class.equals(field.getType())) {
+            field.set(target, config.getBoolean(key));
+        } else if (List.class.equals(field.getType())) {
+            field.set(target, config.getStringList(key));
+        } else if (Map.class.equals(field.getType())) {
+            Map<String, String> result = new HashMap<>();
+            config.getConfig(key)
+                  .entrySet()
+                  .forEach(e -> result.put(e.getKey(), Value.of(e.getValue().unwrapped()).asString()));
+            field.set(target, result);
+        } else if (Duration.class.equals(field.getType())) {
+            field.set(target, Duration.ofMillis(config.getDuration(key, TimeUnit.MILLISECONDS)));
+        } else if (field.getType().isEnum()) {
+            field.set(target, Value.of(config.getString(key)).asEnum((Class<? extends Enum>) field.getType()));
+        } else {
+            throw new IllegalArgumentException(Strings.apply("Cannot fill field '%s.%s' of type %s with a config value!",
+                                                             field.getDeclaringClass().getName(),
+                                                             field.getName(),
+                                                             field.getType().getName()));
         }
     }
 }

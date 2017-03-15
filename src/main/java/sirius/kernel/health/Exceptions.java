@@ -53,7 +53,7 @@ public class Exceptions {
     /*
      * Used to cut endless loops while handling errors
      */
-    private static ThreadLocal<Boolean> frozen = new ThreadLocal<Boolean>();
+    private static ThreadLocal<Boolean> frozen = new ThreadLocal<>();
 
     private Exceptions() {
     }
@@ -195,7 +195,7 @@ public class Exceptions {
                     IGNORED_EXCEPTIONS_LOG.INFO(result);
                 }
                 return result;
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 // We call as few external methods a possible here, since things are really messed up right now
                 //noinspection CallToPrintStackTrace
                 t.printStackTrace();
@@ -236,7 +236,7 @@ public class Exceptions {
                                                     location,
                                                     CallContext.getCurrent().getMDC(),
                                                     result));
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         // Just log the exception - anything else might call a rather long infinite loop
                         LOG.SEVERE(new Exception(Strings.apply(
                                 "An error occurred while calling the ExceptionHandler: %s - %s (%s)",
