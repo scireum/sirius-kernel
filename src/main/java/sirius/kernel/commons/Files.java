@@ -37,12 +37,12 @@ public class Files {
      */
     @Nonnull
     public static Optional<String> toSaneFileName(@Nonnull String input) {
-        input = Strings.trim(input);
-        if (Strings.isEmpty(input)) {
+        String effectiveInput = Strings.trim(input);
+        if (Strings.isEmpty(effectiveInput)) {
             return Optional.empty();
         }
 
-        input = input.replace("ä", "ae")
+        effectiveInput = effectiveInput.replace("ä", "ae")
                      .replace("ö", "oe")
                      .replace("ü", "ue")
                      .replace("Ä", "Ae")
@@ -50,9 +50,9 @@ public class Files {
                      .replace("Ü", "Ue")
                      .replace("ß", "ss")
                      .replaceAll("[^a-zA-Z0-9\\-_\\.]", "_");
-        Tuple<String, String> nameAndSuffix = Strings.splitAtLast(input, ".");
+        Tuple<String, String> nameAndSuffix = Strings.splitAtLast(effectiveInput, ".");
         if (nameAndSuffix.getSecond() == null) {
-            return Optional.of(input);
+            return Optional.of(effectiveInput);
         }
 
         return Optional.of(nameAndSuffix.getFirst().replace(".", "_") + "." + nameAndSuffix.getSecond());

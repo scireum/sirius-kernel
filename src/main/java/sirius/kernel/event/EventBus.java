@@ -41,7 +41,7 @@ public class EventBus {
             if (Strings.areEqual(event, handler.getEvent())) {
                 try {
                     handler.handle(event, object);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     Exceptions.handle()
                               .withSystemErrorMessage("Error while handling event '%s': %s (%s)", event)
                               .error(e)

@@ -94,7 +94,7 @@ public abstract class BackgroundLoop {
             LocalDateTime now = LocalDateTime.now();
             doWork();
             executionInfo = NLS.toUserString(now) + " (" + w.duration() + ")";
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.handle(Tasks.LOG, e);
         }
         loop();

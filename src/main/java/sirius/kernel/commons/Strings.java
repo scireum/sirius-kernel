@@ -20,7 +20,6 @@ import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -384,41 +383,6 @@ public class Strings {
         textToReplace = textToReplace.replace("Ä", "&Auml;");
         textToReplace = textToReplace.replace("Ü", "&Uuml;");
         return textToReplace;
-    }
-
-    /**
-     * Converts the given string to a valid and sane filename.
-     * <p>
-     * The result will only consist of letters, digits '-' and '_'. Everything else will be
-     * replaced by a '_'. German umlauts like 'ä', 'ö', 'ü' are replaced the appropriate
-     * ASCII sequences.
-     *
-     * @param input the filename to fix
-     * @return the transformed filename wrapped as Optional or an empty Optional if the filename is not filled
-     * @deprecated Moved to <tt>Files</tt>, use {@link Files#toSaneFileName(String)} instead
-     */
-    @Nonnull
-    @Deprecated
-    public static Optional<String> toSaneFileName(@Nonnull String input) {
-        input = trim(input);
-        if (Strings.isEmpty(input)) {
-            return Optional.empty();
-        }
-
-        input = input.replace("ä", "ae")
-                     .replace("ö", "oe")
-                     .replace("ü", "ue")
-                     .replace("Ä", "Ae")
-                     .replace("Ö", "Oe")
-                     .replace("Ü", "Ue")
-                     .replace("ß", "ss")
-                     .replaceAll("[^a-zA-Z0-9\\-_\\.]", "_");
-        Tuple<String, String> nameAndSuffix = splitAtLast(input, ".");
-        if (nameAndSuffix.getSecond() == null) {
-            return Optional.of(input);
-        }
-
-        return Optional.of(nameAndSuffix.getFirst().replace(".", "_") + "." + nameAndSuffix.getSecond());
     }
 
     /**

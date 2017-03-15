@@ -105,15 +105,7 @@ public class Injector {
             }
             Class<?> clazz = Class.forName(className, true, cp.getLoader());
             if (ClassLoadAction.class.isAssignableFrom(clazz) && !clazz.isInterface()) {
-                try {
-                    actions.add((ClassLoadAction) clazz.newInstance());
-                } catch (Throwable e) {
-                    Exceptions.handle()
-                              .error(e)
-                              .to(LOG)
-                              .withSystemErrorMessage("Failed to instantiate ClassLoadAction: %s - %s (%s)", className)
-                              .handle();
-                }
+                createAndCollectClassLoadAction(className, clazz);
             }
             loadedClasses.add(clazz);
         } catch (NoClassDefFoundError e) {
@@ -122,11 +114,23 @@ public class Injector {
                       .to(LOG)
                       .withSystemErrorMessage("Failed to load dependent class: %s", className)
                       .handle();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.handle()
                       .error(e)
                       .to(LOG)
                       .withSystemErrorMessage("Failed to load class %s: %s (%s)", className)
+                      .handle();
+        }
+    }
+
+    private static void createAndCollectClassLoadAction(String className, Class<?> clazz) {
+        try {
+            actions.add((ClassLoadAction) clazz.newInstance());
+        } catch (Exception e) {
+            Exceptions.handle()
+                      .error(e)
+                      .to(LOG)
+                      .withSystemErrorMessage("Failed to instantiate ClassLoadAction: %s - %s (%s)", className)
                       .handle();
         }
     }
@@ -139,7 +143,7 @@ public class Injector {
                 }
                 try {
                     action.handle(ctx, clazz);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     Exceptions.handle()
                               .error(e)
                               .to(LOG)

@@ -136,7 +136,7 @@ class PartRegistry implements MutableGlobalContext {
                                                         .forEach(p -> {
                                                             try {
                                                                 p.handle(this, object, field);
-                                                            } catch (Throwable e) {
+                                                            } catch (Exception e) {
                                                                 Injector.LOG.WARN(
                                                                         "Cannot process annotation %s on %s.%s: %s "
                                                                         + "(%s)",

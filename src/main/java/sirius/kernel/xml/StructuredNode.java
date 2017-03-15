@@ -37,11 +37,22 @@ import java.util.function.Consumer;
  */
 public class StructuredNode {
 
-    /*
+    /**
      * Cache to improve speed of xpath...
      */
     private static Cache<Tuple<Thread, String>, XPathExpression> cache;
     private static final XPathFactory XPATH = XPathFactory.newInstance();
+
+    private Node node;
+
+    /**
+     * Wraps the given node
+     *
+     * @param root the node to wrap
+     */
+    protected StructuredNode(Node root) {
+        node = root;
+    }
 
     /*
      * Compiles the given xpath by utilizing the internal cache
@@ -68,15 +79,6 @@ public class StructuredNode {
     @Nonnull
     public static StructuredNode of(@Nonnull Node node) {
         return new StructuredNode(node);
-    }
-
-    private Node node;
-
-    /*
-     * Wraps the given node
-     */
-    protected StructuredNode(Node root) {
-        node = root;
     }
 
     /**
@@ -238,18 +240,22 @@ public class StructuredNode {
                 return null;
             }
             if (result instanceof Node) {
-                try {
-                    StringWriter writer = new StringWriter();
-                    XMLGenerator.writeXML((Node) result, writer, Charsets.UTF_8.name(), true);
-                    return writer.toString();
-                } catch (Throwable e) {
-                    Exceptions.handle(e);
-                    return null;
-                }
+                return serializeNodeAsXML((Node) result);
             }
             return result.toString().trim();
         } catch (XPathExpressionException e) {
             throw new IllegalArgumentException(e);
+        }
+    }
+
+    private String serializeNodeAsXML(Node result) {
+        try {
+            StringWriter writer = new StringWriter();
+            XMLGenerator.writeXML(result, writer, Charsets.UTF_8.name(), true);
+            return writer.toString();
+        } catch (Exception e) {
+            Exceptions.handle(e);
+            return null;
         }
     }
 
@@ -320,7 +326,7 @@ public class StructuredNode {
             StringWriter writer = new StringWriter();
             XMLGenerator.writeXML(node, writer, Charsets.UTF_8.name(), true);
             return writer.toString();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.handle(e);
             return node.toString();
         }

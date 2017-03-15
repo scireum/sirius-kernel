@@ -46,6 +46,8 @@ import java.util.regex.Pattern;
  */
 public class Sirius {
 
+    private static final String CONFIG_KEY_CUSTOMIZATIONS = "sirius.customizations";
+    private static final String SEPARATOR_LINE = "---------------------------------------------------------";
     private static Setup setup;
     private static Config config;
     private static Map<String, Boolean> frameworks = Maps.newHashMap();
@@ -53,15 +55,17 @@ public class Sirius {
     private static Classpath classpath;
     private static volatile boolean started = false;
     private static volatile boolean initialized = false;
-    private static final long startTimestamp = System.currentTimeMillis();
+    private static final long START_TIMESTAMP = System.currentTimeMillis();
 
     protected static final Log LOG = Log.get("sirius");
+
+    private static final String DEBUG_LOGGER_NAME = "debug";
 
     /**
      * This debug logger will be logging all messages when {@link sirius.kernel.Sirius#isDev()} is true. Otherwise,
      * this logger is set to "OFF".
      */
-    public static final Log DEBUG = Log.get("debug");
+    public static final Log DEBUG = Log.get(DEBUG_LOGGER_NAME);
 
     @PriorityParts(Lifecycle.class)
     private static List<Lifecycle> lifecycleParticipants;
@@ -105,9 +109,9 @@ public class Sirius {
      */
     private static void setupLogLevels() {
         if (Sirius.isDev()) {
-            Log.setLevel("debug", Level.ALL);
+            Log.setLevel(DEBUG_LOGGER_NAME, Level.ALL);
         } else {
-            Log.setLevel("debug", Level.OFF);
+            Log.setLevel(DEBUG_LOGGER_NAME, Level.OFF);
         }
         if (!config.hasPath("logging")) {
             return;
@@ -182,7 +186,7 @@ public class Sirius {
         LOG.INFO("Starting: %s", lifecycle.getName());
         try {
             lifecycle.started();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.handle()
                       .error(e)
                       .to(LOG)
@@ -191,7 +195,7 @@ public class Sirius {
         }
     }
 
-    /*
+    /**
      * Discovers all components in the class path and initializes the {@link Injector}
      */
     private static void init() {
@@ -206,8 +210,8 @@ public class Sirius {
             classpath.find(Pattern.compile("component-test-([^\\-]*?)\\.conf")).forEach(value -> {
                 try {
                     config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
-                } catch (Throwable e) {
-                    Sirius.LOG.WARN("Cannot load %s: %s", value.group(), e.getMessage());
+                } catch (Exception e) {
+                    handleConfigError(value.group(), e);
                 }
             });
         }
@@ -217,8 +221,8 @@ public class Sirius {
             if (!"test".equals(value.group(1))) {
                 try {
                     config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
-                } catch (Throwable e) {
-                    Sirius.LOG.WARN("Cannot load %s: %s", value.group(), e.getMessage());
+                } catch (Exception e) {
+                    handleConfigError(value.group(), e);
                 }
             }
         });
@@ -241,6 +245,11 @@ public class Sirius {
         NLS.startMonitoring(classpath);
     }
 
+    private static void handleConfigError(String file, Exception e) {
+        Exceptions.ignore(e);
+        Sirius.LOG.WARN("Cannot load %s: %s", file, e.getMessage());
+    }
+
     /**
      * Provides access to the classpath used to load the framework.
      *
@@ -258,7 +267,7 @@ public class Sirius {
             return;
         }
         LOG.INFO("Stopping Sirius");
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
         outputActiveOperations();
         stopLifecycleParticipants();
         outputActiveOperations();
@@ -269,24 +278,24 @@ public class Sirius {
 
     private static void outputThreadState() {
         LOG.INFO("System halted! - Thread State");
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
         LOG.INFO("%-15s %10s %53s", "STATE", "ID", "NAME");
         for (ThreadInfo info : ManagementFactory.getThreadMXBean().dumpAllThreads(false, false)) {
             LOG.INFO("%-15s %10s %53s", info.getThreadState().name(), info.getThreadId(), info.getThreadName());
         }
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
     }
 
     private static void waitForLifecyclePaticipants() {
         LOG.INFO("Awaiting system halt...");
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
         for (int i = lifecycleParticipants.size() - 1; i >= 0; i--) {
             Lifecycle lifecycle = lifecycleParticipants.get(i);
             try {
                 Watch w = Watch.start();
                 lifecycle.awaitTermination();
                 LOG.INFO("Terminated: %s (Took: %s)", lifecycle.getName(), w.duration());
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Exceptions.handle()
                           .error(e)
                           .to(LOG)
@@ -298,7 +307,7 @@ public class Sirius {
 
     private static void stopLifecycleParticipants() {
         LOG.INFO("Stopping lifecycles...");
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
         for (int i = lifecycleParticipants.size() - 1; i >= 0; i--) {
             Lifecycle lifecycle = lifecycleParticipants.get(i);
             Future future = tasks.defaultExecutor().fork(() -> stopLifecycle(lifecycle));
@@ -308,14 +317,14 @@ public class Sirius {
                          lifecycle.getClass().getName());
             }
         }
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
     }
 
     private static void stopLifecycle(Lifecycle lifecycle) {
         LOG.INFO("Stopping: %s", lifecycle.getName());
         try {
             lifecycle.stopped();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.handle()
                       .error(e)
                       .to(LOG)
@@ -327,11 +336,11 @@ public class Sirius {
     private static void outputActiveOperations() {
         if (!Operation.getActiveOperations().isEmpty()) {
             LOG.INFO("Active Operations");
-            LOG.INFO("---------------------------------------------------------");
+            LOG.INFO(SEPARATOR_LINE);
             for (Operation op : Operation.getActiveOperations()) {
                 LOG.INFO(op.toString());
             }
-            LOG.INFO("---------------------------------------------------------");
+            LOG.INFO(SEPARATOR_LINE);
         }
     }
 
@@ -346,19 +355,19 @@ public class Sirius {
         Watch w = Watch.start();
         Sirius.setup = setup;
         setup.init();
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
         LOG.INFO("System is STARTING...");
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
         LOG.INFO("Loading config...");
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
         setupConfiguration();
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
         LOG.INFO("Starting the system...");
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
         init();
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
         LOG.INFO("System is UP and RUNNING - %s", w.duration());
-        LOG.INFO("---------------------------------------------------------");
+        LOG.INFO(SEPARATOR_LINE);
 
         Runtime.getRuntime().addShutdownHook(new Thread(Sirius::stop));
     }
@@ -482,10 +491,10 @@ public class Sirius {
         }
 
         // Setup customer customizations...
-        if (instanceConfig != null && instanceConfig.hasPath("sirius.customizations")) {
-            customizations = instanceConfig.getStringList("sirius.customizations");
-        } else if (config.hasPath("sirius.customizations")) {
-            customizations = config.getStringList("sirius.customizations");
+        if (instanceConfig != null && instanceConfig.hasPath(CONFIG_KEY_CUSTOMIZATIONS)) {
+            customizations = instanceConfig.getStringList(CONFIG_KEY_CUSTOMIZATIONS);
+        } else if (config.hasPath(CONFIG_KEY_CUSTOMIZATIONS)) {
+            customizations = config.getStringList(CONFIG_KEY_CUSTOMIZATIONS);
         }
 
         // Load settings.conf for customizations...
@@ -495,8 +504,8 @@ public class Sirius {
                 String configName = "customizations/" + conf + "/settings.conf";
                 try {
                     config = ConfigFactory.load(setup.getLoader(), configName).withFallback(config);
-                } catch (Throwable e) {
-                    Sirius.LOG.WARN("Cannot load %s: %s", configName, e.getMessage());
+                } catch (Exception e) {
+                    handleConfigError(configName, e);
                 }
             } else {
                 LOG.INFO("customization '" + conf + "' has no settings.conf...");
@@ -534,6 +543,6 @@ public class Sirius {
      * @return the number of milliseconds the system is running
      */
     public static long getUptimeInMilliseconds() {
-        return System.currentTimeMillis() - startTimestamp;
+        return System.currentTimeMillis() - START_TIMESTAMP;
     }
 }
