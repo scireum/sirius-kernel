@@ -61,7 +61,7 @@ public class Operation implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         ops.remove(this);
         if (isOvertime()) {
             Tasks.LOG.WARN(toString());
