@@ -124,8 +124,7 @@ public class Exec {
      */
     public static String exec(String command, boolean ignoreExitCodes) throws ExecException {
         StringBuffer logger = new StringBuffer();
-        Operation op = Operation.create("exec", () -> command, Duration.ofMinutes(5));
-        try {
+        try(Operation op = new Operation(() -> command, Duration.ofMinutes(5))) {
             Process p = Runtime.getRuntime().exec(command);
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger);
@@ -139,8 +138,6 @@ public class Exec {
             return logger.toString();
         } catch (Exception e) {
             throw new ExecException(e, logger.toString());
-        } finally {
-            Operation.release(op);
         }
     }
 
