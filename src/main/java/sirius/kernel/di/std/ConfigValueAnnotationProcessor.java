@@ -84,7 +84,7 @@ public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor 
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static void injectIntoField(Object target, Field field, String key, Config config)
+    private static void injectIntoField(Object target, Field field, String key, Config config)
             throws IllegalAccessException {
         if (String.class.equals(field.getType())) {
             field.set(target, config.getString(key));
@@ -111,11 +111,10 @@ public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor 
         } else if (field.getType().isEnum()) {
             field.set(target, Value.of(config.getString(key)).asEnum((Class<? extends Enum>) field.getType()));
         } else {
-            throw new IllegalArgumentException(Strings.apply(
-                    "Cannot fill field '%s.%s' of type %s with a config value!",
-                    field.getDeclaringClass().getName(),
-                    field.getName(),
-                    field.getType().getName()));
+            throw new IllegalArgumentException(Strings.apply("Cannot fill field '%s.%s' of type %s with a config value!",
+                                                             field.getDeclaringClass().getName(),
+                                                             field.getName(),
+                                                             field.getType().getName()));
         }
     }
 }
