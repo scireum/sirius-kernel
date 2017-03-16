@@ -135,12 +135,12 @@ public class NLS {
      * @return the language code of the fallback language
      */
     @Nonnull
-    public static String getFallBackLanguage() {
-        String fallBack = CallContext.getCurrent().getFallBackLang();
-        if (Strings.isEmpty(fallBack)) {
-            fallBack = NLS.getDefaultLanguage();
+    public static String getFallbackLanguage() {
+        String fallback = CallContext.getCurrent().getFallbackLang();
+        if (Strings.isEmpty(fallback)) {
+            fallback = getDefaultLanguage();
         }
-        return fallBack;
+        return fallback;
     }
 
     /**
