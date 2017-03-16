@@ -118,7 +118,7 @@ public class Translation {
         this.accessed = true;
         String result = translationTable.get(lang);
         if (result == null) {
-            result = translationTable.get(NLS.getDefaultLanguage());
+            result = translationTable.get(NLS.getFallBackLanguage());
         }
         if (result == null) {
             return key;
