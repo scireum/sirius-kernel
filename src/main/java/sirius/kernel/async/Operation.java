@@ -48,6 +48,16 @@ public class Operation implements AutoCloseable {
     private Watch w = Watch.start();
 
     /**
+     * Provides a legacy support for as long as sirius-search 1.x and 2.x are around.
+     */
+    @Deprecated
+    public static void cover(String category, Supplier<String> name, Duration timeout, Runnable block) {
+        try(Operation op = new Operation(name, timeout)) {
+            block.run();
+        }
+    }
+
+    /**
      * Creates a new operation.
      *
      * @param name    the supplier used to compute a user readable name if the operation is rendered somewhere
