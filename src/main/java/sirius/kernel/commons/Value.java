@@ -45,6 +45,13 @@ import java.util.regex.Pattern;
  */
 public class Value {
 
+    /**
+     * Represents an empty value which contains <tt>null</tt> as data.
+     */
+    public static final Value EMPTY = new Value();
+
+    private static final Pattern NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
+
     private Object data;
 
     /**
@@ -53,11 +60,6 @@ public class Value {
     private Value() {
         super();
     }
-
-    /**
-     * Represents an empty value which contains <tt>null</tt> as data.
-     */
-    public static final Value EMPTY = new Value();
 
     /**
      * Creates a new wrapper for the given data.
@@ -355,8 +357,6 @@ public class Value {
         return value.substring(0, maxNumberOfCharacters);
     }
 
-    private static final Pattern NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
-
     /**
      * Checks if the current value is numeric (integer or double).
      *
@@ -452,7 +452,7 @@ public class Value {
             return (T) NLS.toMachineString(data);
         }
         if (BigDecimal.class.equals(targetClazz)) {
-            return (T) getBigDecimal(null);
+            return (T) getBigDecimal();
         }
         if (Amount.class.equals(targetClazz)) {
             return (T) getAmount();
@@ -1126,9 +1126,32 @@ public class Value {
      */
     @Nonnull
     public BigDecimal getBigDecimal(@Nonnull BigDecimal defaultValue) {
+        BigDecimal result = getBigDecimal();
+        if (result == null) {
+            return defaultValue;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the <tt>BigDecimal</tt> value for the wrapped value or <tt>null</tt> if the wrapped value
+     * isn't a BigDecimal and cannot be converted to one.
+     * <p>
+     * If the wrapped value is a <tt>BigDecimal</tt>, <tt>Double</tt>, <tt>Long</tt> or <tt>Integer</tt>,
+     * it is either directly returned or converted by calling <tt>java.math.BigDecimal#valueOf</tt>.
+     * <p>
+     * Otherwise {@link BigDecimal#BigDecimal(String, java.math.MathContext)} is called on the string representation
+     * of the wrapped value (with "," replaced to ".") and <tt>MathContext.UNLIMITED</tt>. If parsing fails, or if
+     * the wrapped value was <tt>null</tt>, the <tt>null</tt> will be returned.
+     *
+     * @return the wrapped value casted or converted to <tt>BigDecimal</tt> or <tt>null</tt>
+     * if no conversion is possible.
+     */
+    @Nullable
+    public BigDecimal getBigDecimal() {
         try {
             if (isNull()) {
-                return defaultValue;
+                return null;
             }
             if (data instanceof BigDecimal) {
                 return (BigDecimal) data;
@@ -1145,7 +1168,7 @@ public class Value {
             return new BigDecimal(asString().replace(',', '.').trim(), MathContext.UNLIMITED);
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
-            return defaultValue;
+            return null;
         }
     }
 
@@ -1160,7 +1183,7 @@ public class Value {
      * @see #getBigDecimal(java.math.BigDecimal)
      */
     public Amount getAmount() {
-        return Amount.of(getBigDecimal(null));
+        return Amount.of(getBigDecimal());
     }
 
     /**
