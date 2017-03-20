@@ -45,6 +45,13 @@ import java.util.regex.Pattern;
  */
 public class Value {
 
+    /**
+     * Represents an empty value which contains <tt>null</tt> as data.
+     */
+    public static final Value EMPTY = new Value();
+
+    private static final Pattern NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
+
     private Object data;
 
     /**
@@ -53,11 +60,6 @@ public class Value {
     private Value() {
         super();
     }
-
-    /**
-     * Represents an empty value which contains <tt>null</tt> as data.
-     */
-    public static final Value EMPTY = new Value();
 
     /**
      * Creates a new wrapper for the given data.
@@ -355,8 +357,6 @@ public class Value {
         return value.substring(0, maxNumberOfCharacters);
     }
 
-    private static final Pattern NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
-
     /**
      * Checks if the current value is numeric (integer or double).
      *
@@ -452,7 +452,7 @@ public class Value {
             return (T) NLS.toMachineString(data);
         }
         if (BigDecimal.class.equals(targetClazz)) {
-            return (T) getBigDecimal(null);
+            return (T) getBigDecimal();
         }
         if (Amount.class.equals(targetClazz)) {
             return (T) getAmount();
@@ -1183,7 +1183,7 @@ public class Value {
      * @see #getBigDecimal(java.math.BigDecimal)
      */
     public Amount getAmount() {
-        return Amount.of(getBigDecimal(null));
+        return Amount.of(getBigDecimal());
     }
 
     /**
