@@ -4,6 +4,8 @@ import spock.lang.Specification
 
 class ValueSpec extends Specification {
 
+    private static final BigDecimal DEFAULT_BIG_DECIMAL = BigDecimal.TEN
+
     def "Test isFilled"() {
         expect:
         Value.of(input).isFilled() == output
@@ -87,5 +89,35 @@ class ValueSpec extends Specification {
         "testA.testB" | -5     | "testA."
         "test"        | 5      | "test"
         null          | 5      | ""
+    }
+
+    def "Test getBigDecimal"() {
+        expect:
+        Value.of(input).getBigDecimal() == output
+        where:
+        input               | output
+        ""                  | null
+        "Not a Number"      | null
+        "42"                | BigDecimal.valueOf(42)
+        "42.0"              | BigDecimal.valueOf(42)
+        "42,0"              | BigDecimal.valueOf(42)
+        42                  | BigDecimal.valueOf(42)
+        42.0                | BigDecimal.valueOf(42)
+        Integer.valueOf(42) | BigDecimal.valueOf(42)
+    }
+
+    def "Test getBigDecimal with default"() {
+        expect:
+        Value.of(input).getBigDecimal(DEFAULT_BIG_DECIMAL) == output
+        where:
+        input               | output
+        ""                  | DEFAULT_BIG_DECIMAL
+        "Not a Number"      | DEFAULT_BIG_DECIMAL
+        "42"                | BigDecimal.valueOf(42)
+        "42.0"              | BigDecimal.valueOf(42)
+        "42,0"              | BigDecimal.valueOf(42)
+        42                  | BigDecimal.valueOf(42)
+        42.0                | BigDecimal.valueOf(42)
+        Integer.valueOf(42) | BigDecimal.valueOf(42)
     }
 }

@@ -129,6 +129,21 @@ public class NLS {
     }
 
     /**
+     * Returns the two-letter code of the fall back language. Provided via the {@link CallContext}. If the value is
+     * empty, {@link NLS::getDefaultLanguage} is returned.
+     *
+     * @return the language code of the fallback language
+     */
+    @Nonnull
+    public static String getFallbackLanguage() {
+        String fallback = CallContext.getCurrent().getFallbackLang();
+        if (Strings.isEmpty(fallback)) {
+            fallback = getDefaultLanguage();
+        }
+        return fallback;
+    }
+
+    /**
      * Overrides the default language as defined in the configuration ({@code nls.defaultLanguage}).
      * <p>
      * This can be used to enforce the system language. However, setting nls.defaultLanguage to 'auto' is

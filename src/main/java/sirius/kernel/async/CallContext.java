@@ -177,6 +177,7 @@ public class CallContext {
         newCtx.mdc.put(MDC_PARENT, mdc.get(TaskContext.MDC_SYSTEM));
         subContext.entrySet().forEach(e -> newCtx.subContext.put(e.getKey(), e.getValue().fork()));
         newCtx.lang = lang;
+        newCtx.fallbackLang = fallbackLang;
         return newCtx;
     }
 
@@ -228,6 +229,7 @@ public class CallContext {
     private Map<Class<? extends SubContext>, SubContext> subContext = Collections.synchronizedMap(Maps.newHashMap());
     private Watch watch = Watch.start();
     private String lang = NLS.getDefaultLanguage();
+    private String fallbackLang;
 
     /**
      * Returns the current mapped diagnostic context (MDC).
@@ -331,6 +333,16 @@ public class CallContext {
     }
 
     /**
+     * Returns the current fallback language determined for the current thread.
+     *
+     * @return a two-letter language code used for the current thread.
+     */
+    @Nullable
+    public String getFallbackLang() {
+        return fallbackLang;
+    }
+
+    /**
      * Sets the current language for the current thread.
      * <p>
      * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
@@ -342,6 +354,15 @@ public class CallContext {
         if (Strings.isFilled(lang)) {
             this.lang = lang;
         }
+    }
+
+    /**
+     * Sets the current fallback language for the current thread.
+     *
+     * @param fallbackLang the two-letter language code for this thread.
+     */
+    public void setFallbackLang(@Nullable String fallbackLang) {
+        this.fallbackLang = fallbackLang;
     }
 
     @Override
