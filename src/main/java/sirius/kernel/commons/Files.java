@@ -36,7 +36,7 @@ public class Files {
      * @return the transformed filename wrapped as Optional or an empty Optional if the filename is not filled
      */
     @Nonnull
-    public static Optional<String> toSaneFileName(@Nonnull String input) {
+    public static Optional<String> toSaneFileName(@Nullable String input) {
         String effectiveInput = Strings.trim(input);
         if (Strings.isEmpty(effectiveInput)) {
             return Optional.empty();
