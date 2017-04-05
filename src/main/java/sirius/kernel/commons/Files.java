@@ -36,20 +36,20 @@ public class Files {
      * @return the transformed filename wrapped as Optional or an empty Optional if the filename is not filled
      */
     @Nonnull
-    public static Optional<String> toSaneFileName(@Nonnull String input) {
+    public static Optional<String> toSaneFileName(@Nullable String input) {
         String effectiveInput = Strings.trim(input);
         if (Strings.isEmpty(effectiveInput)) {
             return Optional.empty();
         }
 
         effectiveInput = effectiveInput.replace("ä", "ae")
-                     .replace("ö", "oe")
-                     .replace("ü", "ue")
-                     .replace("Ä", "Ae")
-                     .replace("Ö", "Oe")
-                     .replace("Ü", "Ue")
-                     .replace("ß", "ss")
-                     .replaceAll("[^a-zA-Z0-9\\-_\\.]", "_");
+                                       .replace("ö", "oe")
+                                       .replace("ü", "ue")
+                                       .replace("Ä", "Ae")
+                                       .replace("Ö", "Oe")
+                                       .replace("Ü", "Ue")
+                                       .replace("ß", "ss")
+                                       .replaceAll("[^a-zA-Z0-9\\-_.]", "_");
         Tuple<String, String> nameAndSuffix = Strings.splitAtLast(effectiveInput, ".");
         if (nameAndSuffix.getSecond() == null) {
             return Optional.of(effectiveInput);
