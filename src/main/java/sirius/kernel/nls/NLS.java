@@ -130,7 +130,7 @@ public class NLS {
 
     /**
      * Returns the two-letter code of the fall back language. Provided via the {@link CallContext}. If the value is
-     * empty, {@link NLS::getDefaultLanguage} is returned.
+     * empty, {@link NLS#getDefaultLanguage} is returned.
      *
      * @return the language code of the fallback language
      */
@@ -396,8 +396,8 @@ public class NLS {
     public enum CommonKeys {
 
         YES, NO, OK, CANCEL, NAME, EDIT, DELETE, SEARCH, SEARCHKEY, REFRESH, CLOSE, DESCRIPTION, SAVE, NEW, BACK,
-        FILTER, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, JANUARY, FEBRUARY, MARCH, APRIL,
-        MAY, JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER;
+        FILTER, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, JANUARY, FEBRUARY, MARCH, APRIL, MAY,
+        JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER;
 
         /**
          * Returns the fully qualified key to retrieve the translation
