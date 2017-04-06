@@ -1625,13 +1625,7 @@ public class Value {
     @Nonnull
     @CheckReturnValue
     public Value translate() {
-        if (isFilled()) {
-            String str = asString();
-            if (str.length() > 2 && str.charAt(0) == '$' && str.charAt(1) != '{') {
-                return Value.of(NLS.get(((String) data).substring(1)));
-            }
-        }
-        return this;
+        return translate(NLS.getCurrentLang());
     }
 
     /**
