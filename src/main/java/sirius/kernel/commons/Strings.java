@@ -319,22 +319,24 @@ public class Strings {
      */
     @Nonnull
     public static String join(@Nullable Iterable<?> list, @Nonnull String separator) {
-        StringBuilder result = new StringBuilder();
         if (list == null) {
             return "";
         }
 
-        Monoflop mf = Monoflop.create();
+        StringBuilder result = null;
         for (Object item : list) {
-            if (Strings.isFilled(item)) {
-                if (mf.successiveCall()) {
-                    result.append(separator);
-                }
-                result.append(NLS.toMachineString(item));
+            if (Strings.isEmpty(item)) {
+                continue;
             }
+            if (result != null) {
+                result.append(separator);
+            } else {
+                result = new StringBuilder();
+            }
+            result.append(NLS.toMachineString(item));
         }
 
-        return result.toString();
+        return result != null ? result.toString() : "";
     }
 
     @Nonnull
