@@ -1625,10 +1625,26 @@ public class Value {
     @Nonnull
     @CheckReturnValue
     public Value translate() {
+        return translate(NLS.getCurrentLang());
+    }
+
+    /**
+     * Returns a <tt>Value</tt> containing a translated value using the string representation
+     * of the wrapped value as key.
+     *
+     * @param lang a two-letter language code for which the translation is requested
+     * @return a <tt>Value</tt> containing a translated value by calling {@link NLS#get(String, String)}
+     * if the string representation of the wrapped value starts with {@code $}.
+     * The dollar sign is skipped when passing the key to <tt>NLS</tt>. Otherwise <tt>this</tt> is returned.
+     * @see NLS#get(String, String)
+     */
+    @Nonnull
+    @CheckReturnValue
+    public Value translate(String lang) {
         if (isFilled()) {
             String str = asString();
             if (str.length() > 2 && str.charAt(0) == '$' && str.charAt(1) != '{') {
-                return Value.of(NLS.get(((String) data).substring(1)));
+                return Value.of(NLS.get(((String) data).substring(1), lang));
             }
         }
         return this;
