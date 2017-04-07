@@ -60,7 +60,9 @@ public class Composable implements Transformable {
 
         if (components != null) {
             Object result = components.get(type);
-            return result != NULL && result != null;
+            if (result != null) {
+                return result != NULL;
+            }
         }
 
         return tryAs(type).isPresent();
