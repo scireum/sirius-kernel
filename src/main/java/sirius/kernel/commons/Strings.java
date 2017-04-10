@@ -275,11 +275,28 @@ public class Strings {
      * than <tt>length</tt>, the full value is returned. If input is <tt>null</tt>, "" is returned.
      */
     public static String limit(@Nullable Object input, int length) {
+        return limit(input, length, false);
+    }
+
+    /**
+     * Limits the length of the given string to the given length.
+     *
+     * @param input        the object which string representation should be limited to the given length
+     * @param length       the max. number of characters to return
+     * @param showEllipsis whether to append three dots if <tt>input</tt> is longer than <tt>length</tt>
+     * @return a part of the string representation of the given <tt>input</tt>. If input is shorter
+     * than <tt>length</tt>, the full value is returned. If input is <tt>null</tt>, "" is returned.
+     */
+    public static String limit(@Nullable Object input, int length, boolean showEllipsis) {
         if (isEmpty(input)) {
             return "";
         }
         String str = String.valueOf(input).trim();
-        return str.substring(0, Math.min(length, str.length()));
+        if (str.length() > length) {
+            return str.substring(0, length) + (showEllipsis ? "…" : "");
+        } else {
+            return str;
+        }
     }
 
     /**
