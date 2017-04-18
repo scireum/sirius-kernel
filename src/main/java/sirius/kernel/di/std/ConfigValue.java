@@ -8,6 +8,8 @@
 
 package sirius.kernel.di.std;
 
+import sirius.kernel.Sirius;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -16,7 +18,7 @@ import java.lang.annotation.Target;
 /**
  * Reads the config value given in <tt>value</tt> and inserts in into the field, wearing this annotation.
  * <p>
- * Provides a shortcut for accessing the config ({@link sirius.kernel.Sirius#getConfig()}). Also it performs the
+ * Provides a shortcut for accessing the config ({@link Sirius#getSettings()}). Also it performs the
  * appropriate conversion to the target type of the given field. A default value should be placed in the
  * component config (which then can be overridden in the application.conf or instance.conf).
  */

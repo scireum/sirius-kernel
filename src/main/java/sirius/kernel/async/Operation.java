@@ -48,16 +48,6 @@ public class Operation implements AutoCloseable {
     private Watch w = Watch.start();
 
     /**
-     * Provides a legacy support for as long as sirius-search 1.x and 2.x are around.
-     */
-    @Deprecated
-    public static void cover(String category, Supplier<String> name, Duration timeout, Runnable block) {
-        try(Operation op = new Operation(name, timeout)) {
-            block.run();
-        }
-    }
-
-    /**
      * Creates a new operation.
      *
      * @param name    the supplier used to compute a user readable name if the operation is rendered somewhere
@@ -68,6 +58,23 @@ public class Operation implements AutoCloseable {
         this.nameProvider = name;
         this.timeout = timeout;
         ops.add(this);
+    }
+
+    /**
+     * Provides a legacy support for as long as sirius-search 1.x and 2.x are around.
+     *
+     * @param category obsolete legacy parameter. Will be ignored.
+     * @param name     the supplier used to compute a user readable name if the operation is rendered somewhere
+     * @param timeout  the timeout. If the duration is longer than the given timeout,
+     *                 this operation is considered "hanging"
+     * @param block    the block to execute within the operation
+     * @deprecated Use try-with-resources and the constructor provided below
+     */
+    @Deprecated
+    public static void cover(String category, Supplier<String> name, Duration timeout, Runnable block) {
+        try (Operation op = new Operation(name, timeout)) {
+            block.run();
+        }
     }
 
     @Override
