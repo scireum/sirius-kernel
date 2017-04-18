@@ -11,15 +11,15 @@ package sirius.kernel.async;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.Lifecycle;
+import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.extensions.Extension;
-import sirius.kernel.extensions.Extensions;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.settings.Extension;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -80,6 +80,23 @@ public class Tasks implements Lifecycle {
     @Parts(BackgroundLoop.class)
     private static PartCollection<BackgroundLoop> backgroundLoops;
 
+    private final Map<Object, Long> scheduleTable = new ConcurrentHashMap<>();
+    private final List<ExecutionBuilder.TaskWrapper> schedulerQueue = Lists.newArrayList();
+    private final Lock schedulerLock = new ReentrantLock();
+    private final Condition workAvailable = schedulerLock.newCondition();
+
+    /**
+     * Determines the duration we wait for an executor to shut down normally
+     * (after having called {@link ThreadPoolExecutor#shutdown()})
+     */
+    private static final Duration EXECUTOR_SHUTDOWN_WAIT = Duration.ofSeconds(60);
+
+    /**
+     * Determines the duration we wait for an executor to shut down forced
+     * (after having called {@link ThreadPoolExecutor#shutdownNow()})
+     */
+    private static final Duration EXECUTOR_TERMINATION_WAIT = Duration.ofSeconds(30);
+
     /**
      * Returns the executor for the given category.
      * <p>
@@ -130,7 +147,7 @@ public class Tasks implements Lifecycle {
             synchronized (executors) {
                 exec = executors.get(category);
                 if (exec == null) {
-                    Extension config = Extensions.getExtension("async.executor", category);
+                    Extension config = Sirius.getSettings().getExtension("async.executor", category);
                     exec = new AsyncExecutor(category,
                                              config.get("poolSize").getInteger(),
                                              config.get("queueLength").getInteger());
@@ -140,11 +157,6 @@ public class Tasks implements Lifecycle {
         }
         return exec;
     }
-
-    private final Map<Object, Long> scheduleTable = new ConcurrentHashMap<>();
-    private final List<ExecutionBuilder.TaskWrapper> schedulerQueue = Lists.newArrayList();
-    private final Lock schedulerLock = new ReentrantLock();
-    private final Condition workAvailable = schedulerLock.newCondition();
 
     private synchronized void schedule(ExecutionBuilder.TaskWrapper wrapper) {
         // As tasks often create a loop by calling itself (e.g. BackgroundLoop), we drop
@@ -202,7 +214,7 @@ public class Tasks implements Lifecycle {
             try {
                 executeWaitingTasks();
                 idle();
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 Exceptions.handle(LOG, t);
             }
         }
@@ -364,7 +376,7 @@ public class Tasks implements Lifecycle {
         final Promise<List<V>> result = promise();
 
         // Create a list with the correct length
-        final List<V> resultList = new ArrayList<V>();
+        final List<V> resultList = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             resultList.add(null);
         }
@@ -467,18 +479,6 @@ public class Tasks implements Lifecycle {
             exec.shutdown();
         }
     }
-
-    /**
-     * Determines the duration we wait for an executor to shut down normally
-     * (after having called {@link ThreadPoolExecutor#shutdown()})
-     */
-    private static final Duration EXECUTOR_SHUTDOWN_WAIT = Duration.ofSeconds(60);
-
-    /**
-     * Determines the duration we wait for an executor to shut down forced
-     * (after having called {@link ThreadPoolExecutor#shutdownNow()})
-     */
-    private static final Duration EXECUTOR_TERMINATION_WAIT = Duration.ofSeconds(30);
 
     @Override
     public void awaitTermination() {

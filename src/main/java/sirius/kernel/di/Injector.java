@@ -77,7 +77,7 @@ public class Injector {
         cp = classpath;
         loadedClasses = Lists.newArrayList();
         actions = Lists.newArrayList();
-        packageFilter = Sirius.getConfig().getStringList("di.packageFilter");
+        packageFilter = Sirius.getSettings().getStringList("di.packageFilter");
 
         LOG.INFO("Initializing the MicroKernel....");
         LOG.INFO("~ Scanning .class files...");

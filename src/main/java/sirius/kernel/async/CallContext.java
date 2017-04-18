@@ -59,6 +59,16 @@ public class CallContext {
     private static String nodeName = null;
     private static Counter interactionCounter = new Counter();
 
+    private Map<String, String> mdc = Maps.newLinkedHashMap();
+
+    /*
+     * Needs to be synchronized as a CallContext might be shared across several sub tasks
+     */
+    private Map<Class<? extends SubContext>, SubContext> subContext = Collections.synchronizedMap(Maps.newHashMap());
+    private Watch watch = Watch.start();
+    private String lang = NLS.getDefaultLanguage();
+    private String fallbackLang;
+
     /**
      * Returns the name of this computation node.
      * <p>
@@ -68,10 +78,10 @@ public class CallContext {
      */
     public static String getNodeName() {
         if (nodeName == null) {
-            if (Sirius.getConfig() == null) {
+            if (Sirius.getSettings() == null) {
                 return "booting";
             }
-            nodeName = Sirius.getConfig().getString("sirius.nodeName");
+            nodeName = Sirius.getSettings().getString("sirius.nodeName");
             if (Strings.isEmpty(nodeName)) {
                 try {
                     nodeName = InetAddress.getLocalHost().getHostName();
@@ -175,7 +185,7 @@ public class CallContext {
         CallContext newCtx = initialize(false, mdc.get(MDC_FLOW));
         newCtx.watch = watch;
         newCtx.mdc.put(MDC_PARENT, mdc.get(TaskContext.MDC_SYSTEM));
-        subContext.entrySet().forEach(e -> newCtx.subContext.put(e.getKey(), e.getValue().fork()));
+        subContext.forEach((key, value) -> newCtx.subContext.put(key, value.fork()));
         newCtx.lang = lang;
         newCtx.fallbackLang = fallbackLang;
         return newCtx;
@@ -220,16 +230,6 @@ public class CallContext {
             }
         }
     }
-
-    private Map<String, String> mdc = Maps.newLinkedHashMap();
-
-    /*
-     * Needs to be synchronized as a CallContext might be shared across several sub tasks
-     */
-    private Map<Class<? extends SubContext>, SubContext> subContext = Collections.synchronizedMap(Maps.newHashMap());
-    private Watch watch = Watch.start();
-    private String lang = NLS.getDefaultLanguage();
-    private String fallbackLang;
 
     /**
      * Returns the current mapped diagnostic context (MDC).
