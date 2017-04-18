@@ -35,6 +35,7 @@ import java.util.Map;
 @Register(classes = {Metrics.class, EveryMinute.class})
 public class Metrics implements EveryMinute {
 
+    private static final String HEALTH_LIMITS_PREFIX = "health.limits.";
     @Parts(MetricProvider.class)
     private Collection<MetricProvider> providers;
 
@@ -120,14 +121,14 @@ public class Metrics implements EveryMinute {
         Limit limit = limits.get(limitType);
         if (limit == null) {
             limit = new Limit();
-            if (Sirius.getConfig().hasPath("health.limits." + limitType + ".gray")) {
-                limit.gray = Sirius.getConfig().getDouble("health.limits." + limitType + ".gray");
+            if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".gray")) {
+                limit.gray = Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".gray");
             }
-            if (Sirius.getConfig().hasPath("health.limits." + limitType + ".warning")) {
-                limit.yellow = Sirius.getConfig().getDouble("health.limits." + limitType + ".warning");
+            if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".warning")) {
+                limit.yellow = Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".warning");
             }
-            if (Sirius.getConfig().hasPath("health.limits." + limitType + ".error")) {
-                limit.red = Sirius.getConfig().getDouble("health.limits." + limitType + ".error");
+            if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".error")) {
+                limit.red = Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".error");
             }
             limits.put(limitType, limit);
         }

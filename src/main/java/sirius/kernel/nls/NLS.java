@@ -118,8 +118,8 @@ public class NLS {
      */
     @Nonnull
     public static String getDefaultLanguage() {
-        if (defaultLanguage == null && Sirius.getConfig() != null) {
-            defaultLanguage = Sirius.getConfig().getString("nls.defaultLanguage").toLowerCase();
+        if (defaultLanguage == null && Sirius.getSettings() != null) {
+            defaultLanguage = Sirius.getSettings().getString("nls.defaultLanguage").toLowerCase();
             if ("auto".equals(defaultLanguage)) {
                 defaultLanguage = getSystemLanguage();
             }
@@ -179,9 +179,9 @@ public class NLS {
      * @return a list of supported language codes
      */
     public static Set<String> getSupportedLanguages() {
-        if (supportedLanguages == null && Sirius.getConfig() != null) {
+        if (supportedLanguages == null && Sirius.getSettings() != null) {
             try {
-                supportedLanguages = Sirius.getConfig()
+                supportedLanguages = Sirius.getSettings()
                                            .getStringList("nls.languages")
                                            .stream()
                                            .map(String::toLowerCase)
@@ -357,25 +357,6 @@ public class NLS {
      */
     public static Formatter fmtr(@Nonnull String property, @Nullable String lang) {
         return Formatter.create(get(property, lang), getCurrentLang());
-    }
-
-    /**
-     * Formats a translated string by replacing templates with the given parameters.
-     * <p>
-     * Uses the same format as {@link Strings#apply(String, Object...)}. However, this method should only be
-     * used for very simple strings. {@link #fmtr(String)} provides support for named parameters, which are easier
-     * to translate.
-     *
-     * @param key    the key used to lookup the translated text
-     * @param params parameters used to replace arguments
-     * @return a translated and formatted string as defined in <tt>Strings.apply</tt>
-     * @deprecated As it can be easily confused with {@link Strings#apply(String, Object...)}.
-     * Also using {@link NLS#fmtr(String)} is strongly encouraged.
-     */
-    @Deprecated
-    public static String apply(String key, Object... params) {
-        Exceptions.logDeprecatedMethodUse();
-        return Strings.apply(get(key), params);
     }
 
     /**

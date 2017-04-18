@@ -33,7 +33,7 @@ public class PartAnnotationProcessor implements FieldAnnotationProcessor {
     public void handle(MutableGlobalContext ctx, Object object, Field field) throws Exception {
         Part annotation = field.getAnnotation(Part.class);
         if (Strings.isFilled(annotation.configPath())) {
-            String value = Sirius.getConfig().getString(annotation.configPath());
+            String value = Sirius.getSettings().getString(annotation.configPath());
             if (Strings.isFilled(value)) {
                 Object part = ctx.findPart(value, field.getType());
                 if (part != null) {

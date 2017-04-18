@@ -11,12 +11,12 @@ package sirius.kernel.cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import sirius.kernel.Sirius;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Tuple;
-import sirius.kernel.extensions.Extension;
-import sirius.kernel.extensions.Extensions;
 import sirius.kernel.health.Counter;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.settings.Extension;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -35,8 +35,8 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
 
     protected static final int MAX_HISTORY = 25;
     private static final double ONE_HUNDERT_PERCENT = 100d;
-    protected List<Long> usesHistory = new ArrayList<Long>(MAX_HISTORY);
-    protected List<Long> hitRateHistory = new ArrayList<Long>(MAX_HISTORY);
+    protected List<Long> usesHistory = new ArrayList<>(MAX_HISTORY);
+    protected List<Long> hitRateHistory = new ArrayList<>(MAX_HISTORY);
 
     protected int maxSize;
     protected ValueComputer<K, V> computer;
@@ -79,7 +79,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
             return;
         }
 
-        Extension cacheInfo = Extensions.getExtension(EXTENSION_TYPE_CACHE, name);
+        Extension cacheInfo = Sirius.getSettings().getExtension(EXTENSION_TYPE_CACHE, name);
         if (cacheInfo.isDefault()) {
             CacheManager.LOG.WARN("Cache %s does not exist! Using defaults...", name);
         }

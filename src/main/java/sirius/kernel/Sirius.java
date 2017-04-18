@@ -25,6 +25,7 @@ import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.settings.ExtendedSettings;
 
 import javax.annotation.Nullable;
 import java.lang.management.ManagementFactory;
@@ -50,6 +51,7 @@ public class Sirius {
     private static final String SEPARATOR_LINE = "---------------------------------------------------------";
     private static Setup setup;
     private static Config config;
+    private static ExtendedSettings settings;
     private static Map<String, Boolean> frameworks = Maps.newHashMap();
     private static List<String> customizations = Lists.newArrayList();
     private static Classpath classpath;
@@ -520,12 +522,17 @@ public class Sirius {
 
     /**
      * Returns the system config based on the current instance.conf (file system), application.conf (classpath) and
-     * all component-XXX.conf
+     * all component-XXX.conf wrapped as <tt>Settings</tt>
      *
-     * @return the initialized config or <tt>null</tt> if the framework is not setup yet.
+     * @return the initialized settings object or <tt>null</tt> if the framework is not setup yet.
      */
-    public static Config getConfig() {
-        return config;
+    public static ExtendedSettings getSettings() {
+        if (settings == null) {
+            if (config != null) {
+                settings = new ExtendedSettings(config);
+            }
+        }
+        return settings;
     }
 
     /**

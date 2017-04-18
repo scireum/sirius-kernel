@@ -10,8 +10,7 @@ package sirius.kernel.info;
 
 import com.google.common.collect.Lists;
 import sirius.kernel.Sirius;
-import sirius.kernel.extensions.Extension;
-import sirius.kernel.extensions.Extensions;
+import sirius.kernel.settings.Extension;
 
 import java.util.List;
 
@@ -38,11 +37,11 @@ public class Product {
      */
     public static Module getProduct() {
         if (product == null) {
-            product = new Module(Module.fix(Sirius.getConfig().getString("product.name"), "SIRIUS"),
-                                 Sirius.getConfig().getString("product.version"),
-                                 Sirius.getConfig().getString("product.build"),
-                                 Sirius.getConfig().getString("product.date"),
-                                 Sirius.getConfig().getString("product.vcs"));
+            product = new Module(Module.fix(Sirius.getSettings().getString("product.name"), "SIRIUS"),
+                                 Sirius.getSettings().getString("product.version"),
+                                 Sirius.getSettings().getString("product.build"),
+                                 Sirius.getSettings().getString("product.date"),
+                                 Sirius.getSettings().getString("product.vcs"));
         }
 
         return product;
@@ -57,7 +56,7 @@ public class Product {
     public static List<Module> getModules() {
         if (modules == null) {
             List<Module> result = Lists.newArrayList();
-            for (Extension ext : Extensions.getExtensions("product.modules")) {
+            for (Extension ext : Sirius.getSettings().getExtensions("product.modules")) {
                 result.add(new Module(ext.getId(),
                                       ext.get("version").asString(),
                                       ext.get("build").asString(),
