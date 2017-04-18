@@ -39,12 +39,8 @@
  * <h3>System Configuration</h3>
  * Sirius provides a flexible way of building up a system configuration using the <b>Typesafe Config Library</b>. The
  * config can be accessed in three ways. The raw configuration is available via
- * {@link sirius.kernel.Sirius#getConfig()}. Also the annotation {@link sirius.kernel.di.std.ConfigValue} can be
+ * {@link sirius.kernel.Sirius#getSettings()}. Also the annotation {@link sirius.kernel.di.std.ConfigValue} can be
  * placed on a field of a registered component to automatically fill it with the appropriate config value.
- * <p>
- * The third way of accessing the system config is the <b>Extensions</b> mechanism. This is done via the
- * {@link sirius.kernel.extensions.Extensions} class (or the {@link sirius.kernel.di.std.ExtensionList}
- * annotation placed on a field).
  * <p>
  * Extensions provide a way to have several config files contribute to one section which is then consumed by a service.
  * An example of this would be the {@link sirius.kernel.cache.CacheManager} which permits to define caches used
