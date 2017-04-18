@@ -58,7 +58,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * The extensions defined above can be obtained calling {@code settings.getExtension("examples")}. Each
  * of those extensions can be read out calling {@code ext.getValue("key").asString()} or
  * {@code ext.getValue("otherKey").asBoolean()}
- * <p>
  *
  * @see Extension
  */
