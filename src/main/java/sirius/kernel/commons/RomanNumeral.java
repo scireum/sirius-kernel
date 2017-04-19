@@ -22,7 +22,7 @@ public class RomanNumeral {
     /**
      * Converts the given value to a roman representation
      *
-     * @param value the value to convert. This must be &gt;= 0 and &lt;= 4000.
+     * @param value the value to convert. This must be &gt;0 and &lt;4000.
      * @return a representation of the given number as roman numerals
      */
     public static String toRoman(int value) {
