@@ -18,19 +18,9 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.temporal.TemporalAccessor;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -365,7 +355,7 @@ public class Value {
      */
     public boolean isNumeric() {
         return data != null && (data instanceof Number || data instanceof Amount || NUMBER.matcher(asString(""))
-                                                                                          .matches());
+                .matches());
     }
 
     /**
@@ -479,11 +469,11 @@ public class Value {
         }
         if (LocalTime.class.equals(targetClazz) && data instanceof TemporalAccessor) {
             if (is(TemporalAccessor.class,
-                   Calendar.class,
-                   Date.class,
-                   java.sql.Date.class,
-                   Timestamp.class,
-                   Time.class)) {
+                    Calendar.class,
+                    Date.class,
+                    java.sql.Date.class,
+                    Timestamp.class,
+                    Time.class)) {
                 return (T) asLocalTime((LocalTime) defaultValue);
             }
         }
@@ -517,8 +507,8 @@ public class Value {
         }
 
         throw new IllegalArgumentException(Strings.apply("Cannot convert '%s' to target class: %s ",
-                                                         data,
-                                                         targetClazz));
+                data,
+                targetClazz));
     }
 
     /**
@@ -533,7 +523,7 @@ public class Value {
     @SuppressWarnings("unchecked")
     public <V> V get(Class<V> clazz, V defaultValue) {
         Object result = get(defaultValue);
-        if (result == null || !clazz.isAssignableFrom(result.getClass())) {
+        if (!clazz.isAssignableFrom(result.getClass())) {
             return defaultValue;
         }
         return (V) result;
@@ -672,6 +662,16 @@ public class Value {
             Exceptions.ignore(e);
             return defaultValue;
         }
+    }
+
+    /**
+     * Tries to convert the wrapped value to a roman numeral representation
+     * This only works if the wrapped value can be converted to <tt>int</tt> and is &gt;= 0 and &lt;= 4000.
+     * @param defaultValue the value to be converted to roman numeral if the wrapped value can not be converted
+     * @return a roman numeral representation of either the wrapped value or the defaultValue. values &lt;= 0 and &gt;= 4000 are represented as an empty String  
+     */
+    public String asRomanNumeral(int defaultValue) {
+        return RomanNumeral.toRoman(asInt(defaultValue));
     }
 
     /**
@@ -838,16 +838,16 @@ public class Value {
         }
         if (is(Calendar.class)) {
             return Instant.ofEpochMilli(((Calendar) data).getTimeInMillis())
-                          .atZone(ZoneId.systemDefault())
-                          .toLocalDate();
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
         }
         if (is(java.sql.Date.class)) {
             return Instant.ofEpochMilli(((java.sql.Date) data).getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         }
         if (is(Timestamp.class)) {
             return Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime())
-                          .atZone(ZoneId.systemDefault())
-                          .toLocalDate();
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
         }
         if (is(long.class) || is(Long.class)) {
             return Instant.ofEpochMilli((long) data).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -889,15 +889,15 @@ public class Value {
         }
         if (is(Calendar.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((Calendar) data).getTimeInMillis()),
-                                           ZoneId.systemDefault());
+                    ZoneId.systemDefault());
         }
         if (is(java.sql.Date.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.sql.Date) data).getTime()),
-                                           ZoneId.systemDefault());
+                    ZoneId.systemDefault());
         }
         if (is(Timestamp.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime()),
-                                           ZoneId.systemDefault());
+                    ZoneId.systemDefault());
         }
         if (is(long.class) || is(Long.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli((long) data), ZoneId.systemDefault());

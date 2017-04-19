@@ -580,6 +580,17 @@ public class Amount implements Comparable<Amount> {
     }
 
     /**
+     * Tries to convert the wrapped value to a roman numeral representation.
+     * Any fractional part of this {@code BigDecimal} will be discarded,
+     * and if the resulting "{@code BigInteger}" is too big to fit in an {@code int}, only the low-order 32 bits are returned.
+     *
+     * @return a string representation of this number as roman numeral or "" for values &lt;= 0 and &gt;= 4000.
+     */
+    public String toRomanNumeralString() {
+        return RomanNumeral.toRoman(amount.intValue());
+    }
+
+    /**
      * Formats the represented value by rounding to zero decimal places. The rounding mode is obtained from
      * {@link NumberFormat#NO_DECIMAL_PLACES}.
      *
