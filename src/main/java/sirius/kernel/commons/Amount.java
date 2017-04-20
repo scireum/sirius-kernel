@@ -153,7 +153,7 @@ public class Amount implements Comparable<Amount> {
      */
     @Nonnull
     public static Amount of(double amount) {
-        return of(new BigDecimal(amount));
+        return of(BigDecimal.valueOf(amount));
     }
 
     /**
@@ -265,7 +265,7 @@ public class Amount implements Comparable<Amount> {
      */
     @Nonnull
     @CheckReturnValue
-    public Amount increasePercent(@Nullable Amount increase) {
+    public Amount increasePercent(@Nonnull Amount increase) {
         return times(ONE.add(increase.asDecimal()));
     }
 
@@ -278,7 +278,7 @@ public class Amount implements Comparable<Amount> {
      */
     @Nonnull
     @CheckReturnValue
-    public Amount decreasePercent(@Nullable Amount decrease) {
+    public Amount decreasePercent(@Nonnull Amount decrease) {
         return times(ONE.subtract(decrease.asDecimal()));
     }
 
@@ -294,7 +294,7 @@ public class Amount implements Comparable<Amount> {
      */
     @Nonnull
     @CheckReturnValue
-    public Amount multiplyPercent(@Nullable Amount percent) {
+    public Amount multiplyPercent(@Nonnull Amount percent) {
         return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
     }
 
@@ -350,7 +350,7 @@ public class Amount implements Comparable<Amount> {
     @Nonnull
     @CheckReturnValue
     public Amount times(@Nonnull Amount other) {
-        if (other == null || other.isEmpty() || isEmpty()) {
+        if (other.isEmpty() || isEmpty()) {
             return NOTHING;
         }
         return Amount.of(amount.multiply(other.amount));
@@ -499,12 +499,12 @@ public class Amount implements Comparable<Amount> {
             return false;
         }
 
-        Amount amount = (Amount) o;
-        if (this.amount == null || amount.amount == null) {
-            return (this.amount == null) == (amount.amount == null);
+        Amount otherAmount = (Amount) o;
+        if (this.amount == null || otherAmount.amount == null) {
+            return (this.amount == null) == (otherAmount.amount == null);
         }
 
-        return this.amount.compareTo(amount.amount) == 0;
+        return this.amount.compareTo(otherAmount.amount) == 0;
     }
 
     @Override
@@ -577,6 +577,17 @@ public class Amount implements Comparable<Amount> {
      */
     public String toPercentString() {
         return toSmartRoundedString(NumberFormat.PERCENT).toString();
+    }
+
+    /**
+     * Tries to convert the wrapped value to a roman numeral representation.
+     * Any fractional part of this {@code BigDecimal} will be discarded,
+     * and if the resulting "{@code BigInteger}" is too big to fit in an {@code int}, only the low-order 32 bits are returned.
+     *
+     * @return a string representation of this number as roman numeral or "" for values &lt;= 0 and &gt;= 4000.
+     */
+    public String toRomanNumeralString() {
+        return RomanNumeral.toRoman(amount.intValue());
     }
 
     /**
