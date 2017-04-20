@@ -24,9 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -243,6 +241,8 @@ public class Settings {
             field.set(target, Duration.ofMillis(config.getDuration(key, TimeUnit.MILLISECONDS)));
         } else if (field.getType().isEnum()) {
             field.set(target, Value.of(config.getString(key)).asEnum((Class<? extends Enum>) field.getType()));
+        } else if (Set.class.equals(field.getType())) {
+            field.set(target, new HashSet<>(config.getStringList(key)));
         } else {
             throw new IllegalArgumentException(Strings.apply("Cannot fill field '%s.%s' of type %s with a config value!",
                                                              field.getDeclaringClass().getName(),
