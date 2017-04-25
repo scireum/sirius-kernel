@@ -25,4 +25,20 @@ public class Future extends Promise<Object> {
     public void success() {
         success(null);
     }
+
+
+    /**
+     * Adds a completion handler to this promise which only handles the successful completion of the promise.
+     * <p>
+     * If the promise is already completed, the handler is immediately invoked.
+     *
+     * @param successHandler the handler to be notified once the promise is completed. A promise can notify more than
+     *                       one handler.
+     * @return <tt>this</tt> for fluent method chaining
+     */
+    public Future onSuccess(Runnable successHandler) {
+        onSuccess(ignored -> successHandler.run());
+
+        return this;
+    }
 }
