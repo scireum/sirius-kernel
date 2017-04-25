@@ -438,6 +438,7 @@ public class Promise<V> {
         return onComplete(new CompletionHandler<V>() {
             @Override
             public void onSuccess(V value) throws Exception {
+                // will not be invoked
             }
 
             @Override
@@ -468,6 +469,6 @@ public class Promise<V> {
      */
     @Nonnull
     public Promise<V> handleErrors(@Nonnull final Log log) {
-        return onFailure(value -> Exceptions.handle(log, value));
+        return onFailure(ex -> Exceptions.handle(log, ex));
     }
 }

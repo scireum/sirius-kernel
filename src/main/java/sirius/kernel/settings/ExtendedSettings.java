@@ -66,12 +66,12 @@ public class ExtendedSettings extends Settings {
     /*
      * Used as cache for already loaded extension lists
      */
-    private static Map<String, Map<String, Extension>> cache = new ConcurrentHashMap<>();
+    private Map<String, Map<String, Extension>> cache = new ConcurrentHashMap<>();
 
     /*
      * Used as cache for the default values of a given extension type
      */
-    private static Map<String, Extension> defaultsCache = new ConcurrentHashMap<>();
+    private Map<String, Extension> defaultsCache = new ConcurrentHashMap<>();
 
     public ExtendedSettings(Config config) {
         super(config);
