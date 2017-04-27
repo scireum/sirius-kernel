@@ -331,7 +331,7 @@ public class Timers implements Lifecycle {
                          LOG.WARN("TimedTask '%s' (%s) took over a second to complete! "
                                   + "Consider executing the work in a separate executor!", task, task.getClass());
                      }
-                 } catch (Throwable t) {
+                 } catch (Exception t) {
                      Exceptions.handle(LOG, t);
                  }
              });
