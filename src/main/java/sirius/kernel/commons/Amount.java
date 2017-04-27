@@ -69,13 +69,16 @@ public class Amount implements Comparable<Amount> {
      */
     public static final int SCALE = 5;
 
-    private final BigDecimal amount;
+    private static final String[] METRICS = {"f", "n", "u", "m", "", "K", "M", "G"};
+    private static final int NEUTRAL_METRIC = 4;
 
-    private Amount(BigDecimal amount) {
-        if (amount != null) {
-            this.amount = amount.setScale(SCALE, RoundingMode.HALF_UP);
+    private final BigDecimal value;
+
+    private Amount(BigDecimal value) {
+        if (value != null) {
+            this.value = value.setScale(SCALE, RoundingMode.HALF_UP);
         } else {
-            this.amount = null;
+            this.value = null;
         }
     }
 
@@ -206,7 +209,7 @@ public class Amount implements Comparable<Amount> {
      */
     @Nullable
     public BigDecimal getAmount() {
-        return amount;
+        return value;
     }
 
     /**
@@ -215,7 +218,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if the internal value is null, <tt>false</tt> otherwise
      */
     public boolean isEmpty() {
-        return amount == null;
+        return value == null;
     }
 
     /**
@@ -224,7 +227,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if the internal value is a number, <tt>false</tt> otherwise
      */
     public boolean isFilled() {
-        return amount != null;
+        return value != null;
     }
 
     /**
@@ -315,7 +318,7 @@ public class Amount implements Comparable<Amount> {
         if (isEmpty()) {
             return NOTHING;
         }
-        return Amount.of(amount.add(other.amount));
+        return Amount.of(value.add(other.value));
     }
 
     /**
@@ -336,7 +339,7 @@ public class Amount implements Comparable<Amount> {
         if (isEmpty()) {
             return NOTHING;
         }
-        return Amount.of(amount.subtract(other.amount));
+        return Amount.of(value.subtract(other.value));
     }
 
     /**
@@ -353,7 +356,7 @@ public class Amount implements Comparable<Amount> {
         if (other.isEmpty() || isEmpty()) {
             return NOTHING;
         }
-        return Amount.of(amount.multiply(other.amount));
+        return Amount.of(value.multiply(other.value));
     }
 
     /**
@@ -370,7 +373,7 @@ public class Amount implements Comparable<Amount> {
         if (other == null || other.isZeroOrNull() || isEmpty()) {
             return NOTHING;
         }
-        return Amount.of(amount.divide(other.amount, MathContext.DECIMAL128));
+        return Amount.of(value.divide(other.value, MathContext.DECIMAL128));
     }
 
     /**
@@ -407,7 +410,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if this value is filled and equal to 0.00, <tt>false</tt> otherwise.
      */
     public boolean isZero() {
-        return amount != null && amount.compareTo(BigDecimal.ZERO) == 0;
+        return value != null && value.compareTo(BigDecimal.ZERO) == 0;
     }
 
     /**
@@ -416,7 +419,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if this value is filled and not equal to 0.00, <tt>false</tt> otherwise.
      */
     public boolean isNonZero() {
-        return amount != null && amount.compareTo(BigDecimal.ZERO) != 0;
+        return value != null && value.compareTo(BigDecimal.ZERO) != 0;
     }
 
     /**
@@ -425,7 +428,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if this value is filled and greater than 0.00, <tt>false</tt> otherwise.
      */
     public boolean isPositive() {
-        return amount != null && amount.compareTo(BigDecimal.ZERO) > 0;
+        return value != null && value.compareTo(BigDecimal.ZERO) > 0;
     }
 
     /**
@@ -434,7 +437,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if this value is filled and less than 0.00, <tt>false</tt> otherwise.
      */
     public boolean isNegative() {
-        return amount != null && amount.compareTo(BigDecimal.ZERO) < 0;
+        return value != null && value.compareTo(BigDecimal.ZERO) < 0;
     }
 
     /**
@@ -443,7 +446,7 @@ public class Amount implements Comparable<Amount> {
      * @return <tt>true</tt> if this value is empty, or equal to 0.00, <tt>false</tt> otherwise.
      */
     public boolean isZeroOrNull() {
-        return amount == null || amount.compareTo(BigDecimal.ZERO) == 0;
+        return value == null || value.compareTo(BigDecimal.ZERO) == 0;
     }
 
     /**
@@ -470,6 +473,16 @@ public class Amount implements Comparable<Amount> {
         return divideBy(ONE_HUNDRED);
     }
 
+    /**
+     * Compares this amount against the given one.
+     * <p>
+     * If both amounts are empty, they are considered equal, otherwise, if the given amount is empty, we consider this
+     * amount to be larger. Likewise, if this amount is empty, we consider the given one to be larger.
+     *
+     * @param o the amount to compare to
+     * @return 0 if both amounts are equal, -1 of this amount is less than the given one or 1 if this amount is greater
+     * than the given one
+     */
     @Override
     public int compareTo(Amount o) {
         if (o == null) {
@@ -478,16 +491,64 @@ public class Amount implements Comparable<Amount> {
         if (o == this) {
             return 0;
         }
-        if (Objects.equals(amount, o.amount)) {
+        if (Objects.equals(value, o.value)) {
             return 0;
         }
-        if (o.amount == null) {
+        if (o.value == null) {
             return 1;
         }
-        if (amount == null) {
+        if (value == null) {
             return -1;
         }
-        return amount.compareTo(o.amount);
+        return value.compareTo(o.value);
+    }
+
+    /**
+     * Determines if this amount is greater than the given one.
+     * <p>
+     * See {@link #compareTo(Amount)} for an explanation of how empty amounts are handled.
+     *
+     * @param o the other amount to compare against
+     * @return <tt>true</tt> if this amount is greater than the given one
+     */
+    public boolean isGreaterThan(Amount o) {
+        return compareTo(o) > 0;
+    }
+
+    /**
+     * Determines if this amount is greater than or equal to the given one.
+     * <p>
+     * See {@link #compareTo(Amount)} for an explanation of how empty amounts are handled.
+     *
+     * @param o the other amount to compare against
+     * @return <tt>true</tt> if this amount is greater than or equals to the given one
+     */
+    public boolean isGreaterThanOrEqual(Amount o) {
+        return compareTo(o) >= 0;
+    }
+
+    /**
+     * Determines if this amount is less than the given one.
+     * <p>
+     * See {@link #compareTo(Amount)} for an explanation of how empty amounts are handled.
+     *
+     * @param o the other amount to compare against
+     * @return <tt>true</tt> if this amount is less than the given one
+     */
+    public boolean isLessThan(Amount o) {
+        return compareTo(o) < 0;
+    }
+
+    /**
+     * Determines if this amount is less than or equal to the given one.
+     * <p>
+     * See {@link #compareTo(Amount)} for an explanation of how empty amounts are handled.
+     *
+     * @param o the other amount to compare against
+     * @return <tt>true</tt> if this amount is less than or equals to the given one
+     */
+    public boolean isLessThanOrEqual(Amount o) {
+        return compareTo(o) <= 0;
     }
 
     @Override
@@ -500,16 +561,16 @@ public class Amount implements Comparable<Amount> {
         }
 
         Amount otherAmount = (Amount) o;
-        if (this.amount == null || otherAmount.amount == null) {
-            return (this.amount == null) == (otherAmount.amount == null);
+        if (this.value == null || otherAmount.value == null) {
+            return (this.value == null) == (otherAmount.value == null);
         }
 
-        return this.amount.compareTo(otherAmount.amount) == 0;
+        return this.value.compareTo(otherAmount.value) == 0;
     }
 
     @Override
     public int hashCode() {
-        return amount != null ? amount.hashCode() : 0;
+        return value != null ? value.hashCode() : 0;
     }
 
     /**
@@ -532,7 +593,7 @@ public class Amount implements Comparable<Amount> {
             return this;
         }
 
-        return this.amount.compareTo(other.amount) < 0 ? this : other;
+        return this.value.compareTo(other.value) < 0 ? this : other;
     }
 
     /**
@@ -555,7 +616,7 @@ public class Amount implements Comparable<Amount> {
             return this;
         }
 
-        return this.amount.compareTo(other.amount) > 0 ? this : other;
+        return this.value.compareTo(other.value) > 0 ? this : other;
     }
 
     @Override
@@ -582,12 +643,13 @@ public class Amount implements Comparable<Amount> {
     /**
      * Tries to convert the wrapped value to a roman numeral representation.
      * Any fractional part of this {@code BigDecimal} will be discarded,
-     * and if the resulting "{@code BigInteger}" is too big to fit in an {@code int}, only the low-order 32 bits are returned.
+     * and if the resulting "{@code BigInteger}" is too big to fit in an {@code int}, only the low-order 32 bits are
+     * returned.
      *
      * @return a string representation of this number as roman numeral or "" for values &lt;= 0 and &gt;= 4000.
      */
     public String toRomanNumeralString() {
-        return RomanNumeral.toRoman(amount.intValue());
+        return RomanNumeral.toRoman(value.intValue());
     }
 
     /**
@@ -620,7 +682,7 @@ public class Amount implements Comparable<Amount> {
             return NOTHING;
         }
 
-        return Amount.of(amount.setScale(format.getScale(), format.getRoundingMode()));
+        return Amount.of(value.setScale(format.getScale(), format.getRoundingMode()));
     }
 
     private Value convertToString(NumberFormat format, boolean smartRound) {
@@ -632,7 +694,7 @@ public class Amount implements Comparable<Amount> {
         df.setMaximumFractionDigits(format.getScale());
         df.setDecimalFormatSymbols(format.getDecimalFormatSymbols());
         df.setGroupingUsed(true);
-        return Value.of(df.format(amount)).append(" ", format.getSuffix());
+        return Value.of(df.format(value)).append(" ", format.getSuffix());
     }
 
     /**
@@ -666,9 +728,6 @@ public class Amount implements Comparable<Amount> {
         return convertToString(format, true);
     }
 
-    private static final String[] METRICS = {"f", "n", "u", "m", "", "K", "M", "G"};
-    private static final int NEUTRAL_METRIC = 4;
-
     /**
      * Creates a "scientific" representation of the amount.
      * <p>
@@ -697,25 +756,26 @@ public class Amount implements Comparable<Amount> {
             return "";
         }
         int metric = NEUTRAL_METRIC;
-        double value = amount.doubleValue();
-        while (Math.abs(value) >= 990d && metric < METRICS.length - 1) {
-            value /= 1000d;
+        double doubleValue = this.value.doubleValue();
+        while (Math.abs(doubleValue) >= 990d && metric < METRICS.length - 1) {
+            doubleValue /= 1000d;
             metric += 1;
         }
+        int effectiveDigits = digits;
         if (metric == NEUTRAL_METRIC) {
-            while (value != 0d && Math.abs(value) < 1.01 && metric > 0) {
-                value *= 1000d;
+            while (!Doubles.isZero(doubleValue) && Math.abs(doubleValue) < 1.01 && metric > 0) {
+                doubleValue *= 1000d;
                 metric -= 1;
                 // We loose accuracy, therefore we limit our decimal digits...
-                digits -= 3;
+                effectiveDigits -= 3;
             }
         }
         DecimalFormat df = new DecimalFormat();
-        df.setMinimumFractionDigits(Math.max(0, digits));
-        df.setMaximumFractionDigits(Math.max(0, digits));
+        df.setMinimumFractionDigits(Math.max(0, effectiveDigits));
+        df.setMaximumFractionDigits(Math.max(0, effectiveDigits));
         df.setDecimalFormatSymbols(NLS.getDecimalFormatSymbols());
         df.setGroupingUsed(true);
-        StringBuilder sb = new StringBuilder(df.format(value));
+        StringBuilder sb = new StringBuilder(df.format(doubleValue));
         if (metric != NEUTRAL_METRIC) {
             sb.append(" ");
             sb.append(METRICS[metric]);
@@ -733,9 +793,9 @@ public class Amount implements Comparable<Amount> {
      * @return the number of digits required to represent this number. Returns 0 if the value is empty.
      */
     public long getDigits() {
-        if (amount == null) {
+        if (value == null) {
             return 0;
         }
-        return Math.round(Math.floor(Math.log10(amount.doubleValue()) + 1));
+        return Math.round(Math.floor(Math.log10(value.doubleValue()) + 1));
     }
 }

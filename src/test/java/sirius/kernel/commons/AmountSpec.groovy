@@ -124,4 +124,16 @@ class AmountSpec extends BaseSpecification {
         Amount.MINUS_ONE.compareTo(Amount.ONE) < 0
     }
 
+    def "boilerplace comparators work"() {
+        expect:
+        Amount.ONE.isGreaterThan(Amount.NOTHING)
+        Amount.ONE.isGreaterThanOrEqual(Amount.NOTHING)
+        Amount.NOTHING.isLessThan(Amount.ONE)
+        Amount.NOTHING.isLessThanOrEqual(Amount.ONE)
+        Amount.ONE.isGreaterThanOrEqual(Amount.ONE)
+        Amount.ONE.isLessThanOrEqual(Amount.ONE)
+        Amount.ONE.isGreaterThan(Amount.MINUS_ONE)
+        Amount.MINUS_ONE.isLessThan(Amount.ONE)
+    }
+
 }
