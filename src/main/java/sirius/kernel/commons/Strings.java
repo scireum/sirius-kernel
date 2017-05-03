@@ -477,4 +477,90 @@ public class Strings {
         }
         return input;
     }
+
+    /**
+     * Pads the given string on the left side to the given length using the given padding.
+     * <p>
+     * Note that if <tt>padding</tt> consists of several characters, the final string might be longer than
+     * <tt>minLength</tt> as no substring but only the full value of <tt>padding</tt> is used to pad.
+     * <p>
+     * <b>Implementation detail:</b> This method checks if padding is necessary at all. If not, it directly returns the
+     * given input. This should enable inlining and therefore create a fast path if no padding is necessary.
+     *
+     * @param input     the input to pad
+     * @param padding   the padding to use
+     * @param minLength the minimal length to reach
+     * @return a string which is at least <tt>minLength</tt> characters long
+     */
+    public static String leftPad(String input, String padding, int minLength) {
+        if (input != null && input.length() > minLength) {
+            return input;
+        }
+
+        return performPadding(input, padding, minLength, true);
+    }
+
+    /**
+     * Pads the given string on the right side to the given length using the given padding.
+     * <p>
+     * Note that if <tt>padding</tt> consists of several characters, the final string might be longer than
+     * <tt>minLength</tt> as no substring but only the full value of <tt>padding</tt> is used to pad.
+     * <p>
+     * <b>Implementation detail:</b> This method checks if padding is necessary at all. If not, it directly returns the
+     * given input. This should enable inlining and therefore create a fast path if no padding is necessary.
+     *
+     * @param input     the input to pad
+     * @param padding   the padding to use
+     * @param minLength the minimal length to reach
+     * @return a string which is at least <tt>minLength</tt> characters long
+     */
+    public static String rightPad(String input, String padding, int minLength) {
+        if (input != null && input.length() > minLength) {
+            return input;
+        }
+
+        return performPadding(input, padding, minLength, false);
+    }
+
+    /**
+     * Pads the given string either on the left or on the right side, to the min length using the given padding.
+     * <p>
+     * Altough this method looks a bit complex and using a boolean parameter to determine which side to pad is fishy,
+     * this approach maximizes efficiency by using a single <tt>StringBuilder</tt> (if required at all).
+     *
+     * @param input     the input to pad
+     * @param padding   the padding to use
+     * @param minLength the minimal length to reach
+     * @param left      determines if the padding should be placed on the left or on the right size
+     * @return a string which is at least <tt>minLength</tt> characters long
+     */
+    private static String performPadding(@Nullable String input, @Nonnull String padding, int minLength, boolean left) {
+        int numberOfPaddings = minLength;
+        if (input != null) {
+            numberOfPaddings -= input.length();
+        }
+
+        if (padding.length() > 1) {
+            numberOfPaddings = (int) Math.ceil((double) numberOfPaddings / padding.length());
+        }
+
+        if (numberOfPaddings <= 0) {
+            return input;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        if (!left && input != null) {
+            sb.append(input);
+        }
+
+        for (int i = 0; i < numberOfPaddings; i++) {
+            sb.append(padding);
+        }
+
+        if (left && input != null) {
+            sb.append(input);
+        }
+
+        return sb.toString();
+    }
 }

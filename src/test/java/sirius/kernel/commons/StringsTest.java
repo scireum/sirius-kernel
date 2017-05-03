@@ -98,4 +98,20 @@ public class StringsTest {
                                         "A&lt;B&C&&D&;&E",
                                         s -> (s.endsWith(";") && !s.startsWith(";") ? "&" : "&amp;") + s));
     }
+
+    @Test
+    public void leftPad() {
+        assertEquals("   A", Strings.leftPad("A", " ", 4));
+        assertEquals("    A", Strings.leftPad("A", "  ", 5));
+        assertEquals("    A", Strings.leftPad("A", "  ", 4));
+        assertEquals("AAA", Strings.leftPad("AAA", " ", 2));
+    }
+
+    @Test
+    public void rightPad() {
+        assertEquals("A   ", Strings.rightPad("A", " ", 4));
+        assertEquals("A    ", Strings.rightPad("A", "  ", 5));
+        assertEquals("A    ", Strings.rightPad("A", "  ", 4));
+        assertEquals("AAA", Strings.rightPad("AAA", " ", 2));
+    }
 }
