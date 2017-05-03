@@ -16,6 +16,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.AdvancedDateParser;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Lambdas;
+import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.Injector;
@@ -79,7 +80,6 @@ public class NLS {
 
     private static String defaultLanguage;
     private static Set<String> supportedLanguages;
-    private static Map<String, String> mapLanguages;
 
     private static final DateTimeFormatter MACHINE_DATE_TIME_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
@@ -94,6 +94,13 @@ public class NLS {
     private static final Map<String, DateTimeFormatter> timeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> parseTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> fullTimeFormatters = Maps.newTreeMap();
+
+    private static final long SECOND = 1000;
+    private static final long MINUTE = 60 * SECOND;
+    private static final long HOUR = 60 * MINUTE;
+    private static final long DAY = 24 * HOUR;
+
+    private static final String[] UNITS = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
 
     private NLS() {
     }
@@ -601,6 +608,20 @@ public class NLS {
     }
 
     /**
+     * Creates a new decimal format symbols instance which is independent of the current language or locale and
+     * constantly set to use '.' as decimal separator with no grouping separator.
+     * <p>
+     * This is commonly used to exchange numbers between machines.
+     *
+     * @return a decimal format symbols instance used for formatting numbers as "machine" strings
+     */
+    public static DecimalFormatSymbols getMachineFormatSymbols() {
+        DecimalFormatSymbols sym = new DecimalFormatSymbols();
+        sym.setDecimalSeparator('.');
+        return sym;
+    }
+
+    /**
      * Formats the given data in a language independent format.
      *
      * @param data the input data which should be converted to string
@@ -664,18 +685,6 @@ public class NLS {
         String result = writer.toString();
         pw.close();
         return result;
-    }
-
-    /**
-     * Returns a string representation of the given number in an english format, that is,
-     * using a dot as decimal separator.
-     *
-     * @param number the number to be converted
-     * @return a string representation of the given number using a dot as decimal separator
-     * independent of the current language settings
-     */
-    public static String toEnglishRepresentation(Number number) {
-        return new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).format(number);
     }
 
     /**
@@ -1072,11 +1081,6 @@ public class NLS {
         return parseUserString(clazz, string, getCurrentLang());
     }
 
-    private static final long SECOND = 1000;
-    private static final long MINUTE = 60 * SECOND;
-    private static final long HOUR = 60 * MINUTE;
-    private static final long DAY = 24 * HOUR;
-
     /**
      * Converts a given time range in milliseconds to a human readable format using the current language
      *
@@ -1166,12 +1170,13 @@ public class NLS {
      */
     public static String formatSize(long size) {
         int index = 0;
-        while (size > 1024 && index < UNITS.length - 1) {
-            size = size / 1024;
+        double sizeAsFloat = size;
+        while (sizeAsFloat > 1024 && index < UNITS.length - 1) {
+            sizeAsFloat = sizeAsFloat / 1024;
             index++;
         }
-        return toEnglishRepresentation(size) + " " + UNITS[index];
+        return Amount.of(sizeAsFloat).toSmartRoundedString(NumberFormat.MACHINE_TWO_DECIMAL_PLACES)
+               + " "
+               + UNITS[index];
     }
-
-    private static final String[] UNITS = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
 }
