@@ -546,7 +546,7 @@ public class Strings {
 
         if (numberOfPaddings <= 0) {
             return input;
-        }XML
+        }
 
         StringBuilder sb = new StringBuilder();
         if (!left && input != null) {
