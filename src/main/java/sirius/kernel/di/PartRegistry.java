@@ -11,6 +11,7 @@ package sirius.kernel.di;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -58,6 +59,13 @@ class PartRegistry implements MutableGlobalContext {
         Collection<?> items = parts.get(clazz);
         if (items.isEmpty()) {
             return null;
+        }
+        if (items.size() > 1) {
+            Injector.LOG.WARN(
+                    "Retrieving a Part for %s from multiple implementations (%s) - picking a random one! Use @Replace to clarify! Context: %s",
+                    clazz.getName(),
+                    items,
+                    ExecutionPoint.snapshot().toString());
         }
         return (P) items.iterator().next();
     }
