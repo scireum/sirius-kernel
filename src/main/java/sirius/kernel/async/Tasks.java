@@ -248,13 +248,14 @@ public class Tasks implements Lifecycle {
                     workAvailable.await();
                 } else if (waitTime > 0) {
                     // No task can be executed in the next millisecond. Sleep for
-                    // "waitTime" (or more work) unteil the next check for executable work...
+                    // "waitTime" (or more work) until the next check for executable work...
                     workAvailable.await(waitTime, TimeUnit.MILLISECONDS);
                 }
             } finally {
                 schedulerLock.unlock();
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             Exceptions.ignore(e);
         }
     }
@@ -306,7 +307,7 @@ public class Tasks implements Lifecycle {
         executor(category).dropOnOverload(() -> result.fail(new RejectedExecutionException())).fork(() -> {
             try {
                 result.success(computation.get());
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 result.fail(t);
             }
         });
@@ -485,21 +486,26 @@ public class Tasks implements Lifecycle {
         for (Map.Entry<String, AsyncExecutor> e : executors.entrySet()) {
             AsyncExecutor exec = e.getValue();
             if (!exec.isTerminated()) {
-                LOG.INFO("Waiting for async executor '%s' to terminate...", e.getKey());
-                try {
-                    if (!exec.awaitTermination(EXECUTOR_SHUTDOWN_WAIT.getSeconds(), TimeUnit.SECONDS)) {
-                        LOG.SEVERE(Strings.apply("Executor '%s' did not terminate within 60s. Interrupting "
-                                                 + "tasks...", e.getKey()));
-                        exec.shutdownNow();
-                        if (!exec.awaitTermination(EXECUTOR_TERMINATION_WAIT.getSeconds(), TimeUnit.SECONDS)) {
-                            LOG.SEVERE(Strings.apply("Executor '%s' did not terminate after another 30s!", e.getKey()));
-                        }
-                    }
-                } catch (InterruptedException ex) {
-                    Exceptions.ignore(ex);
-                    LOG.SEVERE(Strings.apply("Interrupted while waiting for '%s' to terminate!", e.getKey()));
+                blockUnitExecutorTerminates(e.getKey(), exec);
+            }
+        }
+    }
+
+    public void blockUnitExecutorTerminates(String name, AsyncExecutor exec) {
+        LOG.INFO("Waiting for async executor '%s' to terminate...", name);
+        try {
+            if (!exec.awaitTermination(EXECUTOR_SHUTDOWN_WAIT.getSeconds(), TimeUnit.SECONDS)) {
+                LOG.SEVERE(Strings.apply("Executor '%s' did not terminate within 60s. Interrupting " + "tasks...",
+                                         name));
+                exec.shutdownNow();
+                if (!exec.awaitTermination(EXECUTOR_TERMINATION_WAIT.getSeconds(), TimeUnit.SECONDS)) {
+                    LOG.SEVERE(Strings.apply("Executor '%s' did not terminate after another 30s!", name));
                 }
             }
+        } catch (InterruptedException ex) {
+            Exceptions.ignore(ex);
+            Thread.currentThread().interrupt();
+            LOG.SEVERE(Strings.apply("Interrupted while waiting for '%s' to terminate!", name));
         }
     }
 

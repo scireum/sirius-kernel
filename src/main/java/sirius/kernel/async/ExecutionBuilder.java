@@ -126,7 +126,7 @@ public class ExecutionBuilder {
                     CallContext.detach();
                     durationAverage.addValue(w.elapsedMillis());
                 }
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 Exceptions.handle(Tasks.LOG, t);
                 promise.fail(t);
             }
