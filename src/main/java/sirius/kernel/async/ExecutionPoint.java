@@ -24,7 +24,7 @@ import java.util.List;
 public class ExecutionPoint {
 
     private String threadName;
-    private StackTraceElement[] stacktrace;
+    private Exception stacktraceHolder;
     private List<Tuple<String, String>> mdc;
 
     /*
@@ -39,10 +39,27 @@ public class ExecutionPoint {
      * @return a new instance representing the current state of the current thread
      */
     public static ExecutionPoint snapshot() {
+        return snapshot(false);
+    }
+
+    /**
+     * Generates a new instance of the current thread.
+     * <p>
+     * This does skip saving the MDC and only records the current stack trace, as this is blazing fast.
+     *
+     * @return a new instance representing the current state of the current thread
+     */
+    public static ExecutionPoint fastSnapshot() {
+        return snapshot(true);
+    }
+
+    private static ExecutionPoint snapshot(boolean fast) {
         ExecutionPoint result = new ExecutionPoint();
         result.threadName = Thread.currentThread().getName();
-        result.stacktrace = Thread.currentThread().getStackTrace();
-        result.mdc = CallContext.getCurrent().getMDC();
+        result.stacktraceHolder = new Exception();
+        if (!fast) {
+            result.mdc = CallContext.getCurrent().getMDC();
+        }
 
         return result;
     }
@@ -53,7 +70,7 @@ public class ExecutionPoint {
         msg.append("Execution Point in: ");
         msg.append(threadName);
         msg.append("\n---------------------------------------------------\n");
-        for (StackTraceElement e : stacktrace) {
+        for (StackTraceElement e : stacktraceHolder.getStackTrace()) {
             msg.append(e.getClassName())
                .append(".")
                .append(e.getMethodName())
@@ -63,9 +80,11 @@ public class ExecutionPoint {
                .append(e.getLineNumber())
                .append(")\n");
         }
-        msg.append("\n---------------------------------------------------\n");
-        for (Tuple<String, String> t : mdc) {
-            msg.append(t.getFirst()).append(": ").append(t.getSecond()).append("\n");
+        if (mdc != null) {
+            msg.append("\n---------------------------------------------------\n");
+            for (Tuple<String, String> t : mdc) {
+                msg.append(t.getFirst()).append(": ").append(t.getSecond()).append("\n");
+            }
         }
         msg.append("\n---------------------------------------------------");
 
