@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * A map like data structure which associates strings (char sequences) to values.
@@ -386,10 +385,5 @@ public class Trie<V> {
         }
 
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return Strings.join(new TreeSet<>(keySet()), ", ");
     }
 }
