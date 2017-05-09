@@ -13,6 +13,7 @@ import com.google.common.collect.Sets;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -151,33 +152,33 @@ public class Trie<V> {
      * Internal class representing a single node in the trie
      */
     class Node {
-        /*
+        /**
          * Points to the parent node of this node
          */
         private Node parent;
 
-        /*
+        /**
          * Contains a sorted list of keys
          */
         private List<Character> keys = Lists.newArrayList();
 
-        /*
+        /**
          * Contains the list of continuations matching the keys list
          */
         private List<Node> continuations = Lists.newArrayList();
 
-        /*
+        /**
          * Contains the value associated with the path to this node
          */
         private V value;
     }
 
-    /*
+    /**
      * Contains the root of the Trie
      */
     private final Node root = new Node();
 
-    /*
+    /**
      * Internal implementation of the ContainmentIterator
      */
     private class ContainmentIteratorImpl implements ContainmentIterator<V> {
@@ -200,7 +201,7 @@ public class Trie<V> {
             return true;
         }
 
-        /*
+        /**
          * Adds a new step for the given character. Internally, a binary search is performed as the keylist
          * is sorted ascending.
          */
@@ -328,5 +329,61 @@ public class Trie<V> {
             }
         }
         iter.setValue(value);
+    }
+
+    /**
+     * Retrieves all keys that are stored in this {@link Trie}.
+     *
+     * @return a {@link Set} of all keys that are stored in this {@link Trie}
+     */
+    public Set<String> keySet() {
+        return getAllKeysBeginningWith("");
+    }
+
+    /**
+     * Retrieves the number of keys that are stored in this {@link Trie}.
+     *
+     * @return the size of this {@link Trie}'s {@link #keySet() key set}
+     */
+    public int size() {
+        return keySet().size();
+    }
+
+    /**
+     * Performs a prefix search within this {@link Trie}'s {@link #keySet() key set}
+     *
+     * @param prefix to search for
+     * @return all keys that are beginning with the given <tt>prefix</tt> (may include <tt>prefix</tt> itself)
+     */
+    public Set<String> getAllKeysBeginningWith(String prefix) {
+        ContainmentIterator<V> iter = iterator();
+        for (int i = 0; i < prefix.length(); i++) {
+            if (!iter.doContinue(prefix.charAt(i))) {
+                return Collections.emptySet();
+            }
+        }
+        return getAllKeysBeginningWith(prefix, iter);
+    }
+
+    private Set<String> getAllKeysBeginningWith(String prefix, ContainmentIterator<V> iter) {
+        if (iter.getPossibilities().isEmpty()) {
+            if (iter.getValue() != null) {
+                return Sets.newHashSet(prefix);
+            } else {
+                return Collections.emptySet();
+            }
+        }
+
+        Set<String> result = new HashSet<>();
+        if (iter.getValue() != null) {
+            result.add(prefix);
+        }
+        for (char possibility : iter.getPossibilities()) {
+            iter.doContinue(possibility);
+            result.addAll(getAllKeysBeginningWith(prefix + possibility, iter));
+            iter.goBack();
+        }
+
+        return result;
     }
 }
