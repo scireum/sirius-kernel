@@ -8,12 +8,17 @@
 
 package sirius.kernel;
 
+import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.nls.NLS;
 
 /**
  * Initializes and stops Sirius as part of the tests.
  */
 public class TestHelper {
+
+    @Part
+    private static GlobalContext ctx;
 
     private static Class<?> frameworkStarter = null;
 
@@ -35,6 +40,8 @@ public class TestHelper {
             frameworkStarter = testClass;
             Sirius.start(new Setup(Setup.Mode.TEST, Sirius.class.getClassLoader()));
             NLS.setDefaultLanguage("de");
+
+            ctx.getParts(TestMock.class).forEach(ctx::wire);
         }
     }
 
