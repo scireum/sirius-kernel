@@ -130,7 +130,7 @@ public class CacheManager {
      * computer to re-compute the value
      */
     public static <E> InlineCache<E> createInlineCache(Duration ttl, Supplier<E> computer) {
-        return new InlineCache<>(computer, TimeUnit.MILLISECONDS.convert(ttl.getNano(), TimeUnit.NANOSECONDS));
+        return new InlineCache<>(computer, ttl.toMillis());
     }
 
     private static final Duration INLINE_CACHE_DEFAULT_TTL = Duration.ofSeconds(10);
