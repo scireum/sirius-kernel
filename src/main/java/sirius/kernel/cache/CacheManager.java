@@ -123,7 +123,7 @@ public class CacheManager {
      * <p>
      * An inline cache can be used to compute a single value, which is then cached for a certain amount of time.
      *
-     * @param ttl      specifies the duration in seconds which the computed value will be cached
+     * @param ttl      specifies the duration which the computed value will be cached
      * @param computer the provider which is used to re-compute the value once it expired
      * @param <E>      the type of values being cached
      * @return an inline cache which keeps a computed value for the given amount of time and then uses the provided
