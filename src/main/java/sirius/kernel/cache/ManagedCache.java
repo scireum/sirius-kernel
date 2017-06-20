@@ -18,12 +18,14 @@ import sirius.kernel.health.Counter;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.settings.Extension;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 
 /**
  * Implementation of <tt>Cache</tt> used by the <tt>CacheManager</tt>
@@ -244,12 +246,14 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         // Verify age of entry
         if (entry.getMaxAge() > 0 && entry.getMaxAge() < now) {
             data.invalidate(entry.getKey());
-            entry = null;
-            // Apply verifier if present
-        } else if (verifier != null && entry != null && verificationInterval > 0 && entry.getNextVerification() < now) {
+            return null;
+        }
+
+        // Apply verifier if present
+        if (verifier != null && verificationInterval > 0 && entry.getNextVerification() < now) {
             if (!verifier.valid(entry.getValue())) {
                 data.invalidate(entry.getKey());
-                entry = null;
+                return null;
             }
         }
         return entry;
@@ -263,10 +267,10 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         if (data == null) {
             init();
         }
-        CacheEntry<K, V> cv = new CacheEntry<K, V>(key,
-                                                   value,
-                                                   timeToLive > 0 ? timeToLive + System.currentTimeMillis() : 0,
-                                                   verificationInterval + System.currentTimeMillis());
+        CacheEntry<K, V> cv = new CacheEntry<>(key,
+                                               value,
+                                               timeToLive > 0 ? timeToLive + System.currentTimeMillis() : 0,
+                                               verificationInterval + System.currentTimeMillis());
         data.put(key, cv);
     }
 
@@ -292,6 +296,11 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
             init();
         }
         return new ArrayList<>(data.asMap().values());
+    }
+
+    @Override
+    public void removeIf(@Nonnull Predicate<CacheEntry<K, V>> predicate) {
+        data.asMap().values().removeIf(predicate);
     }
 
     @Override

@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Provides a cache which can be used to store and access values.
@@ -139,6 +140,13 @@ public interface Cache<K, V> {
      * @param key the key which should be removed from the cache
      */
     void remove(@Nonnull K key);
+
+    /**
+     * Removes all cached values for which the predicate returns true.
+     *
+     * @param predicate the predicate used to determine if a value should be removed from the cache.
+     */
+    void removeIf(@Nonnull Predicate<CacheEntry<K, V>> predicate);
 
     /**
      * Checks if there is a cached entry for the given key
