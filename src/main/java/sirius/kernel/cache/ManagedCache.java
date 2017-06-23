@@ -300,6 +300,10 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
 
     @Override
     public void removeIf(@Nonnull Predicate<CacheEntry<K, V>> predicate) {
+        if (data == null) {
+            return;
+        }
+
         data.asMap().values().removeIf(predicate);
     }
 
