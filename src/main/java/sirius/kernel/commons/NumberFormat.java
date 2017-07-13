@@ -32,7 +32,7 @@ public class NumberFormat {
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */
-    public static final NumberFormat PERCENT = new NumberFormat(2, RoundingMode.HALF_UP, null, "%");
+    public static final NumberFormat PERCENT = new NumberFormat(2, RoundingMode.HALF_UP, null, true, "%");
 
     /**
      * Describes a format which rounds to two decimal places.
@@ -43,7 +43,7 @@ public class NumberFormat {
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */
-    public static final NumberFormat TWO_DECIMAL_PLACES = new NumberFormat(2, RoundingMode.HALF_UP, null, null);
+    public static final NumberFormat TWO_DECIMAL_PLACES = new NumberFormat(2, RoundingMode.HALF_UP, null, true, null);
 
     /**
      * Describes a format which rounds to two decimal places.
@@ -55,7 +55,7 @@ public class NumberFormat {
      * @see sirius.kernel.nls.NLS#getMachineFormatSymbols()
      */
     public static final NumberFormat MACHINE_TWO_DECIMAL_PLACES =
-            new NumberFormat(2, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), null);
+            new NumberFormat(2, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
 
     /**
      * Describes a format which rounds to integer numbers (no decimal places).
@@ -66,7 +66,7 @@ public class NumberFormat {
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */
-    public static final NumberFormat NO_DECIMAL_PLACES = new NumberFormat(0, RoundingMode.HALF_UP, null, null);
+    public static final NumberFormat NO_DECIMAL_PLACES = new NumberFormat(0, RoundingMode.HALF_UP, null, true, null);
 
     /**
      * Describes a format which rounds to integer numbers (no decimal places).
@@ -78,10 +78,11 @@ public class NumberFormat {
      * @see sirius.kernel.nls.NLS#getMachineFormatSymbols()
      */
     public static final NumberFormat MACHINE_NO_DECIMAL_PLACES =
-            new NumberFormat(0, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), null);
+            new NumberFormat(0, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
 
     private String suffix;
     private int scale;
+    private boolean useGrouping;
     private RoundingMode roundingMode;
     private DecimalFormatSymbols formatSymbols;
 
@@ -93,17 +94,19 @@ public class NumberFormat {
      * @param roundingMode  contains the rounding mode to use. Most commonly {@link RoundingMode#HALF_UP} will be
      *                      correct.
      * @param formatSymbols contains the {@link DecimalFormatSymbols} to use. This parameter can be <tt>null</tt> to
-     *                      use
-     *                      the format symbols of the current language, which is present, when this format is used.
+     *                      use the format symbols of the current language, which is present, when this format is used.
+     * @param useGrouping   determines if grouping (by thousands) is used.
      * @param suffix        the suffix to append to a formatted string
      */
     public NumberFormat(int scale,
                         @Nonnull RoundingMode roundingMode,
                         @Nullable DecimalFormatSymbols formatSymbols,
+                        boolean useGrouping,
                         @Nullable String suffix) {
         this.scale = scale;
         this.roundingMode = roundingMode;
         this.formatSymbols = formatSymbols;
+        this.useGrouping = useGrouping;
         this.suffix = suffix;
     }
 
@@ -145,5 +148,14 @@ public class NumberFormat {
         }
 
         return formatSymbols;
+    }
+
+    /**
+     * Determines if grouping separaters (by thousands) should be placed or not.
+     *
+     * @return <tt>true</tt> if grouping separators are used, <tt>false</tt> otherwise
+     */
+    public boolean isUseGrouping() {
+        return useGrouping;
     }
 }
