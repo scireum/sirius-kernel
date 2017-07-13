@@ -689,11 +689,13 @@ public class Amount implements Comparable<Amount> {
         if (isEmpty()) {
             return Value.of(null);
         }
+
         DecimalFormat df = new DecimalFormat();
         df.setMinimumFractionDigits(smartRound ? 0 : format.getScale());
         df.setMaximumFractionDigits(format.getScale());
         df.setDecimalFormatSymbols(format.getDecimalFormatSymbols());
-        df.setGroupingUsed(true);
+        df.setGroupingUsed(format.isUseGrouping());
+
         return Value.of(df.format(value)).append(" ", format.getSuffix());
     }
 
