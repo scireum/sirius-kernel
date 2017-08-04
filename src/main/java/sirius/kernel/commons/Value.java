@@ -611,7 +611,7 @@ public class Value {
      * especially if the wrapped value is <tt>null</tt>
      */
     public boolean asBoolean(boolean defaultValue) {
-        if (isNull()) {
+        if (isNull() || Strings.isEmpty(data)) {
             return defaultValue;
         }
         if (data instanceof Boolean) {
