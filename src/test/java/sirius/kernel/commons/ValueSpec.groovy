@@ -1,5 +1,6 @@
 package sirius.kernel.commons
 
+import sirius.kernel.nls.NLS
 import spock.lang.Specification
 
 class ValueSpec extends Specification {
@@ -119,5 +120,33 @@ class ValueSpec extends Specification {
         42                  | BigDecimal.valueOf(42)
         42.0                | BigDecimal.valueOf(42)
         Integer.valueOf(42) | BigDecimal.valueOf(42)
+    }
+
+    def "Test asBoolean with default"() {
+        expect:
+        Value.of(input).asBoolean(false) == output
+        where:
+        input              | output
+        ""                 | false
+        "false"            | false
+        "true"             | true
+        false              | false
+        true               | true
+        NLS.get("NLS.Yes") | true
+        NLS.get("NLS.No")  | false
+    }
+
+    def "Test coerce boolean and without default"() {
+        expect:
+        Value.of(input).coerce(boolean.class, null) == output
+        where:
+        input              | output
+        ""                 | false
+        "false"            | false
+        "true"             | true
+        false              | false
+        true               | true
+        NLS.get("NLS.Yes") | true
+        NLS.get("NLS.No")  | false
     }
 }
