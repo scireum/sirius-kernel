@@ -92,6 +92,24 @@ class NLSSpec extends BaseSpecification {
         result == ""
     }
 
+    def "toUserString() formats an Integer correctly"() {
+        given:
+        def input = 1234567
+        when:
+        def result = NLS.toUserString(input)
+        then:
+        result=="1.234.567"
+    }
+
+    def "toUserString() formats a Long correctly"() {
+        given:
+        def input = 2147483649
+        when:
+        def result = NLS.toUserString(input)
+        then:
+        result=="2.147.483.649"
+    }
+
     def "toSpokenDate() formats today as today"() {
         given:
         def date = LocalDate.now()

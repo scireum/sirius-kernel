@@ -735,14 +735,10 @@ public class NLS {
             }
         }
         if (data instanceof Integer) {
-            java.text.NumberFormat format = getDecimalFormat();
-            format.setMaximumFractionDigits(0);
-            return format.format(data);
+            return getDecimalFormatNoFractions().format(data);
         }
         if (data instanceof Long) {
-            java.text.NumberFormat format = getDecimalFormat();
-            format.setMaximumFractionDigits(0);
-            return format.format(data);
+            return getDecimalFormatNoFractions().format(data);
         }
         if (data instanceof BigDecimal) {
             return getDecimalFormat(lang).format(((BigDecimal) data).doubleValue());
@@ -757,6 +753,13 @@ public class NLS {
             return writeThreadStrace((Throwable) data);
         }
         return String.valueOf(data);
+    }
+
+    private static java.text.NumberFormat getDecimalFormatNoFractions() {
+        java.text.NumberFormat format = getDecimalFormat();
+        format.setGroupingUsed(true);
+        format.setMaximumFractionDigits(0);
+        return format;
     }
 
     /**
