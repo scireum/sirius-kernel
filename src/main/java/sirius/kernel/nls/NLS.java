@@ -735,10 +735,10 @@ public class NLS {
             }
         }
         if (data instanceof Integer) {
-            return String.valueOf(data);
+            return getDecimalFormat(lang).format(data);
         }
         if (data instanceof Long) {
-            return String.valueOf(data);
+            return getDecimalFormat(lang).format(data);
         }
         if (data instanceof BigDecimal) {
             return getDecimalFormat(lang).format(((BigDecimal) data).doubleValue());
