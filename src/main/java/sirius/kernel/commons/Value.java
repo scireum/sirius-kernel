@@ -245,7 +245,7 @@ public class Value {
      * @return the internal value wrapped as Optional or an empty Optional if the value is not filled or non-integer
      */
     public Optional<Integer> asOptionalInt() {
-        return isFilled() ? Optional.of(getInteger()) : Optional.empty();
+        return isFilled() ? Optional.ofNullable(getInteger()) : Optional.empty();
     }
 
     /**
@@ -278,10 +278,7 @@ public class Value {
         if (isEmptyString()) {
             return Value.of(value);
         }
-        if (separator == null) {
-            separator = "";
-        }
-        return Value.of(toString() + separator + value);
+        return Value.of(toString() + (separator == null ? "" : separator) + value);
     }
 
     /**
@@ -303,10 +300,7 @@ public class Value {
         if (isEmptyString()) {
             return Value.of(value);
         }
-        if (separator == null) {
-            separator = "";
-        }
-        return Value.of(value + separator + toString());
+        return Value.of(value + (separator == null ? "" : separator) + toString());
     }
 
     /**
@@ -1550,7 +1544,7 @@ public class Value {
         }
         // Compare with null
         if (data == null) {
-            return other == null;
+            return false;
         }
         // Call equals against wrapped data
         return data.equals(other);
