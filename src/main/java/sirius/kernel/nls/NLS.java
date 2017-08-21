@@ -413,8 +413,10 @@ public class NLS {
                 return CommonKeys.SATURDAY.translated();
             case Calendar.SUNDAY:
                 return CommonKeys.SUNDAY.translated();
+            default:
+                return "";
         }
-        return "";
+        
     }
 
     /**
@@ -461,8 +463,9 @@ public class NLS {
                 return CommonKeys.NOVEMBER.translated();
             case 12:
                 return CommonKeys.DECEMBER.translated();
+            default:
+                return "";
         }
-        return "";
     }
 
     /**
@@ -994,8 +997,8 @@ public class NLS {
                 if (".".equals(NLS.get("NLS.groupingSeparator"))
                         && value.contains(".")
                         && !value.contains(",")
-                        && value.indexOf(".") == value.lastIndexOf(".")
-                        && value.indexOf(".") > value.length() - 4) {
+                        && value.indexOf('.') == value.lastIndexOf('.')
+                        && value.indexOf('.') > value.length() - 4) {
                     try {
                         return Double.valueOf(value);
                     } catch (Exception e) {
