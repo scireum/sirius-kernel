@@ -8,8 +8,8 @@
 
 package sirius.kernel.nls
 
-import sirius.kernel.async.CallContext
 import sirius.kernel.BaseSpecification
+import sirius.kernel.async.CallContext
 import sirius.kernel.commons.Amount
 
 import java.time.Instant
@@ -98,7 +98,7 @@ class NLSSpec extends BaseSpecification {
         when:
         def result = NLS.toUserString(input)
         then:
-        result=="1.234.567"
+        result == "1.234.567"
     }
 
     def "toUserString() formats a Long correctly"() {
@@ -107,7 +107,7 @@ class NLSSpec extends BaseSpecification {
         when:
         def result = NLS.toUserString(input)
         then:
-        result=="2.147.483.649"
+        result == "2.147.483.649"
     }
 
     def "toSpokenDate() formats today as today"() {
@@ -145,7 +145,7 @@ class NLSSpec extends BaseSpecification {
 
     def "toSpokenDate() formats a date in the past as date"() {
         given:
-        def date = LocalDate.of(2014,1,1)
+        def date = LocalDate.of(2014, 1, 1)
         when:
         def result = NLS.toSpokenDate(date)
         then:
@@ -154,7 +154,7 @@ class NLSSpec extends BaseSpecification {
 
     def "toSpokenDate() formats a date in the future as date"() {
         given:
-        def date = LocalDate.of(2114,1,1)
+        def date = LocalDate.of(2114, 1, 1)
         when:
         def result = NLS.toSpokenDate(date)
         then:
@@ -188,5 +188,57 @@ class NLSSpec extends BaseSpecification {
         def input = "34,54"
         then:
         NLS.parseUserString(Amount.class, input).toString() == "34,54"
+    }
+
+    def "parseUserString converts different Strings to correct values"() {
+        expect:
+        NLS.parseUserString(clazz, string) == output
+        where:
+        clazz         | string         | output
+        int.class     | "50.000"       | 50000
+        Integer.class | "50.000"       | 50000
+        long.class    | "50.000"       | 50000
+        Long.class    | "50.000"       | 50000
+        Double.class  | "50.000"       | 50000
+        double.class  | "50.000"       | 50000
+        Float.class   | "50.000"       | 50000
+        float.class   | "50.000"       | 50000
+
+        int.class     | "5.12"         | 5
+        Integer.class | "5.12"         | 5
+        long.class    | "5.12"         | 5
+        Long.class    | "5.12"         | 5
+        Double.class  | "5.12"         | 5.12
+        double.class  | "5.12"         | 5.12
+        Float.class   | "5.12"         | 5.12f
+        float.class   | "5.12"         | 5.12f
+
+        int.class     | "5,12"         | 5
+        Integer.class | "5,12"         | 5
+        long.class    | "5,12"         | 5
+        Long.class    | "5,12"         | 5
+        Double.class  | "5,12"         | 5.12
+        double.class  | "5,12"         | 5.12
+        Float.class   | "5,12"         | 5.12f
+        float.class   | "5,12"         | 5.12f
+
+        int.class     | "3.454.555"    | 3454555
+        Integer.class | "3.454.555"    | 3454555
+        long.class    | "3.454.555"    | 3454555
+        Long.class    | "3.454.555"    | 3454555
+        Double.class  | "3.454.555"    | 3454555
+        double.class  | "3.454.555"    | 3454555
+        Float.class   | "3.454.555"    | 3454555
+        float.class   | "3.454.555"    | 3454555
+
+        int.class     | "1.337.001,87" | 1337001
+        Integer.class | "1.337.001,87" | 1337001
+        long.class    | "1.337.001,87" | 1337001
+        Long.class    | "1.337.001,87" | 1337001
+        Double.class  | "1.337.001,87" | 1337001.87
+        double.class  | "1.337.001,87" | 1337001.87
+        //at this point, float loses some precision
+        Float.class   | "1.337.001,87" | 1337001.9f
+        float.class   | "1.337.001,87" | 1337001.9f
     }
 }

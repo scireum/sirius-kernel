@@ -657,7 +657,7 @@ public class Value {
                 return (int) ((BigDecimal) data).longValue();
             }
 
-            return Integer.parseInt(String.valueOf(data).trim());
+            return NLS.parseUserString(int.class, String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
             return defaultValue;
@@ -700,7 +700,7 @@ public class Value {
             if (data instanceof BigDecimal) {
                 return (int) ((BigDecimal) data).longValue();
             }
-            return Integer.parseInt(String.valueOf(data).trim());
+            return NLS.parseUserString(Integer.class, String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
             return null;
@@ -735,7 +735,7 @@ public class Value {
             if (data instanceof BigDecimal) {
                 return ((BigDecimal) data).longValue();
             }
-            return Long.parseLong(String.valueOf(data).trim());
+            return NLS.parseUserString(long.class, String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
             return defaultValue;
@@ -764,7 +764,7 @@ public class Value {
             if (data instanceof Long) {
                 return (Long) data;
             }
-            return Long.parseLong(String.valueOf(data).trim());
+            return NLS.parseUserString(Long.class, String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
             return null;
