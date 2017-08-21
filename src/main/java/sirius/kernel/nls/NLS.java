@@ -13,7 +13,12 @@ import com.google.common.collect.Sets;
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
-import sirius.kernel.commons.*;
+import sirius.kernel.commons.AdvancedDateParser;
+import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Lambdas;
+import sirius.kernel.commons.NumberFormat;
+import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.Injector;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.timer.Timers;
@@ -27,13 +32,24 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Native Language Support used by the framework.
@@ -173,18 +189,18 @@ public class NLS {
         if (supportedLanguages == null && Sirius.getSettings() != null) {
             try {
                 supportedLanguages = Sirius.getSettings()
-                        .getStringList("nls.languages")
-                        .stream()
-                        .map(String::toLowerCase)
-                        .collect(Lambdas.into(Sets.newLinkedHashSet()));
+                                           .getStringList("nls.languages")
+                                           .stream()
+                                           .map(String::toLowerCase)
+                                           .collect(Lambdas.into(Sets.newLinkedHashSet()));
             } catch (Exception e) {
                 Exceptions.handle(e);
             }
         }
         // Returns the default language or (for very early access we default to en)
         return supportedLanguages == null ?
-                Collections.singleton("en") :
-                Collections.unmodifiableSet(supportedLanguages);
+               Collections.singleton("en") :
+               Collections.unmodifiableSet(supportedLanguages);
     }
 
     /**
@@ -416,7 +432,6 @@ public class NLS {
             default:
                 return "";
         }
-        
     }
 
     /**
@@ -507,7 +522,7 @@ public class NLS {
      */
     public static DateTimeFormatter getTimeFormatWithSeconds(String lang) {
         return fullTimeFormatters.computeIfAbsent(lang,
-                l -> DateTimeFormatter.ofPattern(get("NLS.patternFullTime", l)));
+                                                  l -> DateTimeFormatter.ofPattern(get("NLS.patternFullTime", l)));
     }
 
     /**
@@ -537,7 +552,7 @@ public class NLS {
      */
     public static DateTimeFormatter getTimeParseFormat(String lang) {
         return parseTimeFormatters.computeIfAbsent(lang,
-                l -> DateTimeFormatter.ofPattern(get("NLS.patternParseTime", l)));
+                                                   l -> DateTimeFormatter.ofPattern(get("NLS.patternParseTime", l)));
     }
 
     /**
@@ -548,7 +563,7 @@ public class NLS {
      */
     public static DateTimeFormatter getDateTimeFormat(String lang) {
         return dateTimeFormatters.computeIfAbsent(lang,
-                l -> DateTimeFormatter.ofPattern(get("NLS.patternDateTime", l)));
+                                                  l -> DateTimeFormatter.ofPattern(get("NLS.patternDateTime", l)));
     }
 
     /**
@@ -780,16 +795,16 @@ public class NLS {
             }
             if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(59))) {
                 return NLS.fmtr("NLS.nMinutesAgo")
-                        .set("minutes", Duration.between(givenDateTime, LocalDateTime.now()).toMinutes())
-                        .format();
+                          .set("minutes", Duration.between(givenDateTime, LocalDateTime.now()).toMinutes())
+                          .format();
             }
             if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
                 return NLS.get("NLS.oneHourAgo");
             }
             if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
                 return NLS.fmtr("NLS.nHoursAgo")
-                        .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
-                        .format();
+                          .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
+                          .format();
             }
 
             // We don't have a date and the time difference is quite big -> simply format the time...
@@ -892,8 +907,8 @@ public class NLS {
                 return (V) LocalDate.from(MACHINE_DATE_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                        .set("format", "yyyy-MM-dd")
-                        .format(), e);
+                                                                             .set("format", "yyyy-MM-dd")
+                                                                             .format(), e);
             }
         }
         if (LocalDateTime.class.equals(clazz)) {
@@ -901,8 +916,8 @@ public class NLS {
                 return (V) LocalDateTime.from(MACHINE_DATE_TIME_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                        .set("format", "yyyy-MM-dd HH:mm:ss")
-                        .format(), e);
+                                                                             .set("format", "yyyy-MM-dd HH:mm:ss")
+                                                                             .format(), e);
             }
         }
         if (ZonedDateTime.class.equals(clazz)) {
@@ -910,8 +925,8 @@ public class NLS {
                 return (V) ZonedDateTime.from(MACHINE_DATE_TIME_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                        .set("format", "yyyy-MM-dd HH:mm:ss")
-                        .format(), e);
+                                                                             .set("format", "yyyy-MM-dd HH:mm:ss")
+                                                                             .format(), e);
             }
         }
         if (LocalTime.class.equals(clazz)) {
@@ -919,8 +934,8 @@ public class NLS {
                 return (V) LocalTime.from(MACHINE_PARSE_TIME_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                        .set("format", "H:mm[:ss]")
-                        .format(), e);
+                                                                             .set("format", "H:mm[:ss]")
+                                                                             .format(), e);
             }
         }
 
@@ -995,10 +1010,10 @@ public class NLS {
                 // as english decimal format and not as german grouping
                 // separator.
                 if (".".equals(NLS.get("NLS.groupingSeparator"))
-                        && value.contains(".")
-                        && !value.contains(",")
-                        && value.indexOf('.') == value.lastIndexOf('.')
-                        && value.indexOf('.') > value.length() - 4) {
+                    && value.contains(".")
+                    && !value.contains(",")
+                    && value.indexOf('.') == value.lastIndexOf('.')
+                    && value.indexOf('.') > value.length() - 4) {
                     try {
                         return Double.valueOf(value);
                     } catch (Exception e) {
@@ -1170,7 +1185,7 @@ public class NLS {
             index++;
         }
         return Amount.of(sizeAsFloat).toSmartRoundedString(NumberFormat.MACHINE_TWO_DECIMAL_PLACES)
-                + " "
-                + UNITS[index];
+               + " "
+               + UNITS[index];
     }
 }
