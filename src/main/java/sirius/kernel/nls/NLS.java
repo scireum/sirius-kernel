@@ -969,14 +969,14 @@ public class NLS {
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String lang) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) Integer.valueOf((parseDecimalNumberFromUser(value, lang).intValue()));
+                return (V) Integer.valueOf(parseDecimalNumberFromUser(value, lang).intValue());
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) Long.valueOf((parseDecimalNumberFromUser(value, lang).longValue()));
+                return (V) Long.valueOf(parseDecimalNumberFromUser(value, lang).longValue());
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
