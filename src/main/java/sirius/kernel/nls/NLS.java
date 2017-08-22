@@ -429,8 +429,9 @@ public class NLS {
                 return CommonKeys.SATURDAY.translated();
             case Calendar.SUNDAY:
                 return CommonKeys.SUNDAY.translated();
+            default:
+                return "";
         }
-        return "";
     }
 
     /**
@@ -477,8 +478,9 @@ public class NLS {
                 return CommonKeys.NOVEMBER.translated();
             case 12:
                 return CommonKeys.DECEMBER.translated();
+            default:
+                return "";
         }
-        return "";
     }
 
     /**
@@ -735,10 +737,10 @@ public class NLS {
             }
         }
         if (data instanceof Integer) {
-            return String.valueOf(data);
+            return getDecimalFormatNoFractions().format(data);
         }
         if (data instanceof Long) {
-            return String.valueOf(data);
+            return getDecimalFormatNoFractions().format(data);
         }
         if (data instanceof BigDecimal) {
             return getDecimalFormat(lang).format(((BigDecimal) data).doubleValue());
@@ -753,6 +755,13 @@ public class NLS {
             return writeThreadStrace((Throwable) data);
         }
         return String.valueOf(data);
+    }
+
+    private static java.text.NumberFormat getDecimalFormatNoFractions() {
+        java.text.NumberFormat format = getDecimalFormat();
+        format.setGroupingUsed(true);
+        format.setMaximumFractionDigits(0);
+        return format;
     }
 
     /**
@@ -960,14 +969,14 @@ public class NLS {
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String lang) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) Integer.valueOf(value);
+                return (V) Integer.valueOf(parseDecimalNumberFromUser(value, lang).intValue());
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) Long.valueOf(value);
+                return (V) Long.valueOf(parseDecimalNumberFromUser(value, lang).longValue());
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
@@ -1003,8 +1012,8 @@ public class NLS {
                 if (".".equals(NLS.get("NLS.groupingSeparator"))
                     && value.contains(".")
                     && !value.contains(",")
-                    && value.indexOf(".") == value.lastIndexOf(".")
-                    && value.indexOf(".") > value.length() - 4) {
+                    && value.indexOf('.') == value.lastIndexOf('.')
+                    && value.indexOf('.') > value.length() - 4) {
                     try {
                         return Double.valueOf(value);
                     } catch (Exception e) {
