@@ -37,7 +37,7 @@ class NLSSpec extends BaseSpecification {
         result == "2014-08-09 12:00:59"
     }
 
-    def "toMachineString() of Amount is properly formatted"(){
+    def "toMachineString() of Amount is properly formatted"() {
         given:
         def priceToRound = Amount.of(123456.789)
         def priceNotToRound = Amount.of(123456.81)
@@ -46,7 +46,7 @@ class NLSSpec extends BaseSpecification {
         def resultNotRounded = NLS.toMachineString(priceNotToRound)
         then:
         resultRounded == "123456.79"
-        resultNotRounded== "123456.81"
+        resultNotRounded == "123456.81"
     }
 
     def "toUserString() formats a LocalDateTime as date with time"() {
@@ -139,7 +139,7 @@ class NLSSpec extends BaseSpecification {
 
     def "toSpokenDate() formats a date in the past as date"() {
         given:
-        def date = LocalDate.of(2014,1,1)
+        def date = LocalDate.of(2014, 1, 1)
         when:
         def result = NLS.toSpokenDate(date)
         then:
@@ -148,7 +148,7 @@ class NLSSpec extends BaseSpecification {
 
     def "toSpokenDate() formats a date in the future as date"() {
         given:
-        def date = LocalDate.of(2114,1,1)
+        def date = LocalDate.of(2114, 1, 1)
         when:
         def result = NLS.toSpokenDate(date)
         then:
