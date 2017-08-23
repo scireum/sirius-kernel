@@ -37,6 +37,18 @@ class NLSSpec extends BaseSpecification {
         result == "2014-08-09 12:00:59"
     }
 
+    def "toMachineString() of Amount is properly formatted"(){
+        given:
+        def priceToRound = Amount.of(123456.789)
+        def priceNotToRound = Amount.of(123456.81)
+        when:
+        def resultRounded = NLS.toMachineString(priceToRound)
+        def resultNotRounded = NLS.toMachineString(priceNotToRound)
+        then:
+        resultRounded == "123456.79"
+        resultNotRounded== "123456.81"
+    }
+
     def "toUserString() formats a LocalDateTime as date with time"() {
         given:
         def date = LocalDateTime.of(2014, 8, 9, 12, 00, 59)
