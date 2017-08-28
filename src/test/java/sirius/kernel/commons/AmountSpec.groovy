@@ -9,7 +9,7 @@ class AmountSpec extends BaseSpecification {
 
     def "predicates are evaluated correctly"() {
         expect:
-        Amount.of((BigDecimal) null).isEmpty()
+        Amount.NOTHING.isEmpty()
         Amount.NOTHING.isZeroOrNull()
         Amount.ZERO.isZeroOrNull()
         Amount.ZERO.isZero()
