@@ -355,7 +355,7 @@ public class Value {
      */
     public boolean isNumeric() {
         return data != null && (data instanceof Number || data instanceof Amount || NUMBER.matcher(asString(""))
-                .matches());
+                                                                                          .matches());
     }
 
     /**
@@ -469,11 +469,11 @@ public class Value {
         }
         if (LocalTime.class.equals(targetClazz) && data instanceof TemporalAccessor) {
             if (is(TemporalAccessor.class,
-                    Calendar.class,
-                    Date.class,
-                    java.sql.Date.class,
-                    Timestamp.class,
-                    Time.class)) {
+                   Calendar.class,
+                   Date.class,
+                   java.sql.Date.class,
+                   Timestamp.class,
+                   Time.class)) {
                 return (T) asLocalTime((LocalTime) defaultValue);
             }
         }
@@ -507,8 +507,8 @@ public class Value {
         }
 
         throw new IllegalArgumentException(Strings.apply("Cannot convert '%s' to target class: %s ",
-                data,
-                targetClazz));
+                                                         data,
+                                                         targetClazz));
     }
 
     /**
@@ -669,7 +669,8 @@ public class Value {
      * This only works if the wrapped value can be converted to <tt>int</tt> and is &gt;0 and &lt;4000.
      *
      * @param defaultValue the value to be converted to roman numeral if the wrapped value can not be converted
-     * @return a roman numeral representation of either the wrapped value or the defaultValue. values &gt;=4000 and &lt;=0  are represented as an empty String
+     * @return a roman numeral representation of either the wrapped value or the defaultValue. values &gt;=4000 and
+     * &lt;=0  are represented as an empty String
      */
     public String asRomanNumeral(int defaultValue) {
         return RomanNumeral.toRoman(asInt(defaultValue));
@@ -839,16 +840,16 @@ public class Value {
         }
         if (is(Calendar.class)) {
             return Instant.ofEpochMilli(((Calendar) data).getTimeInMillis())
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate();
+                          .atZone(ZoneId.systemDefault())
+                          .toLocalDate();
         }
         if (is(java.sql.Date.class)) {
             return Instant.ofEpochMilli(((java.sql.Date) data).getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         }
         if (is(Timestamp.class)) {
             return Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime())
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate();
+                          .atZone(ZoneId.systemDefault())
+                          .toLocalDate();
         }
         if (is(long.class) || is(Long.class)) {
             return Instant.ofEpochMilli((long) data).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -890,15 +891,15 @@ public class Value {
         }
         if (is(Calendar.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((Calendar) data).getTimeInMillis()),
-                    ZoneId.systemDefault());
+                                           ZoneId.systemDefault());
         }
         if (is(java.sql.Date.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.sql.Date) data).getTime()),
-                    ZoneId.systemDefault());
+                                           ZoneId.systemDefault());
         }
         if (is(Timestamp.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime()),
-                    ZoneId.systemDefault());
+                                           ZoneId.systemDefault());
         }
         if (is(long.class) || is(Long.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli((long) data), ZoneId.systemDefault());

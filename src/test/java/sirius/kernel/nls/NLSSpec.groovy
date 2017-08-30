@@ -37,6 +37,20 @@ class NLSSpec extends BaseSpecification {
         result == "2014-08-09 12:00:59"
     }
 
+    def "toMachineString() of Amount is properly formatted"() {
+        expect:
+        NLS.toMachineString(Amount.of(input)) == output
+        where:
+        input      | output
+        123456.789 | "123456.79"
+        123456.81  | "123456.81"
+        0.113      | "0.11"
+        -11111.1   | "-11111.10"
+        1          | "1.00"
+        -1         | "-1.00"
+        0          | "0.00"
+    }
+
     def "toUserString() formats a LocalDateTime as date with time"() {
         given:
         def date = LocalDateTime.of(2014, 8, 9, 12, 00, 59)
@@ -127,7 +141,7 @@ class NLSSpec extends BaseSpecification {
 
     def "toSpokenDate() formats a date in the past as date"() {
         given:
-        def date = LocalDate.of(2014,1,1)
+        def date = LocalDate.of(2014, 1, 1)
         when:
         def result = NLS.toSpokenDate(date)
         then:
@@ -136,7 +150,7 @@ class NLSSpec extends BaseSpecification {
 
     def "toSpokenDate() formats a date in the future as date"() {
         given:
-        def date = LocalDate.of(2114,1,1)
+        def date = LocalDate.of(2114, 1, 1)
         when:
         def result = NLS.toSpokenDate(date)
         then:

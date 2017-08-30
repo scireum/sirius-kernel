@@ -26,7 +26,6 @@ public class Future extends Promise<Object> {
         success(null);
     }
 
-
     /**
      * Adds a completion handler to this promise which only handles the successful completion of the promise.
      * <p>
