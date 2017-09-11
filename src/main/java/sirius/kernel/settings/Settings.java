@@ -243,6 +243,10 @@ public class Settings {
             field.set(target, Value.of(config.getString(key)).asEnum((Class<? extends Enum>) field.getType()));
         } else if (Set.class.equals(field.getType())) {
             field.set(target, new HashSet<>(config.getStringList(key)));
+        } else if (float.class.equals(field.getType()) || Float.class.equals(field.getType())) {
+            field.set(target, config.getNumber(key).floatValue());
+        } else if (double.class.equals(field.getType()) || Double.class.equals(field.getType())) {
+            field.set(target, config.getNumber(key).doubleValue());
         } else {
             throw new IllegalArgumentException(Strings.apply("Cannot fill field '%s.%s' of type %s with a config value!",
                                                              field.getDeclaringClass().getName(),
