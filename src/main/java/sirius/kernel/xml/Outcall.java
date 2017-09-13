@@ -17,13 +17,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -89,12 +83,14 @@ public class Outcall {
     /**
      * Sents the given context as POST to the designated server.
      *
-     * @param params the data to POST
+     * @param params  the data to POST
      * @param charset the charset to use when encoding the post data
      * @return the outcall itself for fluent method calls
      * @throws IOException in case of any IO error
      */
     public Outcall postData(Context params, Charset charset) throws IOException {
+        connection.setRequestMethod("POST");
+
         OutputStreamWriter writer = new OutputStreamWriter(getOutput(), charset.name());
         StringBuilder sb = new StringBuilder();
         boolean first = true;
