@@ -90,6 +90,7 @@ public class Outcall {
      */
     public Outcall postData(Context params, Charset charset) throws IOException {
         connection.setRequestMethod("POST");
+        this.charset = charset;
 
         OutputStreamWriter writer = new OutputStreamWriter(getOutput(), charset.name());
         StringBuilder sb = new StringBuilder();
@@ -222,7 +223,7 @@ public class Outcall {
      */
     public Charset getContentEncoding() {
         if (connection.getContentEncoding() == null) {
-            return Charsets.UTF_8;
+            return charset;
         }
         try {
             return Charset.forName(connection.getContentEncoding());
