@@ -8,8 +8,8 @@
 
 package sirius.kernel.nls
 
-import sirius.kernel.async.CallContext
 import sirius.kernel.BaseSpecification
+import sirius.kernel.async.CallContext
 import sirius.kernel.commons.Amount
 
 import java.time.Instant
@@ -184,5 +184,16 @@ class NLSSpec extends BaseSpecification {
         def input = "34,54"
         then:
         NLS.parseUserString(Amount.class, input).toString() == "34,54"
+    }
+
+    def "parseUserString for a LocalTime works"() {
+        expect:
+        NLS.parseUserString(LocalTime.class, input) == output
+
+        where:
+        input      | output
+        "14:30:12" | new LocalTime(14, 30, 12, 0)
+        "14:30"    | new LocalTime(14, 30, 0, 0)
+        "14"       | new LocalTime(14, 0, 0, 0)
     }
 }
