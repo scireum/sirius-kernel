@@ -10,10 +10,7 @@ package sirius.kernel.commons;
 
 import javax.annotation.Nonnull;
 import javax.script.ScriptContext;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Provides an execution context to scripts etc.
@@ -22,7 +19,7 @@ import java.util.TreeMap;
  */
 public class Context implements Map<String, Object> {
 
-    protected Map<String, Object> data = new TreeMap<String, Object>();
+    protected Map<String, Object> data = new HashMap<>();
 
     @Override
     public int size() {
