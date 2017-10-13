@@ -45,6 +45,7 @@ public class TaskContext implements SubContext {
     private String system = GENERIC;
     private String subSystem = GENERIC;
     private String job = GENERIC;
+    private CallContext parent;
     private RateLimit stateUpdate = RateLimit.timeInterval(STATE_UPDATE_INTERVAL, TimeUnit.SECONDS);
 
     @Part
@@ -52,6 +53,7 @@ public class TaskContext implements SubContext {
 
     public TaskContext() {
         this.adapter = new BasicTaskContextAdapter(this);
+        this.parent = CallContext.getCurrent();
     }
 
     /**
@@ -217,7 +219,7 @@ public class TaskContext implements SubContext {
         } else {
             this.system = system;
         }
-        CallContext.getCurrent().addToMDC(MDC_SYSTEM, getSystemString());
+        parent.addToMDC(MDC_SYSTEM, getSystemString());
         return this;
     }
 
@@ -244,7 +246,7 @@ public class TaskContext implements SubContext {
         } else {
             this.subSystem = subSystem;
         }
-        CallContext.getCurrent().addToMDC(MDC_SYSTEM, getSystemString());
+        parent.addToMDC(MDC_SYSTEM, getSystemString());
         return this;
     }
 
@@ -271,7 +273,7 @@ public class TaskContext implements SubContext {
         } else {
             this.job = job;
         }
-        CallContext.getCurrent().addToMDC(MDC_SYSTEM, getSystemString());
+        parent.addToMDC(MDC_SYSTEM, getSystemString());
         return this;
     }
 
@@ -308,5 +310,6 @@ public class TaskContext implements SubContext {
 
     @Override
     public void detach() {
+        // Nothing to do...
     }
 }
