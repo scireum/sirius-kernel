@@ -9,12 +9,11 @@
         <version>3.10.1</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
-    <version>6.16</version>
+    <version>6.17</version>
     <name>Sirius Kernel</name>
     <description>Provides common core classes and the microkernel powering all Sirius applications</description>
 
     <dependencies>
-
         <!-- Provides the tools to load the system configuration -->
         <dependency>
             <groupId>com.typesafe</groupId>
