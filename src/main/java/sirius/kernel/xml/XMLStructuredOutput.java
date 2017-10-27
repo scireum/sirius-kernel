@@ -24,6 +24,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 /**
  * Represents a {@link StructuredOutput} emitting XML data.
@@ -52,6 +53,17 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      * @param doctype the doc type used in the XML header
      */
     public XMLStructuredOutput(@Nonnull OutputStream output, @Nullable String doctype) {
+        this(output, Charsets.UTF_8, doctype);
+    }
+
+    /**
+     * Creates a new output writing to the given output stream.
+     *
+     * @param output   the stream used as destination for the generated xml
+     * @param encoding the charset used to encode the output
+     * @param doctype  the doc type used in the XML header
+     */
+    public XMLStructuredOutput(@Nonnull OutputStream output, @Nonnull Charset encoding, @Nullable String doctype) {
         try {
             this.out = output;
             StreamResult streamResult = new StreamResult(out);
@@ -61,7 +73,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             if (doctype != null) {
                 serializer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctype);
             }
-            serializer.setOutputProperty(OutputKeys.ENCODING, Charsets.UTF_8.name());
+            serializer.setOutputProperty(OutputKeys.ENCODING, encoding.name());
             serializer.setOutputProperty(OutputKeys.INDENT, "yes");
             hd.setResult(streamResult);
             hd.startDocument();
@@ -69,6 +81,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             throw Exceptions.handle(e);
         }
     }
+
 
     @Override
     protected void endArray(String name) {
