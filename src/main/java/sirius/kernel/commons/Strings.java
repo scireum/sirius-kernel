@@ -405,8 +405,9 @@ public class Strings {
     }
 
     /**
-     * Returns a trimmed version of the given object's string representation.
-     * And empty string '' will always be null.
+     * Returns a trimmed version of the given object's string representation. All whitespace characters at the beginning
+     * or the end will be removed.
+     * An empty string '' will always be null.
      *
      * @param object the input to be converted into a string and then trimmed
      * @return a trimmed version of the string representation of the given object.
@@ -417,6 +418,82 @@ public class Strings {
             return null;
         }
         return object.toString().trim();
+    }
+
+    /**
+     * Returns a trimmed version of the given object's string representation. All characters at the beginning or at the
+     * end, that occur in {@code mask}, will be removed.
+     * An empty string '' will always be null.
+     *
+     * @param object the input to be converted into a string and then trimmed
+     * @return a trimmed version of the string representation of the given object.
+     * Returns <tt>null</tt> if an empty string was given.
+     */
+    public static String trim(Object object, String mask) {
+        if (isEmpty(object)) {
+            return null;
+        }
+        String value = object.toString();
+        char[] maskChars = mask.toCharArray();
+        Arrays.sort(maskChars);
+        int substrStart = 0;
+        int substrEnd = value.length();
+        while ((substrStart < value.length()) && (Arrays.binarySearch(maskChars, value.charAt(substrStart)) >= 0)) {
+            substrStart++;
+        }
+        while ((substrEnd > 0) && (Arrays.binarySearch(maskChars, value.charAt(substrEnd - 1)) >= 0)) {
+            substrEnd--;
+        }
+
+        return (substrStart > 0 || substrEnd < value.length()) ? value.substring(substrStart, substrEnd) : value;
+    }
+
+    /**
+     * Returns a left-trimmed version of the given object's string representation. All characters at the beginning, that
+     * occur in {@code mask}, will be removed.
+     * An empty string '' will always be null.
+     *
+     * @param object the input to be converted into a string and then trimmed
+     * @return a left-trimmed version of the string representation of the given object.
+     * Returns <tt>null</tt> if an empty string was given.
+     */
+    public static String ltrim(Object object, String mask) {
+        if (isEmpty(object)) {
+            return null;
+        }
+        String value = object.toString();
+        char[] maskChars = mask.toCharArray();
+        Arrays.sort(maskChars);
+        int substrStart = 0;
+        while ((substrStart < value.length()) && (Arrays.binarySearch(maskChars, value.charAt(substrStart)) >= 0)) {
+            substrStart++;
+        }
+
+        return substrStart > 0 ? value.substring(substrStart) : value;
+    }
+
+    /**
+     * Returns a right-trimmed version of the given object's string representation. All characters at the end, that
+     * occur in {@code mask}, will be removed.
+     * An empty string '' will always be null.
+     *
+     * @param object the input to be converted into a string and then trimmed
+     * @return a right-trimmed version of the string representation of the given object.
+     * Returns <tt>null</tt> if an empty string was given.
+     */
+    public static String rtrim(Object object, String mask) {
+        if (isEmpty(object)) {
+            return null;
+        }
+        String value = object.toString();
+        char[] maskChars = mask.toCharArray();
+        Arrays.sort(maskChars);
+        int substrEnd = value.length();
+
+        while ((substrEnd > 0) && (Arrays.binarySearch(maskChars, value.charAt(substrEnd - 1)) >= 0)) {
+            substrEnd--;
+        }
+        return substrEnd < value.length() ? value.substring(0, substrEnd) : value;
     }
 
     /**
