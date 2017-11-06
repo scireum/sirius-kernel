@@ -114,4 +114,43 @@ public class StringsTest {
         assertEquals("A    ", Strings.rightPad("A", "  ", 4));
         assertEquals("AAA", Strings.rightPad("AAA", " ", 2));
     }
+
+    @Test
+    public void trim() {
+        assertNull(Strings.trim(null));
+        assertNull(Strings.trim(""));
+        assertEquals("A", Strings.trim("  A  "));
+        assertEquals("A", Strings.trim("\u0000\t\n\rA\u0000\t\n\r"));
+        assertEquals("Blubb   : 3", Strings.trim(Tuple.create("   Blubb   ", 3)));
+
+        assertNull(Strings.trim(null));
+        assertNull(Strings.trim(""));
+        assertEquals("A", Strings.trim("  A  ", " "));
+        assertEquals("D", Strings.trim("  AD  ", " ABC"));
+        assertEquals("\n\rA\u0000\t\n", Strings.trim("\u0000\t\n\rA\u0000\t\n\r", "\t\r\u0000"));
+    }
+
+    @Test
+    public void ltrim() {
+        assertNull(Strings.ltrim(null, " "));
+        assertNull(Strings.ltrim("", " "));
+        assertEquals("A  ", Strings.ltrim("  A  ", " "));
+        assertEquals("", Strings.ltrim("  A  ", " ABC"));
+        assertEquals("D  ", Strings.ltrim("  AD  ", " ABC"));
+        assertEquals("A\u0000\t\n\r", Strings.ltrim("\u0000\t\n\rA\u0000\t\n\r", "\r\t\n\u0000\t\n\r"));
+        assertEquals("Blubb   : 3", Strings.ltrim(Tuple.create("   Blubb   ", 3), " "));
+        assertEquals("\n\rA\u0000\t\n\r", Strings.ltrim("\u0000\t\n\rA\u0000\t\n\r", "\t\r\u0000"));
+    }
+
+    @Test
+    public void rtrim() {
+        assertNull(Strings.rtrim(null, " "));
+        assertNull(Strings.rtrim("", " "));
+        assertEquals("  A", Strings.rtrim("  A  ", " "));
+        assertEquals("", Strings.rtrim("  A  ", " ABC"));
+        assertEquals("  D", Strings.rtrim("  DA  ", " ABC"));
+        assertEquals("\u0000\t\n\rA", Strings.rtrim("\u0000\t\n\rA\u0000\t\n\r", "\r\t\n\u0000\t\n\r"));
+        assertEquals("3:    Blubb", Strings.rtrim(Tuple.create(3, "   Blubb   "), " "));
+        assertEquals("\u0000\t\n\rA\u0000\t", Strings.rtrim("\u0000\t\n\rA\u0000\t\n\r", "\n\r\u0000"));
+    }
 }
