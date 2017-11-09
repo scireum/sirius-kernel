@@ -119,4 +119,21 @@ class PromiseSpec extends BaseSpecification {
         output.isFailed()
     }
 
+    def "A completed Promise with a value and error is marked as non successful and failed"() {
+        given: "a promise"
+        Promise<String> test = Tasks.promise()
+        and: "and a test exception"
+        def exception = new Exception()
+        and: "add a dummy handler so that no output is written into the console"
+        test.onFailure(ValueHolder.of(null))
+        when: "mark promise as successful"
+        test.success(null)
+        and: "and mark it as failed as well"
+        test.fail(exception)
+        then: "the promise is considered as 'failed'"
+        test.isFailed()
+        and: "the promise is not considered as 'successful'"
+        !test.isSuccessful()
+    }
+
 }

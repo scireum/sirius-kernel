@@ -132,7 +132,7 @@ public class Promise<V> {
      * @return <tt>true</tt> if the promise was successfully completed, <tt>false</tt> otherwise.
      */
     public boolean isSuccessful() {
-        return value != null;
+        return value != null && !isFailed();
     }
 
     /**
