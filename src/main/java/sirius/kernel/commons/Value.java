@@ -18,9 +18,19 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -1210,6 +1220,17 @@ public class Value {
             Exceptions.ignore(e);
             return null;
         }
+    }
+
+    /**
+     * Converts the wrapped value to an enum constant of the given <tt>clazz</tt>.
+     *
+     * @param clazz the enum to convert to
+     * @param <E>   to generic type of the enum
+     * @return the enum constant wrapped as optional or an empty optional if no conversion was possible.
+     */
+    public <E extends Enum<E>> Optional<E> getEnum(Class<E> clazz) {
+        return Optional.ofNullable((E) asEnum(clazz));
     }
 
     /**
