@@ -182,12 +182,8 @@ public class CSVReader {
     private String readField() throws IOException {
         StringBuilder result = new StringBuilder();
         boolean inQuote = false;
-        if (ignoreWhitespaces) {
-            while (buffer == ' ' || buffer == '\t') {
-                result.append((char) buffer);
-                read();
-            }
-        }
+        skipLeadingWhitespaces(result);
+
         if (buffer == quotation) {
             inQuote = true;
             read();
@@ -196,6 +192,30 @@ public class CSVReader {
             }
         }
 
+        readFieldValue(result, inQuote);
+        skipTrailingWhitespaces(inQuote);
+
+        return result.toString();
+    }
+
+    private void skipLeadingWhitespaces(StringBuilder result) throws IOException {
+        if (ignoreWhitespaces) {
+            while (buffer == ' ' || buffer == '\t') {
+                result.append((char) buffer);
+                read();
+            }
+        }
+    }
+
+    private void skipTrailingWhitespaces(boolean inQuote) throws IOException {
+        if (inQuote) {
+            while (buffer == ' ' || buffer == '\t') {
+                read();
+            }
+        }
+    }
+
+    private void readFieldValue(StringBuilder result, boolean inQuote) throws IOException {
         while (shouldContinueField(inQuote)) {
             if (buffer == escape) {
                 read();
@@ -207,13 +227,6 @@ public class CSVReader {
             }
             read();
         }
-        if (inQuote) {
-            while (buffer == ' ' || buffer == '\t') {
-                read();
-            }
-        }
-
-        return result.toString();
     }
 
     /*
