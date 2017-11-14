@@ -48,39 +48,6 @@ public class Outcall {
     }
 
     /**
-     * Creates a new <tt>Outcall</tt> to the given URL, sending the given parameters as POST.
-     *
-     * @param url    the url to call
-     * @param params the parameters to POST.
-     * @throws IOException in case of any IO error
-     * @deprecated use {@code new Outcall(url).postData(params, Charsets.UTF_8)} instead
-     */
-    @Deprecated
-    public Outcall(URL url, Context params) throws IOException {
-        this(url, params, Charsets.UTF_8);
-    }
-
-    /**
-     * Creates a new <tt>Outcall</tt> to the given URL, sending the given parameters as POST.
-     *
-     * @param url     the url to call
-     * @param params  the parameters to POST.
-     * @param charset determines the charset to use when encoding the uploaded data
-     * @throws IOException in case of any IO error
-     * @deprecated use {@code new Outcall(url).postData(params, charset)} instead
-     */
-    @Deprecated
-    public Outcall(URL url, Context params, Charset charset) throws IOException {
-        this.charset = charset;
-        connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setDoInput(true);
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=" + charset.name());
-        postData(params, charset);
-    }
-
-    /**
      * Sents the given context as POST to the designated server.
      *
      * @param params  the data to POST

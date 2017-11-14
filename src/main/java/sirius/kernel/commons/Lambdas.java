@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collector;
 
 /**
@@ -55,26 +54,6 @@ public class Lambdas {
                             Lambdas::unsupportedBiOperation,
                             Function.identity(),
                             Collector.Characteristics.IDENTITY_FINISH);
-    }
-
-    /**
-     * Filters the given collection using the given predicate.
-     * <p>
-     * In contrast to the stream API of Java, this MODIFIES the collection which is passed in. This is certainly
-     * no the "functional way" to do it - but Java not being a functional language there are some use cases to
-     * modify an existing collection instead of creating a new one.
-     *
-     * @param collection to collection to remove elements from
-     * @param filter     the filter which evaluates to <tt>true</tt> for each element to be removed
-     * @param <T>        the type of the elements within the collection
-     * @param <C>        the type of the collection which is processed
-     * @return the filtered (modified) collection
-     * @deprecated simply use {@link Collection#removeIf(Predicate)}.
-     */
-    @Deprecated
-    public static <T, C extends Collection<T>> C remove(C collection, Predicate<T> filter) {
-        collection.removeIf(filter);
-        return collection;
     }
 
     /**

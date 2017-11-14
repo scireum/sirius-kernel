@@ -12,17 +12,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
-import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,20 +41,34 @@ import java.util.stream.Stream;
  */
 public class Babelfish {
 
-    /*
+    /**
      * Logs WARN messages if translations are inconsistent (override each other).
      */
     protected static final Log LOG = Log.get("babelfish");
 
-    /*
+    /**
      * Since the translationMap is not thread-safe, modifying the map requires to acquire this lock
      */
     private final Lock translationsWriteLock = new ReentrantLock();
 
-    /*
+    /**
      * Contains all known translations
      */
     private Map<String, Translation> translationMap = Maps.newTreeMap();
+
+    /**
+     * Describes the pattern for .properties files of interest.
+     */
+    private static final Pattern PROPERTIES_FILE = Pattern.compile("(.*?)_([a-z]{2}).properties");
+
+    /**
+     * Contains a list of all loaded resource bundles. Once the framework is booted, this is passed to
+     * the TimerService.addWatchedResource to reload changes from the development environment.
+     */
+    private List<String> loadedResourceBundles = Lists.newArrayList();
+
+    private static final ResourceBundle.Control CONTROL = new NonCachingControl();
+
 
     /**
      * Enumerates all translations matching the given filter.
@@ -84,149 +93,6 @@ public class Babelfish {
     }
 
     /**
-     * Tries to write out all stored properties to their respective source location.
-     * <p>
-     * This intended to be called in development systems after translations have been edited via the web interface.
-     */
-    public void writeProperties() {
-        LOG.INFO("Writing properties back to source files...");
-        final MultiMap<String, Translation> translationsByFile = MultiMap.create();
-        final ValueHolder<Integer> propertiesWithoutFile = ValueHolder.of(0);
-        getTranslations(null).forEach(entity -> {
-            if (entity.getFile() == null) {
-                propertiesWithoutFile.set(propertiesWithoutFile.get() + 1);
-            } else {
-                translationsByFile.put(entity.getFile(), entity);
-            }
-        });
-        if (propertiesWithoutFile.get() > 0) {
-            LOG.WARN("Skipping %d properties, without any file information", propertiesWithoutFile.get());
-        }
-
-        int properties = 0;
-        int totalFiles = 0;
-        int updatedFiles = 0;
-        for (Map.Entry<String, Collection<Translation>> fileAndTranslations : translationsByFile.getUnderlyingMap()
-                                                                                                .entrySet()) {
-            Map<String, SortedProperties> propMap = Maps.newTreeMap();
-            for (Translation entry : fileAndTranslations.getValue()) {
-                properties++;
-                entry.writeTo(propMap);
-            }
-            for (Map.Entry<String, SortedProperties> propertiesByLanguage : propMap.entrySet()) {
-                try {
-                    File file = findSource(fileAndTranslations.getKey(), propertiesByLanguage.getKey());
-                    if (file != null) {
-                        try (FileOutputStream out = new FileOutputStream(file)) {
-                            propertiesByLanguage.getValue().store(out, null);
-                            updatedFiles++;
-                        }
-                    }
-                } catch (Throwable ex) {
-                    Exceptions.handle()
-                              .error(ex)
-                              .to(LOG)
-                              .withSystemErrorMessage("Error writing properties of: %s_%s - %s (%s)",
-                                                      fileAndTranslations.getKey(),
-                                                      propertiesByLanguage.getKey())
-                              .handle();
-                }
-                totalFiles++;
-            }
-        }
-        LOG.INFO("Wrote %d properties in %d of %d files", properties, updatedFiles, totalFiles);
-    }
-
-    private File findSource(String baseName, String language) {
-        File baseDir = new File(System.getProperty("user.dir"));
-        return findFile(baseDir.getParentFile(), baseName, language);
-    }
-
-    /*
-     * When searching for the .properties file on disk for a given relative path, we need to scan all source folders.
-     * This list enumerates directories not to enter, since they either contain a copy of the file or might
-     * be too large to search through
-     */
-    private static final String[] IGNORED_DIRECTORIES = {"bin", "out", "target", "build", "data", "dist"};
-
-    /*
-     * Tries to find a source file for the given path, starting from current.
-     */
-    private File findFile(File current, String baseName, String language) {
-        String fileName = baseName + "_" + language + ".properties";
-
-        if (!current.isDirectory() || !current.exists()) {
-            return null;
-        }
-        File[] files = current.listFiles();
-        if (files == null) {
-            return null;
-        }
-
-        boolean foundSibling = false;
-        for (File child : files) {
-            if (child.exists() && child.isFile()) {
-                if (child.getName().equals(fileName)) {
-                    return child;
-                }
-                if (child.getName().startsWith(baseName) && child.getName().endsWith(".properties")) {
-                    foundSibling = true;
-                }
-            }
-
-            if (shouldWalkInfo(child)) {
-                File result = findFile(child, baseName, language);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-
-        if (foundSibling) {
-            return new File(current, fileName);
-        }
-
-        return null;
-    }
-
-    private boolean shouldWalkInfo(File child) {
-        // We need a directory...
-        if (!child.isDirectory()) {
-            return false;
-        }
-
-        // Don't step into hidden directories
-        if (child.isHidden() || child.getName().startsWith(".")) {
-            return false;
-        }
-
-        // Don't step into one of the generally ignored directories
-        for (String ignoredDir : IGNORED_DIRECTORIES) {
-            if (child.getName().startsWith(ignoredDir)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /*
-     * Tries to find the file denoted by the given path, starting from the given basePath
-     */
-    private File completeFile(File basePath, String[] path) {
-        File result = basePath;
-        for (int i = 1; i < path.length; i++) {
-            result = new File(result, path[i]);
-        }
-        //noinspection UnnecessaryParentheses
-        if (result.exists() && result.isFile() || (path.length > 1 && result.getParentFile().exists())) {
-            return result;
-        }
-
-        return null;
-    }
-
-    /**
      * Retrieves the <tt>Translation</tt> for the given property.
      * <p>
      * If no matching entry is found, the given <tt>fallback</tt> is used. If still no match was found, either
@@ -238,6 +104,7 @@ public class Babelfish {
      * @return a <tt>Translation</tt> for the given property or fallback.
      * Returns <tt>null</tt> if no translation was found and <tt>create</tt> is false.
      */
+    @SuppressWarnings("squid:S2583")
     protected Translation get(@Nonnull String property, @Nullable String fallback, boolean create) {
         if (property == null) {
             throw new IllegalArgumentException("property");
@@ -262,17 +129,6 @@ public class Babelfish {
 
         return entry;
     }
-
-    /*
-     * Describes the pattern for .properties files of interest.
-     */
-    private static final Pattern PROPERTIES_FILE = Pattern.compile("(.*?)_([a-z]{2}).properties");
-
-    /*
-     * Contains a list of all loaded resource bundles. Once the framework is booted, this is passed to
-     * the TimerService.addWatchedResource to reload changes from the development environment.
-     */
-    private List<String> loadedResourceBundles = Lists.newArrayList();
 
     /**
      * Returns a list of all loaded resource bundles.
@@ -310,14 +166,14 @@ public class Babelfish {
         });
 
         // Apply translations in correct order
-        customizations.forEach(value -> loadMatchedResource(value));
+        customizations.forEach(this::loadMatchedResource);
     }
 
     private void loadMatchedResource(Matcher value) {
         LOG.FINE("Loading: %s", value.group());
         String baseName = value.group(1);
         String lang = value.group(2);
-        importProperties(value.group(), baseName, lang);
+        importProperties(baseName, lang);
         loadedResourceBundles.add(value.group());
     }
 
@@ -330,7 +186,7 @@ public class Babelfish {
         if (m.matches()) {
             String baseName = m.group(1);
             String lang = m.group(2);
-            importProperties(name, baseName, lang);
+            importProperties(baseName, lang);
         }
     }
 
@@ -364,9 +220,7 @@ public class Babelfish {
         }
     }
 
-    private static final ResourceBundle.Control CONTROL = new NonCachingControl();
-
-    private void importProperties(String relativePath, String baseName, String lang) {
+    private void importProperties(String baseName, String lang) {
         ResourceBundle bundle = ResourceBundle.getBundle(baseName + "_" + lang, CONTROL);
         translationsWriteLock.lock();
         try {
