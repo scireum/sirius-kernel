@@ -9,7 +9,6 @@
 package sirius.kernel.di;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.MultiMap;
@@ -21,6 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -165,20 +165,13 @@ class PartRegistry implements MutableGlobalContext {
         if (!Sirius.isActiveCustomization(customizationName)) {
             return;
         }
-        Class<?> predecessor = part.getClass().isAnnotationPresent(Replace.class) ?
-                               part.getClass().getAnnotation(Replace.class).value() :
-                               null;
-        if (predecessor != null && customizationName == null) {
-            if (Sirius.isStartedAsTest() && part.getClass().getSimpleName().endsWith("Mock")) {
-                Injector.LOG.WARN("%s is mocked by %s", predecessor, part.getClass());
-            } else {
-                Injector.LOG.WARN(
-                        "@Replace should be only used within a customization. %s (%s) seems to be a base class!",
-                        part,
-                        part.getClass());
-            }
-        }
         Object successor = shadowMap.get(part.getClass());
+        Class<?> predecessor = determinePredecessor(part, customizationName);
+
+        registerPart(part, implementedInterfaces, predecessor, successor);
+    }
+
+    public void registerPart(Object part, Class<?>[] implementedInterfaces, Class<?> predecessor, Object successor) {
         for (Class<?> iFace : implementedInterfaces) {
             if (successor == null) {
                 parts.put(iFace, part);
@@ -196,9 +189,30 @@ class PartRegistry implements MutableGlobalContext {
                 }
             }
         }
-        if (predecessor != null) {
-            shadowMap.put(predecessor, part);
+    }
+
+    public Class<?> determinePredecessor(Object part, String customizationName) {
+        Class<?> predecessor = part.getClass().isAnnotationPresent(Replace.class) ?
+                               part.getClass().getAnnotation(Replace.class).value() :
+                               null;
+        if (predecessor == null) {
+            return null;
         }
+
+        if (customizationName == null) {
+            if (Sirius.isStartedAsTest() && part.getClass().getSimpleName().endsWith("Mock")) {
+                Injector.LOG.WARN("%s is mocked by %s", predecessor, part.getClass());
+            } else {
+                Injector.LOG.WARN(
+                        "@Replace should be only used within a customization. %s (%s) seems to be a base class!",
+                        part,
+                        part.getClass());
+            }
+        }
+
+        shadowMap.put(predecessor, part);
+
+        return predecessor;
     }
 
     @Override
@@ -239,31 +253,41 @@ class PartRegistry implements MutableGlobalContext {
         for (Class<?> clazz : implementedInterfaces) {
             Map<String, Object> partsOfClass = namedParts.get(clazz);
             if (partsOfClass != null) {
-                Object currentPart = partsOfClass.get(uniqueName);
-                if (currentPart != null) {
-                    String currentCustomization = Sirius.getCustomizationName(currentPart.getClass().getName());
-                    int comp = Sirius.compareCustomizations(currentCustomization, customizationName);
-                    if (comp < 0) {
-                        // Don't override a customized part with a system part
-                        return;
-                    } else if (comp == 0) {
-                        throw new IllegalArgumentException(Strings.apply(
-                                "The part '%s' cannot be registered as '%s' for class '%s'. The id is already taken "
-                                + "by: %s (%s)",
-                                part,
-                                clazz.getName(),
-                                uniqueName,
-                                partsOfClass.get(uniqueName),
-                                partsOfClass.get(uniqueName).getClass().getName()));
-                    }
-                }
+                registerNamedPart(uniqueName, part, customizationName, clazz, partsOfClass);
             } else {
                 partsOfClass = Collections.synchronizedMap(new TreeMap<>());
                 namedParts.put(clazz, partsOfClass);
+                partsOfClass.put(uniqueName, part);
             }
-            partsOfClass.put(uniqueName, part);
         }
         registerPart(part, implementedInterfaces);
+    }
+
+    public void registerNamedPart(String uniqueName,
+                                  Object part,
+                                  String customizationName,
+                                  Class<?> clazz,
+                                  Map<String, Object> partsOfClass) {
+        Object currentPart = partsOfClass.get(uniqueName);
+        if (currentPart == null) {
+            partsOfClass.put(uniqueName, part);
+            return;
+        }
+        String currentCustomization = Sirius.getCustomizationName(currentPart.getClass().getName());
+        int comp = Sirius.compareCustomizations(currentCustomization, customizationName);
+        if (comp > 0) {
+            // Only overwrite system parts with customizations, not the other way round...
+            partsOfClass.put(uniqueName, part);
+        } else if (comp == 0) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "The part '%s' cannot be registered as '%s' for class '%s'. The id is already taken "
+                    + "by: %s (%s)",
+                    part,
+                    clazz.getName(),
+                    uniqueName,
+                    partsOfClass.get(uniqueName),
+                    partsOfClass.get(uniqueName).getClass().getName()));
+        }
     }
 
     @Override
@@ -278,22 +302,22 @@ class PartRegistry implements MutableGlobalContext {
     /*
      * Processes all annotations of all known parts.
      */
+    @SuppressWarnings({"squid:S1854", "squid:S1481"})
     void processAnnotations() {
-        Set<Object> initializedObjects = Sets.newHashSet();
-        parts.getUnderlyingMap().values().stream().flatMap(e -> e.stream()).forEach(part -> {
+        Set<Object> initializedObjects = new HashSet<>();
+        parts.getUnderlyingMap().values().stream().flatMap(Collection::stream).forEach(part -> {
             wire(part);
             if (part instanceof Initializable) {
-                initialize(part, initializedObjects);
+                if (!initializedObjects.contains(part)) {
+                    initializedObjects.add(part);
+                    initialize(part);
+                }
             }
         });
     }
 
-    private void initialize(Object part, Set<Object> initializedObjects) {
-        if (initializedObjects.contains(part)) {
-            return;
-        }
+    private void initialize(Object part) {
         try {
-            initializedObjects.add(part);
             ((Initializable) part).initialize();
         } catch (Exception e) {
             Injector.LOG.WARN("Error initializing %s (%s)", part, part.getClass().getName());
