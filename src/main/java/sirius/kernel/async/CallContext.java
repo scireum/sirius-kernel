@@ -66,7 +66,7 @@ public class CallContext {
      */
     private Map<Class<? extends SubContext>, SubContext> subContext = Collections.synchronizedMap(Maps.newHashMap());
     private Watch watch = Watch.start();
-    private String lang = NLS.getDefaultLanguage();
+    private String lang;
     private String fallbackLang;
 
     /**
@@ -329,6 +329,9 @@ public class CallContext {
      * @return a two-letter language code used for the current thread.
      */
     public String getLang() {
+        if (lang == null) {
+            return NLS.getDefaultLanguage();
+        }
         return lang;
     }
 

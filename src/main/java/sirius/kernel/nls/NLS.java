@@ -74,6 +74,7 @@ import java.util.Set;
  *
  * @see Babelfish
  */
+@SuppressWarnings("squid:S1192")
 public class NLS {
 
     private static final Babelfish blubb = new Babelfish();
@@ -125,6 +126,14 @@ public class NLS {
      */
     @Nonnull
     public static String getDefaultLanguage() {
+        if (defaultLanguage != null) {
+            return defaultLanguage;
+        }
+
+        return determineDefaultLanguage();
+    }
+
+    private static String determineDefaultLanguage() {
         if (defaultLanguage == null && Sirius.getSettings() != null) {
             defaultLanguage = Sirius.getSettings().getString("nls.defaultLanguage").toLowerCase();
             if ("auto".equals(defaultLanguage)) {
