@@ -9,6 +9,7 @@
 package sirius.kernel;
 
 import com.google.common.base.Objects;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Log;
 
 import java.io.File;
@@ -152,17 +153,13 @@ public class Classpath {
     }
 
     private String buildRelativePath(File reference, File child) {
-        StringBuilder path = new StringBuilder();
+        List<String> path = new ArrayList<>();
         File iter = child;
         while (iter != null && !Objects.equal(iter, reference)) {
-            if (path.length() > 0) {
-                path.append(iter.getName()).append("/").append(path);
-            } else {
-                path.append(iter.getName());
-            }
+            path.add(0, iter.getName());
             iter = iter.getParentFile();
         }
 
-        return path.toString();
+        return Strings.join(path, "/");
     }
 }
