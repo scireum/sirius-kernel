@@ -84,7 +84,7 @@ public class Lambdas {
      * @return a Collector which can be supplied to {@link java.util.stream.Stream#collect(java.util.stream.Collector)}.
      */
     public static <K> Collector<K, Map<K, Integer>, Map<K, Integer>> groupAndCount() {
-        return Collector.of(() -> new HashMap<>(),
+        return Collector.of(HashMap::new,
                             Lambdas::increment,
                             Lambdas::unsupportedBiOperation,
                             Function.identity(),

@@ -429,8 +429,9 @@ public class NLS {
                 return CommonKeys.SATURDAY.translated();
             case Calendar.SUNDAY:
                 return CommonKeys.SUNDAY.translated();
+            default:
+                return "";
         }
-        return "";
     }
 
     /**
@@ -477,8 +478,9 @@ public class NLS {
                 return CommonKeys.NOVEMBER.translated();
             case 12:
                 return CommonKeys.DECEMBER.translated();
+            default:
+                return "";
         }
-        return "";
     }
 
     /**
@@ -628,6 +630,7 @@ public class NLS {
      * @return string representation of the given object, which can be parsed by
      * {@link #parseMachineString(Class, String)} independently of the language settings
      */
+    @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S3776"})
     public static String toMachineString(Object data) {
         if (data == null) {
             return "";
@@ -707,6 +710,7 @@ public class NLS {
      * @param lang a two-letter language code for which the translation is requested
      * @return a string representation of the given object, formatted by the language settings of the current language
      */
+    @SuppressWarnings("squid:S3776")
     public static String toUserString(Object data, String lang) {
         if (data == null) {
             return "";
@@ -776,6 +780,7 @@ public class NLS {
      * @param date the date to be formatted
      * @return a date string which a human would use in common sentences
      */
+    @SuppressWarnings("squid:S3776")
     public static String toSpokenDate(Temporal date) {
         if (date == null) {
             return "";
@@ -849,7 +854,7 @@ public class NLS {
         return parseBasicTypesFromMachineString(clazz, value);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "squid:S3776"})
     private static <V> V parseBasicTypesFromMachineString(Class<V> clazz, String value) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
@@ -959,7 +964,7 @@ public class NLS {
         return parseBasicTypesFromUserString(clazz, value, lang);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "squid:S3776"})
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String lang) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
@@ -998,30 +1003,43 @@ public class NLS {
 
     private static Double parseDecimalNumberFromUser(String value, String lang) {
         try {
-            try {
-                // If there is exactly one "." in the pattern and no "," and
-                // we have less then 3 digits behind the "." we treat this
-                // as english decimal format and not as german grouping
-                // separator.
-                if (".".equals(NLS.get("NLS.groupingSeparator"))
-                    && value.contains(".")
-                    && !value.contains(",")
-                    && value.indexOf(".") == value.lastIndexOf(".")
-                    && value.indexOf(".") > value.length() - 4) {
-                    try {
-                        return Double.valueOf(value);
-                    } catch (Exception e) {
-                        /* IGNORE, TRY REAL FORMAT */
-                    }
-                }
-                return getDecimalFormat(lang).parse(value).doubleValue();
-            } catch (ParseException e) {
-                Exceptions.ignore(e);
-                return Double.valueOf(value);
+            Double result = tryParseMachineFormat(value);
+            if (result != null) {
+                return result;
             }
+
+            return getDecimalFormat(lang).parse(value).doubleValue();
+        } catch (ParseException e) {
+            Exceptions.ignore(e);
+            return Double.valueOf(value);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
         }
+    }
+
+    /**
+     * If there is exactly one "." in the pattern and no "," and we have less then 3 digits behind the "." we treat this
+     * as english decimal format and not as german grouping separator.
+     *
+     * @param value the parsed value or <tt>null</tt> if the format doesn't match
+     * @return <tt>true</tt> if the format being used is a english / technical one and not a german one where "." is the
+     * thousand separator
+     */
+    private static Double tryParseMachineFormat(String value) {
+        if (!".".equals(NLS.get("NLS.groupingSeparator"))) {
+            return null;
+        }
+        if (!value.contains(".") || value.contains(",")) {
+            return null;
+        }
+        if (value.indexOf(".") == value.lastIndexOf(".") && value.indexOf(".") > value.length() - 4) {
+            try {
+                return Double.valueOf(value);
+            } catch (Exception e) {
+                Exceptions.ignore(e);
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")

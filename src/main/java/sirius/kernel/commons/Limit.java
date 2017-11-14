@@ -49,15 +49,6 @@ public class Limit {
     public static final Limit UNLIMITED = new Limit(0, null);
 
     /**
-     * Represents a limit which only accepts the first item.
-     *
-     * @return a new limit which will only accept the first item
-     */
-    public static Limit singleItem() {
-        return new Limit(0, 1);
-    }
-
-    /**
      * Creates a new {@code Limit} based on the given parameters.
      *
      * @param itemsToSkip denotes the number of items to skip.
@@ -70,6 +61,15 @@ public class Limit {
             this.itemsToOutput = maxItems;
             this.maxItems = maxItems;
         }
+    }
+
+    /**
+     * Represents a limit which only accepts the first item.
+     *
+     * @return a new limit which will only accept the first item
+     */
+    public static Limit singleItem() {
+        return new Limit(0, 1);
     }
 
     /**

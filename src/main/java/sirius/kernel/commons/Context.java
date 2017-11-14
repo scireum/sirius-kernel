@@ -22,7 +22,7 @@ import java.util.TreeMap;
  */
 public class Context implements Map<String, Object> {
 
-    protected Map<String, Object> data = new TreeMap<String, Object>();
+    protected Map<String, Object> data = new TreeMap<>();
 
     @Override
     public int size() {

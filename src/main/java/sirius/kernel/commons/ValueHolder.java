@@ -19,7 +19,17 @@ import java.util.function.Supplier;
  * @param <T> the type of the value contained in the value holder
  */
 public class ValueHolder<T> implements Supplier<T>, Consumer<T> {
+
     private T value;
+
+    /**
+     * Creates a new value holder with the given initial value
+     *
+     * @param initialValue sets the value of the value holder
+     */
+    public ValueHolder(T initialValue) {
+        this.value = initialValue;
+    }
 
     /**
      * Creates a new <tt>ValueHolder</tt> with the given initial value.
@@ -32,15 +42,6 @@ public class ValueHolder<T> implements Supplier<T>, Consumer<T> {
      */
     public static <T> ValueHolder<T> of(T initialValue) {
         return new ValueHolder<>(initialValue);
-    }
-
-    /**
-     * Creates a new value holder with the given initial value
-     *
-     * @param initialValue sets the value of the value holder
-     */
-    public ValueHolder(T initialValue) {
-        this.value = initialValue;
     }
 
     @Override

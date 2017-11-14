@@ -22,6 +22,7 @@ import javax.annotation.Nonnull;
 public class GCCommand implements Command {
 
     @Override
+    @SuppressWarnings({"squid:S1215", "squid:S1192"})
     public void execute(Output output, String... params) throws Exception {
         output.apply("%-20s %10s", "TYPE", "SIZE");
         output.separator();

@@ -31,18 +31,6 @@ import java.util.List;
 public class PriorityCollector<T> {
 
     /**
-     * Creates a new <tt>PriorityCollector</tt>.
-     * <p>
-     * Boilerplate method, so one doesn't need to re-type the type parameters.
-     *
-     * @param <T> the type of value collect by the collector
-     * @return a new <tt>PriorityCollector</tt>
-     */
-    public static <T> PriorityCollector<T> create() {
-        return new PriorityCollector<T>();
-    }
-
-    /**
      * Provides a default constant which can be used if a collector is pre-populated with standard values and then
      * enhanced by sub modules.
      * <p>
@@ -51,7 +39,20 @@ public class PriorityCollector<T> {
      */
     public static final int DEFAULT_PRIORITY = 100;
 
-    protected List<ComparableTuple<Integer, T>> data = new ArrayList<ComparableTuple<Integer, T>>();
+    protected List<ComparableTuple<Integer, T>> data = new ArrayList<>();
+
+    /**
+     * Creates a new <tt>PriorityCollector</tt>.
+     * <p>
+     * Boilerplate method, so one doesn't need to re-type the type parameters.
+     *
+     * @param <T> the type of value collect by the collector
+     * @return a new <tt>PriorityCollector</tt>
+     */
+    public static <T> PriorityCollector<T> create() {
+        return new PriorityCollector<>();
+    }
+
 
     /**
      * Adds the given entity with the given priority.

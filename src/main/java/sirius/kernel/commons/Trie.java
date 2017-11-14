@@ -55,6 +55,11 @@ import java.util.Set;
 public class Trie<V> {
 
     /**
+     * Contains the root of the Trie
+     */
+    private final Node root = new Node();
+
+    /**
      * Creates a new {@link Trie} without forcing you to re-type the generics.
      *
      * @param <V> the type of values managed by the trie
@@ -172,11 +177,6 @@ public class Trie<V> {
          */
         private V value;
     }
-
-    /**
-     * Contains the root of the Trie
-     */
-    private final Node root = new Node();
 
     /**
      * Internal implementation of the ContainmentIterator
@@ -315,6 +315,7 @@ public class Trie<V> {
      * @param key   the path to store the given value
      * @param value the value to store in the trie.
      */
+    @SuppressWarnings("squid:S2583")
     public void put(@Nonnull CharSequence key, @Nonnull V value) {
         if (Strings.isEmpty(key)) {
             throw new IllegalArgumentException("key");

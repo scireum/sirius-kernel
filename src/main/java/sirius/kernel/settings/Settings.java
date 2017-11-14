@@ -24,7 +24,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -219,7 +223,7 @@ public class Settings {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "squid:S3776", "squid:MethodCyclomaticComplexity"})
     private void injectIntoField(Object target, Field field, String key) throws IllegalAccessException {
         if (String.class.equals(field.getType())) {
             field.set(target, config.getString(key));

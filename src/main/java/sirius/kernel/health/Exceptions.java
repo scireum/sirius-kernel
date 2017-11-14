@@ -181,6 +181,7 @@ public class Exceptions {
          * @return a <tt>HandledException</tt> which notifies surrounding calls that an error occurred, which has
          * already been taken care of.
          */
+        @SuppressWarnings("squid:S1148")
         public HandledException handle() {
             if (ex instanceof HandledException) {
                 return (HandledException) ex;
@@ -197,7 +198,6 @@ public class Exceptions {
                 return result;
             } catch (Exception t) {
                 // We call as few external methods a possible here, since things are really messed up right now
-                //noinspection CallToPrintStackTrace
                 t.printStackTrace();
                 return new HandledException("Kernel Panic: Exception-Handling threw another exception: "
                                             + t.getMessage()

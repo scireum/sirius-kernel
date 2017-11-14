@@ -27,23 +27,7 @@ public class TimingCommand implements Command {
     @Override
     public void execute(Output output, String... params) throws Exception {
         if (params.length == 1 && Strings.isFilled(params[0])) {
-            if ("enable".equalsIgnoreCase(params[0]) || "+".equalsIgnoreCase(params[0])) {
-                if (Microtiming.isEnabled()) {
-                    generateOutput(output);
-                    Microtiming.setEnabled(false);
-                    output.line("Resetting Microtiming...");
-                } else {
-                    output.line("Enabling Microtiming...");
-                }
-                Microtiming.setEnabled(true);
-            } else if ("disable".equalsIgnoreCase(params[0]) || "-".equalsIgnoreCase(params[0])) {
-                generateOutput(output);
-                Microtiming.setEnabled(false);
-                output.line("Disabling Microtiming...");
-            } else {
-                output.line("Usage: timing enable|disable (You can use + and - for enable/disable).");
-                output.line("To enable tracing: timing trace <filter-expression>");
-            }
+            parseParameters(output, params[0]);
         } else {
             if (Microtiming.isEnabled()) {
                 generateOutput(output);
@@ -51,6 +35,34 @@ public class TimingCommand implements Command {
                 output.line("Microtiming is disabled! Use: 'timing +' to enable.");
             }
         }
+    }
+
+    public void parseParameters(Output output, String param) {
+        if ("enable".equalsIgnoreCase(param) || "+".equalsIgnoreCase(param)) {
+            enableTiming(output);
+        } else if ("disable".equalsIgnoreCase(param) || "-".equalsIgnoreCase(param)) {
+            disableTiming(output);
+        } else {
+            output.line("Usage: timing enable|disable (You can use + and - for enable/disable).");
+            output.line("To enable tracing: timing trace <filter-expression>");
+        }
+    }
+
+    public void disableTiming(Output output) {
+        generateOutput(output);
+        Microtiming.setEnabled(false);
+        output.line("Disabling Microtiming...");
+    }
+
+    public void enableTiming(Output output) {
+        if (Microtiming.isEnabled()) {
+            generateOutput(output);
+            Microtiming.setEnabled(false);
+            output.line("Resetting Microtiming...");
+        } else {
+            output.line("Enabling Microtiming...");
+        }
+        Microtiming.setEnabled(true);
     }
 
     /**

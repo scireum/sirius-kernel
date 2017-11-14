@@ -38,6 +38,20 @@ public class Tuple<F, S> {
     private S second;
 
     /**
+     * Creates a tuple with a givens value for <tt>first</tt> and <tt>second</tt>
+     * <p>
+     * Can be used to specify the generic types for F and S. Otherwise, the <tt>create</tt> methods can be used.
+     *
+     * @param first  defines the value to be used for the first component of the tuple
+     * @param second defines the value to be used for the second component of the tuple
+     */
+    public Tuple(F first, S second) {
+        super();
+        this.first = first;
+        this.second = second;
+    }
+
+    /**
      * Creates a new tuple with both values set to <tt>null</tt>
      *
      * @param <F> defines the first type of the tuple
@@ -70,21 +84,7 @@ public class Tuple<F, S> {
      * @return the newly created tuple
      */
     public static <F, S> Tuple<F, S> create(F first, S second) {
-        return new Tuple<F, S>(first, second);
-    }
-
-    /**
-     * Creates a tuple with a givens value for <tt>first</tt> and <tt>second</tt>
-     * <p>
-     * Can be used to specify the generic types for F and S. Otherwise, the <tt>create</tt> methods can be used.
-     *
-     * @param first  defines the value to be used for the first component of the tuple
-     * @param second defines the value to be used for the second component of the tuple
-     */
-    public Tuple(F first, S second) {
-        super();
-        this.first = first;
-        this.second = second;
+        return new Tuple<>(first, second);
     }
 
     /**

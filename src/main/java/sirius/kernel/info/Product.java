@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class Product {
 
-    private static Module product;
+    private static Module productInfo;
     private static List<Module> modules;
 
     private Product() {
@@ -36,15 +36,15 @@ public class Product {
      * @return the product infos wrapped as {@link Module}
      */
     public static Module getProduct() {
-        if (product == null) {
-            product = new Module(Module.fix(Sirius.getSettings().getString("product.name"), "SIRIUS"),
-                                 Sirius.getSettings().getString("product.version"),
-                                 Sirius.getSettings().getString("product.build"),
-                                 Sirius.getSettings().getString("product.date"),
-                                 Sirius.getSettings().getString("product.vcs"));
+        if (productInfo == null) {
+            productInfo = new Module(Module.fix(Sirius.getSettings().getString("product.name"), "SIRIUS"),
+                                     Sirius.getSettings().getString("product.version"),
+                                     Sirius.getSettings().getString("product.build"),
+                                     Sirius.getSettings().getString("product.date"),
+                                     Sirius.getSettings().getString("product.vcs"));
         }
 
-        return product;
+        return productInfo;
     }
 
     /**

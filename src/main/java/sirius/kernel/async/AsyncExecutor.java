@@ -85,7 +85,7 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
                                   category)
                           .handle();
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             Exceptions.handle(Tasks.LOG, t);
         }
     }

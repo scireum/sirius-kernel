@@ -33,6 +33,8 @@ import java.time.LocalDateTime;
  */
 public abstract class BackgroundLoop {
 
+    private static final double EVERY_TEN_SECONDS = 0.1;
+
     @Part
     private Tasks tasks;
 
@@ -54,12 +56,12 @@ public abstract class BackgroundLoop {
     protected abstract void doWork() throws Exception;
 
     /**
-     * Determines the maximal call frequency of {@link #doWork()} in Herz (ticks per second).
+     * Determines the maximal call frequency of {@link #doWork()} in Hertz (ticks per second).
      *
-     * @return the maximal call frequency in Herz.
+     * @return the maximal call frequency in Hertz.
      */
     protected double maxCallFrequency() {
-        return 0.1;
+        return EVERY_TEN_SECONDS;
     }
 
     /**

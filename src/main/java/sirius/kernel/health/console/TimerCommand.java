@@ -26,6 +26,7 @@ public class TimerCommand implements Command {
     private Timers ts;
 
     @Override
+    @SuppressWarnings("squid:S1192")
     public void execute(Output output, String... params) throws Exception {
         if (params.length == 0) {
             output.line("Usage: timer all|oneMinute|tenMinutes|oneHour|everyDay");

@@ -14,6 +14,7 @@ package sirius.kernel.di.std;
  * Classes implementing this interface can be used by the {@link PriorityParts} annotation and will
  * be auto sorted (ascending) by priority before they are made available.
  */
+@SuppressWarnings("squid:S1214")
 public interface Priorized {
 
     /**

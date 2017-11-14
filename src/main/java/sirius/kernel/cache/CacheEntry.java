@@ -53,6 +53,19 @@ public class CacheEntry<K, V> {
      */
     protected long nextVerification;
 
+    /*
+     * Creates a new entry based on the given parameters
+     */
+    CacheEntry(K key, V value, long maxAge, long nextVerification) {
+        super();
+        this.key = key;
+        this.maxAge = maxAge;
+        this.nextVerification = nextVerification;
+        this.used = System.currentTimeMillis();
+        this.created = used;
+        this.value = value;
+    }
+
     /**
      * Returns the number of "hits" of this entries
      *
@@ -114,19 +127,6 @@ public class CacheEntry<K, V> {
      * Sets the internally stored value
      */
     void setValue(V value) {
-        this.value = value;
-    }
-
-    /*
-     * Creates a new entry based on the given parameters
-     */
-    CacheEntry(K key, V value, long maxAge, long nextVerification) {
-        super();
-        this.key = key;
-        this.maxAge = maxAge;
-        this.nextVerification = nextVerification;
-        this.used = System.currentTimeMillis();
-        this.created = used;
         this.value = value;
     }
 

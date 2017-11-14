@@ -87,6 +87,7 @@ public class Metric implements Comparable<Metric> {
     }
 
     @Override
+    @SuppressWarnings("squid:S1698")
     public int compareTo(Metric o) {
         if (o == null) {
             return -1;

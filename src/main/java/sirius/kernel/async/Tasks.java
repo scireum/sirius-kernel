@@ -238,6 +238,7 @@ public class Tasks implements Lifecycle {
         }
     }
 
+    @SuppressWarnings({"squid:S2274", "squid:S899"})
     private void idle() {
         try {
             schedulerLock.lock();

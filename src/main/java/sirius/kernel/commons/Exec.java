@@ -22,6 +22,7 @@ import java.time.Duration;
 /**
  * A robust wrapper around calls to external programs.
  */
+@SuppressWarnings("squid:S1149")
 public class Exec {
 
     /**

@@ -29,21 +29,24 @@ import java.util.function.Supplier;
  */
 public class CacheManager {
 
-    /*
-     * This class has only static members and is not intended to be instantiated
-     */
-    private CacheManager() {
-    }
-
-    /*
+    /**
      * Logged used by the caching system
      */
     protected static final Log LOG = Log.get("cache");
 
-    /*
+    /**
      * Lists all known caches.
      */
     private static List<ManagedCache<?, ?>> caches = new CopyOnWriteArrayList<>();
+
+
+    private static final Duration INLINE_CACHE_DEFAULT_TTL = Duration.ofSeconds(10);
+
+    /**
+     * This class has only static members and is not intended to be instantiated
+     */
+    private CacheManager() {
+    }
 
     /**
      * Returns a list of all known caches
@@ -81,6 +84,7 @@ public class CacheManager {
      * @param <V>           the value type used by the cache
      * @return a newly created cache according to the given parameters and the settings in the system config
      */
+    @SuppressWarnings("squid:S2250")
     public static <K, V> Cache<K, V> createCache(String name,
                                                  ValueComputer<K, V> valueComputer,
                                                  ValueVerifier<V> verifier) {
@@ -131,8 +135,6 @@ public class CacheManager {
     public static <E> InlineCache<E> createInlineCache(Duration ttl, Supplier<E> computer) {
         return new InlineCache<>(computer, ttl.toMillis());
     }
-
-    private static final Duration INLINE_CACHE_DEFAULT_TTL = Duration.ofSeconds(10);
 
     /**
      * Boilerplate method for {@link #createInlineCache(Duration, Supplier)}
