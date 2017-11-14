@@ -494,7 +494,8 @@ public class NLS {
     
     /**
      * Returns a three letter abbreviation of the name of the given month, like <tt>"Jan"</tt>.
-     * If a abbreviation symbol is given, it is appended if the name was long enough to be abbreviated.
+     * The given symbol is only append if the month was abbreviated so for example you get <tt>"Jan."</tt>
+     * but with <tt>"May"</tt> the symbol String is not appended.
      * 
      * @param month the month to be translated (January is 1, December is 12).
      * @param symbol the symbol to append in case of abbreviation
