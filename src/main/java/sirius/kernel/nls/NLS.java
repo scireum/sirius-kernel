@@ -494,7 +494,7 @@ public class NLS {
     
     /**
      * Returns a three letter abbreviation of the name of the given month, like <tt>"Jan"</tt>.
-     * The given symbol is only append if the month was abbreviated so for example you get <tt>"Jan."</tt>
+     * The given symbol is only appended if the month was abbreviated so for example you get <tt>"Jan."</tt>
      * but with <tt>"May"</tt> the symbol String is not appended.
      * 
      * @param month the month to be translated (January is 1, December is 12).
@@ -505,8 +505,7 @@ public class NLS {
     public static String getMonthNameShort(int month, String symbol) {
         String result = getMonthName(month);
         if (result.length() > 4) {
-            result = result.substring(0, 3);
-            result += symbol;
+            result = result.substring(0, 3) + symbol;
         }
         return result;
     }
