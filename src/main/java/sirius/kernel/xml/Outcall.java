@@ -17,7 +17,13 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -45,39 +51,6 @@ public class Outcall {
         connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
         connection.setDoOutput(true);
-    }
-
-    /**
-     * Creates a new <tt>Outcall</tt> to the given URL, sending the given parameters as POST.
-     *
-     * @param url    the url to call
-     * @param params the parameters to POST.
-     * @throws IOException in case of any IO error
-     * @deprecated use {@code new Outcall(url).postData(params, Charsets.UTF_8)} instead
-     */
-    @Deprecated
-    public Outcall(URL url, Context params) throws IOException {
-        this(url, params, Charsets.UTF_8);
-    }
-
-    /**
-     * Creates a new <tt>Outcall</tt> to the given URL, sending the given parameters as POST.
-     *
-     * @param url     the url to call
-     * @param params  the parameters to POST.
-     * @param charset determines the charset to use when encoding the uploaded data
-     * @throws IOException in case of any IO error
-     * @deprecated use {@code new Outcall(url).postData(params, charset)} instead
-     */
-    @Deprecated
-    public Outcall(URL url, Context params, Charset charset) throws IOException {
-        this.charset = charset;
-        connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setDoInput(true);
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=" + charset.name());
-        postData(params, charset);
     }
 
     /**

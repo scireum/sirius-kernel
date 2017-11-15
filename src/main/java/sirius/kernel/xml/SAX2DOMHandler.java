@@ -73,7 +73,7 @@ class SAX2DOMHandler {
         currentNode.appendChild(instruction);
     }
 
-    protected boolean endElement(String uri, String name) {
+    protected boolean endElement(String name) {
         if (!currentNode.getNodeName().equals(name)) {
             throw new DOMException(DOMException.SYNTAX_ERR,
                                    "Unexpected end-tag: " + name + " expected: " + currentNode.getNodeName());

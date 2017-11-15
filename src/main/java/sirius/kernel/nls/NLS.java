@@ -15,6 +15,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.AdvancedDateParser;
 import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
@@ -74,6 +75,9 @@ import java.util.Set;
  *
  * @see Babelfish
  */
+
+@SuppressWarnings("squid:S1192")
+@Explain("String literales here have different semantics and are therefore duplicated.")
 public class NLS {
 
     private static final Babelfish blubb = new Babelfish();
@@ -125,6 +129,14 @@ public class NLS {
      */
     @Nonnull
     public static String getDefaultLanguage() {
+        if (defaultLanguage != null) {
+            return defaultLanguage;
+        }
+
+        return determineDefaultLanguage();
+    }
+
+    private static String determineDefaultLanguage() {
         if (defaultLanguage == null && Sirius.getSettings() != null) {
             defaultLanguage = Sirius.getSettings().getString("nls.defaultLanguage").toLowerCase();
             if ("auto".equals(defaultLanguage)) {
@@ -429,8 +441,9 @@ public class NLS {
                 return CommonKeys.SATURDAY.translated();
             case Calendar.SUNDAY:
                 return CommonKeys.SUNDAY.translated();
+            default:
+                return "";
         }
-        return "";
     }
 
     /**
@@ -477,8 +490,9 @@ public class NLS {
                 return CommonKeys.NOVEMBER.translated();
             case 12:
                 return CommonKeys.DECEMBER.translated();
+            default:
+                return "";
         }
-        return "";
     }
 
     /**
@@ -643,6 +657,8 @@ public class NLS {
      * @return string representation of the given object, which can be parsed by
      * {@link #parseMachineString(Class, String)} independently of the language settings
      */
+    @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S3776"})
+    @Explain("The high complexity as acceptable as it is basically just a list of if statements")
     public static String toMachineString(Object data) {
         if (data == null) {
             return "";
@@ -722,6 +738,8 @@ public class NLS {
      * @param lang a two-letter language code for which the translation is requested
      * @return a string representation of the given object, formatted by the language settings of the current language
      */
+    @SuppressWarnings("squid:S3776")
+    @Explain("The high complexity as acceptable as it is basically just a list of if statements")
     public static String toUserString(Object data, String lang) {
         if (data == null) {
             return "";
@@ -797,47 +815,61 @@ public class NLS {
         }
 
         if (ChronoUnit.HOURS.isSupportedBy(date)) {
-            // We have a time, perform some nice formatting...
-            LocalDateTime givenDateTime = LocalDateTime.from(date);
-            if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(30))) {
-                return NLS.get("NLS.someMinutesAgo");
-            }
-            if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(59))) {
-                return NLS.fmtr("NLS.nMinutesAgo")
-                          .set("minutes", Duration.between(givenDateTime, LocalDateTime.now()).toMinutes())
-                          .format();
-            }
-            if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
-                return NLS.get("NLS.oneHourAgo");
-            }
-            if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
-                return NLS.fmtr("NLS.nHoursAgo")
-                          .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
-                          .format();
-            }
-
-            // We don't have a date and the time difference is quite big -> simply format the time...
-            if (!ChronoField.DAY_OF_MONTH.isSupportedBy(date)) {
-                return getTimeFormat(getCurrentLang()).format(date);
-            }
+            return formatSpokenDateWithTime(date);
+        } else {
+            return formatSpokenDate(date);
         }
+    }
 
+    private static String formatSpokenDate(Temporal date) {
         // Check if we have a date which is not "today"....
         LocalDate givenDate = LocalDate.from(date);
         LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDate yesterday = LocalDate.now().minusDays(1);
         if (tomorrow.equals(givenDate)) {
             // Handle tomorrow
             return NLS.get("NLS.tomorrow");
-        } else if (yesterday.equals(givenDate)) {
+        }
+
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        if (yesterday.equals(givenDate)) {
             // Handle yesterday
             return NLS.get("NLS.yesterday");
-        } else if (tomorrow.isBefore(givenDate) || yesterday.isAfter(givenDate)) {
+        }
+
+        if (tomorrow.isBefore(givenDate) || yesterday.isAfter(givenDate)) {
             // Handle dates in the future or the past
             return getDateFormat(getCurrentLang()).format(givenDate);
         } else {
             return NLS.get("NLS.today");
         }
+    }
+
+    private static String formatSpokenDateWithTime(Temporal date) {
+        // We have a time, perform some nice formatting...
+        LocalDateTime givenDateTime = LocalDateTime.from(date);
+        if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(30))) {
+            return NLS.get("NLS.someMinutesAgo");
+        }
+        if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(59))) {
+            return NLS.fmtr("NLS.nMinutesAgo")
+                      .set("minutes", Duration.between(givenDateTime, LocalDateTime.now()).toMinutes())
+                      .format();
+        }
+        if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
+            return NLS.get("NLS.oneHourAgo");
+        }
+        if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
+            return NLS.fmtr("NLS.nHoursAgo")
+                      .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
+                      .format();
+        }
+
+        // We don't have a date and the time difference is quite big -> simply format the time...
+        if (!ChronoField.DAY_OF_MONTH.isSupportedBy(date)) {
+            return getTimeFormat(getCurrentLang()).format(date);
+        }
+
+        return formatSpokenDate(date);
     }
 
     /**
@@ -864,7 +896,8 @@ public class NLS {
         return parseBasicTypesFromMachineString(clazz, value);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "squid:S3776"})
+    @Explain("The high complexity as acceptable as it is basically just a list of if statements")
     private static <V> V parseBasicTypesFromMachineString(Class<V> clazz, String value) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
@@ -906,6 +939,7 @@ public class NLS {
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
             return (V) Boolean.valueOf(Boolean.parseBoolean(value));
         }
+
         return parseDatesFromMachineString(clazz, value);
     }
 
@@ -974,7 +1008,8 @@ public class NLS {
         return parseBasicTypesFromUserString(clazz, value, lang);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "squid:S3776"})
+    @Explain("The high complexity as acceptable as it is basically just a list of if statements")
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String lang) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
@@ -1013,30 +1048,43 @@ public class NLS {
 
     private static Double parseDecimalNumberFromUser(String value, String lang) {
         try {
-            try {
-                // If there is exactly one "." in the pattern and no "," and
-                // we have less then 3 digits behind the "." we treat this
-                // as english decimal format and not as german grouping
-                // separator.
-                if (".".equals(NLS.get("NLS.groupingSeparator"))
-                    && value.contains(".")
-                    && !value.contains(",")
-                    && value.indexOf(".") == value.lastIndexOf(".")
-                    && value.indexOf(".") > value.length() - 4) {
-                    try {
-                        return Double.valueOf(value);
-                    } catch (Exception e) {
-                        /* IGNORE, TRY REAL FORMAT */
-                    }
-                }
-                return getDecimalFormat(lang).parse(value).doubleValue();
-            } catch (ParseException e) {
-                Exceptions.ignore(e);
-                return Double.valueOf(value);
+            Double result = tryParseMachineFormat(value);
+            if (result != null) {
+                return result;
             }
+
+            return getDecimalFormat(lang).parse(value).doubleValue();
+        } catch (ParseException e) {
+            Exceptions.ignore(e);
+            return Double.valueOf(value);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
         }
+    }
+
+    /**
+     * If there is exactly one "." in the pattern and no "," and we have less then 3 digits behind the "." we treat this
+     * as english decimal format and not as german grouping separator.
+     *
+     * @param value the parsed value or <tt>null</tt> if the format doesn't match
+     * @return <tt>true</tt> if the format being used is a english / technical one and not a german one where "." is the
+     * thousand separator
+     */
+    private static Double tryParseMachineFormat(String value) {
+        if (!".".equals(NLS.get("NLS.groupingSeparator"))) {
+            return null;
+        }
+        if (!value.contains(".") || value.contains(",")) {
+            return null;
+        }
+        if (value.indexOf(".") == value.lastIndexOf(".") && value.indexOf(".") > value.length() - 4) {
+            try {
+                return Double.valueOf(value);
+            } catch (Exception e) {
+                Exceptions.ignore(e);
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")

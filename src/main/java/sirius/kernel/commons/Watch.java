@@ -37,20 +37,20 @@ public class Watch {
     private long lastMicroTime = 0L;
 
     /**
+     * Use <tt>start</tt> to create a new watch.
+     */
+    private Watch() {
+        super();
+        reset();
+    }
+
+    /**
      * Creates and starts a new watch.
      *
      * @return a new watch, started with the invocation of this method.
      */
     public static Watch start() {
         return new Watch();
-    }
-
-    /**
-     * Use <tt>start</tt> to create a new watch.
-     */
-    private Watch() {
-        super();
-        reset();
     }
 
     /**

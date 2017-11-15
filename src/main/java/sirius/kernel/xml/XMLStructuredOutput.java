@@ -82,7 +82,6 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         }
     }
 
-
     @Override
     protected void endArray(String name) {
         try {

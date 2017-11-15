@@ -8,6 +8,8 @@
 
 package sirius.kernel.nls;
 
+import sirius.kernel.commons.Explain;
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -21,7 +23,8 @@ class SortedProperties extends Properties {
     private static final long serialVersionUID = -8585151811583014130L;
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes", "UseOfObsoleteCollectionType"})
+    @SuppressWarnings({"unchecked", "rawtypes", "UseOfObsoleteCollectionType", "squid:S1149"})
+    @Explain("We use an old Java API here, which requires those collections")
     public synchronized Enumeration<Object> keys() {
         Enumeration<Object> keysEnum = super.keys();
         Vector keyList = new Vector();

@@ -27,6 +27,10 @@ import java.util.Map;
 public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S>
         implements Comparable<ComparableTuple<F, S>> {
 
+    protected ComparableTuple(F first, S second) {
+        super(first, second);
+    }
+
     /**
      * Creates a new tuple without any values.
      *
@@ -65,7 +69,7 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S>
      */
     @Nonnull
     public static <F extends Comparable<F>, S> ComparableTuple<F, S> create(@Nullable F first, @Nullable S second) {
-        return new ComparableTuple<F, S>(first, second);
+        return new ComparableTuple<>(first, second);
     }
 
     /**
@@ -77,20 +81,12 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S>
      * @return a list of tuples, containing one tuple per map entry where the first component is the key,
      * and the second component is the value of the map entry.
      */
-    @SuppressWarnings("Convert2streamapi")
     public static <K extends Comparable<K>, V> List<ComparableTuple<K, V>> fromComparableMap(@Nonnull Map<K, V> map) {
-        List<ComparableTuple<K, V>> result = new ArrayList<ComparableTuple<K, V>>(map.size());
+        List<ComparableTuple<K, V>> result = new ArrayList<>(map.size());
         for (Map.Entry<K, V> e : map.entrySet()) {
             result.add(new ComparableTuple<K, V>(e.getKey(), e.getValue()));
         }
         return result;
-    }
-
-    /*
-     * Internal constructor. Save a diamond an use the <tt>create</tt> methods.
-     */
-    protected ComparableTuple(F first, S second) {
-        super(first, second);
     }
 
     @Override
@@ -98,11 +94,12 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S>
         if (o == null) {
             return 1;
         }
-        if (o.getFirst() == null && getFirst() != null) {
-            return 1;
-        }
-        if (getFirst() == null) {
-            return 0;
+        if (o.getFirst() == null) {
+            if (getFirst() != null) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
         if (getFirst() == null) {
             return -1;

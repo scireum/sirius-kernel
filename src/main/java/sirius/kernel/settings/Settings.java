@@ -16,6 +16,7 @@ import com.typesafe.config.ConfigValue;
 import com.typesafe.config.ConfigValueFactory;
 import com.typesafe.config.ConfigValueType;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
@@ -24,7 +25,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -182,6 +187,12 @@ public class Settings {
         return getConfig().getStringList(key);
     }
 
+    /**
+     * Reads a embedded map.
+     *
+     * @param key the key of the map to read
+     * @return the map within the config
+     */
     public Map<String, String> getMap(String key) {
         Map<String, String> result = new HashMap<>();
         config.getConfig(key)
@@ -219,7 +230,8 @@ public class Settings {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "squid:S3776", "squid:MethodCyclomaticComplexity"})
+    @Explain("This is the shortest and most efficient way to check all those types.")
     private void injectIntoField(Object target, Field field, String key) throws IllegalAccessException {
         if (String.class.equals(field.getType())) {
             field.set(target, config.getString(key));

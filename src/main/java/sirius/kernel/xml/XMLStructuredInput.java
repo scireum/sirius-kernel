@@ -24,6 +24,8 @@ import java.io.InputStream;
  */
 public class XMLStructuredInput implements StructuredInput {
 
+    private StructuredNode node;
+
     /**
      * Creates a new XMLStructuredInput for the given stream.
      *
@@ -44,8 +46,6 @@ public class XMLStructuredInput implements StructuredInput {
             throw new IOException(e);
         }
     }
-
-    private StructuredNode node;
 
     @Override
     public StructuredNode getNode(String xpath) throws XPathExpressionException {

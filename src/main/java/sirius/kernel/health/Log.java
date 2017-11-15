@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
@@ -42,14 +43,29 @@ import java.util.List;
  * Internally uses log4j to perform all logging operations. Still it is recommended to only log through this facade
  * and not to rely on any log4j specific behaviour.
  */
+@SuppressWarnings("squid:S00100")
+@Explain("We have these special method names so they stand out from the business logic.")
 public class Log {
 
     private final Logger logger;
     private Boolean fineLogging;
     private static final List<Log> all = Lists.newCopyOnWriteArrayList();
 
+    /**
+     * Used to cut endless loops while feeding taps
+     */
+    private static ThreadLocal<Boolean> frozen = new ThreadLocal<>();
+
     @Parts(LogTap.class)
     private static PartCollection<LogTap> taps;
+
+    /*
+     * Use get(String) to create a new instance
+     */
+    private Log(Logger logger) {
+        super();
+        this.logger = logger;
+    }
 
     /**
      * Generates a new logger with the given name
@@ -60,6 +76,8 @@ public class Log {
      * @param name the name of the logger. This should be a simple name, completely lowercase, without any dots
      * @return a new logger logging with the given name.
      */
+    @SuppressWarnings("squid:S2250")
+    @Explain("Loggers are only created once, so there is no performance hotspot")
     public static synchronized Log get(String name) {
         Log result = new Log(Logger.getLogger(name));
         all.add(result);
@@ -170,14 +188,6 @@ public class Log {
         return java.util.logging.Level.FINE;
     }
 
-    /*
-     * Use get(String) to create a new instance
-     */
-    private Log(Logger logger) {
-        super();
-        this.logger = logger;
-    }
-
     /**
      * Logs the given message at INFO level
      * <p>
@@ -225,11 +235,6 @@ public class Log {
     }
 
     /*
-     * Used to cut endless loops while feeding taps
-     */
-    private static ThreadLocal<Boolean> frozen = new ThreadLocal<>();
-
-    /*
      * Notify all log taps
      */
     private void tap(Object msg, boolean wouldLog, Level level) {
@@ -240,19 +245,23 @@ public class Log {
             frozen.set(Boolean.TRUE);
             if (taps != null) {
                 for (LogTap tap : taps) {
-                    try {
-                        tap.handleLogMessage(new LogMessage(NLS.toUserString(msg),
-                                                            level,
-                                                            this,
-                                                            wouldLog,
-                                                            Thread.currentThread().getName()));
-                    } catch (Exception e) {
-                        // Ignored - if we can't log s.th. let's just give up...
-                    }
+                    invokeTap(msg, wouldLog, level, tap);
                 }
             }
         } finally {
             frozen.set(Boolean.FALSE);
+        }
+    }
+
+    private void invokeTap(Object msg, boolean wouldLog, Level level, LogTap tap) {
+        try {
+            tap.handleLogMessage(new LogMessage(NLS.toUserString(msg),
+                                                level,
+                                                this,
+                                                wouldLog,
+                                                Thread.currentThread().getName()));
+        } catch (Exception e) {
+            // Ignored - if we can't log s.th. let's just give up...
         }
     }
 

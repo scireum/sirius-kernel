@@ -12,8 +12,15 @@ package sirius.kernel.xml;
  * Used to pass in attributes when creating objects for a {@link StructuredOutput}.
  */
 public class Attribute {
+
     private String name;
     private Object value;
+
+    private Attribute(String name, Object value) {
+        super();
+        this.name = name;
+        this.value = value;
+    }
 
     /**
      * Returns the name of the attribute.
@@ -48,12 +55,6 @@ public class Attribute {
      * @param value the value of the attribute.
      */
     public void setValue(Object value) {
-        this.value = value;
-    }
-
-    private Attribute(String name, Object value) {
-        super();
-        this.name = name;
         this.value = value;
     }
 

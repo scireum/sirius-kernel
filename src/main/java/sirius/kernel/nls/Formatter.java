@@ -14,7 +14,6 @@ import sirius.kernel.commons.Strings;
 
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * An alternative for <tt>MessageFormat</tt> which generates strings by replacing named parameters in a given template.
@@ -49,7 +48,6 @@ public class Formatter {
     private Map<String, String> replacement = Maps.newTreeMap();
     private String pattern;
     private String lang;
-    private static final Pattern PARAM = Pattern.compile("\\$\\{([A-Za-z0-9\\.]+)\\}");
 
     /**
      * Use the static factory methods <tt>create</tt> to obtain a new instance.

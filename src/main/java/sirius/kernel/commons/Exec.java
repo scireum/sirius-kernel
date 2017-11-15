@@ -22,6 +22,8 @@ import java.time.Duration;
 /**
  * A robust wrapper around calls to external programs.
  */
+@SuppressWarnings("squid:S1149")
+@Explain("We actually need the thread safety probided by StringBuffer here, as we start 2 threads per call.")
 public class Exec {
 
     /**
@@ -141,7 +143,7 @@ public class Exec {
         }
     }
 
-    public static void doExec(boolean ignoreExitCodes, StringBuffer logger, Process p) throws ExecException {
+    private static void doExec(boolean ignoreExitCodes, StringBuffer logger, Process p) throws ExecException {
         try {
             int code = p.waitFor();
             if (code != 0 && !ignoreExitCodes) {

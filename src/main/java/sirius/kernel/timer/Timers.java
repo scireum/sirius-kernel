@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Part;
@@ -45,9 +46,14 @@ import java.util.concurrent.locks.ReentrantLock;
 @Register(classes = {Timers.class, Lifecycle.class})
 public class Timers implements Lifecycle {
 
+    @SuppressWarnings("squid:S1192")
+    @Explain("These constants are semantically different.")
     protected static final Log LOG = Log.get("timer");
     private static final String TIMER = "timer";
+
     private static final String TIMER_DAILY_PREFIX = "timer.daily.";
+
+    private static final int TEN_SECONDS_IN_MILLIS = 10000;
 
     @Part
     private Tasks tasks;
@@ -73,6 +79,21 @@ public class Timers implements Lifecycle {
 
     private Timer timer;
     private ReentrantLock timerLock = new ReentrantLock();
+
+    /*
+     * Contains the relative paths of all loaded files
+     */
+    private List<WatchedResource> loadedFiles = Lists.newCopyOnWriteArrayList();
+
+    /*
+     * Used to frequently check loaded properties when running in DEVELOP mode.
+     */
+    private Timer reloadTimer;
+
+    /*
+     * Determines the interval which files are checked for update
+     */
+    private static final int RELOAD_INTERVAL = 1000;
 
     /**
      * Determines the start and stop order of the timers lifecycle. Exposed as public so that
@@ -104,7 +125,7 @@ public class Timers implements Lifecycle {
                     runOneHourTimers();
                     runEveryDayTimers(false);
                 }
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 Exceptions.handle(LOG, t);
             }
         }
@@ -118,21 +139,6 @@ public class Timers implements Lifecycle {
         private long lastModified;
         private Runnable callback;
     }
-
-    /*
-     * Contains the relative paths of all loaded files
-     */
-    private List<WatchedResource> loadedFiles = Lists.newCopyOnWriteArrayList();
-
-    /*
-     * Used to frequently check loaded properties when running in DEVELOP mode.
-     */
-    private Timer reloadTimer;
-
-    /*
-     * Determines the interval which files are checked for update
-     */
-    private static final int RELOAD_INTERVAL = 1000;
 
     /**
      * Returns the timestamp of the last execution of the 10 second timer.
@@ -202,24 +208,28 @@ public class Timers implements Lifecycle {
             reloadTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    Thread.currentThread().setName("Resource-Watch");
-                    for (WatchedResource res : loadedFiles) {
-                        long lastModified = res.file.lastModified();
-                        if (lastModified > res.lastModified) {
-                            res.lastModified = res.file.lastModified();
-                            LOG.INFO("Reloading: %s", res.file.toString());
-                            try {
-                                res.callback.run();
-                            } catch (Exception e) {
-                                Exceptions.handle()
-                                          .withSystemErrorMessage("Error reloading %s: %s (%s)", res.file.toString())
-                                          .error(e)
-                                          .handle();
-                            }
-                        }
-                    }
+                    watchLoadedResources();
                 }
             }, RELOAD_INTERVAL, RELOAD_INTERVAL);
+        }
+    }
+
+    private void watchLoadedResources() {
+        Thread.currentThread().setName("Resource-Watch");
+        for (WatchedResource res : loadedFiles) {
+            long lastModified = res.file.lastModified();
+            if (lastModified > res.lastModified) {
+                res.lastModified = res.file.lastModified();
+                LOG.INFO("Reloading: %s", res.file.toString());
+                try {
+                    res.callback.run();
+                } catch (Exception e) {
+                    Exceptions.handle()
+                              .withSystemErrorMessage("Error reloading %s: %s (%s)", res.file.toString())
+                              .error(e)
+                              .handle();
+                }
+            }
         }
     }
 
@@ -233,11 +243,11 @@ public class Timers implements Lifecycle {
                     timer.cancel();
                     timer = new Timer(true);
                 }
-                timer.schedule(new InnerTimerTask(), 1000 * 10, 1000 * 10);
+                timer.schedule(new InnerTimerTask(), TEN_SECONDS_IN_MILLIS, TEN_SECONDS_IN_MILLIS);
             } finally {
                 timerLock.unlock();
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             Exceptions.handle(LOG, t);
         }
     }
@@ -253,7 +263,7 @@ public class Timers implements Lifecycle {
             } finally {
                 timerLock.unlock();
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             Exceptions.handle(LOG, t);
         }
     }
@@ -272,6 +282,8 @@ public class Timers implements Lifecycle {
      * @param url      the file to watch
      * @param callback the callback to invoke once the file has changed
      */
+    @SuppressWarnings("squid:S2250")
+    @Explain("Resources are only collected once at startup, so there is no performance hotspot")
     public void addWatchedResource(@Nonnull URL url, @Nonnull Runnable callback) {
         try {
             WatchedResource res = new WatchedResource();

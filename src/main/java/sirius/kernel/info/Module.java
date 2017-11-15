@@ -29,6 +29,8 @@ public class Module {
     private String date;
     private String vcs;
 
+    private static final String RANDOM_REPLACEMENT = String.valueOf(ThreadLocalRandom.current().nextInt());
+
     protected Module(String name, String version, String build, String date, String vcs) {
         this.name = name;
         this.version = version;
@@ -58,8 +60,6 @@ public class Module {
                              fix(date, NLS.toMachineString(LocalDate.now())),
                              fix(vcs, "-"));
     }
-
-    private static final String RANDOM_REPLACEMENT = String.valueOf(ThreadLocalRandom.current().nextInt());
 
     /**
      * Creates a string which is unqiue for each released version (based on its commit hash and build number.

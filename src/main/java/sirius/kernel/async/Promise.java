@@ -10,6 +10,7 @@ package sirius.kernel.async;
 
 import com.google.common.collect.Lists;
 import sirius.kernel.commons.Callback;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -63,7 +64,7 @@ public class Promise<V> {
      * @param value the value to be used as promised result.
      */
     public void success(@Nullable final V value) {
-        this.value = new ValueHolder<V>(value);
+        this.value = new ValueHolder<>(value);
         for (final CompletionHandler<V> handler : handlers) {
             completeHandler(value, handler);
         }
@@ -152,6 +153,8 @@ public class Promise<V> {
     /*
      * Waits for a yet uncompleted promise by blocking the current thread via a Condition.
      */
+    @SuppressWarnings({"squid:S899", "squid:S2274"})
+    @Explain("We cannot use a loop here and we don't care about the return value.")
     private void awaitBlocking(Duration timeout) {
         Lock lock = new ReentrantLock();
         Condition completed = lock.newCondition();
@@ -184,6 +187,7 @@ public class Promise<V> {
                 completed.await(timeout.getSeconds(), TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Exceptions.ignore(e);
+                Thread.currentThread().interrupt();
             } finally {
                 lock.unlock();
             }
@@ -210,7 +214,7 @@ public class Promise<V> {
      */
     @Nonnull
     public <X> Promise<X> map(@Nonnull final Function<V, X> mapper) {
-        final Promise<X> result = new Promise<X>();
+        final Promise<X> result = new Promise<>();
         mapChain(result, mapper);
 
         return result;
@@ -226,13 +230,13 @@ public class Promise<V> {
      */
     @Nonnull
     public <X> Promise<X> flatMap(@Nonnull final Function<V, Promise<X>> mapper) {
-        final Promise<X> result = new Promise<X>();
+        final Promise<X> result = new Promise<>();
         onComplete(new CompletionHandler<V>() {
             @Override
             public void onSuccess(V value) throws Exception {
                 try {
                     mapper.apply(value).chain(result);
-                } catch (Throwable throwable) {
+                } catch (Exception throwable) {
                     result.fail(throwable);
                 }
             }
@@ -361,13 +365,14 @@ public class Promise<V> {
             public void onSuccess(V value) throws Exception {
                 try {
                     successHandler.invoke(value);
-                } catch (Throwable t) {
+                } catch (Exception t) {
                     fail(t);
                 }
             }
 
             @Override
             public void onFailure(Throwable throwable) {
+                // Not used for success callbacks
             }
         });
     }
@@ -388,13 +393,14 @@ public class Promise<V> {
             public void onSuccess(V value) throws Exception {
                 try {
                     successHandler.accept(value);
-                } catch (Throwable t) {
+                } catch (Exception t) {
                     fail(t);
                 }
             }
 
             @Override
             public void onFailure(Throwable throwable) {
+                // Not used for success callbacks
             }
         });
     }
@@ -414,6 +420,7 @@ public class Promise<V> {
         return onComplete(new CompletionHandler<V>() {
             @Override
             public void onSuccess(V value) throws Exception {
+                // Not used for failure callbacks
             }
 
             @Override

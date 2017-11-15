@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.kernel.settings;
 
 import java.util.LinkedHashMap;
@@ -5,7 +13,7 @@ import java.util.Map;
 
 /**
  * Provides functionality to build a config and generate formatted HOCON text.
- *
+ * <p>
  * <p>
  * If scopes contain more than one variable, they will be unfolded and formatted as a block. Example:
  * <pre>
@@ -34,7 +42,7 @@ public class ConfigBuilder {
 
     /**
      * Adds a variable to the config.
-     *
+     * <p>
      * <p>
      * Note: a string value needs to be surrounded by quotes
      *
@@ -136,7 +144,7 @@ public class ConfigBuilder {
         /**
          * Creates a variable with the given name and value.
          *
-         * @param name the name of the variable
+         * @param name  the name of the variable
          * @param value the value of the variable
          */
         private void addVariable(String name, String value) {
@@ -201,7 +209,7 @@ public class ConfigBuilder {
          * Merges the variable and scope blocks, indents them and returns the resulting scope.
          *
          * @param variablesString the variables of the scope
-         * @param scopesString the sub scopes of the scope
+         * @param scopesString    the sub scopes of the scope
          * @return the resulting formatted text
          */
         private String mergeVariablesAndScopes(String variablesString, String scopesString) {
@@ -244,7 +252,7 @@ public class ConfigBuilder {
         /**
          * Create a new variable with the given name and value.
          *
-         * @param name the name of the variable
+         * @param name  the name of the variable
          * @param value the value of the variable
          */
         Variable(String name, String value) {

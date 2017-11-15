@@ -10,11 +10,11 @@ package sirius.kernel.commons;
 
 import sirius.kernel.nls.NLS;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Set;
 import java.util.TreeSet;
@@ -37,25 +37,15 @@ import java.util.TreeSet;
  * <p>
  * <b>Examples</b>
  * <ul>
- * <li><code>now</code> - actual date</li>
- * <li><code>1.1</code> - first of january of current year</li>
- * <li><code>+1</code> or <code>now + 1 day</code> - tomorrow</li>
- * <li><code>start of week: now - 1 year</code> - start of the week of day one year ago</li>
+ * <li>{@code now} - actual date</li>
+ * <li>{@code 1.1} - first of january of current year</li>
+ * <li>{@code +1} or {@code now + 1 day} - tomorrow</li>
+ * <li>{@code start of week: now - 1 year} - start of the week of day one year ago</li>
  * </ul>
  */
-@SuppressWarnings("ALL")
 public class AdvancedDateParser {
 
     private String lang;
-
-    /**
-     * Creates a new parser for the given language to use.
-     *
-     * @param lang contains the two letter language code to obtain the translations for the available modifiers etc.
-     */
-    public AdvancedDateParser(String lang) {
-        this.lang = lang;
-    }
 
     private static final String NEGATIVE_DELTA = "-";
     private static final String POSITIVE_DELTA = "+";
@@ -67,17 +57,36 @@ public class AdvancedDateParser {
     private static final String ENGLISH_DATE_SEPARATOR = "/";
     private static final String GERMAN_DATE_SEPARATOR = ".";
 
+    private Tokenizer tokenizer;
+    private boolean startOfDay = false;
+    private boolean startOfWeek = false;
+    private boolean startOfMonth = false;
+    private boolean startOfYear = false;
+    private boolean endOfDay = false;
+    private boolean endOfWeek = false;
+    private boolean endOfMonth = false;
+    private boolean endOfYear = false;
+
+    /**
+     * Creates a new parser for the given language to use.
+     *
+     * @param lang contains the two letter language code to obtain the translations for the available modifiers etc.
+     */
+    public AdvancedDateParser(String lang) {
+        this.lang = lang;
+    }
+
     /**
      * Used to tokenize the input supplied by the user
      */
-    class Tokenizer {
+    static class Tokenizer {
 
         private static final int END_OF_INPUT = 1;
         private static final int NUMBER = 2;
         private static final int IDENTIFIER = 3;
         private static final int SPECIAL = 4;
         private final String input;
-        private String nextToken;
+        private StringBuilder nextToken;
         private int type;
         private int tokenStart = 0;
         private int position = 0;
@@ -90,7 +99,7 @@ public class AdvancedDateParser {
          * Reads the next token in the input
          */
         void nextToken() {
-            nextToken = "";
+            nextToken = new StringBuilder();
             while (endOfInput()) {
                 if (isDigit()) {
                     readNumber();
@@ -107,7 +116,6 @@ public class AdvancedDateParser {
                 position++;
             }
             type = END_OF_INPUT;
-            return;
         }
 
         private boolean isWhitespace() {
@@ -129,7 +137,7 @@ public class AdvancedDateParser {
         private void readSpecialChars() {
             tokenStart = position;
             type = SPECIAL;
-            nextToken += input.charAt(position);
+            nextToken.append(input.charAt(position));
             position++;
         }
 
@@ -138,7 +146,7 @@ public class AdvancedDateParser {
             type = IDENTIFIER;
             //noinspection UnnecessaryParentheses
             while (endOfInput() && isLetter()) {
-                nextToken += input.charAt(position);
+                nextToken.append(input.charAt(position));
                 position++;
             }
         }
@@ -148,7 +156,7 @@ public class AdvancedDateParser {
             type = NUMBER;
             //noinspection UnnecessaryParentheses
             while (endOfInput() && isDigit()) {
-                nextToken += input.charAt(position);
+                nextToken.append(input.charAt(position));
                 position++;
             }
         }
@@ -166,7 +174,7 @@ public class AdvancedDateParser {
          * Returns the current token
          */
         String getToken() {
-            return nextToken;
+            return nextToken.toString();
         }
 
         /*
@@ -191,16 +199,6 @@ public class AdvancedDateParser {
         }
     }
 
-    private Tokenizer tokenizer;
-    private boolean startOfDay = false;
-    private boolean startOfWeek = false;
-    private boolean startOfMonth = false;
-    private boolean startOfYear = false;
-    private boolean endOfDay = false;
-    private boolean endOfWeek = false;
-    private boolean endOfMonth = false;
-    private boolean endOfYear = false;
-
     /**
      * Parses the given input and returns a <tt>DateSelection</tt> as result.
      * <p>
@@ -219,28 +217,26 @@ public class AdvancedDateParser {
         endOfWeek = false;
         endOfMonth = false;
         endOfYear = false;
+
         if (Strings.isEmpty(input)) {
             return null;
         }
+
         input = eliminateTextInBrackets(input);
-        try {
-            tokenizer = new Tokenizer(input.toLowerCase());
-            parseModifiers();
-            // ignore ":" after modifiers
-            //noinspection UnnecessaryParentheses
-            if ((tokenizer.getType() == Tokenizer.SPECIAL) && in(MODIFIER_END)) {
-                tokenizer.nextToken();
-            }
-            Calendar result = parseFixPoint();
-            parseDeltas(result);
-            applyModifiers(result);
-            return new DateSelection(result, input);
-        } catch (IOException e) {
-            throw new ParseException(e.getMessage(), 0);
+        tokenizer = new Tokenizer(input.toLowerCase());
+        parseModifiers();
+        // ignore ":" after modifiers
+        //noinspection UnnecessaryParentheses
+        if ((tokenizer.getType() == Tokenizer.SPECIAL) && in(MODIFIER_END)) {
+            tokenizer.nextToken();
         }
+        Calendar result = parseFixPoint();
+        parseDeltas(result);
+        applyModifiers(result);
+        return new DateSelection(result, input);
     }
 
-    private void parseDeltas(Calendar result) throws ParseException, IOException {
+    private void parseDeltas(Calendar result) throws ParseException {
         while (tokenizer.getType() != Tokenizer.END_OF_INPUT) {
             parseDelta(result, tokenizer);
             tokenizer.nextToken();
@@ -344,7 +340,7 @@ public class AdvancedDateParser {
     }
 
     private boolean parseModifier() throws ParseException {
-        if (!(tokenizer.getType() == Tokenizer.IDENTIFIER)) {
+        if (tokenizer.getType() != Tokenizer.IDENTIFIER) {
             return false;
         }
         if (in(start())) {
@@ -432,7 +428,7 @@ public class AdvancedDateParser {
         return join(getI18n("AdvancedDateParser.start"), new String[]{"start"});
     }
 
-    private void parseDelta(Calendar fixPoint, Tokenizer tokenizer) throws ParseException, IOException {
+    private void parseDelta(Calendar fixPoint, Tokenizer tokenizer) throws ParseException {
         int amount = parseDeltaAmount(tokenizer);
         tokenizer.nextToken();
         if (tokenizer.getType() == Tokenizer.END_OF_INPUT) {
@@ -470,7 +466,6 @@ public class AdvancedDateParser {
         }
         if (in(years())) {
             fixPoint.add(Calendar.YEAR, amount);
-            return;
         }
     }
 
@@ -520,16 +515,14 @@ public class AdvancedDateParser {
     }
 
     private String[] join(String[]... arrays) {
-        Set<String> values = new TreeSet<String>();
+        Set<String> values = new TreeSet<>();
         for (String[] array : arrays) {
-            for (String value : array) {
-                values.add(value);
-            }
+            values.addAll(Arrays.asList(array));
         }
         return values.toArray(new String[values.size()]);
     }
 
-    private Calendar parseFixPoint() throws IOException, ParseException {
+    private Calendar parseFixPoint() throws ParseException {
         if (tokenizer.getType() == Tokenizer.NUMBER) {
             return parseDate(tokenizer);
         }
@@ -562,7 +555,7 @@ public class AdvancedDateParser {
     }
 
     private void expectNumber() throws ParseException {
-        if (!(tokenizer.getType() == Tokenizer.NUMBER)) {
+        if (tokenizer.getType() != Tokenizer.NUMBER) {
             throw new ParseException(NLS.fmtr("AdvancedDateParser.errInvalidToken")
                                         .set("token", tokenizer.toString())
                                         .format(), tokenizer.getTokenStart());
@@ -746,6 +739,9 @@ public class AdvancedDateParser {
      */
     public static class DateSelection {
 
+        private Temporal date;
+        private String dateString;
+
         /**
          * Creates a new <tt>DateSelection</tt> for the given calendar and input string.
          *
@@ -761,9 +757,6 @@ public class AdvancedDateParser {
                                          calendar.get(Calendar.MINUTE));
             this.dateString = dateString;
         }
-
-        private Temporal date;
-        private String dateString;
 
         /**
          * Returns the effective date as <tt>Temporal</tt>

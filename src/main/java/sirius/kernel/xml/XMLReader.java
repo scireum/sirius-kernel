@@ -46,6 +46,10 @@ public class XMLReader extends DefaultHandler {
 
     private TaskContext taskContext;
 
+    private Map<String, NodeHandler> handlers = Maps.newTreeMap();
+    private List<SAX2DOMHandler> activeHandlers = Lists.newArrayList();
+    private DocumentBuilder documentBuilder;
+
     /**
      * Creates a new XMLReader.
      * <p>
@@ -82,7 +86,7 @@ public class XMLReader extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String name) throws SAXException {
         // Delegate to active handlers and deletes them if they are finished...
-        activeHandlers.removeIf(handler -> handler.endElement(uri, name));
+        activeHandlers.removeIf(handler -> handler.endElement(name));
     }
 
     @Override
@@ -111,10 +115,6 @@ public class XMLReader extends DefaultHandler {
             throw new UserInterruptException();
         }
     }
-
-    private Map<String, NodeHandler> handlers = Maps.newTreeMap();
-    private List<SAX2DOMHandler> activeHandlers = Lists.newArrayList();
-    private DocumentBuilder documentBuilder;
 
     /**
      * Registers a new handler for a qualified name of a node.
@@ -166,26 +166,7 @@ public class XMLReader extends DefaultHandler {
 
                 @Override
                 public InputSource resolveEntity(String publicId, String systemId) throws IOException {
-                    URL url = new URL(systemId);
-                    // Check if file is local
-                    if ("file".equals(url.getProtocol())) {
-                        // Check if file exists
-                        File file = new File(url.getFile());
-                        if (file.exists()) {
-                            return new InputSource(new FileInputStream(file));
-                        }
-                        // File not existent -> try to resolve via
-                        // classloaders...
-                        if (resourceLocator != null) {
-                            String name = file.getName();
-                            InputStream stream = resourceLocator.apply(name);
-                            if (stream != null) {
-                                return new InputSource(stream);
-                            }
-                        }
-                    }
-                    // We pretend that we found an empty DTD....
-                    return new InputSource(new StringReader(""));
+                    return tryResolveEntity(systemId, resourceLocator);
                 }
             });
             reader.setContentHandler(this);
@@ -198,5 +179,33 @@ public class XMLReader extends DefaultHandler {
         } finally {
             stream.close();
         }
+    }
+
+    private InputSource tryResolveEntity(String systemId, Function<String, InputStream> resourceLocator)
+            throws IOException {
+        URL url = new URL(systemId);
+        if (!"file".equals(url.getProtocol())) {
+            return emptyResource();
+        }
+
+        File file = new File(url.getFile());
+        if (file.exists()) {
+            return new InputSource(new FileInputStream(file));
+        }
+
+        if (resourceLocator == null) {
+            return emptyResource();
+        }
+
+        InputStream stream = resourceLocator.apply(file.getName());
+        if (stream != null) {
+            return new InputSource(stream);
+        }
+
+        return emptyResource();
+    }
+
+    public InputSource emptyResource() {
+        return new InputSource(new StringReader(""));
     }
 }

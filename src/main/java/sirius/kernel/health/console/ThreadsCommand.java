@@ -33,35 +33,7 @@ public class ThreadsCommand implements Command {
         boolean withTraces = Value.indexOf(0, params).isFilled();
         boolean includeWaiting = "Y".equals(Value.indexOf(1, params).asString());
         if (withTraces) {
-            for (Map.Entry<Thread, StackTraceElement[]> thread : Thread.getAllStackTraces().entrySet()) {
-                ThreadInfo info = t.getThreadInfo(thread.getKey().getId());
-                if ("all".equalsIgnoreCase(params[0]) || thread.getKey()
-                                                               .getName()
-                                                               .toLowerCase()
-                                                               .contains(params[0].toLowerCase())) {
-                    if (includeWaiting || !isWaitingOrNative(thread.getKey(), info)) {
-                        output.blankLine();
-                        output.line(thread.getKey().getName() + " (" + thread.getKey().getState() + ")");
-                        output.separator();
-                        for (StackTraceElement e : thread.getValue()) {
-                            output.apply("%-60s %19s",
-                                         e.getClassName() + "." + e.getMethodName(),
-                                         e.getFileName() + ":" + e.getLineNumber());
-                        }
-                        output.separator();
-                        Optional<CallContext> cc = CallContext.getContext(thread.getKey().getId());
-                        if (cc.isPresent()) {
-                            output.line("Mapped Diagnostic Context");
-                            output.separator();
-                            for (Tuple<String, String> e : cc.get().getMDC()) {
-                                output.apply("%-20s %59s", e.getFirst(), e.getSecond());
-                            }
-                            output.apply("Flow duration: %s", cc.get().getWatch().duration());
-                        }
-                        output.blankLine();
-                    }
-                }
-            }
+            outputThreadInfos(output, includeWaiting, params[0]);
         } else {
             output.line("Usage: threads [<filter> (or 'all')] [Y=include WAITING/NATIVE]");
             output.separator();
@@ -75,6 +47,49 @@ public class ThreadsCommand implements Command {
             }
             output.separator();
         }
+    }
+
+    private void outputThreadInfos(Output output, boolean includeWaiting, String threadName) {
+        for (Map.Entry<Thread, StackTraceElement[]> thread : Thread.getAllStackTraces().entrySet()) {
+            outputThreadInfo(output, includeWaiting, threadName, thread);
+        }
+    }
+
+    private void outputThreadInfo(Output output,
+                                 boolean includeWaiting,
+                                 String threadName,
+                                 Map.Entry<Thread, StackTraceElement[]> thread) {
+        ThreadInfo info = t.getThreadInfo(thread.getKey().getId());
+        if (!"all".equalsIgnoreCase(threadName) && !thread.getKey()
+                                                          .getName()
+                                                          .toLowerCase()
+                                                          .contains(threadName.toLowerCase())) {
+            return;
+        }
+        if (!includeWaiting && isWaitingOrNative(thread.getKey(), info)) {
+            return;
+        }
+
+        output.blankLine();
+        output.line(thread.getKey().getName() + " (" + thread.getKey().getState() + ")");
+        output.separator();
+        for (StackTraceElement e : thread.getValue()) {
+            output.apply("%-60s %19s",
+                         e.getClassName() + "." + e.getMethodName(),
+                         e.getFileName() + ":" + e.getLineNumber());
+        }
+        output.separator();
+
+        Optional<CallContext> cc = CallContext.getContext(thread.getKey().getId());
+        if (cc.isPresent()) {
+            output.line("Mapped Diagnostic Context");
+            output.separator();
+            for (Tuple<String, String> e : cc.get().getMDC()) {
+                output.apply("%-20s %59s", e.getFirst(), e.getSecond());
+            }
+            output.apply("Flow duration: %s", cc.get().getWatch().duration());
+        }
+        output.blankLine();
     }
 
     private boolean isWaitingOrNative(Thread thread, ThreadInfo info) {

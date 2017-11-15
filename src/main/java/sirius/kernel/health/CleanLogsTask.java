@@ -23,6 +23,9 @@ import java.time.Duration;
 @Register
 public class CleanLogsTask implements EveryDay {
 
+    @Part
+    private Tasks tasks;
+
     @ConfigValue("health.logFileRetention")
     private Duration logFileRetention;
 
@@ -30,9 +33,6 @@ public class CleanLogsTask implements EveryDay {
     public String getConfigKeyName() {
         return "logCleanupHour";
     }
-
-    @Part
-    private Tasks tasks;
 
     @Override
     public void runTimer() throws Exception {

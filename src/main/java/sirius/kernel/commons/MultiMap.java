@@ -35,6 +35,17 @@ import java.util.stream.Stream;
  */
 public class MultiMap<K, V> {
 
+    protected Map<K, Collection<V>> base;
+
+    /**
+     * Used the static factory methods <tt>create</tt> or <tt>createdSynchronized</tt> to obtain an instance.
+     *
+     * @param base the underlying map to use
+     */
+    protected MultiMap(Map<K, Collection<V>> base) {
+        this.base = base;
+    }
+
     /**
      * Creates a new <tt>MultiMap</tt> for the specified types which is not thread safe.
      *
@@ -67,6 +78,8 @@ public class MultiMap<K, V> {
     public static <K, V> MultiMap<K, V> createSynchronized() {
         return new MultiMap<K, V>(Collections.synchronizedMap(new HashMap<>())) {
             @Override
+            @SuppressWarnings("squid:S1185")
+            @Explain("We need to overwrite this to make it synchronized.")
             public synchronized void put(K key, V value) {
                 super.put(key, value);
             }
@@ -76,17 +89,6 @@ public class MultiMap<K, V> {
                 return new CopyOnWriteArrayList<>();
             }
         };
-    }
-
-    protected Map<K, Collection<V>> base;
-
-    /**
-     * Used the static factory methods <tt>create</tt> or <tt>createdSynchronized</tt> to obtain an instance.
-     *
-     * @param base the underlying map to use
-     */
-    protected MultiMap(Map<K, Collection<V>> base) {
-        this.base = base;
     }
 
     /**
@@ -128,7 +130,7 @@ public class MultiMap<K, V> {
      * @return a new instance which is used as value list for a key.
      */
     protected List<V> createValueList() {
-        return new ArrayList<V>();
+        return new ArrayList<>();
     }
 
     /**
@@ -196,10 +198,9 @@ public class MultiMap<K, V> {
      *
      * @return a list of all values stored for all keys
      */
-    @SuppressWarnings("Convert2streamapi")
     @Nonnull
     public List<V> values() {
-        List<V> result = new ArrayList<V>();
+        List<V> result = new ArrayList<>();
         for (Collection<V> val : getUnderlyingMap().values()) {
             result.addAll(val);
         }
@@ -235,7 +236,7 @@ public class MultiMap<K, V> {
         if (other != null) {
             other.base.entrySet()
                       .stream()
-                      .flatMap(e -> Tuple.flatten(e))
+                      .flatMap(Tuple::flatten)
                       .forEach(t -> put(t.getFirst(), t.getSecond()));
         }
         return this;

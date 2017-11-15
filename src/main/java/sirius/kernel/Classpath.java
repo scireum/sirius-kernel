@@ -9,6 +9,7 @@
 package sirius.kernel;
 
 import com.google.common.base.Objects;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Log;
 
 import java.io.File;
@@ -93,7 +94,7 @@ public class Classpath {
      * @return a stream of matching elements
      */
     public Stream<Matcher> find(final Pattern pattern) {
-        return getComponentRoots().stream().flatMap(url -> scan(url)).filter(path -> {
+        return getComponentRoots().stream().flatMap(this::scan).filter(path -> {
             if (customizations != null && path.startsWith("customizations")) {
                 String config = Sirius.getCustomizationName(path);
                 if (!customizations.contains(config)) {
@@ -101,7 +102,7 @@ public class Classpath {
                 }
             }
             return true;
-        }).map(path -> pattern.matcher(path)).filter(Matcher::matches);
+        }).map(pattern::matcher).filter(Matcher::matches);
     }
 
     /*
@@ -145,18 +146,20 @@ public class Classpath {
             if (child.isDirectory()) {
                 addFiles(child, collector, reference);
             } else {
-                String path = null;
-                File iter = child;
-                while (iter != null && !Objects.equal(iter, reference)) {
-                    if (path != null) {
-                        path = iter.getName() + "/" + path;
-                    } else {
-                        path = iter.getName();
-                    }
-                    iter = iter.getParentFile();
-                }
+                String path = buildRelativePath(reference, child);
                 collector.add(path);
             }
         }
+    }
+
+    private String buildRelativePath(File reference, File child) {
+        List<String> path = new ArrayList<>();
+        File iter = child;
+        while (iter != null && !Objects.equal(iter, reference)) {
+            path.add(0, iter.getName());
+            iter = iter.getParentFile();
+        }
+
+        return Strings.join(path, "/");
     }
 }

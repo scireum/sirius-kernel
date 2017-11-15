@@ -9,6 +9,7 @@
 package sirius.kernel.health.metrics;
 
 import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.NumberFormat;
 
 import java.util.Objects;
@@ -87,6 +88,8 @@ public class Metric implements Comparable<Metric> {
     }
 
     @Override
+    @SuppressWarnings("squid:S1698")
+    @Explain("Indentity against this is safe and a shortcut to speed up comparisons")
     public int compareTo(Metric o) {
         if (o == null) {
             return -1;

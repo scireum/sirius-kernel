@@ -22,6 +22,8 @@ import javax.annotation.Nonnull;
 @Register
 public class TimerCommand implements Command {
 
+    private static final String LINE_FORMAT = "%20s %-30s";
+
     @Part
     private Timers ts;
 
@@ -50,9 +52,9 @@ public class TimerCommand implements Command {
         output.blankLine();
         output.line("System Timers - Last Execution");
         output.separator();
-        output.apply("%20s %-30s", "One-Minute", ts.getLastOneMinuteExecution());
-        output.apply("%20s %-30s", "Ten-Minutes", ts.getLastTenMinutesExecution());
-        output.apply("%20s %-30s", "One-Hour", ts.getLastHourExecution());
+        output.apply(LINE_FORMAT, "One-Minute", ts.getLastOneMinuteExecution());
+        output.apply(LINE_FORMAT, "Ten-Minutes", ts.getLastTenMinutesExecution());
+        output.apply(LINE_FORMAT, "One-Hour", ts.getLastHourExecution());
         output.separator();
     }
 

@@ -36,16 +36,30 @@ import java.util.Map;
 public class Metrics implements EveryMinute {
 
     private static final String HEALTH_LIMITS_PREFIX = "health.limits.";
+
     @Parts(MetricProvider.class)
     private Collection<MetricProvider> providers;
 
-    /*
+    /**
+     * Contains all limits as defined in the system config
+     */
+    private Map<String, Limit> limits = Maps.newHashMap();
+
+    /**
+     * Contains the last value of each metric in order to compute differential metrics
+     */
+    private Map<String, Double> differentials = Maps.newHashMap();
+
+    @Part
+    private Tasks tasks;
+
+    /**
      * Contains all collected metrics
      */
-    private List<Metric> metrics = Lists.newArrayList();
+    private List<Metric> metricsList = Lists.newArrayList();
 
-    /*
-     * Internal structure to combine the three limits available for each metric: gray, warning (yellow), error (red)
+    /**
+     * Internal structure to combine the three limits available for each metric: gray, warning (yellow), error (red).
      */
     private static class Limit {
         double gray = 0;
@@ -58,18 +72,67 @@ public class Metrics implements EveryMinute {
         }
     }
 
-    /*
-     * Contains all limits as defined in the system config
+    /**
+     * Provides an adapter from DataCollector to MetricsCollector.
      */
-    private Map<String, Limit> limits = Maps.newHashMap();
+    private class MetricCollectorAdapter implements MetricsCollector {
 
-    /*
-     * Contains the last value of each metric in order to compute differential metrics
-     */
-    private Map<String, Double> differentials = Maps.newHashMap();
+        private DataCollector<Metric> collector;
 
-    @Part
-    private Tasks tasks;
+        private MetricCollectorAdapter(DataCollector<Metric> collector) {
+            this.collector = collector;
+        }
+
+        @Override
+        public void metric(String title, double value, String unit, MetricState state) {
+            collector.add(new Metric(title, value, state, unit));
+        }
+
+        @Override
+        public void metric(String limitType, String title, double value, String unit) {
+            collector.add(new Metric(title, value, computeState(limitType, value), unit));
+        }
+
+        @Override
+        public void differentialMetric(String id, String limitType, String title, double currentValue, String unit) {
+            Double lastValue = differentials.get(id);
+            if (lastValue != null) {
+                metric(limitType, title, currentValue - lastValue, unit);
+            }
+            differentials.put(id, currentValue);
+        }
+
+        /*
+         * Computes the state of the metric based in the limits given in the config
+         */
+        private MetricState computeState(String limitType, double value) {
+            Limit limit = limits.get(limitType);
+            if (limit == null) {
+                limit = new Limit();
+                if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".gray")) {
+                    limit.gray = Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".gray");
+                }
+                if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".warning")) {
+                    limit.yellow =
+                            Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".warning");
+                }
+                if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".error")) {
+                    limit.red = Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".error");
+                }
+                limits.put(limitType, limit);
+            }
+            if (value <= limit.gray) {
+                return MetricState.GRAY;
+            }
+            if (limit.red > 0 && value >= limit.red) {
+                return MetricState.RED;
+            }
+            if (limit.yellow > 0 && value >= limit.yellow) {
+                return MetricState.YELLOW;
+            }
+            return MetricState.GREEN;
+        }
+    }
 
     @Override
     public synchronized void runTimer() throws Exception {
@@ -79,69 +142,19 @@ public class Metrics implements EveryMinute {
     private void collectMetrics() {
         final DataCollector<Metric> collector = DataCollector.create();
         for (MetricProvider provider : providers) {
-            try {
-                provider.gather(new MetricsCollector() {
-
-                    @Override
-                    public void metric(String title, double value, String unit, MetricState state) {
-                        collector.add(new Metric(title, value, state, unit));
-                    }
-
-                    @Override
-                    public void metric(String limitType, String title, double value, String unit) {
-                        collector.add(new Metric(title, value, computeState(limitType, value), unit));
-                    }
-
-                    @Override
-                    public void differentialMetric(String id,
-                                                   String limitType,
-                                                   String title,
-                                                   double currentValue,
-                                                   String unit) {
-                        Double lastValue = differentials.get(id);
-                        if (lastValue != null) {
-                            metric(limitType, title, currentValue - lastValue, unit);
-                        }
-                        differentials.put(id, currentValue);
-                    }
-                });
-            } catch (Exception e) {
-                Exceptions.handle(e);
-            }
+            collectMetrics(collector, provider);
         }
-        List<Metric> metricsList = collector.getData();
-        Collections.sort(metricsList);
-        metrics = metricsList;
+        List<Metric> newMetricsList = collector.getData();
+        Collections.sort(newMetricsList);
+        metricsList = newMetricsList;
     }
 
-    /*
-     * Computes the state of the metric based in the limits given in the config
-     */
-    private MetricState computeState(String limitType, double value) {
-        Limit limit = limits.get(limitType);
-        if (limit == null) {
-            limit = new Limit();
-            if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".gray")) {
-                limit.gray = Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".gray");
-            }
-            if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".warning")) {
-                limit.yellow = Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".warning");
-            }
-            if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".error")) {
-                limit.red = Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".error");
-            }
-            limits.put(limitType, limit);
+    private void collectMetrics(DataCollector<Metric> collector, MetricProvider provider) {
+        try {
+            provider.gather(new MetricCollectorAdapter(collector));
+        } catch (Exception e) {
+            Exceptions.handle(e);
         }
-        if (value <= limit.gray) {
-            return MetricState.GRAY;
-        }
-        if (limit.red > 0 && value >= limit.red) {
-            return MetricState.RED;
-        }
-        if (limit.yellow > 0 && value >= limit.yellow) {
-            return MetricState.YELLOW;
-        }
-        return MetricState.GREEN;
     }
 
     /**
@@ -150,6 +163,6 @@ public class Metrics implements EveryMinute {
      * @return a list of all metrics
      */
     public List<Metric> getMetrics() {
-        return Collections.unmodifiableList(metrics);
+        return Collections.unmodifiableList(metricsList);
     }
 }

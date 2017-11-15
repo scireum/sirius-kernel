@@ -55,23 +55,29 @@ public class Reflection {
      * @throws IllegalArgumentException if the getter cannot be obtained
      */
     @Nonnull
+    @SuppressWarnings("squid:S1141")
+    @Explain("A nested catch block seems to be the most readable solution here")
     public static Method getter(@Nonnull Class<?> clazz, @Nonnull String property) {
         try {
             try {
                 return clazz.getMethod("get" + toFirstUpper(property));
             } catch (NoSuchMethodException e) {
                 Exceptions.ignore(e);
-                try {
-                    return clazz.getMethod("is" + toFirstUpper(property));
-                } catch (NoSuchMethodException ex) {
-                    Exceptions.ignore(ex);
-                    return clazz.getMethod(property);
-                }
+                return getterAsIs(clazz, property);
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(Strings.apply("get-Method for Field %s not found: %s",
                                                              property,
                                                              e.getMessage()), e);
+        }
+    }
+
+    private static Method getterAsIs(@Nonnull Class<?> clazz, @Nonnull String property) throws NoSuchMethodException {
+        try {
+            return clazz.getMethod("is" + toFirstUpper(property));
+        } catch (NoSuchMethodException ex) {
+            Exceptions.ignore(ex);
+            return clazz.getMethod(property);
         }
     }
 
@@ -157,7 +163,7 @@ public class Reflection {
      */
     @Nonnull
     public static List<Field> getAllFields(@Nonnull Class<?> clazz) {
-        DataCollector<Field> collector = new DataCollector<Field>();
+        DataCollector<Field> collector = new DataCollector<>();
         try {
             walkHierarchy(clazz, value -> collector.addAll(Arrays.asList(value.getDeclaredFields())));
         } catch (Exception e) {

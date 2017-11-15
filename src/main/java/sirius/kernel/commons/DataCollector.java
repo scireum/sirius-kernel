@@ -42,6 +42,8 @@ import java.util.function.Consumer;
  */
 public class DataCollector<T> implements Consumer<T> {
 
+    private List<T> data = new ArrayList<>();
+
     /**
      * Creates a new <tt>DataCollector</tt>.
      * <p>
@@ -51,10 +53,8 @@ public class DataCollector<T> implements Consumer<T> {
      * @return a new <tt>DataCollector</tt>
      */
     public static <T> DataCollector<T> create() {
-        return new DataCollector<T>();
+        return new DataCollector<>();
     }
-
-    private List<T> data = new ArrayList<T>();
 
     /**
      * Adds a value to the collector

@@ -51,6 +51,12 @@ public class TaskContext implements SubContext {
     @Part
     private static Tasks tasks;
 
+    /**
+     * Generates a new TaskContext.
+     * <p>
+     * Normally this is should only be invoked by {@link CallContext}. Use {@link CallContext#get(Class)} to obtain an
+     * instance.
+     */
     public TaskContext() {
         this.adapter = new BasicTaskContextAdapter(this);
         this.parent = CallContext.getCurrent();

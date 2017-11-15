@@ -127,6 +127,7 @@ public class Barrier {
         try {
             return semaphore.tryAcquire(promisesMade.get(), time, unit);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             Exceptions.ignore(e);
             return false;
         }

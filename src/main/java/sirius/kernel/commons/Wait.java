@@ -22,6 +22,8 @@ import java.util.Random;
  */
 public class Wait {
 
+    private static final Random rnd = new Random();
+
     private Wait() {
     }
 
@@ -39,6 +41,7 @@ public class Wait {
                 Thread.sleep(millisToWait);
             } catch (InterruptedException e) {
                 Exceptions.ignore(e);
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -68,8 +71,6 @@ public class Wait {
     public static void seconds(double secondsToWait) {
         millis((int) Math.round(1000 * secondsToWait));
     }
-
-    private static final Random rnd = new Random();
 
     /**
      * Waits for an random amount of millisecond within the given bounds.
