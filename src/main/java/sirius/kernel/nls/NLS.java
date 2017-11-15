@@ -503,9 +503,24 @@ public class NLS {
      * or <tt>""</tt> if the given index was invalid.
      */
     public static String getMonthNameShort(int month) {
+        return getMonthNameShort(month, "");
+    }
+    
+    /**
+     * Returns a three letter abbreviation of the name of the given month, like <tt>"Jan"</tt>.
+     * If the name is short and has at most 4 characters, the name of the given month is returned instead.
+     * The given symbol is only appended if the month was abbreviated so for example you get <tt>"Jan."</tt>
+     * but with <tt>"May"</tt> the symbol String is not appended.
+     * 
+     * @param month the month to be translated (January is 1, December is 12).
+     * @param symbol the symbol to append in case of abbreviation
+     * @return returns the first three letters of the name, the name of the month if short enough
+     * or <tt>""</tt> if the given index was invalid.
+     */
+    public static String getMonthNameShort(int month, String symbol) {
         String result = getMonthName(month);
         if (result.length() > 4) {
-            result = result.substring(0, 3);
+            result = result.substring(0, 3) + symbol;
         }
         return result;
     }

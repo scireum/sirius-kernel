@@ -196,4 +196,20 @@ class NLSSpec extends BaseSpecification {
         "14:30"    | new LocalTime(14, 30, 0, 0)
         "14"       | new LocalTime(14, 0, 0, 0)
     }
+    
+    def "getMonthNameShort correctly appends the given symbol"() {
+        expect:
+        NLS.getMonthNameShort(month, ".") == output
+
+        where:
+        month    | output
+        1        | "Jan."
+        5        | "Mai"
+        3        | "März"
+        6        | "Juni"
+        11       | "Nov."
+        12       | "Dez."
+        0        | "" 
+        13       | ""
+    }
 }
