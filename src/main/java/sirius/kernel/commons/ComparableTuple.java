@@ -81,7 +81,6 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S>
      * @return a list of tuples, containing one tuple per map entry where the first component is the key,
      * and the second component is the value of the map entry.
      */
-    @SuppressWarnings("Convert2streamapi")
     public static <K extends Comparable<K>, V> List<ComparableTuple<K, V>> fromComparableMap(@Nonnull Map<K, V> map) {
         List<ComparableTuple<K, V>> result = new ArrayList<>(map.size());
         for (Map.Entry<K, V> e : map.entrySet()) {

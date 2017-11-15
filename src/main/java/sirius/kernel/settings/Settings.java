@@ -16,6 +16,7 @@ import com.typesafe.config.ConfigValue;
 import com.typesafe.config.ConfigValueFactory;
 import com.typesafe.config.ConfigValueType;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
@@ -224,6 +225,7 @@ public class Settings {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "squid:S3776", "squid:MethodCyclomaticComplexity"})
+    @Explain("This is the shortest and most efficient way to check all those types.")
     private void injectIntoField(Object target, Field field, String key) throws IllegalAccessException {
         if (String.class.equals(field.getType())) {
             field.set(target, config.getString(key));

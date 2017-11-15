@@ -69,7 +69,6 @@ public class Injector {
      *
      * @param classpath the classpath used to enumerate all classes to be scanned
      */
-    @SuppressWarnings("Convert2streamapi")
     public static void init(@Nonnull final Classpath classpath) {
         ctx = new PartRegistry();
         // Make the context itself visible for GlobalContext...

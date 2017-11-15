@@ -157,7 +157,6 @@ public class XMLReader extends DefaultHandler {
      * @throws IOException if parsing the XML fails either due to an IO error or due to an SAXException (when
      *                     processing a malformed XML).
      */
-    @SuppressWarnings("squid:S2093")
     public void parse(InputStream stream, Function<String, InputStream> resourceLocator) throws IOException {
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -172,13 +171,9 @@ public class XMLReader extends DefaultHandler {
             });
             reader.setContentHandler(this);
             reader.parse(new InputSource(stream));
-        } catch (ParserConfigurationException | SAXException e)
-
-        {
+        } catch (ParserConfigurationException | SAXException e) {
             throw new IOException(e);
-        } catch (UserInterruptException e)
-
-        {
+        } catch (UserInterruptException e) {
             // IGNORED - this is used to cancel parsing if the used tried to
             // cancel a process.
         } finally

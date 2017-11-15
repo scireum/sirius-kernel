@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
@@ -43,6 +44,7 @@ import java.util.List;
  * and not to rely on any log4j specific behaviour.
  */
 @SuppressWarnings("squid:S00100")
+@Explain("We have these special method names so they stand out from the business logic.")
 public class Log {
 
     private final Logger logger;

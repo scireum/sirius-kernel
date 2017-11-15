@@ -8,6 +8,7 @@
 
 package sirius.kernel.cache;
 
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -85,6 +86,7 @@ public class CacheManager {
      * @return a newly created cache according to the given parameters and the settings in the system config
      */
     @SuppressWarnings("squid:S2250")
+    @Explain("Caches are only created once, so there is no performance hotspot")
     public static <K, V> Cache<K, V> createCache(String name,
                                                  ValueComputer<K, V> valueComputer,
                                                  ValueVerifier<V> verifier) {

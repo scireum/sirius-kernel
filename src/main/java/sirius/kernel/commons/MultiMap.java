@@ -79,6 +79,7 @@ public class MultiMap<K, V> {
         return new MultiMap<K, V>(Collections.synchronizedMap(new HashMap<>())) {
             @Override
             @SuppressWarnings("squid:S1185")
+            @Explain("We need to overwrite this to make it synchronized.")
             public synchronized void put(K key, V value) {
                 super.put(key, value);
             }
@@ -197,7 +198,6 @@ public class MultiMap<K, V> {
      *
      * @return a list of all values stored for all keys
      */
-    @SuppressWarnings("Convert2streamapi")
     @Nonnull
     public List<V> values() {
         List<V> result = new ArrayList<>();

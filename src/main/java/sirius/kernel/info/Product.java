@@ -52,7 +52,6 @@ public class Product {
      *
      * @return a list containing the name and build environment of all modules
      */
-    @SuppressWarnings("Convert2streamapi")
     public static List<Module> getModules() {
         if (modules == null) {
             List<Module> result = Lists.newArrayList();

@@ -23,6 +23,7 @@ import java.time.Duration;
  * A robust wrapper around calls to external programs.
  */
 @SuppressWarnings("squid:S1149")
+@Explain("We actually need the thread safety probided by StringBuffer here, as we start 2 threads per call.")
 public class Exec {
 
     /**

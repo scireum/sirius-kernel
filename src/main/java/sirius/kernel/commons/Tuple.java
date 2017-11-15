@@ -155,7 +155,6 @@ public class Tuple<F, S> {
      * @param <V>    the type of the second elements of the tuples
      * @return a list containing each <tt>first</tt> component of the collection of given tuples.
      */
-    @SuppressWarnings("Convert2streamapi")
     public static <T extends Tuple<K, V>, K, V> List<K> firsts(@Nonnull Collection<T> tuples) {
         List<K> result = new ArrayList<>(tuples.size());
         for (Tuple<K, V> t : tuples) {
@@ -173,7 +172,6 @@ public class Tuple<F, S> {
      * @param <V>    the type of the second elements of the tuples
      * @return a list containing each <tt>second</tt> component of the collection of given tuples.
      */
-    @SuppressWarnings("Convert2streamapi")
     public static <T extends Tuple<K, V>, K, V> List<V> seconds(@Nonnull Collection<T> tuples) {
         List<V> result = new ArrayList<>(tuples.size());
         for (Tuple<K, V> t : tuples) {
@@ -191,7 +189,6 @@ public class Tuple<F, S> {
      * @return a list of tuples, containing one tuple per map entry where the first component is the key,
      * and the second component is the value of the map entry.
      */
-    @SuppressWarnings("Convert2streamapi")
     public static <K, V> List<Tuple<K, V>> fromMap(@Nonnull Map<K, V> map) {
         List<Tuple<K, V>> result = new ArrayList<>(map.size());
         for (Map.Entry<K, V> e : map.entrySet()) {

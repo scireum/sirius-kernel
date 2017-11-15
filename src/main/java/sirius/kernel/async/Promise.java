@@ -10,6 +10,7 @@ package sirius.kernel.async;
 
 import com.google.common.collect.Lists;
 import sirius.kernel.commons.Callback;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -153,6 +154,7 @@ public class Promise<V> {
      * Waits for a yet uncompleted promise by blocking the current thread via a Condition.
      */
     @SuppressWarnings({"squid:S899", "squid:S2274"})
+    @Explain("We cannot use a loop here and we don't care about the return value.")
     private void awaitBlocking(Duration timeout) {
         Lock lock = new ReentrantLock();
         Condition completed = lock.newCondition();

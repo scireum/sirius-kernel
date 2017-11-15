@@ -56,6 +56,7 @@ public class Reflection {
      */
     @Nonnull
     @SuppressWarnings("squid:S1141")
+    @Explain("A nested catch block seems to be the most readable solution here")
     public static Method getter(@Nonnull Class<?> clazz, @Nonnull String property) {
         try {
             try {

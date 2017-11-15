@@ -11,6 +11,7 @@ package sirius.kernel.di;
 import com.google.common.collect.Maps;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.ExecutionPoint;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -303,6 +304,7 @@ class PartRegistry implements MutableGlobalContext {
      * Processes all annotations of all known parts.
      */
     @SuppressWarnings({"squid:S1854", "squid:S1481"})
+    @Explain("False positive - the set is used.")
     void processAnnotations() {
         Set<Object> initializedObjects = new HashSet<>();
         parts.getUnderlyingMap().values().stream().flatMap(Collection::stream).forEach(part -> {

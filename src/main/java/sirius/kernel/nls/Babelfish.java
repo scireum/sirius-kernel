@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -105,6 +106,7 @@ public class Babelfish {
      * Returns <tt>null</tt> if no translation was found and <tt>create</tt> is false.
      */
     @SuppressWarnings("squid:S2583")
+    @Explain("Double check for @Nonnull property as it is not enforced by the compiler")
     protected Translation get(@Nonnull String property, @Nullable String fallback, boolean create) {
         if (property == null) {
             throw new IllegalArgumentException("property");

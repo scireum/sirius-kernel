@@ -8,6 +8,8 @@
 
 package sirius.kernel.di.std;
 
+import sirius.kernel.commons.Explain;
+
 /**
  * Marks a class as sortable by its priority.
  * <p>
@@ -15,6 +17,7 @@ package sirius.kernel.di.std;
  * be auto sorted (ascending) by priority before they are made available.
  */
 @SuppressWarnings("squid:S1214")
+@Explain("The constant is best defined here.")
 public interface Priorized {
 
     /**

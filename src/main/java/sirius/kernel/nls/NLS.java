@@ -15,6 +15,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.AdvancedDateParser;
 import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
@@ -74,7 +75,9 @@ import java.util.Set;
  *
  * @see Babelfish
  */
+
 @SuppressWarnings("squid:S1192")
+@Explain("String literales here have different semantics and are therefore duplicated.")
 public class NLS {
 
     private static final Babelfish blubb = new Babelfish();
@@ -640,6 +643,7 @@ public class NLS {
      * {@link #parseMachineString(Class, String)} independently of the language settings
      */
     @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S3776"})
+    @Explain("The high complexity as acceptable as it is basically just a list of if statements")
     public static String toMachineString(Object data) {
         if (data == null) {
             return "";
@@ -720,6 +724,7 @@ public class NLS {
      * @return a string representation of the given object, formatted by the language settings of the current language
      */
     @SuppressWarnings("squid:S3776")
+    @Explain("The high complexity as acceptable as it is basically just a list of if statements")
     public static String toUserString(Object data, String lang) {
         if (data == null) {
             return "";
@@ -789,54 +794,67 @@ public class NLS {
      * @param date the date to be formatted
      * @return a date string which a human would use in common sentences
      */
-    @SuppressWarnings("squid:S3776")
     public static String toSpokenDate(Temporal date) {
         if (date == null) {
             return "";
         }
 
         if (ChronoUnit.HOURS.isSupportedBy(date)) {
-            // We have a time, perform some nice formatting...
-            LocalDateTime givenDateTime = LocalDateTime.from(date);
-            if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(30))) {
-                return NLS.get("NLS.someMinutesAgo");
-            }
-            if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(59))) {
-                return NLS.fmtr("NLS.nMinutesAgo")
-                          .set("minutes", Duration.between(givenDateTime, LocalDateTime.now()).toMinutes())
-                          .format();
-            }
-            if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
-                return NLS.get("NLS.oneHourAgo");
-            }
-            if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
-                return NLS.fmtr("NLS.nHoursAgo")
-                          .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
-                          .format();
-            }
-
-            // We don't have a date and the time difference is quite big -> simply format the time...
-            if (!ChronoField.DAY_OF_MONTH.isSupportedBy(date)) {
-                return getTimeFormat(getCurrentLang()).format(date);
-            }
+            return formatSpokenDateWithTime(date);
+        } else {
+            return formatSpokenDate(date);
         }
+    }
 
+    public static String formatSpokenDate(Temporal date) {
         // Check if we have a date which is not "today"....
         LocalDate givenDate = LocalDate.from(date);
         LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDate yesterday = LocalDate.now().minusDays(1);
         if (tomorrow.equals(givenDate)) {
             // Handle tomorrow
             return NLS.get("NLS.tomorrow");
-        } else if (yesterday.equals(givenDate)) {
+        }
+
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        if (yesterday.equals(givenDate)) {
             // Handle yesterday
             return NLS.get("NLS.yesterday");
-        } else if (tomorrow.isBefore(givenDate) || yesterday.isAfter(givenDate)) {
+        }
+
+        if (tomorrow.isBefore(givenDate) || yesterday.isAfter(givenDate)) {
             // Handle dates in the future or the past
             return getDateFormat(getCurrentLang()).format(givenDate);
         } else {
             return NLS.get("NLS.today");
         }
+    }
+
+    private static String formatSpokenDateWithTime(Temporal date) {
+        // We have a time, perform some nice formatting...
+        LocalDateTime givenDateTime = LocalDateTime.from(date);
+        if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(30))) {
+            return NLS.get("NLS.someMinutesAgo");
+        }
+        if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(59))) {
+            return NLS.fmtr("NLS.nMinutesAgo")
+                      .set("minutes", Duration.between(givenDateTime, LocalDateTime.now()).toMinutes())
+                      .format();
+        }
+        if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
+            return NLS.get("NLS.oneHourAgo");
+        }
+        if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
+            return NLS.fmtr("NLS.nHoursAgo")
+                      .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
+                      .format();
+        }
+
+        // We don't have a date and the time difference is quite big -> simply format the time...
+        if (!ChronoField.DAY_OF_MONTH.isSupportedBy(date)) {
+            return getTimeFormat(getCurrentLang()).format(date);
+        }
+
+        return formatSpokenDate(date);
     }
 
     /**
@@ -864,6 +882,7 @@ public class NLS {
     }
 
     @SuppressWarnings({"unchecked", "squid:S3776"})
+    @Explain("The high complexity as acceptable as it is basically just a list of if statements")
     private static <V> V parseBasicTypesFromMachineString(Class<V> clazz, String value) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
@@ -905,6 +924,7 @@ public class NLS {
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
             return (V) Boolean.valueOf(Boolean.parseBoolean(value));
         }
+
         return parseDatesFromMachineString(clazz, value);
     }
 
@@ -974,6 +994,7 @@ public class NLS {
     }
 
     @SuppressWarnings({"unchecked", "squid:S3776"})
+    @Explain("The high complexity as acceptable as it is basically just a list of if statements")
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String lang) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {

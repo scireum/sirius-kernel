@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Part;
@@ -46,6 +47,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Timers implements Lifecycle {
 
     @SuppressWarnings("squid:S1192")
+    @Explain("These constants are semantically different.")
     protected static final Log LOG = Log.get("timer");
     private static final String TIMER = "timer";
 

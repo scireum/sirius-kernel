@@ -10,6 +10,7 @@ package sirius.kernel.health;
 
 import com.google.common.collect.Maps;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
@@ -182,6 +183,7 @@ public class Exceptions {
          * already been taken care of.
          */
         @SuppressWarnings("squid:S1148")
+        @Explain("This log statement is our last restor when we're in deep trouble.")
         public HandledException handle() {
             if (ex instanceof HandledException) {
                 return (HandledException) ex;

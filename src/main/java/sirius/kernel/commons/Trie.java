@@ -316,6 +316,7 @@ public class Trie<V> {
      * @param value the value to store in the trie.
      */
     @SuppressWarnings("squid:S2583")
+    @Explain("Duplicate @Nonnull value check as it isn't enforced by the compiler.")
     public void put(@Nonnull CharSequence key, @Nonnull V value) {
         if (Strings.isEmpty(key)) {
             throw new IllegalArgumentException("key");

@@ -485,6 +485,7 @@ public class Amount implements Comparable<Amount> {
      */
     @Override
     @SuppressWarnings("squid:S1698")
+    @Explain("Indentity against this is safe and a shortcut to speed up comparisons")
     public int compareTo(Amount o) {
         if (o == null) {
             return 1;
@@ -584,6 +585,7 @@ public class Amount implements Comparable<Amount> {
      */
     @Nonnull
     @SuppressWarnings("squid:S1698")
+    @Explain("Indentity against this is safe and a shortcut to speed up comparisons")
     public Amount min(@Nullable Amount other) {
         if (other == this || other == null) {
             return this;
@@ -608,6 +610,7 @@ public class Amount implements Comparable<Amount> {
      */
     @Nonnull
     @SuppressWarnings("squid:S1698")
+    @Explain("Indentity against this is safe and a shortcut to speed up comparisons")
     public Amount max(@Nullable Amount other) {
         if (other == this || other == null) {
             return this;

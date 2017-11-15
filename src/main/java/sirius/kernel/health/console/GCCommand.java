@@ -8,6 +8,7 @@
 
 package sirius.kernel.health.console;
 
+import sirius.kernel.commons.Explain;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 
@@ -21,19 +22,22 @@ import javax.annotation.Nonnull;
 @Register
 public class GCCommand implements Command {
 
+    private static final String LINE_FORMAT = "%-20s %10s";
+
     @Override
-    @SuppressWarnings({"squid:S1215", "squid:S1192"})
+    @SuppressWarnings( "squid:S1215")
+    @Explain("The whole purpose of this call is to invoke the garbage collector.")
     public void execute(Output output, String... params) throws Exception {
-        output.apply("%-20s %10s", "TYPE", "SIZE");
+        output.apply(LINE_FORMAT, "TYPE", "SIZE");
         output.separator();
-        output.apply("%-20s %10s", "Free", NLS.formatSize(Runtime.getRuntime().freeMemory()));
-        output.apply("%-20s %10s", "Total", NLS.formatSize(Runtime.getRuntime().totalMemory()));
-        output.apply("%-20s %10s", "Max", NLS.formatSize(Runtime.getRuntime().maxMemory()));
+        output.apply(LINE_FORMAT, "Free", NLS.formatSize(Runtime.getRuntime().freeMemory()));
+        output.apply(LINE_FORMAT, "Total", NLS.formatSize(Runtime.getRuntime().totalMemory()));
+        output.apply(LINE_FORMAT, "Max", NLS.formatSize(Runtime.getRuntime().maxMemory()));
         Runtime.getRuntime().gc();
         output.separator();
-        output.apply("%-20s %10s", "Free", NLS.formatSize(Runtime.getRuntime().freeMemory()));
-        output.apply("%-20s %10s", "Total", NLS.formatSize(Runtime.getRuntime().totalMemory()));
-        output.apply("%-20s %10s", "Max", NLS.formatSize(Runtime.getRuntime().maxMemory()));
+        output.apply(LINE_FORMAT, "Free", NLS.formatSize(Runtime.getRuntime().freeMemory()));
+        output.apply(LINE_FORMAT, "Total", NLS.formatSize(Runtime.getRuntime().totalMemory()));
+        output.apply(LINE_FORMAT, "Max", NLS.formatSize(Runtime.getRuntime().maxMemory()));
         output.separator();
     }
 

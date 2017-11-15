@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.PartCollection;
@@ -239,6 +240,7 @@ public class Tasks implements Lifecycle {
     }
 
     @SuppressWarnings({"squid:S2274", "squid:S899"})
+    @Explain("We neither need a loop nor the result here.")
     private void idle() {
         try {
             schedulerLock.lock();
