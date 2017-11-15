@@ -143,7 +143,7 @@ public class Exec {
         }
     }
 
-    public static void doExec(boolean ignoreExitCodes, StringBuffer logger, Process p) throws ExecException {
+    private static void doExec(boolean ignoreExitCodes, StringBuffer logger, Process p) throws ExecException {
         try {
             int code = p.waitFor();
             if (code != 0 && !ignoreExitCodes) {

@@ -494,7 +494,7 @@ public class Tasks implements Lifecycle {
         }
     }
 
-    public void blockUnitExecutorTerminates(String name, AsyncExecutor exec) {
+    private void blockUnitExecutorTerminates(String name, AsyncExecutor exec) {
         LOG.INFO("Waiting for async executor '%s' to terminate...", name);
         try {
             if (!exec.awaitTermination(EXECUTOR_SHUTDOWN_WAIT.getSeconds(), TimeUnit.SECONDS)) {

@@ -49,13 +49,13 @@ public class ThreadsCommand implements Command {
         }
     }
 
-    public void outputThreadInfos(Output output, boolean includeWaiting, String threadName) {
+    private void outputThreadInfos(Output output, boolean includeWaiting, String threadName) {
         for (Map.Entry<Thread, StackTraceElement[]> thread : Thread.getAllStackTraces().entrySet()) {
             outputThreadInfo(output, includeWaiting, threadName, thread);
         }
     }
 
-    public void outputThreadInfo(Output output,
+    private void outputThreadInfo(Output output,
                                  boolean includeWaiting,
                                  String threadName,
                                  Map.Entry<Thread, StackTraceElement[]> thread) {

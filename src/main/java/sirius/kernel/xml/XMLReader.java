@@ -176,14 +176,12 @@ public class XMLReader extends DefaultHandler {
         } catch (UserInterruptException e) {
             // IGNORED - this is used to cancel parsing if the used tried to
             // cancel a process.
-        } finally
-
-        {
+        } finally {
             stream.close();
         }
     }
 
-    public InputSource tryResolveEntity(String systemId, Function<String, InputStream> resourceLocator)
+    private InputSource tryResolveEntity(String systemId, Function<String, InputStream> resourceLocator)
             throws IOException {
         URL url = new URL(systemId);
         if (!"file".equals(url.getProtocol())) {

@@ -37,7 +37,7 @@ public class TimingCommand implements Command {
         }
     }
 
-    public void parseParameters(Output output, String param) {
+    private void parseParameters(Output output, String param) {
         if ("enable".equalsIgnoreCase(param) || "+".equalsIgnoreCase(param)) {
             enableTiming(output);
         } else if ("disable".equalsIgnoreCase(param) || "-".equalsIgnoreCase(param)) {
@@ -48,13 +48,13 @@ public class TimingCommand implements Command {
         }
     }
 
-    public void disableTiming(Output output) {
+    private void disableTiming(Output output) {
         generateOutput(output);
         Microtiming.setEnabled(false);
         output.line("Disabling Microtiming...");
     }
 
-    public void enableTiming(Output output) {
+    private void enableTiming(Output output) {
         if (Microtiming.isEnabled()) {
             generateOutput(output);
             Microtiming.setEnabled(false);

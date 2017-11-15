@@ -25,7 +25,7 @@ public class GCCommand implements Command {
     private static final String LINE_FORMAT = "%-20s %10s";
 
     @Override
-    @SuppressWarnings( "squid:S1215")
+    @SuppressWarnings("squid:S1215")
     @Explain("The whole purpose of this call is to invoke the garbage collector.")
     public void execute(Output output, String... params) throws Exception {
         output.apply(LINE_FORMAT, "TYPE", "SIZE");

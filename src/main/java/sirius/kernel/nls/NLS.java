@@ -806,7 +806,7 @@ public class NLS {
         }
     }
 
-    public static String formatSpokenDate(Temporal date) {
+    private static String formatSpokenDate(Temporal date) {
         // Check if we have a date which is not "today"....
         LocalDate givenDate = LocalDate.from(date);
         LocalDate tomorrow = LocalDate.now().plusDays(1);

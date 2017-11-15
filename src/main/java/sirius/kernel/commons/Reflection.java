@@ -72,7 +72,7 @@ public class Reflection {
         }
     }
 
-    public static Method getterAsIs(@Nonnull Class<?> clazz, @Nonnull String property) throws NoSuchMethodException {
+    private static Method getterAsIs(@Nonnull Class<?> clazz, @Nonnull String property) throws NoSuchMethodException {
         try {
             return clazz.getMethod("is" + toFirstUpper(property));
         } catch (NoSuchMethodException ex) {

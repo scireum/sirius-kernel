@@ -214,7 +214,7 @@ public class Timers implements Lifecycle {
         }
     }
 
-    public void watchLoadedResources() {
+    private void watchLoadedResources() {
         Thread.currentThread().setName("Resource-Watch");
         for (WatchedResource res : loadedFiles) {
             long lastModified = res.file.lastModified();

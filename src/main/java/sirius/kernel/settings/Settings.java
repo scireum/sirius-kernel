@@ -187,6 +187,12 @@ public class Settings {
         return getConfig().getStringList(key);
     }
 
+    /**
+     * Reads a embedded map.
+     *
+     * @param key the key of the map to read
+     * @return the map within the config
+     */
     public Map<String, String> getMap(String key) {
         Map<String, String> result = new HashMap<>();
         config.getConfig(key)

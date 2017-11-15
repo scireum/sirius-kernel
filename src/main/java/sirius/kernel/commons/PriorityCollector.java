@@ -53,7 +53,6 @@ public class PriorityCollector<T> {
         return new PriorityCollector<>();
     }
 
-
     /**
      * Adds the given entity with the given priority.
      *

@@ -70,7 +70,6 @@ public class Babelfish {
 
     private static final ResourceBundle.Control CONTROL = new NonCachingControl();
 
-
     /**
      * Enumerates all translations matching the given filter.
      *

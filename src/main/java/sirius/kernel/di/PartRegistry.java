@@ -62,11 +62,11 @@ class PartRegistry implements MutableGlobalContext {
             return null;
         }
         if (items.size() > 1) {
-            Injector.LOG.WARN(
-                    "Retrieving a Part for %s from multiple implementations (%s) - picking a random one! Use @Replace to clarify! Context: %s",
-                    clazz.getName(),
-                    items,
-                    ExecutionPoint.snapshot().toString());
+            Injector.LOG.WARN("Retrieving a Part for %s from multiple implementations (%s) - picking a random one!"
+                              + " Use @Replace to clarify! Context: %s",
+                              clazz.getName(),
+                              items,
+                              ExecutionPoint.snapshot().toString());
         }
         return (P) items.iterator().next();
     }

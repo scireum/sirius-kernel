@@ -40,7 +40,6 @@ public class CacheManager {
      */
     private static List<ManagedCache<?, ?>> caches = new CopyOnWriteArrayList<>();
 
-
     private static final Duration INLINE_CACHE_DEFAULT_TTL = Duration.ofSeconds(10);
 
     /**
