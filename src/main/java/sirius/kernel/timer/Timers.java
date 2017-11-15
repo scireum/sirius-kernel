@@ -283,6 +283,7 @@ public class Timers implements Lifecycle {
      * @param callback the callback to invoke once the file has changed
      */
     @SuppressWarnings("squid:S2250")
+    @Explain("Resources are only collected once at startup, so there is no performance hotspot")
     public void addWatchedResource(@Nonnull URL url, @Nonnull Runnable callback) {
         try {
             WatchedResource res = new WatchedResource();

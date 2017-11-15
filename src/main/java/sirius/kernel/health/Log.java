@@ -77,6 +77,7 @@ public class Log {
      * @return a new logger logging with the given name.
      */
     @SuppressWarnings("squid:S2250")
+    @Explain("Loggers are only created once, so there is no performance hotspot")
     public static synchronized Log get(String name) {
         Log result = new Log(Logger.getLogger(name));
         all.add(result);
