@@ -35,6 +35,7 @@ public class CSVWriter implements Closeable {
     private char separator = ';';
     private char quotation = '"';
     private char escape = '\\';
+    private boolean trim = true;
 
     /**
      * Creates a new writer sending data to the given writer.
@@ -90,6 +91,19 @@ public class CSVWriter implements Closeable {
     }
 
     /**
+     * Controls if each added cell value of the type String should be trimmed or not
+     * <p>
+     * By default this is <tt>true</tt>. Use <tt>false</tt> if strings should not be trimmed.
+     *
+     * @param trim the value controlling if strings should be trimmed
+     * @return the writer itself for fluent method calls
+     */
+    public CSVWriter withInputTrimming(boolean trim) {
+        this.trim = trim;
+        return this;
+    }
+
+    /**
      * Writes the given list of values as row.
      *
      * @param row the data to write. <tt>null</tt> values will be completely skipped.
@@ -139,7 +153,14 @@ public class CSVWriter implements Closeable {
     }
 
     private void writeColumn(Object o) throws IOException {
-        String stringValue = NLS.toMachineString(o);
+        String stringValue;
+
+        if (!(o instanceof String) || trim) {
+            stringValue = NLS.toMachineString(o);
+        } else {
+            stringValue = Strings.toString(o);
+        }
+
         if (stringValue == null) {
             stringValue = "";
         }
