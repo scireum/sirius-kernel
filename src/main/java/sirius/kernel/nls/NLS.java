@@ -505,14 +505,14 @@ public class NLS {
     public static String getMonthNameShort(int month) {
         return getMonthNameShort(month, "");
     }
-    
+
     /**
      * Returns a three letter abbreviation of the name of the given month, like <tt>"Jan"</tt>.
      * If the name is short and has at most 4 characters, the name of the given month is returned instead.
      * The given symbol is only appended if the month was abbreviated so for example you get <tt>"Jan."</tt>
      * but with <tt>"May"</tt> the symbol String is not appended.
-     * 
-     * @param month the month to be translated (January is 1, December is 12).
+     *
+     * @param month  the month to be translated (January is 1, December is 12).
      * @param symbol the symbol to append in case of abbreviation
      * @return returns the first three letters of the name, the name of the month if short enough
      * or <tt>""</tt> if the given index was invalid.
@@ -847,6 +847,24 @@ public class NLS {
     private static String formatSpokenDateWithTime(Temporal date) {
         // We have a time, perform some nice formatting...
         LocalDateTime givenDateTime = LocalDateTime.from(date);
+        if (givenDateTime.isAfter(LocalDateTime.now())) {
+            if (LocalDateTime.now().getYear() != givenDateTime.getYear()) {
+                return formatSpokenDate(date);
+            }
+            if (LocalDateTime.now().getDayOfYear() > givenDateTime.getDayOfYear() + 1) {
+                return formatSpokenDate(date);
+            }
+            if (LocalDateTime.now().getDayOfYear() != givenDateTime.getDayOfYear()) {
+                // Handle tomorrow
+                return NLS.get("NLS.tomorrow");
+            }
+            if (givenDateTime.isBefore(LocalDateTime.now().plusHours(1))) {
+                return NLS.get("NLS.nextHour");
+            }
+            return NLS.fmtr("NLS.inNHours")
+                      .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
+                      .format();
+        }
         if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(30))) {
             return NLS.get("NLS.someMinutesAgo");
         }
