@@ -848,18 +848,19 @@ public class NLS {
         // We have a time, perform some nice formatting...
         LocalDateTime givenDateTime = LocalDateTime.from(date);
         if (givenDateTime.isAfter(LocalDateTime.now())) {
+            if (givenDateTime.isBefore(LocalDateTime.now().plusHours(1))) {
+                return NLS.get("NLS.nextHour");
+            }
+            if (givenDateTime.isBefore(LocalDateTime.now().plusHours(4))) {
+                return NLS.fmtr("NLS.inNHours")
+                          .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
+                          .format();
+            }
             if (LocalDateTime.now().getYear() != givenDateTime.getYear()) {
                 return formatSpokenDate(date);
             }
-            if (LocalDateTime.now().getDayOfYear() > givenDateTime.getDayOfYear() + 1) {
-                return formatSpokenDate(date);
-            }
             if (LocalDateTime.now().getDayOfYear() != givenDateTime.getDayOfYear()) {
-                // Handle tomorrow
-                return NLS.get("NLS.tomorrow");
-            }
-            if (givenDateTime.isBefore(LocalDateTime.now().plusHours(1))) {
-                return NLS.get("NLS.nextHour");
+                return formatSpokenDate(date);
             }
             return NLS.fmtr("NLS.inNHours")
                       .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
