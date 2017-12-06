@@ -127,7 +127,7 @@ class NLSSpec extends BaseSpecification {
         LocalDateTime.now().minusHours(1)    | "vor einer Stunde"
         LocalDateTime.now().minusHours(4)    | "vor 4 Stunden"
         LocalDateTime.now().plusMinutes(40)  | "in der nächsten Stunde"
-        LocalDateTime.now().plusHours(4)     | "in 3 Stunden"
+        LocalDateTime.now().plusHours(4)     | "in 3 Stunden" // this correctly rounds down to 3
 
     }
 
