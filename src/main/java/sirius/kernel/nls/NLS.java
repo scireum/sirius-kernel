@@ -848,24 +848,40 @@ public class NLS {
         // We have a time, perform some nice formatting...
         LocalDateTime givenDateTime = LocalDateTime.from(date);
         if (givenDateTime.isAfter(LocalDateTime.now())) {
-            if (givenDateTime.isBefore(LocalDateTime.now().plusHours(1))) {
-                return NLS.get("NLS.nextHour");
-            }
-            if (givenDateTime.isBefore(LocalDateTime.now().plusHours(4))) {
-                return NLS.fmtr("NLS.inNHours")
-                          .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
-                          .format();
-            }
-            if (LocalDateTime.now().getYear() != givenDateTime.getYear()) {
-                return formatSpokenDate(date);
-            }
-            if (LocalDateTime.now().getDayOfYear() != givenDateTime.getDayOfYear()) {
-                return formatSpokenDate(date);
-            }
+            return formatSpokenFutureDateWithTime(date, givenDateTime);
+        }
+        if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
+            return formatSpokenRecentDateWithTime(givenDateTime);
+        }
+
+        if (!ChronoField.DAY_OF_MONTH.isSupportedBy(date)) {
+            // We don't have a date and the time difference is quite big -> simply format the time...
+            return getTimeFormat(getCurrentLang()).format(date);
+        }
+
+        return formatSpokenDate(date);
+    }
+    
+    private static String formatSpokenFutureDateWithTime(Temporal date, LocalDateTime givenDateTime) {
+        if (givenDateTime.isBefore(LocalDateTime.now().plusHours(1))) {
+            return NLS.get("NLS.nextHour");
+        }
+        if (givenDateTime.isBefore(LocalDateTime.now().plusHours(4))) {
             return NLS.fmtr("NLS.inNHours")
                       .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
                       .format();
         }
+        if (LocalDateTime.now().getYear() != givenDateTime.getYear()
+            || LocalDateTime.now().getDayOfYear() != givenDateTime.getDayOfYear()) {
+            return formatSpokenDate(date);
+        }
+        
+        return NLS.fmtr("NLS.inNHours")
+                  .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
+                  .format();
+    }
+
+    private static String formatSpokenRecentDateWithTime(LocalDateTime givenDateTime) {
         if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(30))) {
             return NLS.get("NLS.someMinutesAgo");
         }
@@ -877,18 +893,9 @@ public class NLS {
         if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
             return NLS.get("NLS.oneHourAgo");
         }
-        if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
-            return NLS.fmtr("NLS.nHoursAgo")
-                      .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
-                      .format();
-        }
-
-        // We don't have a date and the time difference is quite big -> simply format the time...
-        if (!ChronoField.DAY_OF_MONTH.isSupportedBy(date)) {
-            return getTimeFormat(getCurrentLang()).format(date);
-        }
-
-        return formatSpokenDate(date);
+        return NLS.fmtr("NLS.nHoursAgo")
+                  .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
+                  .format();
     }
 
     /**
