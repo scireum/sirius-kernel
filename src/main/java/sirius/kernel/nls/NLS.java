@@ -861,7 +861,7 @@ public class NLS {
 
         return formatSpokenDate(date);
     }
-    
+
     private static String formatSpokenFutureDateWithTime(Temporal date, LocalDateTime givenDateTime) {
         if (givenDateTime.isBefore(LocalDateTime.now().plusHours(1))) {
             return NLS.get("NLS.nextHour");
@@ -871,14 +871,11 @@ public class NLS {
                       .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
                       .format();
         }
-        if (LocalDateTime.now().getYear() != givenDateTime.getYear()
-            || LocalDateTime.now().getDayOfYear() != givenDateTime.getDayOfYear()) {
+        if (ChronoField.DAY_OF_MONTH.isSupportedBy(date) && !LocalDate.now().equals(LocalDate.from(date))) {
             return formatSpokenDate(date);
         }
-        
-        return NLS.fmtr("NLS.inNHours")
-                  .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
-                  .format();
+
+        return getTimeFormat(getCurrentLang()).format(date);
     }
 
     private static String formatSpokenRecentDateWithTime(LocalDateTime givenDateTime) {
