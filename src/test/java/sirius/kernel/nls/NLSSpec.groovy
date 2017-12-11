@@ -106,68 +106,29 @@ class NLSSpec extends BaseSpecification {
         result == ""
     }
 
-    def "toSpokenDate() formats today as today"() {
-        given:
-        def date = LocalDate.now()
-        when:
-        def result = NLS.toSpokenDate(date)
-        then:
-        result == "heute"
-    }
+    def "toSpokenDate() formats dates and dateTimes correctly"() {
+        expect:
+        NLS.toSpokenDate(date) == output
 
-    def "toSpokenDate() formats yesterday as yesterday"() {
-        given:
-        def date = LocalDate.now().minusDays(1)
-        def dateTime = LocalDateTime.now().minusDays(1)
-        when:
-        def result = NLS.toSpokenDate(date)
-        def resultTime = NLS.toSpokenDate(dateTime)
-        then:
-        result == "gestern"
-        resultTime == "gestern"
-    }
+        where:
+        date                                 | output
+        LocalDate.now()                      | "heute"
+        LocalDateTime.now()                  | "vor wenigen Minuten"
+        LocalDate.now().minusDays(1)         | "gestern"
+        LocalDateTime.now().minusDays(1)     | "gestern"
+        LocalDate.now().plusDays(1)          | "morgen"
+        LocalDateTime.now().plusDays(1)      | "morgen"
+        LocalDate.of(2114, 1, 1)             | "01.01.2114"
+        LocalDateTime.of(2114, 1, 1, 0, 0)   | "01.01.2114"
+        LocalDate.of(2014, 1, 1)             | "01.01.2014"
+        LocalDateTime.of(2014, 1, 1, 0, 0)   | "01.01.2014"
+        LocalDateTime.now().minusMinutes(5)  | "vor wenigen Minuten"
+        LocalDateTime.now().minusMinutes(35) | "vor 35 Minuten"
+        LocalDateTime.now().minusHours(1)    | "vor einer Stunde"
+        LocalDateTime.now().minusHours(4)    | "vor 4 Stunden"
+        LocalDateTime.now().plusMinutes(40)  | "in der nächsten Stunde"
+        LocalDateTime.now().plusHours(4)     | "in 3 Stunden" // this correctly rounds down to 3
 
-    def "toSpokenDate() formats tomorrow as tomorrow"() {
-        given:
-        def date = LocalDate.now().plusDays(1)
-        def dateTime = LocalDate.now().plusDays(1)
-        when:
-        def result = NLS.toSpokenDate(date)
-        def resultTime = NLS.toSpokenDate(dateTime)
-        then:
-        result == "morgen"
-        resultTime == "morgen"
-    }
-
-    def "toSpokenDate() formats a date in the past as date"() {
-        given:
-        def date = LocalDate.of(2014, 1, 1)
-        when:
-        def result = NLS.toSpokenDate(date)
-        then:
-        result == "01.01.2014"
-    }
-
-    def "toSpokenDate() formats a date in the future as date"() {
-        given:
-        def date = LocalDate.of(2114, 1, 1)
-        when:
-        def result = NLS.toSpokenDate(date)
-        then:
-        result == "01.01.2114"
-    }
-
-    def "toSpokenDate() formats a a date time of today correctly"() {
-        when:
-        def someMinutesAgo = LocalDateTime.now().minusMinutes(5)
-        def moreThan30MinAgo = LocalDateTime.now().minusMinutes(35)
-        def oneHourAgo = LocalDateTime.now().minusHours(1)
-        def someHoursAgo = LocalDateTime.now().minusHours(4)
-        then:
-        NLS.toSpokenDate(someMinutesAgo) == "vor wenigen Minuten"
-        NLS.toSpokenDate(moreThan30MinAgo) == "vor 35 Minuten"
-        NLS.toSpokenDate(oneHourAgo) == "vor einer Stunde"
-        NLS.toSpokenDate(someHoursAgo) == "vor 4 Stunden"
     }
 
     def "parseUserString with LocalTime parses 9:00 and 9:00:23"() {
@@ -196,20 +157,20 @@ class NLSSpec extends BaseSpecification {
         "14:30"    | new LocalTime(14, 30, 0, 0)
         "14"       | new LocalTime(14, 0, 0, 0)
     }
-    
+
     def "getMonthNameShort correctly appends the given symbol"() {
         expect:
         NLS.getMonthNameShort(month, ".") == output
 
         where:
-        month    | output
-        1        | "Jan."
-        5        | "Mai"
-        3        | "März"
-        6        | "Juni"
-        11       | "Nov."
-        12       | "Dez."
-        0        | "" 
-        13       | ""
+        month | output
+        1     | "Jan."
+        5     | "Mai"
+        3     | "März"
+        6     | "Juni"
+        11    | "Nov."
+        12    | "Dez."
+        0     | ""
+        13    | ""
     }
 }

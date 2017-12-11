@@ -505,14 +505,14 @@ public class NLS {
     public static String getMonthNameShort(int month) {
         return getMonthNameShort(month, "");
     }
-    
+
     /**
      * Returns a three letter abbreviation of the name of the given month, like <tt>"Jan"</tt>.
      * If the name is short and has at most 4 characters, the name of the given month is returned instead.
      * The given symbol is only appended if the month was abbreviated so for example you get <tt>"Jan."</tt>
      * but with <tt>"May"</tt> the symbol String is not appended.
-     * 
-     * @param month the month to be translated (January is 1, December is 12).
+     *
+     * @param month  the month to be translated (January is 1, December is 12).
      * @param symbol the symbol to append in case of abbreviation
      * @return returns the first three letters of the name, the name of the month if short enough
      * or <tt>""</tt> if the given index was invalid.
@@ -847,6 +847,38 @@ public class NLS {
     private static String formatSpokenDateWithTime(Temporal date) {
         // We have a time, perform some nice formatting...
         LocalDateTime givenDateTime = LocalDateTime.from(date);
+        if (givenDateTime.isAfter(LocalDateTime.now())) {
+            return formatSpokenFutureDateWithTime(date, givenDateTime);
+        }
+        if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
+            return formatSpokenRecentDateWithTime(givenDateTime);
+        }
+
+        if (!ChronoField.DAY_OF_MONTH.isSupportedBy(date)) {
+            // We don't have a date and the time difference is quite big -> simply format the time...
+            return getTimeFormat(getCurrentLang()).format(date);
+        }
+
+        return formatSpokenDate(date);
+    }
+
+    private static String formatSpokenFutureDateWithTime(Temporal date, LocalDateTime givenDateTime) {
+        if (givenDateTime.isBefore(LocalDateTime.now().plusHours(1))) {
+            return NLS.get("NLS.nextHour");
+        }
+        if (givenDateTime.isBefore(LocalDateTime.now().plusHours(4))) {
+            return NLS.fmtr("NLS.inNHours")
+                      .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
+                      .format();
+        }
+        if (ChronoField.DAY_OF_MONTH.isSupportedBy(date) && !LocalDate.now().equals(LocalDate.from(date))) {
+            return formatSpokenDate(date);
+        }
+
+        return getTimeFormat(getCurrentLang()).format(date);
+    }
+
+    private static String formatSpokenRecentDateWithTime(LocalDateTime givenDateTime) {
         if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(30))) {
             return NLS.get("NLS.someMinutesAgo");
         }
@@ -858,18 +890,9 @@ public class NLS {
         if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
             return NLS.get("NLS.oneHourAgo");
         }
-        if (givenDateTime.isAfter(LocalDateTime.now().minusHours(12))) {
-            return NLS.fmtr("NLS.nHoursAgo")
-                      .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
-                      .format();
-        }
-
-        // We don't have a date and the time difference is quite big -> simply format the time...
-        if (!ChronoField.DAY_OF_MONTH.isSupportedBy(date)) {
-            return getTimeFormat(getCurrentLang()).format(date);
-        }
-
-        return formatSpokenDate(date);
+        return NLS.fmtr("NLS.nHoursAgo")
+                  .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
+                  .format();
     }
 
     /**
