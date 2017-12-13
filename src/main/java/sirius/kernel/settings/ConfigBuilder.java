@@ -13,10 +13,6 @@ import java.util.Map;
 
 /**
  * Provides functionality to build a config and generate formatted HOCON text.
-<<<<<<< Updated upstream
- * <p>
-=======
->>>>>>> Stashed changes
  * <p>
  * If scopes contain more than one variable, they will be unfolded and formatted as a block. Example:
  * <pre>
@@ -45,10 +41,6 @@ public class ConfigBuilder {
 
     /**
      * Adds a variable to the config.
-<<<<<<< Updated upstream
-     * <p>
-=======
->>>>>>> Stashed changes
      * <p>
      * Note: a string value needs to be surrounded by quotes
      *
