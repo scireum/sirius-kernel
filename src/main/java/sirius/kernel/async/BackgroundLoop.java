@@ -38,6 +38,9 @@ public abstract class BackgroundLoop {
     @Part
     private Tasks tasks;
 
+    @Part
+    private Orchestration orchestration;
+
     private String executionInfo = "-";
 
     /**
@@ -92,10 +95,18 @@ public abstract class BackgroundLoop {
      */
     private void executeWork() {
         try {
-            Watch w = Watch.start();
-            LocalDateTime now = LocalDateTime.now();
-            doWork();
-            executionInfo = NLS.toUserString(now) + " (" + w.duration() + ")";
+            if (orchestration == null || orchestration.tryExecuteBackgroundLoop(getName())) {
+                try {
+                    Watch w = Watch.start();
+                    LocalDateTime now = LocalDateTime.now();
+                    doWork();
+                    executionInfo = NLS.toUserString(now) + " (" + w.duration() + ")";
+                } finally {
+                    if (orchestration != null) {
+                        orchestration.backgroundLoopCompleted(getName(), executionInfo);
+                    }
+                }
+            }
         } catch (Exception e) {
             Exceptions.handle(Tasks.LOG, e);
         }

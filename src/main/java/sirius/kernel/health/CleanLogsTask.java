@@ -31,7 +31,7 @@ public class CleanLogsTask implements EveryDay {
 
     @Override
     public String getConfigKeyName() {
-        return "logCleanupHour";
+        return "logs-cleanup";
     }
 
     @Override

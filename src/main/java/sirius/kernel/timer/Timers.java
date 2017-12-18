@@ -11,6 +11,7 @@ package sirius.kernel.timer;
 import com.google.common.collect.Lists;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
+import sirius.kernel.async.Orchestration;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Watch;
@@ -27,7 +28,9 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -51,12 +54,15 @@ public class Timers implements Lifecycle {
     protected static final Log LOG = Log.get("timer");
     private static final String TIMER = "timer";
 
-    private static final String TIMER_DAILY_PREFIX = "timer.daily.";
+    public static final String TIMER_DAILY_PREFIX = "timer.daily.";
 
     private static final int TEN_SECONDS_IN_MILLIS = 10000;
 
     @Part
     private Tasks tasks;
+
+    @Part
+    private Orchestration orchestration;
 
     @Parts(EveryTenSeconds.class)
     private PartCollection<EveryTenSeconds> everyTenSeconds;
@@ -123,7 +129,7 @@ public class Timers implements Lifecycle {
                 if (TimeUnit.MINUTES.convert(System.currentTimeMillis() - lastHourExecution, TimeUnit.MILLISECONDS)
                     >= 60) {
                     runOneHourTimers();
-                    runEveryDayTimers(false);
+                    runEveryDayTimers(LocalDateTime.now().getHour());
                 }
             } catch (Exception t) {
                 Exceptions.handle(LOG, t);
@@ -372,22 +378,38 @@ public class Timers implements Lifecycle {
     /**
      * Executes all daily timers (implementing <tt>EveryDay</tt>) if applicable, or if outOfASchedule is <tt>true</tt>.
      *
-     * @param outOfSchedule determines if the 'timers.daily.[configKeyName]' should be checked if now is the right
-     *                      hour of day to execute this task, or if it should be executed in any case (<tt>true</tt>).
+     * @param currentHour determines the current hour. Most probably this will be wall-clock time. However, for
+     *                    out-of-schedule eecution, this can be set to any value.
      */
-    public void runEveryDayTimers(boolean outOfSchedule) {
-        for (final EveryDay task : everyDay.getParts()) {
-            if (!Sirius.getSettings().getConfig().hasPath(TIMER_DAILY_PREFIX + task.getConfigKeyName())) {
-                LOG.WARN("Skipping daily timer %s as config key '%s' is missing!",
-                         task.getClass().getName(),
-                         TIMER_DAILY_PREFIX + task.getConfigKeyName());
-            } else {
-                if (outOfSchedule
-                    || Sirius.getSettings().getInt(TIMER_DAILY_PREFIX + task.getConfigKeyName()) == LocalTime.now()
-                                                                                                             .getHour()) {
-                    executeTask(task);
-                }
-            }
+    public void runEveryDayTimers(int currentHour) {
+        for (final EveryDay task : getDailyTasks()) {
+            rundailyTimer(currentHour, task);
+        }
+    }
+
+    /**
+     * Returns all known daily tasks.
+     *
+     * @return a collection of all known daily tasks
+     */
+    public Collection<EveryDay> getDailyTasks() {
+        return Collections.unmodifiableCollection(everyDay.getParts());
+    }
+
+    public void rundailyTimer(int currentHour, EveryDay task) {
+        if (!Sirius.getSettings().getConfig().hasPath(TIMER_DAILY_PREFIX + task.getConfigKeyName())) {
+            LOG.WARN("Skipping daily timer %s as config key '%s' is missing!",
+                     task.getClass().getName(),
+                     TIMER_DAILY_PREFIX + task.getConfigKeyName());
+            return;
+        }
+
+        if (Sirius.getSettings().getInt(TIMER_DAILY_PREFIX + task.getConfigKeyName()) != currentHour) {
+            return;
+        }
+
+        if (orchestration == null || orchestration.shouldRunDailyTask(task.getConfigKeyName())) {
+            executeTask(task);
         }
     }
 }
