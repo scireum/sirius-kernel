@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Duration;
+import java.util.concurrent.Semaphore;
 
 /**
  * A robust wrapper around calls to external programs.
@@ -42,19 +43,21 @@ public class Exec {
         private final InputStream stream;
         private final StringBuffer logger;
         private final ValueHolder<IOException> exHolder = new ValueHolder<>(null);
+        private final Semaphore completionSynchronizer;
 
-        StreamEater(InputStream stream, StringBuffer log) {
+        StreamEater(InputStream stream, StringBuffer log, Semaphore completionSynchronizer)
+                throws InterruptedException {
             this.stream = stream;
-            logger = log;
+            this.logger = log;
+            this.completionSynchronizer = completionSynchronizer;
+            this.completionSynchronizer.acquire();
         }
 
         @Override
         public void run() {
-            try {
+            try (InputStreamReader isr = new InputStreamReader(stream); BufferedReader br = new BufferedReader(isr)) {
                 Thread.currentThread()
                       .setName(StreamEater.class.getSimpleName() + "-" + Thread.currentThread().getId());
-                InputStreamReader isr = new InputStreamReader(stream);
-                BufferedReader br = new BufferedReader(isr);
                 String line = br.readLine();
                 while (line != null) {
                     logger.append(line);
@@ -65,18 +68,22 @@ public class Exec {
             } catch (IOException e) {
                 logger.append(NLS.toUserString(e));
                 exHolder.set(e);
+            } finally {
+                this.completionSynchronizer.release();
             }
         }
 
         /**
          * Creates a new stream eater logging to the given buffer for the given stream.
          *
-         * @param stream the stream to read
-         * @param logger the target for all characters read
+         * @param stream                 the stream to read
+         * @param logger                 the target for all characters read
+         * @param completionSynchronizer a semaphore where a permit is acquired and released once all output hase been processed
          * @return a new stream eater which is already running in a separate thread
          */
-        static StreamEater eat(InputStream stream, StringBuffer logger) {
-            StreamEater eater = new StreamEater(stream, logger);
+        static StreamEater eat(InputStream stream, StringBuffer logger, Semaphore completionSynchronizer)
+                throws InterruptedException {
+            StreamEater eater = new StreamEater(stream, logger, completionSynchronizer);
             new Thread(eater).start();
             return eater;
         }
@@ -128,9 +135,14 @@ public class Exec {
         StringBuffer logger = new StringBuffer();
         try (Operation op = new Operation(() -> command, Duration.ofMinutes(5))) {
             Process p = Runtime.getRuntime().exec(command);
-            StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger);
-            StreamEater outEater = StreamEater.eat(p.getInputStream(), logger);
+            Semaphore completionSynchronizer = new Semaphore(2);
+            StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger, completionSynchronizer);
+            StreamEater outEater = StreamEater.eat(p.getInputStream(), logger, completionSynchronizer);
             doExec(ignoreExitCodes, logger, p);
+
+            // Wait for the stream eaters to complete...
+            completionSynchronizer.acquire(2);
+
             if (errEater.exHolder.get() != null) {
                 throw new ExecException(errEater.exHolder.get(), logger.toString());
             }
