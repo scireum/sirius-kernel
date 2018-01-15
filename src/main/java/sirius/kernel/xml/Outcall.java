@@ -29,6 +29,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Used to call an URL and send or receive data.
@@ -38,6 +39,8 @@ import java.util.Map;
  */
 public class Outcall {
 
+    private static final int DEFAULT_CONNECT_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
+    private static final int DEFAULT_READ_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
     private HttpURLConnection connection;
     private Charset charset = Charsets.UTF_8;
 
@@ -51,6 +54,8 @@ public class Outcall {
         connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
         connection.setDoOutput(true);
+        connection.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
+        connection.setReadTimeout(DEFAULT_READ_TIMEOUT);
     }
 
     /**
