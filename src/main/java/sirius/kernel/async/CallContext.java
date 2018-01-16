@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A CallContext is attached to each thread managed by sirius.
@@ -59,7 +60,7 @@ public class CallContext {
     private static String nodeName = null;
     private static Counter interactionCounter = new Counter();
 
-    private Map<String, String> mdc = Maps.newLinkedHashMap();
+    private Map<String, String> mdc = new ConcurrentHashMap<>();
 
     /*
      * Needs to be synchronized as a CallContext might be shared across several sub tasks
@@ -184,7 +185,7 @@ public class CallContext {
     public CallContext fork() {
         CallContext newCtx = initialize(false, mdc.get(MDC_FLOW));
         newCtx.watch = watch;
-        newCtx.mdc.put(MDC_PARENT, mdc.get(TaskContext.MDC_SYSTEM));
+        newCtx.addToMDC(MDC_PARENT, mdc.get(TaskContext.MDC_SYSTEM));
         subContext.forEach((key, value) -> newCtx.subContext.put(key, value.fork()));
         newCtx.lang = lang;
         newCtx.fallbackLang = fallbackLang;
