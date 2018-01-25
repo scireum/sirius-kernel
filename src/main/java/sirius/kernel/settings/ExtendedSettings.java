@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * Provides an advanced wrapper for a {@link Config} object, which supports to represent inner maps as {@link Extension
@@ -63,6 +64,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ExtendedSettings extends Settings {
 
+    /**
+     * Provides a regular expression which verifies if an extension name is well formed.
+     */
+    public static final Pattern VALID_EXTENSION_ID = Pattern.compile("[a-z0-9\\-]+");
+
     /*
      * Used as cache for already loaded extension lists
      */
@@ -86,13 +92,9 @@ public class ExtendedSettings extends Settings {
      */
     @Nullable
     public Extension getExtension(String type, String id) {
-        if (!id.matches("[a-z0-9\\-]+")) {
-            Extension.LOG.WARN(
-                    "Bad extension id detected: '%s' (for type: %s). Names should only consist of lowercase letters,"
-                    + " "
-                    + "digits or '-'",
-                    id,
-                    type);
+        if (!VALID_EXTENSION_ID.matcher(id).matches()) {
+            Extension.LOG.WARN("Bad extension id detected: '%s' (for type: %s). Names should only consist of"
+                               + " lowercase letters, digits or '-'", id, type);
         }
 
         Extension result = getExtensionMap(type).get(id);
