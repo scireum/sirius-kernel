@@ -53,25 +53,25 @@ public class Composable implements Transformable {
     }
 
     @Override
-    public boolean is(@Nonnull Class<?> type) {
-        if (source.getClass().isAssignableFrom(type)) {
+    public boolean is(@Nonnull Class<?> adapterType) {
+        if (adapterType.isAssignableFrom(source.getClass())) {
             return true;
         }
 
         if (components != null) {
-            Object result = components.get(type);
+            Object result = components.get(adapterType);
             if (result != null) {
                 return result != NULL;
             }
         }
 
-        return tryAs(type).isPresent();
+        return tryAs(adapterType).isPresent();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <A> A as(@Nonnull Class<A> adapterType) {
-        if (source.getClass().isAssignableFrom(adapterType)) {
+        if (adapterType.isAssignableFrom(source.getClass())) {
             return (A) this;
         }
 
@@ -85,7 +85,7 @@ public class Composable implements Transformable {
     @SuppressWarnings("unchecked")
     @Override
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
-        if (source.getClass().isAssignableFrom(adapterType)) {
+        if (adapterType.isAssignableFrom(source.getClass())) {
             return Optional.of((A) this);
         }
 
