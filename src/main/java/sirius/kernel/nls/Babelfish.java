@@ -19,11 +19,7 @@ import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
@@ -151,7 +147,7 @@ public class Babelfish {
         // Load core translations and keep customizations in a separate list as we have to work out the
         // correct ordering first...
         List<Matcher> customizations = Lists.newArrayList();
-        classpath.find(PROPERTIES_FILE).forEach(value -> {
+        getPropertyFiles(classpath).forEach(value -> {
             if (Sirius.isConfigurationResource(value.group())) {
                 customizations.add(value);
             } else {
@@ -168,6 +164,24 @@ public class Babelfish {
 
         // Apply translations in correct order
         customizations.forEach(this::loadMatchedResource);
+    }
+
+    /**
+     * Finds all property files to be used for the translations.
+     * <p>
+     * If the project is started as test all property files are loaded, even if they belong to an inactive customization.
+     * This enables the usage of {@link NLS} within customization java classes without failing tests because of
+     * {@link Babelfish#reportMissingTranslations()}.
+     *
+     * @param classpath the classpath used to discover all relevant properties files
+     * @return a stream of matching elements
+     */
+    private Stream<Matcher> getPropertyFiles(final Classpath classpath) {
+        if (Sirius.isStartedAsTest()) {
+            return classpath.getComponentRoots().stream().flatMap(classpath::scan).map(PROPERTIES_FILE::matcher).filter(Matcher::matches);
+        }
+
+        return classpath.find(PROPERTIES_FILE);
     }
 
     private void loadMatchedResource(Matcher value) {

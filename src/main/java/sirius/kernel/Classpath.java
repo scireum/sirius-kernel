@@ -105,10 +105,12 @@ public class Classpath {
         }).map(pattern::matcher).filter(Matcher::matches);
     }
 
-    /*
+    /**
      * Scans all files below the given root URL. This can handle file:// and jar:// URLs
+     *
+     * @param url the root url to scan
      */
-    private Stream<String> scan(URL url) {
+    public Stream<String> scan(URL url) {
         List<String> result = new ArrayList<>();
         if ("file".equals(url.getProtocol())) {
             try {
