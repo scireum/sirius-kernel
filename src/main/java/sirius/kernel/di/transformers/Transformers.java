@@ -56,6 +56,11 @@ public class Transformers {
 
     /**
      * Tries to transform the given object to match the given target type.
+     * <p>
+     * If the given source cannot be directly be transformed into the target class and the source object's class
+     * is not {@link Object} or the source object's super class is {@link Object}, another transformation is tried
+     * with its super class, however, only {@link Transformer transformers} with the flag {@link Transformer#supportChildClasses()}
+     * are used in case a transformation is not desired in this case.
      *
      * @param source the object to transform
      * @param target the target type
@@ -64,14 +69,28 @@ public class Transformers {
      */
     @SuppressWarnings("unchecked")
     public <T> T make(Object source, Class<T> target) {
-        for (Transformer<?, ?> adapterFactory : getFactories(source.getClass(), target)) {
+        T firstTransformResult = makeWithClass(source, source.getClass(), target, false);
+        if (firstTransformResult != null) {
+            return firstTransformResult;
+        }
+
+        if (source.getClass() == Object.class || source.getClass().getSuperclass() == Object.class) {
+            return null;
+        }
+        return makeWithClass(source, source.getClass().getSuperclass(), target, true);
+    }
+
+    private <T> T makeWithClass(Object sourceObject, Class<?> sourceClass, Class<T> target, boolean superclass) {
+        for (Transformer<?, ?> adapterFactory : getFactories(sourceClass, target)) {
             Transformer<? super Object, T> next = (Transformer<? super Object, T>) adapterFactory;
-            T result = next.make(source);
+            if (superclass && !next.supportChildClasses()) {
+                continue;
+            }
+            T result = next.make(sourceObject);
             if (result != null) {
                 return result;
             }
         }
-
         return null;
     }
 }
