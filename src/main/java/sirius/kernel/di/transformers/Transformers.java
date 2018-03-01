@@ -35,6 +35,9 @@ public class Transformers {
             MultiMap<Tuple<Class<?>, Class<?>>, Transformer<?, ?>> result = MultiMap.createOrdered();
             for (Transformer<?, ?> factory : factoryList) {
                 result.put(Tuple.create(factory.getSourceClass(), factory.getTargetClass()), factory);
+                factory.additionalSourceClasses(additionalClass -> result.put(Tuple.create(additionalClass,
+                                                                                           factory.getTargetClass()),
+                                                                              factory));
             }
             factories = result;
         }

@@ -12,6 +12,7 @@ import sirius.kernel.di.std.Priorized;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.function.Consumer;
 
 /**
  * Transforms a <tt>Transformable</tt> into a given target type.
@@ -32,6 +33,17 @@ public interface Transformer<S, T> extends Priorized {
     @Override
     default int getPriority() {
         return Priorized.DEFAULT_PRIORITY;
+    }
+
+    /**
+     * Provides a {@link Consumer} which takes additional source classes which can be transformed via the
+     * transformer into the target class. The additional source classes have to extend the provided source
+     * type.
+     *
+     * @param additionalSourceClassesConsumer consumer accepting additional source classes
+     */
+    default void additionalSourceClasses(Consumer<Class<? extends S>> additionalSourceClassesConsumer) {
+        // Accept nothing in addition by default
     }
 
     /**
