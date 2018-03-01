@@ -35,6 +35,18 @@ public interface Transformer<S, T> extends Priorized {
     }
 
     /**
+     * Determines if child classes of the provided source class are also supported by this transformer.
+     * <p>
+     * In order to avoid unwanted transformations, this can be set to false. In this case, only the matching
+     * class to the provided source class is transformed.
+     *
+     * @return <tt>true</tt> if child classes should also be transformed via this transformer, <tt>false</tt> otherwise
+     */
+    default boolean supportChildClasses() {
+        return true;
+    }
+
+    /**
      * Returns the source type for which this factory can perform transformations.
      *
      * @return the source type for which transformations are supported.
