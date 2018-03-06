@@ -56,6 +56,11 @@ public class Transformers {
 
     /**
      * Tries to transform the given object to match the given target type.
+     * <p>
+     * The class is only transformed if it implements the {@link Transformable} interface.
+     * <p>
+     * Transformations are done recursively until a matching transformation happens or the class tried
+     * to transform does not implement the {@link Transformable} interface.
      *
      * @param source the object to transform
      * @param target the target type
@@ -64,14 +69,26 @@ public class Transformers {
      */
     @SuppressWarnings("unchecked")
     public <T> T make(Object source, Class<T> target) {
-        for (Transformer<?, ?> adapterFactory : getFactories(source.getClass(), target)) {
+        Class<?> classToTransform = source.getClass();
+
+        while (Transformable.class.isAssignableFrom(classToTransform)) {
+            T result = makeWithClass(source, classToTransform, target);
+            if (result != null) {
+                return result;
+            }
+            classToTransform = classToTransform.getSuperclass();
+        }
+        return null;
+    }
+
+    private <T> T makeWithClass(Object sourceObject, Class<?> sourceClass, Class<T> target) {
+        for (Transformer<?, ?> adapterFactory : getFactories(sourceClass, target)) {
             Transformer<? super Object, T> next = (Transformer<? super Object, T>) adapterFactory;
-            T result = next.make(source);
+            T result = next.make(sourceObject);
             if (result != null) {
                 return result;
             }
         }
-
         return null;
     }
 }
