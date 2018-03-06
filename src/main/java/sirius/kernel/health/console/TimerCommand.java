@@ -8,6 +8,7 @@
 
 package sirius.kernel.health.console;
 
+import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Values;
 import sirius.kernel.di.std.Part;
@@ -16,6 +17,7 @@ import sirius.kernel.timer.EveryDay;
 import sirius.kernel.timer.Timers;
 
 import javax.annotation.Nonnull;
+import java.util.Set;
 
 /**
  * Console command which reports the last execution of the timer tasks.
@@ -27,13 +29,21 @@ public class TimerCommand implements Command {
 
     private static final String LINE_FORMAT = "%20s %-30s";
 
+    private static final Set<String> ACCEPTED_PARAMS =
+            Sets.newHashSet("all", "oneMinute", "tenMinutes", "oneHour", "everyDay");
+
+    private static final String USAGE = "Usage: timer all|oneMinute|tenMinutes|oneHour|everyDay <hour>";
+
     @Part
     private Timers ts;
 
     @Override
     public void execute(Output output, String... params) throws Exception {
         if (params.length == 0) {
-            output.line("Usage: timer all|oneMinute|tenMinutes|oneHour|everyDay <hour>");
+            output.line(USAGE);
+        } else if (!ACCEPTED_PARAMS.contains(params[0])) {
+            output.apply("'%s' is not an accepted parameter!", params[0]);
+            output.line(USAGE);
         } else {
             if ("all".equalsIgnoreCase(params[0]) || "oneMinute".equalsIgnoreCase(params[0])) {
                 output.line("Executing one minute timers...");
