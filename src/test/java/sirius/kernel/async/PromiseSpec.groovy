@@ -17,7 +17,7 @@ class PromiseSpec extends BaseSpecification {
 
     def "Multiple Callbacks work on Promises when successfully completed"() {
         given: "a promise"
-        Promise<String> test = Tasks.promise()
+        Promise<String> test = new Promise()
         and: "multiple handlers"
         ValueHolder<String> resultHolder1 = ValueHolder.of(null)
         ValueHolder<String> resultHolder2 = ValueHolder.of(null)
@@ -37,7 +37,7 @@ class PromiseSpec extends BaseSpecification {
 
     def "Callbacks on an already completed promise work"() {
         given: "a promise"
-        Promise<String> test = Tasks.promise()
+        Promise<String> test = new Promise()
         and: "a handler"
         ValueHolder<String> resultHolder = ValueHolder.of(null)
         when: "we successfully complete the promise"
@@ -50,7 +50,7 @@ class PromiseSpec extends BaseSpecification {
 
     def "Multiple Callbacks work on Promises when failing"() {
         given: "a promise"
-        Promise<String> test = Tasks.promise()
+        Promise<String> test = new Promise()
         and: "and a test exception"
         def exception = new Exception()
         and: "and multiple handlers"
@@ -72,7 +72,7 @@ class PromiseSpec extends BaseSpecification {
 
     def "Callbacks on an already failed promise work"() {
         given: "a promise"
-        Promise<String> test = Tasks.promise()
+        Promise<String> test = new Promise()
         and: "a test exception"
         def exception = new Exception()
         and: "mu"
@@ -89,7 +89,7 @@ class PromiseSpec extends BaseSpecification {
 
     def "Mapping Promises work"() {
         given: "a promise accepting some input"
-        Promise<String> input = Tasks.promise()
+        Promise<String> input = new Promise()
         and: "a promise which provides output based in the input promise"
         Promise<String> output = input.map({ s -> s.toUpperCase() } as Function)
         and: "a handler"
@@ -104,7 +104,7 @@ class PromiseSpec extends BaseSpecification {
 
     def "Exception handling when mapping Promises work"() {
         given: "a promise accepting some input"
-        Promise<String> input = Tasks.promise()
+        Promise<String> input = new Promise()
         and: "a promise which provides output based in the input promise"
         Promise<String> output = input.map({ s -> s.toUpperCase() } as Function)
         and: "a handler"
@@ -121,7 +121,7 @@ class PromiseSpec extends BaseSpecification {
 
     def "A completed Promise with a value and error is marked as non successful and failed"() {
         given: "a promise"
-        Promise<String> test = Tasks.promise()
+        Promise<String> test = new Promise()
         and: "and a test exception"
         def exception = new Exception()
         and: "add a dummy handler so that no output is written into the console"
