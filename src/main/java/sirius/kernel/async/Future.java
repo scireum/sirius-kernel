@@ -22,8 +22,10 @@ public class Future extends Promise<Object> {
      * This is a shortcut for {@code success(null)}, which further shows, that the matter of successful
      * completion is important, not the resulting object of a computation.
      */
-    public void success() {
+    public Future success() {
         success(null);
+
+        return this;
     }
 
     /**

@@ -47,7 +47,7 @@ public class Barrier {
     private AtomicInteger promisesMade = new AtomicInteger(0);
     private AtomicInteger promisesOpen = new AtomicInteger(0);
     private Semaphore semaphore = new Semaphore(0);
-    private Future completionFuture = Tasks.future();
+    private Future completionFuture = new Future();
 
     /**
      * Creates a new barrier.
@@ -69,7 +69,7 @@ public class Barrier {
     public void add(Promise<?> promise) {
         // Reset internal future...
         if (completionFuture.isCompleted()) {
-            completionFuture = Tasks.future();
+            completionFuture = new Future();
         }
         promisesMade.incrementAndGet();
         promisesOpen.incrementAndGet();
