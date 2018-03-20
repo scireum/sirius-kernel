@@ -68,7 +68,7 @@ public class ExecutionBuilder {
         /**
          * Used to communicate the completion / abort of the task
          */
-        Future promise = Tasks.future();
+        Future promise = new Future();
 
         /**
          * Contains the inertnally computed task number

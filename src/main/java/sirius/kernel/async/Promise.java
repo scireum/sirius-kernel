@@ -63,11 +63,13 @@ public class Promise<V> {
      *
      * @param value the value to be used as promised result.
      */
-    public void success(@Nullable final V value) {
+    public Promise<V> success(@Nullable final V value) {
         this.value = new ValueHolder<>(value);
         for (final CompletionHandler<V> handler : handlers) {
             completeHandler(value, handler);
         }
+
+        return this;
     }
 
     /*
@@ -86,16 +88,20 @@ public class Promise<V> {
      *
      * @param exception the error to be used as reason for failure.
      */
-    public void fail(@Nonnull final Throwable exception) {
+    public Promise<V> fail(@Nonnull final Throwable exception) {
         this.failure = exception;
+
         if (logErrors) {
             Exceptions.handle(Tasks.LOG, exception);
         } else if (Tasks.LOG.isFINE() && !(exception instanceof HandledException)) {
             Tasks.LOG.FINE(Exceptions.createHandled().error(exception));
         }
+
         for (final CompletionHandler<V> handler : handlers) {
             failHandler(exception, handler);
         }
+
+        return this;
     }
 
     /*

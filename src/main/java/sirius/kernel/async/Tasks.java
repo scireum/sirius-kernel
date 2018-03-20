@@ -305,7 +305,7 @@ public class Tasks implements Lifecycle {
      * @return a promise which will either be eventually supplied with the result of the computation or with an error
      */
     public <V> Promise<V> fork(String category, final Supplier<V> computation) {
-        final Promise<V> result = promise();
+        final Promise<V> result = new Promise<>();
 
         executor(category).dropOnOverload(() -> result.fail(new RejectedExecutionException())).fork(() -> {
             try {
@@ -315,52 +315,6 @@ public class Tasks implements Lifecycle {
             }
         });
 
-        return result;
-    }
-
-    /**
-     * Creates a new promise of the given type.
-     *
-     * @param <V> the type of the result which is promised.
-     * @return a new <tt>Promise</tt> which can be used to represent an asynchronously computed value.
-     */
-    public static <V> Promise<V> promise() {
-        return new Promise<>();
-    }
-
-    /**
-     * Creates a new future, which is just an untyped <tt>Promise</tt> where the completion is more important than
-     * the actual result of the computation.
-     *
-     * @return a new <tt>Future</tt> which can be used to wait for a computation without a specific result.
-     */
-    public static Future future() {
-        return new Future();
-    }
-
-    /**
-     * Generates a promise which is immediately successful.
-     *
-     * @param value the value which is used as promised result
-     * @param <V>   the type of the promise (or its promised value)
-     * @return a promise which is already completed with the given value.
-     */
-    public static <V> Promise<V> success(@Nullable V value) {
-        Promise<V> result = promise();
-        result.success(value);
-        return result;
-    }
-
-    /**
-     * Generates a promise which has immediately failed.
-     *
-     * @param ex  the error which is used as failure
-     * @param <V> the type of the promise (or its promised value)
-     * @return a promise which is already completed, but failed with the given error.
-     */
-    public static <V> Promise<V> fail(Throwable ex) {
-        Promise<V> result = promise();
-        result.fail(ex);
         return result;
     }
 
@@ -377,7 +331,7 @@ public class Tasks implements Lifecycle {
      * @return the promise which will complete if all promises completed or if at least on failed.
      */
     public static <V> Promise<List<V>> sequence(List<Promise<V>> list) {
-        final Promise<List<V>> result = promise();
+        final Promise<List<V>> result = new Promise<>();
 
         // Create a list with the correct length
         final List<V> resultList = new ArrayList<>();
