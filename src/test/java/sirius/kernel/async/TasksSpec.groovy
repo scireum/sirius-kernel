@@ -23,7 +23,7 @@ class TasksSpec extends BaseSpecification {
 
     def "An executor executes work in the calling thread when full"() {
         given: "a future the synchronize the threads"
-        Future thread2Finished = Tasks.future()
+        Future thread2Finished = new Future()
         and: "a place to store the thread id of the thread which executes the 2nd task"
         ValueHolder<Long> executorThread = ValueHolder.of(null)
         when: "we start one tasks which blocks the executor"
@@ -42,7 +42,7 @@ class TasksSpec extends BaseSpecification {
 
     def "An executor drops tasks (if possible) when full"() {
         given: "a future the synchronize the threads"
-        Future thread2Finished = Tasks.future()
+        Future thread2Finished = new Future()
         and: "a place to store the fact that the task was dropped"
         ValueHolder<Boolean> dropped = ValueHolder.of(null)
         when: "we start one tasks which blocks the executor"
@@ -70,8 +70,8 @@ class TasksSpec extends BaseSpecification {
 
     def "An executor uses its work queue when full"() {
         given: "futures the synchronize the threads"
-        Future thread2Started = Tasks.future()
-        Future thread2Finished = Tasks.future()
+        Future thread2Started = new Future()
+        Future thread2Finished = new Future()
         and: "a place to store the thread ids which executed the task"
         ValueHolder<Long> task1Thread = ValueHolder.of(null)
         ValueHolder<Long> task2Thread = ValueHolder.of(null)
@@ -96,7 +96,7 @@ class TasksSpec extends BaseSpecification {
 
     def "An executor uses parrallel threads if possible and required"() {
         given: "a future the synchronize the threads"
-        Future thread2Finished = Tasks.future()
+        Future thread2Finished = new Future()
         and: "a place to store the thread ids which executed the task"
         ValueHolder<Long> task1Thread = ValueHolder.of(null)
         ValueHolder<Long> task2Thread = ValueHolder.of(null)
