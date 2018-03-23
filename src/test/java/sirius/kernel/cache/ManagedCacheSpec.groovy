@@ -19,7 +19,7 @@ class ManagedCacheSpec extends BaseSpecification {
         when:
         cache.put("key1", "value1")
         cache.put("key2", "value2")
-        Wait.seconds(11)
+        Wait.millis(1001)
         cache.put("key3", "value3")
         cache.put("key4", "value4")
         then:
