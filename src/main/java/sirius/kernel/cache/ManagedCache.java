@@ -144,7 +144,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         Iterator<Entry<K, CacheEntry<K, V>>> iter = data.asMap().entrySet().iterator();
         while (iter.hasNext()) {
             Entry<K, CacheEntry<K, V>> next = iter.next();
-            if (next.getValue().getMaxAge() > now) {
+            if (next.getValue().getMaxAge() < now) {
                 iter.remove();
                 numEvicted++;
             }
