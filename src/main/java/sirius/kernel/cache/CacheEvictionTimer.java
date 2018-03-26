@@ -28,7 +28,7 @@ public class CacheEvictionTimer implements EveryTenMinutes {
     }
 
     private void runEviction() {
-        for (ManagedCache<?, ?> cache : CacheManager.getCaches()) {
+        for (Cache<?, ?> cache : CacheManager.getCaches()) {
             CacheManager.LOG.FINE("Running cache eviction for: %s", cache.getName());
             cache.updateStatistics();
             cache.runEviction();

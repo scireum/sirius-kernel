@@ -130,7 +130,8 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         return (Date) lastEvictionRun.clone();
     }
 
-    protected void runEviction() {
+    @Override
+    public void runEviction() {
         if (data == null) {
             return;
         }
@@ -154,7 +155,8 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         }
     }
 
-    protected void updateStatistics() {
+    @Override
+    public void updateStatistics() {
         usesHistory.add(getUses());
         if (usesHistory.size() > MAX_HISTORY) {
             usesHistory.remove(0);
