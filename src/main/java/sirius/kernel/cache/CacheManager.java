@@ -33,7 +33,7 @@ public class CacheManager {
     /**
      * Logged used by the caching system
      */
-    public static final Log LOG = Log.get("cache");
+    protected static final Log LOG = Log.get("cache");
 
     /**
      * Lists all known caches.
