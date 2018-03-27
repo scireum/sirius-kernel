@@ -45,12 +45,8 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.time.temporal.TemporalAccessor;
+import java.util.*;
 
 /**
  * Native Language Support used by the framework.
@@ -1267,5 +1263,143 @@ public class NLS {
         return Amount.of(sizeAsFloat).toSmartRoundedString(NumberFormat.MACHINE_TWO_DECIMAL_PLACES)
                + " "
                + UNITS[index];
+    }
+
+    /**
+     * Returns formatted date for the given epoch milliseconds in the current language.
+     *
+     * @param millis the number of epoch milliseconds
+     * @return a formatted date string
+     * @see #getCurrentLang()
+     * @see #formatDate(long,String)
+     */
+    public static String formatDate(long millis) {
+        return formatDate(millis, getCurrentLang());
+    }
+
+    /**
+     * Returns formatted date for the given date struct in the current language.
+     *
+     * @param date the date struct
+     * @return a formatted date string
+     * @see #getCurrentLang()
+     * @see #formatDate(Date,String)
+     */
+    public static String formatDate(Date date) {
+        return formatDate(date, getCurrentLang());
+    }
+
+    /**
+     * Returns formatted date for the given temporal accessor in the current language.
+     *
+     * @param tac the temporal accessor
+     * @return a formatted date string
+     * @see #getCurrentLang()
+     * @see #formatDate(TemporalAccessor,String)
+     */
+    public static String formatDate(TemporalAccessor tac) {
+        return formatDate(tac, getCurrentLang());
+    }
+
+    /**
+     * Returns formatted date for the given epoch milliseconds in the given language.
+     *
+     * @param millis the number of epoch milliseconds
+     * @param lang the language to use
+     * @return a formatted date string
+     */
+    public static String formatDate(long millis, String lang) {
+        return formatDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()), lang);
+    }
+
+    /**
+     * Returns formatted date for the given date struct in the given language.
+     *
+     * @param date the date struct
+     * @param lang the language to use
+     * @return a formatted date string
+     */
+    public static String formatDate(Date date, String lang) {
+        return formatDate(date.getTime(), lang);
+    }
+
+    /**
+     * Returns formatted date for the given temporal accessor in the given language.
+     *
+     * @param tac the temporal accessor
+     * @param lang the language to use
+     * @return a formatted date string
+     */
+    public static String formatDate(TemporalAccessor tac, String lang) {
+        return getDateFormat(lang).format(tac);
+    }
+
+    /**
+     * Returns formatted time for the given epoch milliseconds in the current language.
+     *
+     * @param millis the number of epoch milliseconds
+     * @return a formatted time string
+     * @see #getCurrentLang()
+     * @see #formatTime(long,String)
+     */
+    public static String formatTime(long millis) {
+        return formatTime(millis, getCurrentLang());
+    }
+
+    /**
+     * Returns formatted time for the given date struct in the current language.
+     *
+     * @param date the date struct
+     * @return a formatted time string
+     * @see #getCurrentLang()
+     * @see #formatTime(Date,String)
+     */
+    public static String formatTime(Date date) {
+        return formatTime(date, getCurrentLang());
+    }
+
+    /**
+     * Returns formatted time for the given temporal accessor in the current language.
+     *
+     * @param tac the temporal accessor
+     * @return a formatted time string
+     * @see #getCurrentLang()
+     * @see #formatTime(TemporalAccessor,String)
+     */
+    public static String formatTime(TemporalAccessor tac) {
+        return formatTime(tac, getCurrentLang());
+    }
+
+    /**
+     * Returns formatted time for the given epoch milliseconds in the given language.
+     *
+     * @param millis the number of epoch milliseconds
+     * @param lang the language to use
+     * @return a formatted time string
+     */
+    public static String formatTime(long millis, String lang) {
+        return formatTime(LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()), lang);
+    }
+
+    /**
+     * Returns formatted time for the given epoch milliseconds in the given language.
+     *
+     * @param date the date struct
+     * @param lang the language to use
+     * @return a formatted time string
+     */
+    public static String formatTime(Date date, String lang) {
+        return formatTime(date.getTime(), lang);
+    }
+
+    /**
+     * Returns formatted time for the given epoch milliseconds in the given language.
+     *
+     * @param tac the temporal accessor
+     * @param lang the language to use
+     * @return a formatted time string
+     */
+    public static String formatTime(TemporalAccessor tac, String lang) {
+        return getTimeFormat(lang).format(tac);
     }
 }
