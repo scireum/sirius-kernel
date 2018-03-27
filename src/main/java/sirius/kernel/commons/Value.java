@@ -843,7 +843,7 @@ public class Value {
             return ((LocalDateTime) data).toLocalDate();
         }
         if (is(ZonedDateTime.class)) {
-            return ((ZonedDateTime) data).toLocalDate();
+            return ((ZonedDateTime) data).withZoneSameInstant(ZoneId.systemDefault()).toLocalDate();
         }
         if (is(Date.class)) {
             return Instant.ofEpochMilli(((Date) data).getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -894,7 +894,7 @@ public class Value {
             return ((LocalTime) data).atDate(LocalDate.now());
         }
         if (is(ZonedDateTime.class)) {
-            return ((ZonedDateTime) data).toLocalDateTime();
+            return ((ZonedDateTime) data).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
         }
         if (is(Date.class)) {
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(((Date) data).getTime()), ZoneId.systemDefault());
@@ -944,7 +944,7 @@ public class Value {
             return (LocalTime) data;
         }
         if (is(ZonedDateTime.class)) {
-            return ((ZonedDateTime) data).toLocalTime();
+            return ((ZonedDateTime) data).withZoneSameInstant(ZoneId.systemDefault()).toLocalTime();
         }
         if (is(Date.class)) {
             return LocalDateTime.from(Instant.ofEpochMilli(((Date) data).getTime())).toLocalTime();
