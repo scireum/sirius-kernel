@@ -49,6 +49,15 @@ public class CacheManager {
     }
 
     /**
+     * Adds a cache to the internal cache list.
+     *
+     * @param cache the cache to be added.
+     */
+    public static void addCache(Cache<?, ?> cache) {
+        caches.add(cache);
+    }
+
+    /**
      * Returns a list of all known caches
      *
      * @return a list of all caches created so far
