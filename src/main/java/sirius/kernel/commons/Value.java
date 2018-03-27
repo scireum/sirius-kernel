@@ -71,6 +71,8 @@ public class Value {
     public static Value of(@Nullable Object data) {
         if (data == null) {
             return EMPTY;
+        } else if (data instanceof Value) {
+            return (Value) data;
         }
         Value val = new Value();
         val.data = data;
