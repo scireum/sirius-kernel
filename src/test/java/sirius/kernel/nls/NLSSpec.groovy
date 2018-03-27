@@ -206,4 +206,26 @@ class NLSSpec extends BaseSpecification {
         then:
         result == "27.03.2018"
     }
+
+    def "formatTime() formats a LocalDateTime as time without date"() {
+        given:
+        def date = LocalDateTime.of(2018, 3, 27, 15, 21, 37)
+        and:
+        CallContext.getCurrent().setLang("de")
+        when:
+        def result = NLS.formatTime(date)
+        then:
+        result == "15:21"
+    }
+
+    def "formatTime() formats a long as time without date"() {
+        given:
+        def millis = 1522157198173
+        and:
+        CallContext.getCurrent().setLang("de")
+        when:
+        def result = NLS.formatTime(millis)
+        then:
+        result == "15:26"
+    }
 }
