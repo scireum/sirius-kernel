@@ -947,19 +947,19 @@ public class Value {
             return ((ZonedDateTime) data).toLocalTime();
         }
         if (is(Date.class)) {
-            return LocalTime.from(Instant.ofEpochMilli(((Date) data).getTime()));
+            return LocalDateTime.from(Instant.ofEpochMilli(((Date) data).getTime())).toLocalTime();
         }
         if (is(Calendar.class)) {
-            return LocalTime.from(Instant.ofEpochMilli(((Calendar) data).getTimeInMillis()));
+            return LocalDateTime.from(Instant.ofEpochMilli(((Calendar) data).getTimeInMillis())).toLocalTime();
         }
         if (is(java.sql.Date.class)) {
-            return LocalTime.from(Instant.ofEpochMilli(((java.sql.Date) data).getTime()));
+            return LocalDateTime.from(Instant.ofEpochMilli(((java.sql.Date) data).getTime())).toLocalTime();
         }
         if (is(Timestamp.class)) {
-            return LocalTime.from(Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime()));
+            return LocalDateTime.from(Instant.ofEpochMilli(((java.sql.Timestamp) data).getTime())).toLocalTime();
         }
         if (is(long.class) || is(Long.class)) {
-            return LocalTime.from(Instant.ofEpochMilli((long) data));
+            return LocalDateTime.from(Instant.ofEpochMilli((long) data)).toLocalTime();
         }
 
         return defaultValue;
