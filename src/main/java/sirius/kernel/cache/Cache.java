@@ -180,4 +180,14 @@ public interface Cache<K, V> {
      * @return the original instance of the cache.
      */
     Cache<K, V> onRemove(Callback<Tuple<K, V>> onRemoveCallback);
+
+    /**
+     * Updates the statistics.
+     */
+    void updateStatistics();
+
+    /**
+     * Removes outdated cache values.
+     */
+    void runEviction();
 }

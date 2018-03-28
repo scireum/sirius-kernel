@@ -38,7 +38,7 @@ public class CacheManager {
     /**
      * Lists all known caches.
      */
-    private static List<ManagedCache<?, ?>> caches = new CopyOnWriteArrayList<>();
+    private static List<Cache<?, ?>> caches = new CopyOnWriteArrayList<>();
 
     private static final Duration INLINE_CACHE_DEFAULT_TTL = Duration.ofSeconds(10);
 
@@ -49,11 +49,20 @@ public class CacheManager {
     }
 
     /**
+     * Adds a cache to the internal cache list.
+     *
+     * @param cache the cache to be added.
+     */
+    public static void addCache(Cache<?, ?> cache) {
+        caches.add(cache);
+    }
+
+    /**
      * Returns a list of all known caches
      *
      * @return a list of all caches created so far
      */
-    public static List<ManagedCache<?, ?>> getCaches() {
+    public static List<Cache<?, ?>> getCaches() {
         return Collections.unmodifiableList(caches);
     }
 
@@ -96,7 +105,7 @@ public class CacheManager {
     }
 
     private static void verifyUniquenessOfName(String name) {
-        for (ManagedCache<?, ?> other : caches) {
+        for (Cache<?, ?> other : caches) {
             if (Strings.areEqual(name, other.getName())) {
                 throw Exceptions.handle()
                                 .to(LOG)
@@ -107,7 +116,7 @@ public class CacheManager {
     }
 
     /**
-     * Creates a cached with the given name.
+     * Creates a cache with the given name.
      * <p>
      * This is just a shortcut for {@link #createCache(String, ValueComputer, ValueVerifier)} with neither a
      * <tt>ValueComputer</tt> nor a <tt>ValueVerifier</tt> supplied.

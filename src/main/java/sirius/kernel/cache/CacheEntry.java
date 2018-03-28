@@ -56,7 +56,7 @@ public class CacheEntry<K, V> {
     /*
      * Creates a new entry based on the given parameters
      */
-    CacheEntry(K key, V value, long maxAge, long nextVerification) {
+    public CacheEntry(K key, V value, long maxAge, long nextVerification) {
         super();
         this.key = key;
         this.maxAge = maxAge;
@@ -84,7 +84,7 @@ public class CacheEntry<K, V> {
         return new Date(created);
     }
 
-    void setCreated(long created) {
+    public void setCreated(long created) {
         this.created = created;
     }
 
@@ -109,7 +109,7 @@ public class CacheEntry<K, V> {
     /*
      * Updates the number of uses
      */
-    void setUsed(long used) {
+    public void setUsed(long used) {
         this.used = used;
     }
 
@@ -133,7 +133,7 @@ public class CacheEntry<K, V> {
     /*
      * Returns the expiry date for this entry
      */
-    long getMaxAge() {
+    public long getMaxAge() {
         return maxAge;
     }
 
@@ -147,7 +147,7 @@ public class CacheEntry<K, V> {
     /*
      * Returns the timestamp of the next verification
      */
-    long getNextVerification() {
+    public long getNextVerification() {
         return nextVerification;
     }
 
