@@ -104,7 +104,7 @@ public class NLS {
     private static final long HOUR = 60 * MINUTE;
     private static final long DAY = 24 * HOUR;
 
-    private static final String[] UNITS = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
+    private static final String[] UNITS = {"Bytes", "kB", "MB", "GB", "TB", "PB"};
 
     private NLS() {
     }
@@ -1250,8 +1250,7 @@ public class NLS {
     /**
      * Converts a file or byte size.
      * <p>
-     * Supports sizes up to petabyte. Uses conventional abbreviations like KB, MB but technically returns KiB or
-     * MiB (this is values divided by 1024 instead of 1000).
+     * Supports sizes up to petabyte. Uses conventional SI-prefixed abbreviations like kB, MB.
      *
      * @param size the size to format in bytes
      * @return an english representation (using dot as decimal separator) along with one of the known abbreviations:
@@ -1260,8 +1259,8 @@ public class NLS {
     public static String formatSize(long size) {
         int index = 0;
         double sizeAsFloat = size;
-        while (sizeAsFloat > 1024 && index < UNITS.length - 1) {
-            sizeAsFloat = sizeAsFloat / 1024;
+        while (sizeAsFloat > 1000 && index < UNITS.length - 1) {
+            sizeAsFloat = sizeAsFloat / 1000;
             index++;
         }
         return Amount.of(sizeAsFloat).toSmartRoundedString(NumberFormat.MACHINE_TWO_DECIMAL_PLACES)
