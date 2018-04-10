@@ -429,8 +429,8 @@ public class Sirius {
      * @param resource the resource path to check
      * @return <tt>true</tt> if the given resource is part of a configuration, <tt>false</tt> otherwise
      */
-    public static boolean isConfigurationResource(@Nullable String resource) {
-        return resource != null && resource.startsWith("configurations");
+    public static boolean isCustomizationResource(@Nullable String resource) {
+        return resource != null && resource.startsWith("customizations");
     }
 
     /**
