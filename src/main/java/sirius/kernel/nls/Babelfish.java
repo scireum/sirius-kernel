@@ -152,7 +152,7 @@ public class Babelfish {
         // correct ordering first...
         List<Matcher> customizations = Lists.newArrayList();
         classpath.find(PROPERTIES_FILE).forEach(value -> {
-            if (Sirius.isConfigurationResource(value.group())) {
+            if (Sirius.isCustomizationResource(value.group())) {
                 customizations.add(value);
             } else {
                 loadMatchedResource(value);
