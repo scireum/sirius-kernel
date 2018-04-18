@@ -8,8 +8,12 @@
 
 package sirius.kernel.commons;
 
+import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
@@ -21,6 +25,8 @@ import java.util.Optional;
  * Helperclass for handling files in Java 8.
  */
 public class Files {
+
+    protected static final Log LOG = Log.get("files");
 
     private Files() {
     }
@@ -135,6 +141,20 @@ public class Files {
     @Nullable
     public static String getFilenameWithoutExtension(@Nullable String path) {
         return Strings.splitAtLast(getFilenameAndExtension(path), ".").getFirst();
+    }
+
+    /**
+     * Deletes the given file and logs when a file cannot be deleted. This is useful for error reporting and to
+     * diagnose why a file cannot be deleted.
+     *
+     * @param file the file to delete
+     */
+    public static void delete(File file) {
+        try {
+            java.nio.file.Files.delete(file.toPath());
+        } catch (IOException e) {
+            Exceptions.handle(LOG, e);
+        }
     }
 
     /**
