@@ -144,14 +144,17 @@ public class Files {
     }
 
     /**
-     * Deletes the given file and logs when a file cannot be deleted. This is useful for error reporting and to
+     * If the given file is not null and exists, tries to delete that file and logs when a file cannot be deleted. This is useful for error reporting and to
      * diagnose why a file cannot be deleted.
      *
      * @param file the file to delete
      */
-    public static void delete(File file) {
+    public static void delete(@Nullable File file) {
+        if (file == null) {
+            return;
+        }
         try {
-            java.nio.file.Files.delete(file.toPath());
+            java.nio.file.Files.deleteIfExists(file.toPath());
         } catch (IOException e) {
             Exceptions.handle(LOG, e);
         }
