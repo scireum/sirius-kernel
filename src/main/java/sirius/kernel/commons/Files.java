@@ -9,7 +9,6 @@
 package sirius.kernel.commons;
 
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,8 +24,6 @@ import java.util.Optional;
  * Helperclass for handling files in Java 8.
  */
 public class Files {
-
-    protected static final Log LOG = Log.get("files");
 
     private Files() {
     }
@@ -150,13 +147,12 @@ public class Files {
      * @param file the file to delete
      */
     public static void delete(@Nullable File file) {
-        if (file == null) {
-            return;
-        }
-        try {
-            java.nio.file.Files.deleteIfExists(file.toPath());
-        } catch (IOException e) {
-            Exceptions.handle(LOG, e);
+        if (file != null) {
+            try {
+                java.nio.file.Files.deleteIfExists(file.toPath());
+            } catch (IOException e) {
+                Exceptions.handle(e);
+            }
         }
     }
 
