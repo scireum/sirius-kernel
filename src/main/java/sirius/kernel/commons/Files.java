@@ -8,8 +8,11 @@
 
 package sirius.kernel.commons;
 
+import sirius.kernel.health.Exceptions;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
@@ -135,6 +138,22 @@ public class Files {
     @Nullable
     public static String getFilenameWithoutExtension(@Nullable String path) {
         return Strings.splitAtLast(getFilenameAndExtension(path), ".").getFirst();
+    }
+
+    /**
+     * If the given file is not null and exists, tries to delete that file and logs when a file cannot be deleted. This is useful for error reporting and to
+     * diagnose why a file cannot be deleted.
+     *
+     * @param file the file to delete
+     */
+    public static void delete(@Nullable File file) {
+        if (file != null) {
+            try {
+                java.nio.file.Files.deleteIfExists(file.toPath());
+            } catch (IOException e) {
+                Exceptions.handle(e);
+            }
+        }
     }
 
     /**
