@@ -134,8 +134,8 @@ public class Files {
     }
 
     /**
-     * If the given file is not null and exists, tries to delete that file and logs when a file cannot be deleted. This is useful for error reporting and to
-     * diagnose why a file cannot be deleted.
+     * If the given file is not null and exists, tries to delete that file and logs when a file cannot be deleted. T
+     * his is useful for error reporting and to diagnose why a file cannot be deleted.
      *
      * @param file the file to delete
      */
