@@ -54,6 +54,9 @@ public class Timers implements Lifecycle {
     protected static final Log LOG = Log.get("timer");
     private static final String TIMER = "timer";
 
+    /**
+     * Contains the config prefix to load settings for daily tasks from.
+     */
     public static final String TIMER_DAILY_PREFIX = "timer.daily.";
 
     private static final int TEN_SECONDS_IN_MILLIS = 10000;
@@ -396,6 +399,12 @@ public class Timers implements Lifecycle {
         return Collections.unmodifiableCollection(everyDay.getParts());
     }
 
+    /**
+     * Executes the given task if it is scheduled for the given hour.
+     *
+     * @param currentHour the hour to pretend
+     * @param task        the task to execute
+     */
     public void rundailyTimer(int currentHour, EveryDay task) {
         if (!Sirius.getSettings().getConfig().hasPath(TIMER_DAILY_PREFIX + task.getConfigKeyName())) {
             LOG.WARN("Skipping daily timer %s as config key '%s' is missing!",

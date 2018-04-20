@@ -40,19 +40,12 @@ public class Files {
      */
     @Nonnull
     public static Optional<String> toSaneFileName(@Nullable String input) {
-        String effectiveInput = Strings.trim(input);
+        String effectiveInput = Strings.trim(Strings.reduceCharacters(input));
         if (Strings.isEmpty(effectiveInput)) {
             return Optional.empty();
         }
 
-        effectiveInput = effectiveInput.replace("ä", "ae")
-                                       .replace("ö", "oe")
-                                       .replace("ü", "ue")
-                                       .replace("Ä", "Ae")
-                                       .replace("Ö", "Oe")
-                                       .replace("Ü", "Ue")
-                                       .replace("ß", "ss")
-                                       .replaceAll("[^a-zA-Z0-9\\-_.]", "_");
+        effectiveInput = effectiveInput.replaceAll("[^a-zA-Z0-9\\-_.]", "_");
         Tuple<String, String> nameAndSuffix = Strings.splitAtLast(effectiveInput, ".");
         if (nameAndSuffix.getSecond() == null) {
             return Optional.of(effectiveInput);
@@ -141,8 +134,8 @@ public class Files {
     }
 
     /**
-     * If the given file is not null and exists, tries to delete that file and logs when a file cannot be deleted. This is useful for error reporting and to
-     * diagnose why a file cannot be deleted.
+     * If the given file is not null and exists, tries to delete that file and logs when a file cannot be deleted. T
+     * his is useful for error reporting and to diagnose why a file cannot be deleted.
      *
      * @param file the file to delete
      */

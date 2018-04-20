@@ -20,6 +20,7 @@ import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -404,6 +405,74 @@ public class Strings {
         return textToReplace;
     }
 
+    private static Map<Integer, String> unicodeMapping = new TreeMap<>();
+
+    static {
+        translateRange(0x00C0, "A", "A", "A", "A", "AE", "A", "AE", "C", "E", "E", "E", "E", "I", "I", "I", "I");
+        translateRange(0x00D0, "D", "N", "O", "O", "O", "O", "OE", null, null, "U", "U", "U", "UE", "Y", null, "ss");
+        translateRange(0x00E0, "a", "a", "a", "a", "ae", "a", "ae", "c", "e", "e", "e", "e", "i", "i", "i", "i");
+        translateRange(0x00F0, null, "n", "o", "o", "o", "o", "oe", null, null, "u", "u", "u", "ue", "y", null, "y");
+        translateRange(0x0130, null, null, "IJ", "ij", "J", "j", "K", "k", "k", "L", "l", "L", "l", "L", "l", "L");
+        translateRange(0xFB00,
+                       "ff",
+                       "fi",
+                       "fl",
+                       "ffi",
+                       "ffl",
+                       "ft",
+                       "st",
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null);
+    }
+
+    private static void translateRange(int offset, String... replacements) {
+        int index = offset;
+        for (String replacement : replacements) {
+            if (replacement != null) {
+                unicodeMapping.put(index, replacement);
+            }
+
+            index++;
+        }
+    }
+
+    /**
+     * Removes all umlauts and other decorated latin characters.
+     *
+     * @param term the term to reduce characters in
+     * @return the term with all decorated latin characters replaced
+     */
+    public static String reduceCharacters(String term) {
+        if (Strings.isEmpty(term)) {
+            return term;
+        }
+
+        StringBuilder result = null;
+
+        for (int i = 0; i < term.length(); ++i) {
+            String replacement = unicodeMapping.get(term.codePointAt(i));
+            if (replacement == null) {
+                if (result != null) {
+                    result.append(term.charAt(i));
+                }
+            } else {
+                if (result == null) {
+                    result = new StringBuilder().append(term, 0, i);
+                }
+                result.append(replacement);
+            }
+        }
+
+        return result == null ? term : result.toString();
+    }
+
     /**
      * Returns a trimmed version of the given object's string representation.
      * And empty string '' will always be null.
@@ -483,7 +552,7 @@ public class Strings {
      * <p>
      * Note that if <tt>padding</tt> consists of several characters, the final string might be longer than
      * <tt>minLength</tt> as no substring but only the full value of <tt>padding</tt> is used to pad.
-     * <p>
+     *
      * <b>Implementation detail:</b> This method checks if padding is necessary at all. If not, it directly returns the
      * given input. This should enable inlining and therefore create a fast path if no padding is necessary.
      *
@@ -505,7 +574,7 @@ public class Strings {
      * <p>
      * Note that if <tt>padding</tt> consists of several characters, the final string might be longer than
      * <tt>minLength</tt> as no substring but only the full value of <tt>padding</tt> is used to pad.
-     * <p>
+     *
      * <b>Implementation detail:</b> This method checks if padding is necessary at all. If not, it directly returns the
      * given input. This should enable inlining and therefore create a fast path if no padding is necessary.
      *

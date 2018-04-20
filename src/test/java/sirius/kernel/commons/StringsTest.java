@@ -114,4 +114,13 @@ public class StringsTest {
         assertEquals("A    ", Strings.rightPad("A", "  ", 4));
         assertEquals("AAA", Strings.rightPad("AAA", " ", 2));
     }
+
+    @Test
+    public void reduceCharacters() {
+        assertEquals("Hello", Strings.reduceCharacters("Hello"));
+        assertSame("Hello", Strings.reduceCharacters("Hello"));
+        assertEquals("Hello", Strings.reduceCharacters("Héllo"));
+        assertEquals("AOEO", Strings.reduceCharacters("AÖO"));
+        assertEquals("AEAAE", Strings.reduceCharacters("ÄAÄ"));
+    }
 }
