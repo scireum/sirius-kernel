@@ -19,11 +19,14 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * Helperclass for handling files in Java 8.
  */
 public class Files {
+
+    private static final Pattern NON_PATH_CHARACTERS = Pattern.compile("[^a-zA-Z0-9_.]");
 
     private Files() {
     }
@@ -45,7 +48,7 @@ public class Files {
             return Optional.empty();
         }
 
-        effectiveInput = effectiveInput.replaceAll("[^a-zA-Z0-9\\-_.]", "_");
+        effectiveInput = NON_PATH_CHARACTERS.matcher(effectiveInput).replaceAll("_");
         Tuple<String, String> nameAndSuffix = Strings.splitAtLast(effectiveInput, ".");
         if (nameAndSuffix.getSecond() == null) {
             return Optional.of(effectiveInput);
