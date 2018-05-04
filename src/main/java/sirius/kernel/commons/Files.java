@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
  */
 public class Files {
 
-    private static final Pattern NON_PATH_CHARACTERS = Pattern.compile("[^a-zA-Z0-9_.]");
+    private static final Pattern NON_PATH_CHARACTERS = Pattern.compile("[^a-zA-Z0-9\\-.]");
 
     private Files() {
     }
