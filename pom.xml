@@ -9,7 +9,7 @@
         <version>3.11.4</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
-    <version>9.2.0</version>
+    <version>9.2.1</version>
     <name>Sirius Kernel</name>
     <description>Provides common core classes and the microkernel powering all Sirius applications</description>
 

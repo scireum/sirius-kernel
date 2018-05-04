@@ -115,9 +115,19 @@ public class Sirius {
         } else {
             Log.setLevel(DEBUG_LOGGER_NAME, Level.OFF);
         }
+
+        if (config.hasPath("log")) {
+            LOG.WARN("Found 'log' in the system configuration - use 'logging' to configure loggers!");
+        }
+        if (config.hasPath("logs")) {
+            LOG.WARN("Found 'logs' in the system configuration - use 'logging' to configure loggers!");
+        }
+
         if (!config.hasPath("logging")) {
+            LOG.INFO("No 'logger' section in the system config - using defaults...");
             return;
         }
+
         LOG.INFO("Initializing the log system:");
         Config logging = config.getConfig("logging");
         for (Map.Entry<String, com.typesafe.config.ConfigValue> entry : logging.entrySet()) {
