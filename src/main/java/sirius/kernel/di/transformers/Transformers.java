@@ -81,6 +81,7 @@ public class Transformers {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T makeWithClass(Object sourceObject, Class<?> sourceClass, Class<T> target) {
         for (Transformer<?, ?> adapterFactory : getFactories(sourceClass, target)) {
             Transformer<? super Object, T> next = (Transformer<? super Object, T>) adapterFactory;
