@@ -62,6 +62,7 @@ public class Promise<V> {
      * Marks the promise as successful and completed with the given value.
      *
      * @param value the value to be used as promised result.
+     * @return <tt>this</tt> for fluent method chaining
      */
     public Promise<V> success(@Nullable final V value) {
         this.value = new ValueHolder<>(value);
@@ -87,6 +88,7 @@ public class Promise<V> {
      * Marks the promise as failed due to the given error.
      *
      * @param exception the error to be used as reason for failure.
+     * @return <tt>this</tt> for fluent method chaining
      */
     public Promise<V> fail(@Nonnull final Throwable exception) {
         this.failure = exception;
