@@ -50,16 +50,31 @@ public class Extension extends Settings implements Comparable<Extension> {
         this.priority = get(PRIORITY).asInt(PriorityCollector.DEFAULT_PRIORITY);
     }
 
+    /**
+     * Returns the {@link Value} defined for the given key.
+     * <p>
+     * In contrast to {@link #get(String)} this will not perform an automatic translation
+     * if the value starts with a dollar sign.
+     *
+     * @param path the access path to retrieve the value
+     * @return the value wrapping the contents for the given path. This will never by <tt>null</tt>,
+     * but might be empty: {@link Value#isNull()}
+     */
+    @Nonnull
+    public Value getRaw(String path) {
+        if (configObject.containsKey(path)) {
+            return Value.of(configObject.get(path).unwrapped());
+        }
+        if (defaultConfig != null && defaultConfig.containsKey(path)) {
+            return Value.of(defaultConfig.get(path).unwrapped());
+        }
+        return Value.of(null);
+    }
+
     @Override
     @Nonnull
     public Value get(String path) {
-        if (configObject.containsKey(path)) {
-            return Value.of(configObject.get(path).unwrapped()).translate();
-        }
-        if (defaultConfig != null && defaultConfig.containsKey(path)) {
-            return Value.of(defaultConfig.get(path).unwrapped()).translate();
-        }
-        return Value.of(null);
+        return getRaw(path).translate();
     }
 
     @Nullable
