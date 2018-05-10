@@ -217,10 +217,17 @@ public class Sirius {
         initialized = true;
         classpath = new Classpath(setup.getLoader(), "component.marker", customizations);
 
+        if (Sirius.isDev()) {
+            classpath.getComponentRoots().forEach(url -> {
+                LOG.INFO("Classpath: %s", url);
+            });
+        }
+
         if (isStartedAsTest()) {
             // Load test configurations (will override component configs)
-            classpath.find(Pattern.compile("component-test-([^\\-]*?)\\.conf")).forEach(value -> {
+            classpath.find(Pattern.compile("component-test-([^.]*?)\\.conf")).forEach(value -> {
                 try {
+                    LOG.INFO("Loading test config: %s", value.group());
                     config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
                 } catch (Exception e) {
                     handleConfigError(value.group(), e);
@@ -229,9 +236,12 @@ public class Sirius {
         }
 
         // Load component configurations
-        classpath.find(Pattern.compile("component-([^\\-]*?)\\.conf")).forEach(value -> {
+        classpath.find(Pattern.compile("component-([^\\-]*?)([^.]*?)\\.conf")).forEach(value -> {
             if (!"test".equals(value.group(1))) {
                 try {
+                    if (Sirius.isDev()) {
+                        LOG.INFO("Loading config: %s", value.group());
+                    }
                     config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
                 } catch (Exception e) {
                     handleConfigError(value.group(), e);
