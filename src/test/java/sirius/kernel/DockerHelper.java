@@ -12,7 +12,6 @@ import com.palantir.docker.compose.DockerComposeRule;
 import com.palantir.docker.compose.connection.waiting.ClusterWait;
 import org.joda.time.Duration;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Wait;
 import sirius.kernel.di.Initializable;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
@@ -61,11 +60,6 @@ public class DockerHelper extends PortMapper implements Initializable, Lifecycle
             this.docker.before();
             awaitClusterHealth();
 
-            // Give docker and everything some time to finally initialize
-            // (even if the ports are open, some service might still be
-            // initializing)...
-            Wait.seconds(1);
-
             PortMapper.setMapper(this);
         } else {
             LOG.INFO("No docker file is present - skipping....");
@@ -78,7 +72,7 @@ public class DockerHelper extends PortMapper implements Initializable, Lifecycle
                 LOG.INFO("Waiting for '%s' to become ready...", c.getContainerName());
                 try {
                     new ClusterWait(ignored -> c.areAllPortsOpen(),
-                                    Duration.millis(1000)).waitUntilReady(docker.containers());
+                                    Duration.standardSeconds(10)).waitUntilReady(docker.containers());
                     LOG.INFO("Container '%s' is ONLINE - Ports: %s",
                              c.getContainerName(),
                              c.ports().stream().map(Object::toString).collect(Collectors.joining(", ")));

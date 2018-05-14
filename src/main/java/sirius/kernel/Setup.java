@@ -17,6 +17,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggerRepository;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -390,7 +391,7 @@ public class Setup {
 
             @Override
             public void publish(LogRecord record) {
-                repository.getLogger(record.getLoggerName())
+                repository.getLogger(record.getLoggerName() == null ? "unknown" : record.getLoggerName())
                           .log(Log.convertJuliLevel(record.getLevel()),
                                formatter.formatMessage(record),
                                record.getThrown());
@@ -458,6 +459,26 @@ public class Setup {
             }
         } else {
             Sirius.LOG.INFO("test.conf not present in classpath");
+            return config;
+        }
+    }
+
+    /**
+     * Loads the configuration of the current test scenario which will overwrite the settings
+     * in <tt>test.conf</tt>.
+     */
+    @Nonnull
+    public Config applyTestScenarioConfig(@Nullable String scenarioFile, @Nonnull Config config) {
+        if (Strings.isEmpty(scenarioFile)) {
+            return config;
+        }
+
+        Sirius.LOG.INFO("using %s from classpath...", scenarioFile);
+        try {
+            return ConfigFactory.load(loader, scenarioFile).withFallback(config);
+        } catch (Exception e) {
+            Exceptions.ignore(e);
+            Sirius.LOG.WARN("Cannot load test.conf: %s", e.getMessage());
             return config;
         }
     }

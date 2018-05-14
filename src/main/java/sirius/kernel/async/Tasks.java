@@ -419,6 +419,7 @@ public class Tasks implements Lifecycle {
 
     @Override
     public void started() {
+        executors.clear();
         running = true;
         startScheduler();
         startBackgroundLoops();

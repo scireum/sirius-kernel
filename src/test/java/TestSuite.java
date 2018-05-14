@@ -6,15 +6,13 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-import com.googlecode.junittoolbox.SuiteClasses;
-import com.googlecode.junittoolbox.WildcardPatternSuite;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+import sirius.kernel.ScenarioSuite;
 import sirius.kernel.TestHelper;
 
-@RunWith(WildcardPatternSuite.class)
-@SuiteClasses({"**/*Test.class", "**/*Spec.class"})
+@RunWith(ScenarioSuite.class)
 public class TestSuite {
 
     @BeforeClass

@@ -8,6 +8,8 @@
 
 package sirius.kernel.settings;
 
+import sirius.kernel.health.Exceptions;
+
 /**
  * Maps a given destination port to the effective port assigned.
  * <p>
@@ -44,7 +46,12 @@ public abstract class PortMapper {
             return port;
         }
 
-        return mapper.map(service, port);
+        try {
+            return mapper.map(service, port);
+        } catch (Exception e) {
+            Exceptions.ignore(e);
+            return port;
+        }
     }
 
     /**
