@@ -47,9 +47,13 @@ import java.util.regex.Pattern;
  */
 public class Sirius {
 
+    /**
+     * Contains the name of the system property which is used to select which scenario to execute.
+     */
+    public static final String SIRIUS_TEST_SCENARIO_PROPERTY = "SIRIUS_TEST_SCENARIO";
+
     private static final String CONFIG_KEY_CUSTOMIZATIONS = "sirius.customizations";
     private static final String SEPARATOR_LINE = "---------------------------------------------------------";
-    public static final String SIRIUS_TEST_SCENARIO_PROPERTY = "SIRIUS_TEST_SCENARIO";
     private static Setup setup;
     private static Config config;
     private static ExtendedSettings settings;

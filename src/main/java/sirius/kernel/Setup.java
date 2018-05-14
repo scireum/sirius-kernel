@@ -466,6 +466,10 @@ public class Setup {
     /**
      * Loads the configuration of the current test scenario which will overwrite the settings
      * in <tt>test.conf</tt>.
+     *
+     * @param scenarioFile the scenario config file to load
+     * @param config       the config to enhance
+     * @return the enhanced config
      */
     @Nonnull
     public Config applyTestScenarioConfig(@Nullable String scenarioFile, @Nonnull Config config) {
