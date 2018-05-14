@@ -110,12 +110,12 @@ public class ScenarioSuite extends WildcardPatternSuite {
      * <p>
      * Use {@literal @RunWith(ScenarioSuite)} for a test suite.
      *
-     * @param klass   ignored
+     * @param klass   the test suite to execute
      * @param builder the builder used to builde the suite
      * @throws InitializationError in case of an error during initialization
      */
     public ScenarioSuite(Class<?> klass, RunnerBuilder builder) throws InitializationError {
-        super(ScenarioSuite.class, builder);
+        super(klass, builder);
         this.scenarios = Arrays.asList(klass.getAnnotationsByType(Scenario.class));
     }
 
