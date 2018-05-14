@@ -8,7 +8,6 @@
 
 package sirius.kernel;
 
-import com.googlecode.junittoolbox.SuiteClasses;
 import com.googlecode.junittoolbox.WildcardPatternSuite;
 import org.jetbrains.annotations.NotNull;
 import org.junit.runner.Description;
@@ -30,8 +29,10 @@ import java.util.stream.Collectors;
  * <p>
  * This approach can be used to execute the same tests in multiple environments (e.g. by
  * provisioning different containers via {@link DockerHelper}).
+ * <p>
+ * As this is a subclass of {@link WildcardPatternSuite} an appropriate
+ * {@code @SuiteClasses} annotation must be present.
  */
-@SuiteClasses({"**/*Test.class", "**/*Spec.class"})
 public class ScenarioSuite extends WildcardPatternSuite {
 
     private List<Scenario> scenarios;

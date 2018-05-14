@@ -6,6 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
+import com.googlecode.junittoolbox.SuiteClasses;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -13,6 +14,7 @@ import sirius.kernel.ScenarioSuite;
 import sirius.kernel.TestHelper;
 
 @RunWith(ScenarioSuite.class)
+@SuiteClasses({"**/*Test.class", "**/*Spec.class"})
 public class TestSuite {
 
     @BeforeClass
