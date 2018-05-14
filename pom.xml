@@ -6,10 +6,10 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>3.11.4</version>
+        <version>3.12</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
-    <version>9.4</version>
+    <version>9.5</version>
     <name>Sirius Kernel</name>
     <description>Provides common core classes and the microkernel powering all Sirius applications</description>
 
@@ -47,6 +47,13 @@
             <groupId>org.fusesource</groupId>
             <artifactId>sigar</artifactId>
             <version>1.6.4</version>
+        </dependency>
+
+        <!-- Required logging bridge to make slf4j log to log4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.5</version>
         </dependency>
     </dependencies>
 </project>

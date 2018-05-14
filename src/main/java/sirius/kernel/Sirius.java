@@ -47,6 +47,11 @@ import java.util.regex.Pattern;
  */
 public class Sirius {
 
+    /**
+     * Contains the name of the system property which is used to select which scenario to execute.
+     */
+    public static final String SIRIUS_TEST_SCENARIO_PROPERTY = "SIRIUS_TEST_SCENARIO";
+
     private static final String CONFIG_KEY_CUSTOMIZATIONS = "sirius.customizations";
     private static final String SEPARATOR_LINE = "---------------------------------------------------------";
     private static Setup setup;
@@ -296,6 +301,8 @@ public class Sirius {
         waitForLifecyclePaticipants();
         outputThreadState();
         started = false;
+        initialized = false;
+        settings = null;
     }
 
     private static void outputThreadState() {
@@ -503,6 +510,7 @@ public class Sirius {
         Config instanceConfig = null;
         if (isStartedAsTest()) {
             config = setup.applyTestConfig(config);
+            config = setup.applyTestScenarioConfig(System.getProperty(SIRIUS_TEST_SCENARIO_PROPERTY), config);
         } else {
             // instance.conf and develop.conf are not used to tests to permit uniform behaviour on local
             // machines and build servers...

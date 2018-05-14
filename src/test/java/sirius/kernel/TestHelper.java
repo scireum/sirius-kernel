@@ -47,6 +47,7 @@ public class TestHelper {
         if (frameworkStarter == testClass) {
             Sirius.stop();
             NLS.getTranslationEngine().reportMissingTranslations();
+            frameworkStarter = null;
         }
     }
 }
