@@ -23,11 +23,13 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 /**
  * A CallContext is attached to each thread managed by sirius.
@@ -60,7 +62,7 @@ public class CallContext {
     private static String nodeName = null;
     private static Counter interactionCounter = new Counter();
 
-    private Map<String, String> mdc = new ConcurrentHashMap<>();
+    private Map<String, Object> mdc = new ConcurrentHashMap<>();
 
     /*
      * Needs to be synchronized as a CallContext might be shared across several sub tasks
@@ -183,9 +185,9 @@ public class CallContext {
      * @see SubContext#fork()
      */
     public CallContext fork() {
-        CallContext newCtx = initialize(false, mdc.get(MDC_FLOW));
+        CallContext newCtx = initialize(false, getMDCValue(MDC_FLOW).asString());
         newCtx.watch = watch;
-        newCtx.addToMDC(MDC_PARENT, mdc.get(TaskContext.MDC_SYSTEM));
+        newCtx.addToMDC(MDC_PARENT, getMDCValue(TaskContext.MDC_SYSTEM).asString());
         subContext.forEach((key, value) -> newCtx.subContext.put(key, value.fork()));
         newCtx.lang = lang;
         newCtx.fallbackLang = fallbackLang;
@@ -238,7 +240,16 @@ public class CallContext {
      * @return a list of name-value pair representing the current mdc.
      */
     public List<Tuple<String, String>> getMDC() {
-        return Tuple.fromMap(mdc);
+        List<Tuple<String, String>> result = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : mdc.entrySet()) {
+            if (entry.getValue() instanceof Supplier) {
+                result.add(Tuple.create(entry.getKey(), Value.of(((Supplier<?>) entry.getValue()).get()).asString()));
+            } else {
+                result.add(Tuple.create(entry.getKey(), String.valueOf(entry.getValue())));
+            }
+        }
+        
+        return result;
     }
 
     /**
@@ -248,7 +259,12 @@ public class CallContext {
      * @return the value of the mapped diagnostic context.
      */
     public Value getMDCValue(String key) {
-        return Value.of(mdc.get(key));
+        Object data = mdc.get(key);
+        if (data instanceof Supplier) {
+            return Value.of(((Supplier<?>) data).get());
+        } else {
+            return Value.of(data);
+        }
     }
 
     /**
@@ -269,6 +285,16 @@ public class CallContext {
      * @param value the value to add to the mdc.
      */
     public void addToMDC(String key, @Nullable String value) {
+        mdc.put(key, value == null ? "" : value);
+    }
+
+    /**
+     * Adds a value to the mapped diagnostic context.
+     *
+     * @param key   the name of the value to add
+     * @param value the supplier to add to the mdc. Will be evaluated one the MDC is used elsewhere.
+     */
+    public void addToMDC(String key, Supplier<String> value) {
         mdc.put(key, value == null ? "" : value);
     }
 
@@ -372,10 +398,10 @@ public class CallContext {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> e : mdc.entrySet()) {
-            sb.append(e.getKey());
+        for (Tuple<String, String> e : getMDC()) {
+            sb.append(e.getFirst());
             sb.append(": ");
-            sb.append(e.getValue());
+            sb.append(e.getSecond());
             sb.append("\n");
         }
 
