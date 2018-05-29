@@ -294,7 +294,7 @@ public class CallContext {
      * @param key   the name of the value to add
      * @param value the supplier to add to the mdc. Will be evaluated one the MDC is used elsewhere.
      */
-    public void addToMDC(String key, Supplier<String> value) {
+    public void addToMDC(String key, @Nullable Supplier<String> value) {
         mdc.put(key, value == null ? "" : value);
     }
 
