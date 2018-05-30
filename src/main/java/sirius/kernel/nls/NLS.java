@@ -536,7 +536,6 @@ public class NLS {
         return dateFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternDate", l)));
     }
 
-
     /**
      * Returns the short date format (two digit year like 24.10.14) for the given language.
      *
