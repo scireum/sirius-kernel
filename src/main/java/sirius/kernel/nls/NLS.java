@@ -95,6 +95,7 @@ public class NLS {
             DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ENGLISH);
     private static final Map<String, DateTimeFormatter> dateTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> dateFormatters = Maps.newTreeMap();
+    private static final Map<String, DateTimeFormatter> shortDateFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> timeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> parseTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> fullTimeFormatters = Maps.newTreeMap();
@@ -533,6 +534,17 @@ public class NLS {
      */
     public static DateTimeFormatter getDateFormat(String lang) {
         return dateFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternDate", l)));
+    }
+
+
+    /**
+     * Returns the short date format (two digit year like 24.10.14) for the given language.
+     *
+     * @param lang the language for which the format is requested
+     * @return a format initialized with the pattern described by the given language
+     */
+    public static DateTimeFormatter getShortDateFormat(String lang) {
+        return shortDateFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternDate", l)));
     }
 
     /**
