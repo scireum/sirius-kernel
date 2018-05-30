@@ -543,7 +543,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getShortDateFormat(String lang) {
-        return shortDateFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternDate", l)));
+        return shortDateFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternShortDate", l)));
     }
 
     /**
