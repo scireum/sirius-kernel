@@ -14,6 +14,8 @@ package sirius.kernel.commons;
  * However, the return value is wrapped as {@link Value}. This permits to distinguish between a <tt>null</tt>
  * and <b>no value</b>. Also by declaring <tt>Exception</tt> in the throws clause, we delegate the exception handling
  * from the callee to the caller.
+ *
+ * @param <K> the type of key used as input for the value supplier.
  */
 public interface ValueSupplier<K> {
 
