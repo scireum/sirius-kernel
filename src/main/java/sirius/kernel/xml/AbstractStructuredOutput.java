@@ -269,4 +269,10 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         nesting.get(0).setEmpty(false);
         return this;
     }
+
+    @Override
+    public StructuredOutput nullsafeProperty(@Nonnull String name, @Nullable Object data) {
+        property(name, data != null ? data : "");
+        return this;
+    }
 }
