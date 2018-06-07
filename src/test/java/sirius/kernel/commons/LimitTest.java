@@ -14,8 +14,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class LimitTest {
 
@@ -85,5 +84,23 @@ public class LimitTest {
         // Use as predicate to filter a sublist of the given stream to compute a test sum
         int sum = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10).filter(new Limit(2, 4).asPredicate()).mapToInt(i -> i).sum();
         assertEquals(3 + 4 + 5 + 6, sum);
+    }
+
+    @Test
+    public void testRemaingItems() {
+        Limit l = new Limit(5, 500);
+        assertEquals(Integer.valueOf(505), l.getRemainingItems());
+        l = new Limit(10, 0);
+        assertNull(l.getRemainingItems());
+        l = new Limit(10, 10);
+        for (int i = 0; i < 12; i++) {
+            l.nextRow();
+        }
+        assertEquals(Integer.valueOf(8), l.getRemainingItems());
+        l = new Limit(10, 10);
+        for (int i = 0; i < 21; i++) {
+            l.nextRow();
+        }
+        assertEquals(Integer.valueOf(0), l.getRemainingItems());
     }
 }

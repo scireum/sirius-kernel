@@ -135,6 +135,17 @@ public class Limit {
         return maxItems == 0 ? 0 : itemsToSkip + maxItems;
     }
 
+    /**
+     * Returns the remaining number of items to be processed. This is the number of items to be skipped plus the
+     * number of items to be accepted minus the number of items already processed.
+     * Returns <tt>null</tt> to indicate that there is no upper limit.
+     *
+     * @return the remaining number of items to be processed or <tt>null</tt> if there is no upper limit
+     */
+    public Integer getRemainingItems() {
+        return itemsToOutput == null ? null : itemsToSkip + itemsToOutput;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Limit: ");
