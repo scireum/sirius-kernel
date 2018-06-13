@@ -965,7 +965,7 @@ public class NLS {
         }
         if (BigDecimal.class.equals(clazz)) {
             try {
-                return (V) new BigDecimal(Double.valueOf(value));
+                return (V) new BigDecimal(value);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
             }

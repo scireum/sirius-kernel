@@ -94,7 +94,7 @@ public class Amount implements Comparable<Amount> {
         if (Strings.isEmpty(value)) {
             return NOTHING;
         }
-        return of(NLS.parseMachineString(Double.class, value));
+        return of(NLS.parseMachineString(BigDecimal.class, value));
     }
 
     /**
@@ -109,7 +109,7 @@ public class Amount implements Comparable<Amount> {
         if (Strings.isEmpty(value)) {
             return NOTHING;
         }
-        return of(NLS.parseUserString(Double.class, value));
+        return of(NLS.parseUserString(BigDecimal.class, value));
     }
 
     /**
