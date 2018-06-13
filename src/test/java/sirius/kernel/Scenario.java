@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
  * <p>
  * This run will enhance the system configuration by the file given in
  * {@link #file()}. Additionally the tests to be executed can be filtered
- * using a regex in {@link #filter()}.
+ * using a regex in {@link #includes()} and {@link #excludes()}.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -45,5 +45,13 @@ public @interface Scenario {
      *
      * @return the filter regex or an empty string to execute all classes
      */
-    String filter() default "";
+    String includes() default "";
+
+    /**
+     * Contains a regular expression which filters the tests (fully qualified class names)
+     * to be ignored and therefore not executed.
+     *
+     * @return the filter regex or an empty string to execute all classes
+     */
+    String excludes() default "";
 }

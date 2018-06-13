@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Provides a special test suite which executes all tests in all {@link Scenario scenarios}.
@@ -44,24 +45,29 @@ public class ScenarioSuite extends WildcardPatternSuite {
         public static final Description FRAMEWORK_TEARDOWN =
                 Description.createTestDescription(Sirius.class, "Framework teardown");
         private String scenarioFile;
-        private String filter;
+        private String includes;
+        private String excludes;
         private List<Runner> allTests;
 
-        protected ScenarioRunner(String scenarioFile, String filter, List<Runner> allTests) {
+        protected ScenarioRunner(String scenarioFile, String includes, String excludes, List<Runner> allTests) {
             this.scenarioFile = scenarioFile;
-            this.filter = filter;
+            this.includes = includes;
+            this.excludes = excludes;
             this.allTests = allTests;
         }
 
         protected List<Runner> getEffectiveTests() {
-            if (Strings.isEmpty(filter)) {
-                return allTests;
-            } else {
-                Pattern filterPattern = Pattern.compile(filter);
-                return allTests.stream()
-                               .filter(r -> filterPattern.matcher(r.getDescription().getClassName()).matches())
-                               .collect(Collectors.toList());
+            Stream<Runner> stream = allTests.stream();
+            if (Strings.isFilled(includes)) {
+                Pattern filterPattern = Pattern.compile(includes);
+                stream = stream.filter(r -> filterPattern.matcher(r.getDescription().getClassName()).matches());
             }
+            if (Strings.isFilled(excludes)) {
+                Pattern filterPattern = Pattern.compile(excludes);
+                stream = stream.filter(r -> !filterPattern.matcher(r.getDescription().getClassName()).matches());
+            }
+
+            return stream.collect(Collectors.toList());
         }
 
         @Override
@@ -123,10 +129,13 @@ public class ScenarioSuite extends WildcardPatternSuite {
     protected List<Runner> getChildren() {
         List<Runner> tests = super.getChildren();
         List<Runner> result = new ArrayList<>();
-        result.add(new ScenarioRunner(null, null, tests));
+        result.add(new ScenarioRunner(null, null, null, tests));
         if (scenarios != null) {
             scenarios.stream()
-                     .map(scenario -> new ScenarioRunner(scenario.file(), scenario.filter(), tests))
+                     .map(scenario -> new ScenarioRunner(scenario.file(),
+                                                         scenario.includes(),
+                                                         scenario.excludes(),
+                                                         tests))
                      .collect(Lambdas.into(result));
         }
 
