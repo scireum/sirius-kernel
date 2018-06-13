@@ -19,6 +19,7 @@ import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
+import sirius.kernel.di.std.Priorized;
 import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
@@ -39,6 +40,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class Settings {
 
+    private static final String PRIORITY = "priority";
+    private static final String ID = "id";
     private final Config config;
 
     /**
@@ -124,10 +127,13 @@ public class Settings {
      * Then getConfigs("sub") for the extension "test" would return a list containing a and b wrapped as config.
      * <p>
      * The name of the config object is available as "id".
+     * <p>
+     * The list will be sorted by "priority". If no explicit priority is given, we try to sort elements along their
+     * natural order within the file. If multiple files are merged together, the behaviour of this approach is
+     * undefined and <tt>priority</tt> should be used.
      *
      * @param key the path to the config object containing a list of sub object.
-     * @return a list of config object underneath the given object.
-     * Returns an empty list if no matching element was found.
+     * @return a list of config objects underneath the given object or an empty list if there are none
      */
     @Nonnull
     public List<? extends Config> getConfigs(String key) {
@@ -137,10 +143,22 @@ public class Settings {
             for (Map.Entry<String, ConfigValue> e : cfg.root().entrySet()) {
                 if (e.getValue().valueType() == ConfigValueType.OBJECT) {
                     Config subCfg = ((ConfigObject) e.getValue()).toConfig();
-                    result.add(subCfg.withValue("id", ConfigValueFactory.fromAnyRef(e.getKey())));
+                    result.add(subCfg.withValue(ID, ConfigValueFactory.fromAnyRef(e.getKey())));
                 }
             }
         }
+
+        result.sort((a, b) -> {
+            int prioA = a.hasPath(PRIORITY) ? a.getInt(PRIORITY) : Priorized.DEFAULT_PRIORITY;
+            int prioB = b.hasPath(PRIORITY) ? b.getInt(PRIORITY) : Priorized.DEFAULT_PRIORITY;
+
+            if (prioA == prioB) {
+                prioA = a.origin().lineNumber();
+                prioB = b.origin().lineNumber();
+            }
+
+            return prioA - prioB;
+        });
 
         return result;
     }

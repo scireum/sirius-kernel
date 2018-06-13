@@ -158,6 +158,16 @@ class NLSSpec extends BaseSpecification {
         "14"       | new LocalTime(14, 0, 0, 0)
     }
 
+    def "parseMachineString works for decimals"() {
+        expect:
+        NLS.parseMachineString(BigDecimal.class, input) == output
+
+        where:
+        input | output
+        "0.1" | BigDecimal.ONE.divide(BigDecimal.TEN)
+        "0.1" | new BigDecimal("0.1")
+    }
+
     def "getMonthNameShort correctly appends the given symbol"() {
         expect:
         NLS.getMonthNameShort(month, ".") == output
@@ -172,5 +182,21 @@ class NLSSpec extends BaseSpecification {
         12    | "Dez."
         0     | ""
         13    | ""
+    }
+
+    def "get with numeric works correctly"() {
+        expect:
+        NLS.get(property, numeric, "en") == output
+
+        where:
+        property             | numeric | output
+        "nls.test.withThree" | 0       | "zero"
+        "nls.test.withThree" | 1       | "one"
+        "nls.test.withThree" | 2       | "many: 2"
+        "nls.test.withThree" | -2      | "many: -2"
+        "nls.test.withTwo"   | 0       | "many: 0"
+        "nls.test.withTwo"   | 1       | "one"
+        "nls.test.withTwo"   | 2       | "many: 2"
+        "nls.test.withTwo"   | -2      | "many: -2"
     }
 }

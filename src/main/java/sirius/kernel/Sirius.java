@@ -74,8 +74,14 @@ public class Sirius {
      */
     public static final Log DEBUG = Log.get(DEBUG_LOGGER_NAME);
 
-    @PriorityParts(Lifecycle.class)
-    private static List<Lifecycle> lifecycleParticipants;
+    @PriorityParts(Startable.class)
+    private static List<Startable> lifecycleStartParticipants;
+
+    @PriorityParts(Stoppable.class)
+    private static List<Stoppable> lifecycleStopParticipants;
+
+    @PriorityParts(Killable.class)
+    private static List<Killable> lifecycleKillParticipants;
 
     @Part
     private static Tasks tasks;
@@ -184,12 +190,10 @@ public class Sirius {
         }
         started = true;
         boolean startFailed = false;
-        for (final Lifecycle lifecycle : lifecycleParticipants) {
+        for (final Startable lifecycle : lifecycleStartParticipants) {
             Future future = tasks.defaultExecutor().fork(() -> startLifecycle(lifecycle));
             if (!future.await(Duration.ofMinutes(1))) {
-                LOG.WARN("Lifecycle '%s' (%s) did not start within one minute....",
-                         lifecycle,
-                         lifecycle.getClass().getName());
+                LOG.WARN("Lifecycle '%s' did not start within one minute....", lifecycle.getClass().getName());
                 startFailed = true;
             }
         }
@@ -199,15 +203,15 @@ public class Sirius {
         }
     }
 
-    private static void startLifecycle(Lifecycle lifecycle) {
-        LOG.INFO("Starting: %s", lifecycle.getName());
+    private static void startLifecycle(Startable lifecycle) {
+        LOG.INFO("Starting: %s", lifecycle.getClass().getName());
         try {
             lifecycle.started();
         } catch (Exception e) {
             Exceptions.handle()
                       .error(e)
                       .to(LOG)
-                      .withSystemErrorMessage("Startup of: %s failed!", lifecycle.getName())
+                      .withSystemErrorMessage("Startup of: %s failed!", lifecycle.getClass().getName())
                       .handle();
         }
     }
@@ -318,17 +322,17 @@ public class Sirius {
     private static void waitForLifecyclePaticipants() {
         LOG.INFO("Awaiting system halt...");
         LOG.INFO(SEPARATOR_LINE);
-        for (int i = lifecycleParticipants.size() - 1; i >= 0; i--) {
-            Lifecycle lifecycle = lifecycleParticipants.get(i);
+        for (int i = lifecycleKillParticipants.size() - 1; i >= 0; i--) {
+            Killable killable = lifecycleKillParticipants.get(i);
             try {
                 Watch w = Watch.start();
-                lifecycle.awaitTermination();
-                LOG.INFO("Terminated: %s (Took: %s)", lifecycle.getName(), w.duration());
+                killable.awaitTermination();
+                LOG.INFO("Terminated: %s (Took: %s)", killable.getClass().getName(), w.duration());
             } catch (Exception e) {
                 Exceptions.handle()
                           .error(e)
                           .to(LOG)
-                          .withSystemErrorMessage("Termination of: %s failed!", lifecycle.getName())
+                          .withSystemErrorMessage("Termination of: %s failed!", killable.getClass().getName())
                           .handle();
             }
         }
@@ -337,27 +341,25 @@ public class Sirius {
     private static void stopLifecycleParticipants() {
         LOG.INFO("Stopping lifecycles...");
         LOG.INFO(SEPARATOR_LINE);
-        for (int i = lifecycleParticipants.size() - 1; i >= 0; i--) {
-            Lifecycle lifecycle = lifecycleParticipants.get(i);
-            Future future = tasks.defaultExecutor().fork(() -> stopLifecycle(lifecycle));
+        for (int i = lifecycleStopParticipants.size() - 1; i >= 0; i--) {
+            Stoppable stoppable = lifecycleStopParticipants.get(i);
+            Future future = tasks.defaultExecutor().fork(() -> stopLifecycle(stoppable));
             if (!future.await(Duration.ofSeconds(10))) {
-                LOG.WARN("Lifecycle '%s' (%s) did not stop within 10 seconds....",
-                         lifecycle,
-                         lifecycle.getClass().getName());
+                LOG.WARN("Lifecycle '%s' did not stop within 10 seconds....", stoppable.getClass().getName());
             }
         }
         LOG.INFO(SEPARATOR_LINE);
     }
 
-    private static void stopLifecycle(Lifecycle lifecycle) {
-        LOG.INFO("Stopping: %s", lifecycle.getName());
+    private static void stopLifecycle(Stoppable lifecycle) {
+        LOG.INFO("Stopping: %s", lifecycle.getClass().getName());
         try {
             lifecycle.stopped();
         } catch (Exception e) {
             Exceptions.handle()
                       .error(e)
                       .to(LOG)
-                      .withSystemErrorMessage("Stop of: %s failed!", lifecycle.getName())
+                      .withSystemErrorMessage("Stop of: %s failed!", lifecycle.getClass().getName())
                       .handle();
         }
     }

@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
  * Also it provides a {@link PortMapper} to map the desired production ports to the
  * ones provided by the docker containers.
  */
-@Register(classes = {Initializable.class, Lifecycle.class})
-public class DockerHelper extends PortMapper implements Initializable, Lifecycle {
+@Register(classes = {Initializable.class, Killable.class})
+public class DockerHelper extends PortMapper implements Initializable, Killable {
 
     @ConfigValue("docker.file")
     private String dockerfile;
@@ -86,25 +86,9 @@ public class DockerHelper extends PortMapper implements Initializable, Lifecycle
     }
 
     @Override
-    public void started() {
-        // We start in "initialize to be ready when other components initialize...
-    }
-
-    @Override
-    public void stopped() {
-        // We stop in awaitTermination to keep all containers running until our
-        // frameworks halted...
-    }
-
-    @Override
     public void awaitTermination() {
         if (docker != null) {
             docker.after();
         }
-    }
-
-    @Override
-    public String getName() {
-        return "docker";
     }
 }

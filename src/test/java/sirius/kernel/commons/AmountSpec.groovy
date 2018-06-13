@@ -2,6 +2,7 @@ package sirius.kernel.commons
 
 import sirius.kernel.BaseSpecification
 import sirius.kernel.async.CallContext
+import sirius.kernel.nls.NLS
 
 import java.util.function.Supplier
 
@@ -33,6 +34,17 @@ class AmountSpec extends BaseSpecification {
               Amount.of(Double.valueOf(1D)),
               Amount.ofMachineString("1.0"),
               Amount.ofUserString("1.0")]
+    }
+
+    def "ofMachineString works correctly"() {
+        expect:
+        Amount.ofMachineString(input) == output
+
+        where:
+        input | output
+        "1"   | Amount.ONE
+        "0.1" | Amount.ONE.divideBy(Amount.TEN)
+        "10"  | Amount.TEN
     }
 
     def "Computations with NOTHING result in expected values"() {

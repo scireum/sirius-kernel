@@ -13,6 +13,7 @@ import com.google.common.collect.Sets;
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.AdvancedDateParser;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Explain;
@@ -311,6 +312,74 @@ public class NLS {
     }
 
     /**
+     * Returns one of two or three versions of a translation based on the given numeric for the current language.
+     *
+     * @param property the property to fetch
+     * @param numeric  the numeric used to determine which version to use
+     * @return the version of the given property in the current language based on the given numeric
+     * @see #get(String, int, String)
+     */
+    public static String get(@Nonnull String property, int numeric) {
+        return get(property, numeric, null);
+    }
+
+    /**
+     * Returns one of two or three versions of a translation based on the given numeric.
+     * <p>
+     * The property has to be defined like:
+     * <pre>
+     * <tt>property.key=Version for 0|Version for 1|Version for many</tt>
+     * </pre>
+     * <p>
+     * Alternatively, only two versions can be given:
+     * <pre>
+     * <tt>property.key=Version for 1|Version for 0 or many</tt>
+     * </pre>
+     * <p>
+     * Based on the given <tt>numeric</tt> the right version will be chosen.
+     *
+     * @param property the property to fetch
+     * @param numeric  the numeric used to determine which version to use
+     * @param lang     the language to translate for
+     * @return the version of the given property in the given language based on the given numeric
+     */
+    public static String get(@Nonnull String property, int numeric, @Nullable String lang) {
+        String value = get(property, lang);
+        String[] versions = value.split("\\|");
+
+        if (versions.length == 1) {
+            Babelfish.LOG.WARN(
+                    "A numeric translation was accessed which doesn't provide any versions: %s, Lang: %s, Value: %s\n%s",
+                    property,
+                    lang,
+                    value,
+                    ExecutionPoint.snapshot());
+
+            return value;
+        }
+
+        if (numeric == 0) {
+            if (versions.length == 3) {
+                return versions[0].trim();
+            } else {
+                return Formatter.create(versions[1].trim()).set("count", 0).format();
+            }
+        } else if (numeric == 1) {
+            if (versions.length == 3) {
+                return versions[1].trim();
+            } else {
+                return versions[0].trim();
+            }
+        } else {
+            if (versions.length == 3) {
+                return Formatter.create(versions[2].trim()).set("count", numeric).format();
+            } else {
+                return Formatter.create(versions[1].trim()).set("count", numeric).format();
+            }
+        }
+    }
+
+    /**
      * Returns a translated text for the given <tt>property</tt> in the given language
      * or <tt>null</tt> if no translation was found.
      * <p>
@@ -543,7 +612,8 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getShortDateFormat(String lang) {
-        return shortDateFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternShortDate", l)));
+        return shortDateFormatters.computeIfAbsent(lang,
+                                                   l -> DateTimeFormatter.ofPattern(get("NLS.patternShortDate", l)));
     }
 
     /**
@@ -950,7 +1020,6 @@ public class NLS {
         if (Float.class.equals(clazz) || float.class.equals(clazz)) {
             try {
                 Double result = Double.valueOf(value);
-                //noinspection UnnecessaryParentheses
                 return (result == null) ? null : (V) Float.valueOf(result.floatValue());
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
@@ -965,7 +1034,7 @@ public class NLS {
         }
         if (BigDecimal.class.equals(clazz)) {
             try {
-                return (V) new BigDecimal(Double.valueOf(value));
+                return (V) new BigDecimal(value);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
             }
