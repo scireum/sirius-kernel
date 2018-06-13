@@ -543,7 +543,8 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getShortDateFormat(String lang) {
-        return shortDateFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternShortDate", l)));
+        return shortDateFormatters.computeIfAbsent(lang,
+                                                   l -> DateTimeFormatter.ofPattern(get("NLS.patternShortDate", l)));
     }
 
     /**
@@ -950,7 +951,6 @@ public class NLS {
         if (Float.class.equals(clazz) || float.class.equals(clazz)) {
             try {
                 Double result = Double.valueOf(value);
-                //noinspection UnnecessaryParentheses
                 return (result == null) ? null : (V) Float.valueOf(result.floatValue());
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
