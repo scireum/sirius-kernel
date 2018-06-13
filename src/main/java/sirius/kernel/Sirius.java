@@ -77,10 +77,10 @@ public class Sirius {
     @PriorityParts(Startable.class)
     private static List<Startable> lifecycleStartParticipants;
 
-    @PriorityParts(Startable.class)
+    @PriorityParts(Stoppable.class)
     private static List<Stoppable> lifecycleStopParticipants;
 
-    @PriorityParts(Startable.class)
+    @PriorityParts(Killable.class)
     private static List<Killable> lifecycleKillParticipants;
 
     @Part
