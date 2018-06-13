@@ -9,8 +9,9 @@
 package sirius.kernel.timer;
 
 import com.google.common.collect.Lists;
-import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
+import sirius.kernel.Startable;
+import sirius.kernel.Stoppable;
 import sirius.kernel.async.Orchestration;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Explain;
@@ -46,8 +47,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>
  * To access this class, a <tt>Part</tt> annotation can be used on a field of type <tt>TimerService</tt>.
  */
-@Register(classes = {Timers.class, Lifecycle.class})
-public class Timers implements Lifecycle {
+@Register(classes = {Timers.class, Startable.class, Stoppable.class})
+public class Timers implements Startable, Stoppable {
 
     @SuppressWarnings("squid:S1192")
     @Explain("These constants are semantically different.")
@@ -277,11 +278,6 @@ public class Timers implements Lifecycle {
         }
     }
 
-    @Override
-    public void awaitTermination() {
-        // Not necessary
-    }
-
     /**
      * Adds the given file to the list of watched resources in DEVELOP mode ({@link Sirius#isDev()}.
      * <p>
@@ -308,11 +304,6 @@ public class Timers implements Lifecycle {
                       .to(LOG)
                       .handle();
         }
-    }
-
-    @Override
-    public String getName() {
-        return "timer (System Timer Services)";
     }
 
     /**

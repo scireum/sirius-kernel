@@ -10,8 +10,10 @@ package sirius.kernel.async;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import sirius.kernel.Lifecycle;
+import sirius.kernel.Killable;
 import sirius.kernel.Sirius;
+import sirius.kernel.Startable;
+import sirius.kernel.Stoppable;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -58,8 +60,8 @@ import java.util.function.Supplier;
  * main interaction model when dealing with async and non-blocking execution.
  */
 @ParametersAreNonnullByDefault
-@Register(classes = {Tasks.class, Lifecycle.class})
-public class Tasks implements Lifecycle {
+@Register(classes = {Tasks.class, Startable.class, Stoppable.class, Killable.class})
+public class Tasks implements Startable, Stoppable, Killable {
 
     /**
      * Contains the name of the default executor.
@@ -67,7 +69,7 @@ public class Tasks implements Lifecycle {
     public static final String DEFAULT = "default";
 
     /**
-     * Contains the priority of this {@link Lifecycle}
+     * Contains the priority of this lifecycle.
      */
     public static final int LIFECYCLE_PRIORITY = 25;
 
@@ -465,11 +467,6 @@ public class Tasks implements Lifecycle {
             Thread.currentThread().interrupt();
             LOG.SEVERE(Strings.apply("Interrupted while waiting for '%s' to terminate!", name));
         }
-    }
-
-    @Override
-    public String getName() {
-        return "tasks (Async Execution Engine)";
     }
 
     @Override
