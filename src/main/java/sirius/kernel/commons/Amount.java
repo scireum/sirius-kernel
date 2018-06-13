@@ -109,7 +109,7 @@ public class Amount implements Comparable<Amount> {
         if (Strings.isEmpty(value)) {
             return NOTHING;
         }
-        return of(NLS.parseUserString(BigDecimal.class, value));
+        return NLS.parseUserString(Amount.class, value);
     }
 
     /**
