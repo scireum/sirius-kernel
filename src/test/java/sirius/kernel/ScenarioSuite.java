@@ -9,7 +9,6 @@
 package sirius.kernel;
 
 import com.googlecode.junittoolbox.WildcardPatternSuite;
-import org.jetbrains.annotations.NotNull;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
@@ -18,6 +17,7 @@ import org.junit.runners.model.RunnerBuilder;
 import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.Strings;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -79,7 +79,7 @@ public class ScenarioSuite extends WildcardPatternSuite {
             return description;
         }
 
-        @NotNull
+        @Nonnull
         public String determineScenarioName() {
             if (Strings.isEmpty(scenarioFile)) {
                 return "Main Scenario";
