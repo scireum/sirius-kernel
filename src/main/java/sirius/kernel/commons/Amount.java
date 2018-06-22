@@ -625,6 +625,16 @@ public class Amount implements Comparable<Amount> {
         return this.value.compareTo(other.value) > 0 ? this : other;
     }
 
+    /**
+     * Negates <tt>this</tt> amount and returns the new amount.
+     *
+     * @return an <tt>Amount</tt> representing the negated <tt>Amount</tt>. If <tt>this</tt> is empty, <tt>NOTHING</tt>
+     * is returned.
+     */
+    public Amount negate() {
+        return times(MINUS_ONE);
+    }
+
     @Override
     public String toString() {
         return toSmartRoundedString(NumberFormat.TWO_DECIMAL_PLACES).toString();
