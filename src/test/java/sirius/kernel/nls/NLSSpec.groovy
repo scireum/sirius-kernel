@@ -200,7 +200,7 @@ class NLSSpec extends BaseSpecification {
         "nls.test.withTwo"   | -2      | "many: -2"
     }
     
-    def "unicode charachters get imported without problems"() {
+    def "unicode characters get imported without problems"() {
         given:
         def loadedProperty = NLS.get("nls.test.utf8", "en")
         expect:
