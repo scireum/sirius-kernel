@@ -148,4 +148,26 @@ class AmountSpec extends BaseSpecification {
         Amount.MINUS_ONE.isLessThan(Amount.ONE)
     }
 
+    def "basic artithmetic works"() {
+        expect:
+        Amount.of(4.2).add(Amount.of(42)) == Amount.of(46.2)
+        Amount.of(4.2).subtract(Amount.of(42)) == Amount.of(-37.8)
+        Amount.of(42).subtract(Amount.of(4.2)) == Amount.of(37.8)
+        Amount.of(4.2).times(Amount.of(42)) == Amount.of(176.4)
+        Amount.of(4.2).divideBy(Amount.of(42)) == Amount.of(0.1)
+        Amount.of(42).divideBy(Amount.of(4.2)) == Amount.TEN
+        Amount.of(4.2).negate() == Amount.of(-4.2)
+        Amount.of(-4.2).negate() == Amount.of(4.2)
+    }
+
+    def "percent artithmetic works"() {
+        expect:
+        Amount.of(4.2).increasePercent(Amount.TEN) == Amount.of(4.62)
+        Amount.of(4.2).decreasePercent(Amount.TEN) == Amount.of(3.78)
+        Amount.of(4.2).multiplyPercent(Amount.TEN) == Amount.of(13.78)
+        Amount.of(4.2).percentageOf(Amount.of(42)) == Amount.TEN
+        Amount.of(4.62).percentageDifferenceOf(Amount.of(4.2)) == Amount.TEN
+        Amount.of(0.42).toPercent() == Amount.of(42)
+        Amount.of(42).asDecimal() == Amount.of(0.42)
+    }
 }
