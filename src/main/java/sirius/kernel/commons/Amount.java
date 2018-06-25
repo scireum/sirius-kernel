@@ -264,7 +264,7 @@ public class Amount implements Comparable<Amount> {
      * the result would by 118.
      *
      * @param increase the percent value by which the value of this will be increased
-     * @return <tt>NOTHING</tt> if this or increase is empty, {@code this * (1 + increase / 100)} otherwise
+     * @return <tt>NOTHING</tt> if <tt>this</tt> is empty, {@code this * (1 + increase / 100)} otherwise
      */
     @Nonnull
     @CheckReturnValue
@@ -277,7 +277,7 @@ public class Amount implements Comparable<Amount> {
      * the result would by 90.
      *
      * @param decrease the percent value by which the value of this will be decreased
-     * @return <tt>NOTHING</tt> if this or increase is empty, {@code this * (1 - increase / 100)} otherwise
+     * @return <tt>NOTHING</tt> if <tt>this</tt> is empty, {@code this * (1 - increase / 100)} otherwise
      */
     @Nonnull
     @CheckReturnValue
@@ -292,8 +292,8 @@ public class Amount implements Comparable<Amount> {
      * each other. The result would be {@code (15 + 5) - (15 * 5 / 100)} which is <tt>19,25 %</tt>
      *
      * @param percent the second percent value which would be applied after this percent value.
-     * @return the effective percent value after both percentages would have been applied
-     * or <tt>NOTHING</tt> if one of both was empty.
+     * @return the effective percent value after both percentages would have been applied or <tt>NOTHING</tt> if
+     * <tt>this</tt> is empty.
      */
     @Nonnull
     @CheckReturnValue
