@@ -148,4 +148,197 @@ class AmountSpec extends BaseSpecification {
         Amount.MINUS_ONE.isLessThan(Amount.ONE)
     }
 
+    def "add() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountB = b instanceof Amount ? b : Amount.of(b)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.add(amountB) == amountResult
+        where:
+        a              | b              | result
+        4.2            | 42             | 46.2
+        42             | 4.2            | 46.2
+        Amount.ZERO    | 42             | 42
+        42             | Amount.ZERO    | 42
+        Amount.NOTHING | 42             | Amount.NOTHING
+        42             | Amount.NOTHING | 42
+    }
+
+    def "subtract() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountB = b instanceof Amount ? b : Amount.of(b)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.subtract(amountB) == amountResult
+        where:
+        a              | b              | result
+        4.2            | 42             | -37.8
+        42             | 4.2            | 37.8
+        Amount.ZERO    | 42             | -42
+        42             | Amount.ZERO    | 42
+        Amount.NOTHING | 42             | Amount.NOTHING
+        42             | Amount.NOTHING | 42
+    }
+
+    def "times() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountB = b instanceof Amount ? b : Amount.of(b)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.times(amountB) == amountResult
+        where:
+        a              | b              | result
+        4.2            | 42             | 176.4
+        42             | 4.2            | 176.4
+        Amount.ZERO    | 42             | Amount.ZERO
+        42             | Amount.ZERO    | Amount.ZERO
+        Amount.NOTHING | 42             | Amount.NOTHING
+        42             | Amount.NOTHING | Amount.NOTHING
+    }
+
+    def "divideBy() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountB = b instanceof Amount ? b : Amount.of(b)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.divideBy(amountB) == amountResult
+        where:
+        a              | b              | result
+        4.2            | 42             | 0.1
+        42             | 4.2            | Amount.TEN
+        Amount.ZERO    | 42             | Amount.ZERO
+        42             | Amount.ZERO    | Amount.NOTHING
+        Amount.NOTHING | 42             | Amount.NOTHING
+        42             | Amount.NOTHING | Amount.NOTHING
+    }
+
+    def "negate() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.negate() == amountResult
+        where:
+        a              | result
+        4.2            | -4.2
+        -4.2           | 4.2
+        42             | -42
+        Amount.ZERO    | Amount.ZERO
+        -0             | Amount.ZERO
+        Amount.NOTHING | Amount.NOTHING
+    }
+
+    def "increasePercent() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountB = b instanceof Amount ? b : Amount.of(b)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.increasePercent(amountB) == amountResult
+        where:
+        a              | b              | result
+        4.2            | Amount.TEN     | 4.62
+        Amount.ZERO    | 42             | Amount.ZERO
+        42             | Amount.ZERO    | 42
+        Amount.NOTHING | 42             | Amount.NOTHING
+        42             | Amount.NOTHING | 42
+    }
+
+    def "decreasePercent() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountB = b instanceof Amount ? b : Amount.of(b)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.decreasePercent(amountB) == amountResult
+        where:
+        a              | b              | result
+        4.2            | Amount.TEN     | 3.78
+        Amount.ZERO    | 42             | Amount.ZERO
+        42             | Amount.ZERO    | 42
+        Amount.NOTHING | 42             | Amount.NOTHING
+        42             | Amount.NOTHING | 42
+    }
+
+    def "multiplyPercent() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountB = b instanceof Amount ? b : Amount.of(b)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.multiplyPercent(amountB) == amountResult
+        where:
+        a              | b              | result
+        4.2            | Amount.TEN     | 13.78
+        Amount.ZERO    | 42             | 42
+        42             | Amount.ZERO    | 42
+        Amount.NOTHING | 42             | Amount.NOTHING
+        42             | Amount.NOTHING | 42
+    }
+
+    def "percentageOf() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountB = b instanceof Amount ? b : Amount.of(b)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.percentageOf(amountB) == amountResult
+        where:
+        a              | b              | result
+        4.2            | 42             | Amount.TEN
+        Amount.ZERO    | 42             | Amount.ZERO
+        42             | Amount.ZERO    | Amount.NOTHING
+        Amount.NOTHING | 42             | Amount.NOTHING
+        42             | Amount.NOTHING | Amount.NOTHING
+    }
+
+    def "percentageDifferenceOf() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountB = b instanceof Amount ? b : Amount.of(b)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.percentageDifferenceOf(amountB) == amountResult
+        where:
+        a              | b              | result
+        4.62           | 4.2            | Amount.TEN
+        Amount.ZERO    | 42             | -100
+        42             | Amount.ZERO    | Amount.NOTHING
+        Amount.NOTHING | 42             | Amount.NOTHING
+        42             | Amount.NOTHING | Amount.NOTHING
+    }
+
+    def "toPercent() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.toPercent() == amountResult
+        where:
+        a              | result
+        0.42           | 42
+        Amount.ONE     | Amount.ONE_HUNDRED
+        2              | 200
+        Amount.ZERO    | Amount.ZERO
+        Amount.NOTHING | Amount.NOTHING
+    }
+
+    def "asDecimal() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.asDecimal() == amountResult
+        where:
+        a                  | result
+        42                 | 0.42
+        Amount.ONE_HUNDRED | Amount.ONE
+        200                | 2
+        Amount.ZERO        | Amount.ZERO
+        Amount.NOTHING     | Amount.NOTHING
+    }
 }
