@@ -82,17 +82,6 @@ public interface StructuredOutput {
      */
     StructuredOutput nullsafeProperty(@Nonnull String name, @Nullable Object data);
 
-    /**
-     * Adds a property to the current object.
-     * <p>
-     * This will create a property only if the specified data object is not null.
-     * Else no property is created.
-     *
-     * @param name the name of the property
-     * @param data the value of the property
-     * @return the output itself for fluent method calls
-     */
-    StructuredOutput propertyIfFilled(@Nonnull String name, @Nullable Object data);
 
     /**
      * Starts an array with is added to the current object as "name".
