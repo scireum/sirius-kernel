@@ -275,4 +275,12 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         property(name, data != null ? data : "");
         return this;
     }
+
+    @Override
+    public StructuredOutput propertyIfFilled(@Nonnull String name, @Nullable Object data) {
+        if (data != null) {
+            property(name, data);
+        }
+        return this;
+    }
 }
