@@ -635,6 +635,22 @@ public class Amount implements Comparable<Amount> {
         return times(MINUS_ONE);
     }
 
+
+    /**
+     * Returns a {@link Amount} whose value is {@code (this % other)}.
+     *
+     * @param other the divisor value by which this {@code Amount} is to be divided.
+     * @return an {@link Amount} representing the remainder of the two amounts
+     * @see BigDecimal#remainder(BigDecimal)
+     */
+    public Amount remainder(Amount other) {
+        if (isEmpty() || other.isZeroOrNull()) {
+            return Amount.NOTHING;
+        }
+
+        return Amount.of(value.remainder(other.value));
+    }
+
     @Override
     public String toString() {
         return toSmartRoundedString(NumberFormat.TWO_DECIMAL_PLACES).toString();

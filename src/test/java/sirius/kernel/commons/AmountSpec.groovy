@@ -2,7 +2,6 @@ package sirius.kernel.commons
 
 import sirius.kernel.BaseSpecification
 import sirius.kernel.async.CallContext
-import sirius.kernel.nls.NLS
 
 import java.util.function.Supplier
 
@@ -340,5 +339,22 @@ class AmountSpec extends BaseSpecification {
         200                | 2
         Amount.ZERO        | Amount.ZERO
         Amount.NOTHING     | Amount.NOTHING
+    }
+
+    def "remainder() works as expected"() {
+        given:
+        Amount amountA = a instanceof Amount ? a : Amount.of(a)
+        Amount amountB = b instanceof Amount ? b : Amount.of(b)
+        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
+        expect:
+        amountA.remainder(amountB) == amountResult
+        where:
+        a              | b              | result
+        10             | 2              | 0
+        10             | 3              | 1
+        10             | 0              | Amount.NOTHING
+        0              | 10             | 0
+        Amount.NOTHING | 10             | Amount.NOTHING
+        10             | Amount.NOTHING | Amount.NOTHING
     }
 }
