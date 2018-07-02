@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Average {
 
     private static final long DEFAULT_MAX_SAMPLES = 100;
+    private AtomicLong sampleCount = new AtomicLong();
     private AtomicLong count = new AtomicLong();
-    private AtomicLong totalCount = new AtomicLong();
     private AtomicDouble sum = new AtomicDouble();
     private final long maxSamples;
 
@@ -73,18 +73,18 @@ public class Average {
      * @param sumOfValue     the total sum of the values to add
      */
     public void addValues(long numberOfValues, double sumOfValue) {
-        long newCount = count.addAndGet(numberOfValues);
+        long newSampleCount = sampleCount.addAndGet(numberOfValues);
         double newSum = sum.addAndGet(sumOfValue);
 
-        if (Long.MAX_VALUE - totalCount.get() < numberOfValues) {
-            totalCount.set(numberOfValues);
+        if (Long.MAX_VALUE - count.get() < numberOfValues) {
+            count.set(numberOfValues);
         } else {
-            totalCount.addAndGet(numberOfValues);
+            count.addAndGet(numberOfValues);
         }
 
-        if (newCount >= maxSamples || newSum > Double.MAX_VALUE / 2) {
-            count.set(1);
-            sum.set(newSum / newCount);
+        if (newSampleCount >= maxSamples || newSum > Double.MAX_VALUE / 2) {
+            sampleCount.set(maxSamples / 2);
+            sum.set(newSum / newSampleCount * sampleCount.get());
         }
     }
 
@@ -96,7 +96,7 @@ public class Average {
      * @return the average of the added values
      */
     public double getAvg() {
-        long counter = count.get();
+        long counter = sampleCount.get();
         if (counter == 0) {
             return 0d;
         }
@@ -112,6 +112,7 @@ public class Average {
     public double getAndClear() {
         double avg = getAvg();
         count.set(0);
+        sampleCount.set(0);
         sum.set(0);
         return avg;
     }
@@ -121,8 +122,8 @@ public class Average {
      *
      * @return the number of value which will be considered when computing the average.
      */
-    public long getCount() {
-        return count.get();
+    public long getSampleCount() {
+        return sampleCount.get();
     }
 
     /**
@@ -130,8 +131,8 @@ public class Average {
      *
      * @return the number of total values inserted in the average
      */
-    public long getTotalCount() {
-        return totalCount.get();
+    public long getCount() {
+        return count.get();
     }
 
     @Override
