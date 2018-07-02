@@ -22,6 +22,7 @@ public class Average {
 
     private static final long DEFAULT_MAX_SAMPLES = 100;
     private AtomicLong count = new AtomicLong();
+    private AtomicLong totalCount = new AtomicLong();
     private AtomicDouble sum = new AtomicDouble();
     private final long maxSamples;
 
@@ -73,6 +74,7 @@ public class Average {
      */
     public void addValues(long numberOfValues, double sumOfValue) {
         long newCount = count.addAndGet(numberOfValues);
+        totalCount.addAndGet(numberOfValues);
         double newSum = sum.addAndGet(sumOfValue);
 
         if (newCount >= maxSamples || newSum > Double.MAX_VALUE / 2) {
@@ -116,6 +118,15 @@ public class Average {
      */
     public long getCount() {
         return count.get();
+    }
+
+    /**
+     * Returns the number of total values inserted in the average.
+     *
+     * @return the number of total values inserted in the average
+     */
+    public long getTotalCount() {
+        return totalCount.get();
     }
 
     @Override
