@@ -74,8 +74,13 @@ public class Average {
      */
     public void addValues(long numberOfValues, double sumOfValue) {
         long newCount = count.addAndGet(numberOfValues);
-        totalCount.addAndGet(numberOfValues);
         double newSum = sum.addAndGet(sumOfValue);
+
+        if (Long.MAX_VALUE - totalCount.get() < numberOfValues) {
+            totalCount.set(numberOfValues);
+        } else {
+            totalCount.addAndGet(numberOfValues);
+        }
 
         if (newCount >= maxSamples || newSum > Double.MAX_VALUE / 2) {
             count.set(1);
