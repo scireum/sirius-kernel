@@ -138,4 +138,18 @@ public class Composable implements Transformable {
     public void attach(Object component) {
         attach(component.getClass(), component);
     }
+
+    /**
+     * Removes an attached component from the current instance.
+     * <p>
+     * The type of the component is used as identifier of the component to be removed.
+     *
+     * @param type the type of the component which should be removed
+     * @param <T>  the generic type which ensures that the component actually implements the given type
+     */
+    public <T> void detach(Class<? extends T> type) {
+        if (components != null) {
+            components.remove(type);
+        }
+    }
 }
