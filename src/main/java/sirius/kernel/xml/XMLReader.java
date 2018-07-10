@@ -47,6 +47,7 @@ public class XMLReader extends DefaultHandler {
     private TaskContext taskContext;
 
     private Map<String, NodeHandler> handlers = Maps.newTreeMap();
+    private Map<String, Runnable> missingHandlers = Maps.newTreeMap();
     private List<SAX2DOMHandler> activeHandlers = Lists.newArrayList();
     private DocumentBuilder documentBuilder;
 
@@ -103,6 +104,8 @@ public class XMLReader extends DefaultHandler {
         for (SAX2DOMHandler handler : activeHandlers) {
             handler.createElement(name, attributes);
         }
+        // Remove MissingHandler
+        missingHandlers.remove(name);
         // Start a new handler is necessary
         NodeHandler handler = handlers.get(name);
         if (handler != null) {
@@ -128,6 +131,31 @@ public class XMLReader extends DefaultHandler {
      */
     public void addHandler(String name, NodeHandler handler) {
         handlers.put(name, handler);
+    }
+
+    /**
+     * Registers a Runnable for a qualified name of a node that is ONLY invoked if no node of this name is found
+     * in the XML and the reader completes.
+     *
+     * @param name           the qualified name of the tag which should be looked for.
+     * @param missingHandler the Runnable to run if no node of this name was found.
+     */
+    public void addMissingHandler(String name, Runnable missingHandler) {
+        missingHandlers.put(name, missingHandler);
+    }
+
+    /**
+     * Registers a new handler for a qualified name of a node and registers a Runnable to run if that node is never encountered.
+     * <p>
+     * See {@link #addHandler(String, NodeHandler)} and {@link #addMissingHandler(String, Runnable)}
+     *
+     * @param name           the qualified name of the tag which should be parsed and processed
+     * @param handler        the NodeHandler used to process the parsed DOM sub-tree
+     * @param missingHandler the Runnable to run if no node of this name was found.
+     */
+    public void addHandler(String name, NodeHandler handler, Runnable missingHandler) {
+        addHandler(name, handler);
+        addMissingHandler(name, missingHandler);
     }
 
     /**
@@ -171,6 +199,8 @@ public class XMLReader extends DefaultHandler {
             });
             reader.setContentHandler(this);
             reader.parse(new InputSource(stream));
+            //run all missingHandlers that remain
+            missingHandlers.forEach((name, runnable) -> runnable.run());
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException(e);
         } catch (UserInterruptException e) {
