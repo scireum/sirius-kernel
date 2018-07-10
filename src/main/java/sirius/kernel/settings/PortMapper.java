@@ -8,6 +8,7 @@
 
 package sirius.kernel.settings;
 
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.health.Exceptions;
 
 /**
@@ -38,19 +39,20 @@ public abstract class PortMapper {
      * Maps the given port for the given service.
      *
      * @param service the service used to identify to container which provides the service
+     * @param host    the host to map
      * @param port    the port to map
      * @return the mapped port number or <tt>port</tt> if no mapper is present.
      */
-    public static int mapPort(String service, int port) {
+    public static Tuple<String, Integer> mapPort(String service, String host, int port) {
         if (mapper == null) {
-            return port;
+            return Tuple.create(host, port);
         }
 
         try {
-            return mapper.map(service, port);
+            return mapper.map(service, host, port);
         } catch (Exception e) {
             Exceptions.ignore(e);
-            return port;
+            return Tuple.create(host, port);
         }
     }
 
@@ -58,8 +60,9 @@ public abstract class PortMapper {
      * Maps the given port for the given service.
      *
      * @param service the service used to identify to container which provides the service
+     * @param host    the host to map
      * @param port    the port to map
      * @return the mapped port number or <tt>port</tt> if no mapping is present.
      */
-    protected abstract int map(String service, int port);
+    protected abstract Tuple<String, Integer> map(String service, String host, int port);
 }

@@ -6,10 +6,10 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>3.14</version>
+        <version>4.0</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
-    <version>11.5</version>
+    <version>11.6</version>
     <name>Sirius Kernel</name>
     <description>Provides common core classes and the microkernel powering all Sirius applications</description>
 
@@ -54,6 +54,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.5</version>
+        </dependency>
+
+        <!-- Used to auto-start Docker environments -->
+        <dependency>
+            <groupId>com.palantir.docker.compose</groupId>
+            <artifactId>docker-compose-rule-core</artifactId>
+            <version>0.34.0</version>
         </dependency>
     </dependencies>
 </project>
