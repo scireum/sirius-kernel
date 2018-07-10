@@ -635,7 +635,6 @@ public class Amount implements Comparable<Amount> {
         return times(MINUS_ONE);
     }
 
-
     /**
      * Returns a {@link Amount} whose value is {@code (this % other)}.
      *

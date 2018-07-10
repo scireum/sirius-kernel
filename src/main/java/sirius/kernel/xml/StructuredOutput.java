@@ -82,7 +82,6 @@ public interface StructuredOutput {
      */
     StructuredOutput nullsafeProperty(@Nonnull String name, @Nullable Object data);
 
-
     /**
      * Starts an array with is added to the current object as "name".
      *
