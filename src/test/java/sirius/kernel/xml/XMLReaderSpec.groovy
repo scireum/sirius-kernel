@@ -80,7 +80,7 @@ class XMLReaderSpec extends BaseSpecification {
                     }
                 } as NodeHandler,
                 { ->
-                    calls.inc()
+                    missing.inc()
                 } as Runnable)
         when:
         r.parse(new ByteArrayInputStream(
