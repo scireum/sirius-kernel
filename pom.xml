@@ -6,10 +6,9 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>4.0</version>
+        <version>5.0</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
-    <version>11.6</version>
     <name>Sirius Kernel</name>
     <description>Provides common core classes and the microkernel powering all Sirius applications</description>
 
