@@ -15,7 +15,7 @@ pipeline:
     image: scireum/sirius-build
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
-      - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent compile sonar:sonar -Dsonar.projectKey=sirius-db
+      - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent compile sonar:sonar -Dsonar.projectKey=${DRONE_REPO_NAME}
     volumes:
       - /root/.m2:/root/.m2
       - /var/repos/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}:/drone/src/github.com/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}
