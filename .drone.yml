@@ -16,7 +16,7 @@ pipeline:
   deploy:
     image: scireum/sirius-build
     commands:
-      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}' pom.xml
+      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
       - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=sirius-db
       - mvn clean deploy
     volumes:
