@@ -191,6 +191,10 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
 
     @Override
     public void awaitTermination() {
+        if (Strings.isEmpty(dockerfile)) {
+            return;
+        }
+
         if (Sirius.isStartedAsTest()) {
             try {
                 LOG.INFO("Executing docker-compose kill...");
