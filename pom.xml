@@ -10,6 +10,7 @@
     </parent>
     <artifactId>sirius-kernel</artifactId>
     <name>Sirius Kernel</name>
+    <version>DEVELOPMENT-SNAPSHOT</version>
     <description>Provides common core classes and the microkernel powering all Sirius applications</description>
 
     <dependencies>

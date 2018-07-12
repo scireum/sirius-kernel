@@ -16,8 +16,9 @@ pipeline:
   deploy:
     image: scireum/sirius-build
     commands:
-      - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=sirius-db -Dbuild.version=${DRONE_TAG}
-      - mvn clean deploy -Dbuild.version=${DRONE_TAG}
+      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}' pom.xml
+      - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=sirius-db
+      - mvn clean deploy
     volumes:
       - /root/.m2:/root/.m2
       - /root/.gnupg:/root/.gnupg
