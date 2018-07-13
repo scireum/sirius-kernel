@@ -4,6 +4,15 @@ clone:
     volumes:
     - /var/repos/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}:/drone/src/github.com/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}
 pipeline:
+  compile:
+    image: scireum/sirius-build
+    commands:
+      - mvn clean compile
+    volumes:
+      - /root/.m2:/root/.m2
+      - /var/repos/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}:/drone/src/github.com/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}
+    when:
+      event: push
   test:
     image: scireum/sirius-build
     commands:
@@ -12,7 +21,7 @@ pipeline:
       - /root/.m2:/root/.m2
       - /var/repos/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}:/drone/src/github.com/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}
     when:
-      event: [push, pull_request]
+      event: pull_request
   sonar:
     image: scireum/sirius-build
     commands:
