@@ -23,7 +23,6 @@ pipeline:
       - /var/repos/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}:/drone/src/github.com/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}
     when:
       event: tag
-      branch: master
   deploy:
     image: scireum/sirius-build
     commands:
