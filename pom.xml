@@ -42,13 +42,6 @@
             <version>3.0.1</version>
         </dependency>
 
-        <!-- Include sigar bindings for system monitoring -->
-        <dependency>
-            <groupId>org.fusesource</groupId>
-            <artifactId>sigar</artifactId>
-            <version>1.6.4</version>
-        </dependency>
-
         <!-- Required logging bridge to make slf4j log to log4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
