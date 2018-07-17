@@ -1039,6 +1039,13 @@ public class NLS {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
             }
         }
+        if (Amount.class.equals(clazz)) {
+            try {
+                return (V) Amount.ofMachineString(value);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
+            }
+        }
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
             return (V) Boolean.valueOf(Boolean.parseBoolean(value));
         }
