@@ -399,8 +399,6 @@ public class Sirius {
         LOG.INFO(SEPARATOR_LINE);
         LOG.INFO("System is UP and RUNNING - %s", w.duration());
         LOG.INFO(SEPARATOR_LINE);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(Sirius::stop));
     }
 
     /**
