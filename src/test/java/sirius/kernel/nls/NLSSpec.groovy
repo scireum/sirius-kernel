@@ -166,6 +166,8 @@ class NLSSpec extends BaseSpecification {
         input | output
         "0.1" | BigDecimal.ONE.divide(BigDecimal.TEN)
         "0.1" | new BigDecimal("0.1")
+        ""    | null
+        null  | null
     }
 
     def "parseMachineString works for Amount"() {
@@ -176,6 +178,8 @@ class NLSSpec extends BaseSpecification {
         input | output
         "0.1" | Amount.ONE.divideBy(Amount.TEN)
         "0.1" | Amount.of(0.1)
+        ""    | null
+        null  | null
     }
 
     def "getMonthNameShort correctly appends the given symbol"() {
@@ -209,7 +213,7 @@ class NLSSpec extends BaseSpecification {
         "nls.test.withTwo"   | 2       | "many: 2"
         "nls.test.withTwo"   | -2      | "many: -2"
     }
-    
+
     def "unicode characters get imported without problems"() {
         given:
         def loadedProperty = NLS.get("nls.test.utf8", "en")
