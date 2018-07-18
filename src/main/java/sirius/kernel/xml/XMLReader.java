@@ -150,6 +150,14 @@ public class XMLReader extends DefaultHandler {
     }
 
     /**
+     * Used to signal the reader to end the current processing
+     */
+    public static class EndOfProcessingException extends RuntimeException {
+
+        private static final long serialVersionUID = 7376735589037262998L;
+    }
+
+    /**
      * Parses the given stream using the given locator and interrupt signal.
      *
      * @param stream          the stream containing the XML data
@@ -173,9 +181,9 @@ public class XMLReader extends DefaultHandler {
             reader.parse(new InputSource(stream));
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException(e);
-        } catch (UserInterruptException e) {
-            // IGNORED - this is used to cancel parsing if the used tried to
-            // cancel a process.
+        } catch (UserInterruptException | EndOfProcessingException e) {
+            // IGNORED - this is used to cancel parsing 
+            Exceptions.ignore(e);
         } finally {
             stream.close();
         }
