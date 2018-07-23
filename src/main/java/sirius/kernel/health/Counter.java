@@ -9,6 +9,7 @@
 package sirius.kernel.health;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Represents a counter for statistical use. Overflows to 0 instead to {@link Long#MIN_VALUE}
@@ -16,8 +17,8 @@ import java.util.concurrent.TimeUnit;
  * Counts up to {@code Long.MAX_VALUE - 1} starting at 0 and overflowing to 0.
  */
 public class Counter {
-    private volatile long startTimeMillis = -1;
-    private volatile long count = 0;
+    private AtomicLong startTimeMillis = new AtomicLong(System.currentTimeMillis());
+    private AtomicLong count = new AtomicLong();
     private final long max;
 
     /**
@@ -42,15 +43,22 @@ public class Counter {
      * @return the update value of the counter
      */
     public long inc() {
-        if (startTimeMillis < 0) {
-            reset();
+        return add(1);
+    }
+
+    /**
+     * Adds the given delta to the counter.
+     *
+     * @param delta the delta to add
+     * @return the update value of the counter
+     */
+    public long add(long delta) {
+        long result = count.addAndGet(delta);
+        if (result >= max) {
+            count.set(0);
         }
-        if (count < max) {
-            count++;
-        } else {
-            count = 0;
-        }
-        return count;
+
+        return result;
     }
 
     /**
@@ -60,7 +68,7 @@ public class Counter {
      * @return the average increment per given time unit
      */
     public double getAvgPer(TimeUnit unit) {
-        return (double) count / getDuration(unit);
+        return (double) count.get() / getDuration(unit);
     }
 
     /**
@@ -69,7 +77,7 @@ public class Counter {
      * @return the value of the counter
      */
     public long getCount() {
-        return count;
+        return count.get();
     }
 
     /**
@@ -79,7 +87,7 @@ public class Counter {
      * @return the time since the creation of the counter in the given time unit
      */
     public long getDuration(TimeUnit unit) {
-        long delta = System.currentTimeMillis() - startTimeMillis;
+        long delta = System.currentTimeMillis() - startTimeMillis.get();
         return unit.convert(delta, TimeUnit.MILLISECONDS);
     }
 
@@ -87,8 +95,8 @@ public class Counter {
      * Resets the counter to zero
      */
     public void reset() {
-        startTimeMillis = System.currentTimeMillis();
-        count = 0;
+        startTimeMillis.set(System.currentTimeMillis());
+        count.set(0);
     }
 
     @Override
