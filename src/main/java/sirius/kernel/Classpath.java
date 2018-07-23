@@ -19,6 +19,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -80,6 +81,7 @@ public class Classpath {
         if (componentRoots == null) {
             try {
                 componentRoots = Collections.list(loader.getResources(componentName));
+                componentRoots.sort(Comparator.comparing(URL::toString));
             } catch (IOException e) {
                 LOG.SEVERE(e);
             }
@@ -97,9 +99,7 @@ public class Classpath {
         return getComponentRoots().stream().flatMap(this::scan).filter(path -> {
             if (customizations != null && path.startsWith("customizations")) {
                 String config = Sirius.getCustomizationName(path);
-                if (!customizations.contains(config)) {
-                    return false;
-                }
+                return customizations.contains(config);
             }
             return true;
         }).map(pattern::matcher).filter(Matcher::matches);
