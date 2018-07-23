@@ -19,6 +19,7 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggerRepository;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
+import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
@@ -34,6 +35,7 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
+import java.util.regex.Pattern;
 
 /**
  * Used to configure the setup of the SIRIUS framework.
@@ -158,6 +160,15 @@ public class Setup {
      */
     public static void createAndStartEnvironment(ClassLoader loader) {
         Sirius.start(new Setup(getProperty("debug").asBoolean(false) ? Mode.DEV : Mode.PROD, loader));
+    }
+
+    /**
+     * Provides a main method for debugging purposes.
+     *
+     * @param args the command line arguments (currently ignored)
+     */
+    public static void main(String[] args) {
+        Sirius.start(new Setup(Mode.DEV, Setup.class.getClassLoader()));
     }
 
     /**
@@ -415,27 +426,41 @@ public class Setup {
     /**
      * Loads the main application configuration which is shipped with the app.
      * <p>
-     * By default this loads "application.conf" from the classpath
+     * By default this loads "application.conf" from the classpath. Also "application-*.conf
+     * are loaded in case it is splitted into several parts.
      *
      * @return the main application config. This will override all component configs but be overridden by developer,
      * test and instance configs
      */
     @Nonnull
     public Config loadApplicationConfig() {
-        Config result = ConfigFactory.empty();
+        final ValueHolder<Config> result = new ValueHolder<>(ConfigFactory.empty());
+
+        // Load component configurations
+        Sirius.getClasspath().find(Pattern.compile("application-([^.]*?)\\.conf")).forEach(value -> {
+            try {
+                Sirius.LOG.INFO("Loading config: %s", value.group());
+                result.set(result.get().withFallback(ConfigFactory.load(getLoader(), value.group())));
+            } catch (Exception e) {
+                Exceptions.ignore(e);
+                Sirius.LOG.WARN("Cannot load %s: %s", value, e.getMessage());
+            }
+        });
+
         if (Sirius.class.getResource("/application.conf") != null) {
             Sirius.LOG.INFO("using application.conf from classpath...");
             try {
-                result = ConfigFactory.load(loader, "application.conf").withFallback(result);
+                result.set(ConfigFactory.load(loader, "application.conf").withFallback(result.get()));
             } catch (Exception e) {
                 Exceptions.ignore(e);
+                Sirius.LOG.WARN("Cannot load application.conf: %s", e.getMessage());
                 Sirius.LOG.WARN("Cannot load application.conf: %s", e.getMessage());
             }
         } else {
             Sirius.LOG.INFO("application.conf not present in classpath");
         }
 
-        return result;
+        return result.get();
     }
 
     /**
