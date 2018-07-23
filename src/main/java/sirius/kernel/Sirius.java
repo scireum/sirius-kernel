@@ -248,9 +248,7 @@ public class Sirius {
         classpath.find(Pattern.compile("component-([^\\-]*?)([^.]*?)\\.conf")).forEach(value -> {
             if (!"test".equals(value.group(1))) {
                 try {
-                    if (Sirius.isDev()) {
-                        LOG.INFO("Loading config: %s", value.group());
-                    }
+                    LOG.INFO("Loading config: %s", value.group());
                     config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
                 } catch (Exception e) {
                     handleConfigError(value.group(), e);
