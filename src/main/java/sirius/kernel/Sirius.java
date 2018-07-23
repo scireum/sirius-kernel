@@ -232,6 +232,10 @@ public class Sirius {
             });
         }
 
+        LOG.INFO("Loading config...");
+        LOG.INFO(SEPARATOR_LINE);
+        setupConfiguration();
+
         if (isStartedAsTest()) {
             // Load test configurations (will override component configs)
             classpath.find(Pattern.compile("component-test-([^.]*?)\\.conf")).forEach(value -> {
@@ -255,6 +259,8 @@ public class Sirius {
                 }
             }
         });
+
+        LOG.INFO(SEPARATOR_LINE);
 
         // Setup log-system based on configuration
         setupLogLevels();
@@ -386,12 +392,6 @@ public class Sirius {
         setup.init();
         LOG.INFO(SEPARATOR_LINE);
         LOG.INFO("System is STARTING...");
-        LOG.INFO(SEPARATOR_LINE);
-        LOG.INFO("Loading config...");
-        LOG.INFO(SEPARATOR_LINE);
-        setupConfiguration();
-        LOG.INFO(SEPARATOR_LINE);
-        LOG.INFO("Starting the system...");
         LOG.INFO(SEPARATOR_LINE);
         init();
         LOG.INFO(SEPARATOR_LINE);
