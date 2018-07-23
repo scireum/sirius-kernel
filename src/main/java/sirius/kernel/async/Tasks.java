@@ -24,6 +24,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.settings.Extension;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.time.Duration;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -109,6 +111,7 @@ public class Tasks implements Startable, Stoppable, Killable {
      * @param category the category of the task to be executed, which implies the executor to use.
      * @return the execution builder which submits tasks to the appropriate executor.
      */
+    @Nonnull
     public ExecutionBuilder executor(String category) {
         return new ExecutionBuilder(this, category);
     }
@@ -120,6 +123,21 @@ public class Tasks implements Startable, Stoppable, Killable {
      */
     public ExecutionBuilder defaultExecutor() {
         return new ExecutionBuilder(this, DEFAULT);
+    }
+
+    /**
+     * Exposes the raw executor service for the given category.
+     * <p>
+     * This shouldn't be used for custom task scheduling (use {@link #executor(String)} instead) but rather for other
+     * frameworks which need an executor service. Using this approach, all thread pools of an application are managed
+     * and visible via central facility.
+     *
+     * @param category the category which is used to specify the capacity of the executor
+     * @return the executor service for the given category
+     */
+    @Nonnull
+    public ExecutorService executorService(String category) {
+        return findExecutor(category);
     }
 
     /*
