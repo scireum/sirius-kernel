@@ -30,6 +30,9 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
 import sirius.kernel.settings.PortMapper;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.stream.Collectors;
 
 /**
@@ -131,6 +134,7 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
 
     @Override
     public void initialize() throws Exception {
+        determineEffectiveDockerFile();
         if (Strings.isFilled(dockerfile)) {
             LOG.INFO("Starting docker compose using: %s", dockerfile);
             this.dockerCompose = new RetryingDockerCompose(retryAttempts,
@@ -156,6 +160,21 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
             PortMapper.setMapper(this);
         } else {
             LOG.INFO("No docker file is present - skipping....");
+        }
+    }
+
+    private void determineEffectiveDockerFile() throws URISyntaxException {
+        if (Strings.isEmpty(dockerfile)) {
+            return;
+        }
+        if (new File(dockerfile).exists()) {
+            return;
+        }
+        URL dockerResource = getClass().getResource(dockerfile.startsWith("/") ? dockerfile : "/" + dockerfile);
+        if (dockerResource != null && dockerResource.toURI() != null && new File(dockerResource.toURI()).exists()) {
+            dockerfile = new File(dockerResource.toURI()).getAbsolutePath();
+        } else {
+            dockerfile = null;
         }
     }
 
