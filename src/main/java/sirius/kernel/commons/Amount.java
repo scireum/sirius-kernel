@@ -156,7 +156,10 @@ public class Amount implements Comparable<Amount> {
      */
     @Nonnull
     public static Amount of(double amount) {
-        return of(BigDecimal.valueOf(amount));
+        if (Double.isInfinite(amount) || Double.isNaN(amount)) {
+            return NOTHING;
+        }
+        return of(new BigDecimal(amount));
     }
 
     /**
