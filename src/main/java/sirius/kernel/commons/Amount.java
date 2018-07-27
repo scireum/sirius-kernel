@@ -159,7 +159,7 @@ public class Amount implements Comparable<Amount> {
         if (Double.isInfinite(amount) || Double.isNaN(amount)) {
             return NOTHING;
         }
-        return of(new BigDecimal(amount));
+        return of(BigDecimal.valueOf(amount));
     }
 
     /**
