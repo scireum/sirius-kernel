@@ -136,7 +136,7 @@ public class Tasks implements Startable, Stoppable, Killable {
      * @return the executor service for the given category
      */
     @Nonnull
-    public ExecutorService executorService(String category) {
+    public AsyncExecutor executorService(String category) {
         return findExecutor(category);
     }
 
