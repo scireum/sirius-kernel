@@ -224,6 +224,11 @@ public class Sirius {
             return;
         }
         initialized = true;
+
+        LOG.INFO("Loading config...");
+        LOG.INFO(SEPARATOR_LINE);
+        setupConfiguration();
+
         classpath = new Classpath(setup.getLoader(), "component.marker", customizations);
 
         if (Sirius.isDev()) {
@@ -231,10 +236,6 @@ public class Sirius {
                 LOG.INFO("Classpath: %s", url);
             });
         }
-
-        LOG.INFO("Loading config...");
-        LOG.INFO(SEPARATOR_LINE);
-        setupConfiguration();
 
         if (isStartedAsTest()) {
             // Load test configurations (will override component configs)
