@@ -225,17 +225,37 @@ public class Sirius {
         }
         initialized = true;
 
-        LOG.INFO("Loading config...");
+        setupLocalConfig();
+
+        setupClasspath();
+
+        setupApplicationAndSystemConfig();
+
         LOG.INFO(SEPARATOR_LINE);
-        setupConfiguration();
 
-        classpath = new Classpath(setup.getLoader(), "component.marker", customizations);
+        // Setup log-system based on configuration
+        setupLogLevels();
 
-        if (Sirius.isDev()) {
-            classpath.getComponentRoots().forEach(url -> {
-                LOG.INFO("Classpath: %s", url);
-            });
-        }
+        // Output enabled frameworks...
+        setupFrameworks();
+
+        // Setup native language support
+        NLS.init(classpath);
+
+        // Initialize dependency injection...
+        Injector.init(classpath);
+
+        startComponents();
+
+        // Start resource monitoring...
+        NLS.startMonitoring(classpath);
+    }
+
+    private static void setupApplicationAndSystemConfig() {
+        LOG.INFO("Loading system config...");
+        LOG.INFO(SEPARATOR_LINE);
+
+        config = config.withFallback(setup.loadApplicationConfig());
 
         if (isStartedAsTest()) {
             // Load test configurations (will override component configs)
@@ -260,25 +280,16 @@ public class Sirius {
                 }
             }
         });
+    }
 
-        LOG.INFO(SEPARATOR_LINE);
+    private static void setupClasspath() {
+        classpath = new Classpath(setup.getLoader(), "component.marker", customizations);
 
-        // Setup log-system based on configuration
-        setupLogLevels();
-
-        // Output enabled frameworks...
-        setupFrameworks();
-
-        // Setup native language support
-        NLS.init(classpath);
-
-        // Initialize dependency injection...
-        Injector.init(classpath);
-
-        startComponents();
-
-        // Start resource monitoring...
-        NLS.startMonitoring(classpath);
+        if (Sirius.isDev()) {
+            classpath.getComponentRoots().forEach(url -> {
+                LOG.INFO("Classpath: %s", url);
+            });
+        }
     }
 
     private static void handleConfigError(String file, Exception e) {
@@ -503,11 +514,12 @@ public class Sirius {
         return customizations.indexOf(configA) - customizations.indexOf(configB);
     }
 
-    /*
-     * Loads all relevant .conf files
-     */
-    private static void setupConfiguration() {
-        config = setup.loadApplicationConfig();
+    private static void setupLocalConfig() {
+        LOG.INFO("Loading local config...");
+        LOG.INFO(SEPARATOR_LINE);
+
+        config = ConfigFactory.empty();
+
         Config instanceConfig = null;
         if (isStartedAsTest()) {
             config = setup.applyTestConfig(config);
