@@ -280,16 +280,16 @@ public class Sirius {
                 }
             }
         });
+
+        LOG.INFO(SEPARATOR_LINE);
     }
 
     private static void setupClasspath() {
         classpath = new Classpath(setup.getLoader(), "component.marker", customizations);
 
-        if (Sirius.isDev()) {
-            classpath.getComponentRoots().forEach(url -> {
-                LOG.INFO("Classpath: %s", url);
-            });
-        }
+        classpath.getComponentRoots().forEach(url -> {
+            LOG.INFO("Classpath: %s", url);
+        });
     }
 
     private static void handleConfigError(String file, Exception e) {
@@ -559,6 +559,8 @@ public class Sirius {
         if (instanceConfig != null) {
             config = instanceConfig.withFallback(config);
         }
+
+        LOG.INFO(SEPARATOR_LINE);
     }
 
     /**
