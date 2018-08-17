@@ -30,7 +30,8 @@ import java.util.List;
 @Register
 public class SystemMetricProvider implements MetricProvider {
 
-    public static final String OSX_DEV_FS = "devfs";
+    private static final String OSX_DEV_FS = "devfs";
+
     private List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
     private List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
 
