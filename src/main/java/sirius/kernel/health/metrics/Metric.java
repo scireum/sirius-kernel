@@ -38,7 +38,7 @@ public class Metric implements Comparable<Metric> {
     public Metric(String name, double value, MetricState state, String unit) {
         this.unit = unit;
         this.name = name;
-        this.value = value;
+        this.value = Double.isNaN(value) ? 0 : value;
         this.state = state;
     }
 
