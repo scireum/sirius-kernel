@@ -10,7 +10,7 @@ package sirius.kernel.health.metrics;
 
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
-import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -30,6 +30,7 @@ import java.util.List;
 @Register
 public class SystemMetricProvider implements MetricProvider {
 
+    public static final String OSX_DEV_FS = "devfs";
     private List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
     private List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
 
@@ -85,8 +86,12 @@ public class SystemMetricProvider implements MetricProvider {
     private void gatherFS(MetricsCollector collector) {
         for (FileStore store : FileSystems.getDefault().getFileStores()) {
             try {
-                double usage = 100d - (100d * store.getUsableSpace() / store.getTotalSpace());
-                collector.metric("sys-fs", "FS: Usage of " + store.name(), usage, "%");
+                // OSX stupidly reports "/dev" as "devfs" which is always 100% utilized...
+                // Also Linux reports some virtual file systems without a size.
+                if (!Strings.areEqual(store.name(), OSX_DEV_FS) && store.getTotalSpace() > 0) {
+                    double usage = 100d - (100d * store.getUsableSpace() / store.getTotalSpace());
+                    collector.metric("sys-fs", "FS: Usage of " + store.name(), usage, "%");
+                }
             } catch (IOException e) {
                 Exceptions.ignore(e);
             }
