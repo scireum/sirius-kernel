@@ -251,6 +251,67 @@ public class Sirius {
         NLS.startMonitoring(classpath);
     }
 
+    /**
+     * Loads the local configuration.
+     * <p>
+     * These are <tt>settings.conf</tt>, <tt>develop.conf</tt>, <tt>test.conf</tt>
+     * and finally, <tt>instance.conf</tt>.
+     */
+    private static void setupLocalConfig() {
+        LOG.INFO("Loading local config...");
+        LOG.INFO(SEPARATOR_LINE);
+
+        config = ConfigFactory.empty();
+
+        Config instanceConfig = null;
+        if (isStartedAsTest()) {
+            config = setup.applyTestConfig(config);
+            config = setup.applyTestScenarioConfig(System.getProperty(SIRIUS_TEST_SCENARIO_PROPERTY), config);
+        } else {
+            // instance.conf and develop.conf are not used to tests to permit uniform behaviour on local
+            // machines and build servers...
+            if (Sirius.isDev()) {
+                config = setup.applyDeveloperConfig(config);
+            }
+            instanceConfig = setup.loadInstanceConfig();
+        }
+
+        // Setup customer customizations...
+        if (instanceConfig != null && instanceConfig.hasPath(CONFIG_KEY_CUSTOMIZATIONS)) {
+            customizations = instanceConfig.getStringList(CONFIG_KEY_CUSTOMIZATIONS);
+        } else if (config.hasPath(CONFIG_KEY_CUSTOMIZATIONS)) {
+            customizations = config.getStringList(CONFIG_KEY_CUSTOMIZATIONS);
+        }
+
+        // Load settings.conf for customizations...
+        for (String conf : customizations) {
+            if (Sirius.class.getResource("/customizations/" + conf + "/settings.conf") != null) {
+                LOG.INFO("loading settings.conf for customization '" + conf + "'");
+                String configName = "customizations/" + conf + "/settings.conf";
+                try {
+                    config = ConfigFactory.load(setup.getLoader(), configName).withFallback(config);
+                } catch (Exception e) {
+                    handleConfigError(configName, e);
+                }
+            } else {
+                LOG.INFO("customization '" + conf + "' has no settings.conf...");
+            }
+        }
+
+        // Apply instance config at last for override all other configs...
+        if (instanceConfig != null) {
+            config = instanceConfig.withFallback(config);
+        }
+
+        LOG.INFO(SEPARATOR_LINE);
+    }
+
+    /**
+     * Loads the application config files.
+     * <p>
+     * These are <tt>component-XXX.conf</tt>, <tt>component-test-XXX.conf</tt>, <tt>application-XXX.conf</tt>
+     * and finally, <tt>application.conf</tt>.
+     */
     private static void setupApplicationAndSystemConfig() {
         LOG.INFO("Loading system config...");
         LOG.INFO(SEPARATOR_LINE);
@@ -512,55 +573,6 @@ public class Sirius {
             return -1;
         }
         return customizations.indexOf(configA) - customizations.indexOf(configB);
-    }
-
-    private static void setupLocalConfig() {
-        LOG.INFO("Loading local config...");
-        LOG.INFO(SEPARATOR_LINE);
-
-        config = ConfigFactory.empty();
-
-        Config instanceConfig = null;
-        if (isStartedAsTest()) {
-            config = setup.applyTestConfig(config);
-            config = setup.applyTestScenarioConfig(System.getProperty(SIRIUS_TEST_SCENARIO_PROPERTY), config);
-        } else {
-            // instance.conf and develop.conf are not used to tests to permit uniform behaviour on local
-            // machines and build servers...
-            if (Sirius.isDev()) {
-                config = setup.applyDeveloperConfig(config);
-            }
-            instanceConfig = setup.loadInstanceConfig();
-        }
-
-        // Setup customer customizations...
-        if (instanceConfig != null && instanceConfig.hasPath(CONFIG_KEY_CUSTOMIZATIONS)) {
-            customizations = instanceConfig.getStringList(CONFIG_KEY_CUSTOMIZATIONS);
-        } else if (config.hasPath(CONFIG_KEY_CUSTOMIZATIONS)) {
-            customizations = config.getStringList(CONFIG_KEY_CUSTOMIZATIONS);
-        }
-
-        // Load settings.conf for customizations...
-        for (String conf : customizations) {
-            if (Sirius.class.getResource("/customizations/" + conf + "/settings.conf") != null) {
-                LOG.INFO("loading settings.conf for customization '" + conf + "'");
-                String configName = "customizations/" + conf + "/settings.conf";
-                try {
-                    config = ConfigFactory.load(setup.getLoader(), configName).withFallback(config);
-                } catch (Exception e) {
-                    handleConfigError(configName, e);
-                }
-            } else {
-                LOG.INFO("customization '" + conf + "' has no settings.conf...");
-            }
-        }
-
-        // Apply instance config at last for override all other configs...
-        if (instanceConfig != null) {
-            config = instanceConfig.withFallback(config);
-        }
-
-        LOG.INFO(SEPARATOR_LINE);
     }
 
     /**
