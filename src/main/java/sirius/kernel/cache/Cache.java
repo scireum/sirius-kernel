@@ -149,14 +149,6 @@ public interface Cache<K, V> {
     void removeIf(@Nonnull Predicate<CacheEntry<K, V>> predicate);
 
     /**
-     * Checks if there is a cached entry for the given key
-     *
-     * @param key contains the key to check in the cache
-     * @return <tt>true</tt> if a value os present for the given key, <tt>false</tt> otherwise
-     */
-    boolean contains(@Nonnull K key);
-
-    /**
      * Provides access to the keys stored in this cache
      *
      * @return an Iterator for all keys in the cache

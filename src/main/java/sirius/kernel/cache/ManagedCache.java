@@ -184,14 +184,6 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     }
 
     @Override
-    public boolean contains(K key) {
-        if (data == null) {
-            return false;
-        }
-        return data.asMap().containsKey(key);
-    }
-
-    @Override
     public V get(final K key, final ValueComputer<K, V> computer) {
         try {
             if (key == null) {
