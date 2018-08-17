@@ -8,22 +8,22 @@
 
 package sirius.kernel.cache;
 
-import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.Strings;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
 import java.time.Duration;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
  * Provides access to all managed caches
  * <p>
- * Is responsible for creating new caches using {@link #createCache(String)}. Also, this class keeps track of all
- * known caches.
+ * Is responsible for creating new caches using {@link #createLocalCache(String)} or {@link #createCoherentCache(String)}.
+ * Also, this class keeps track of all known caches.
  * <p>
  * Additionally instances of {@link InlineCache} can be created, which can be used to compute a single value,
  * which is then cached for a given amount of time.
@@ -38,9 +38,12 @@ public class CacheManager {
     /**
      * Lists all known caches.
      */
-    private static List<ManagedCache<?, ?>> caches = new CopyOnWriteArrayList<>();
+    private static Map<String, ManagedCache<?, ?>> caches = new ConcurrentHashMap<>();
 
     private static final Duration INLINE_CACHE_DEFAULT_TTL = Duration.ofSeconds(10);
+
+    @Part
+    private static CacheCoherence cacheCoherence;
 
     /**
      * This class has only static members and is not intended to be instantiated
@@ -54,11 +57,11 @@ public class CacheManager {
      * @return a list of all caches created so far
      */
     public static List<ManagedCache<?, ?>> getCaches() {
-        return Collections.unmodifiableList(caches);
+        return new ArrayList<>(caches.values());
     }
 
     /**
-     * Creates a cache with the given name.
+     * Creates a cache with the given name which is only managed locally.
      * <p>
      * The name is used to load the settings from the system configuration, using the extension <tt>cache.[name]</tt>.
      * If a value is absent in the cache, the given <tt>valueComputer</tt> is used to generate the requested value. If
@@ -72,6 +75,9 @@ public class CacheManager {
      * <li><tt>verification</tt>: a duration specifying in which interval a verification of a value will
      * take place (if possible)</li>
      * </ul>
+     * <p>
+     * To create a cache which is maintained across a cluster of nodes, use
+     * {@link #createCoherentCache(String, ValueComputer, ValueVerifier)}.
      *
      * @param name          the name of the cache, used to load the appropriate extension from the config
      * @param valueComputer used to compute a value, if no valid value was found in the cache for the given key. Can
@@ -84,42 +90,81 @@ public class CacheManager {
      * @param <V>           the value type used by the cache
      * @return a newly created cache according to the given parameters and the settings in the system config
      */
-    @SuppressWarnings("squid:S2250")
-    @Explain("Caches are only created once, so there is no performance hotspot")
-    public static <K, V> Cache<K, V> createCache(String name,
-                                                 ValueComputer<K, V> valueComputer,
-                                                 ValueVerifier<V> verifier) {
-        verifyUniquenessOfName(name);
+    public static <K, V> Cache<K, V> createLocalCache(String name,
+                                                      ValueComputer<K, V> valueComputer,
+                                                      ValueVerifier<V> verifier) {
         ManagedCache<K, V> result = new ManagedCache<>(name, valueComputer, verifier);
-        caches.add(result);
+
+        verifyUniquenessOfName(name);
+        caches.put(name, result);
         return result;
     }
 
     private static void verifyUniquenessOfName(String name) {
-        for (ManagedCache<?, ?> other : caches) {
-            if (Strings.areEqual(name, other.getName())) {
-                throw Exceptions.handle()
-                                .to(LOG)
-                                .withSystemErrorMessage("A cache named '%s' has already been created!", name)
-                                .handle();
-            }
+        if (caches.containsKey(name)) {
+            throw Exceptions.handle()
+                            .to(LOG)
+                            .withSystemErrorMessage("A cache named '%s' has already been created!", name)
+                            .handle();
         }
     }
 
     /**
-     * Creates a cached with the given name.
+     * Creates a cache with the given name, for which removals are roamed in the cluster to prevent stale values.
      * <p>
-     * This is just a shortcut for {@link #createCache(String, ValueComputer, ValueVerifier)} with neither a
+     * All other settings are exactly the same as for local caches. Also, if no {@link CacheCoherence} is present,
+     * this will behave like a local cache.
+     *
+     * @param name          the name of the cache, used to load the appropriate extension from the config
+     * @param valueComputer used to compute a value, if no valid value was found in the cache for the given key. Can
+     *                      be <tt>null</tt> if there is no appropriate way to compute such a value. In this case, the
+     *                      cache will simply return <tt>null</tt>.
+     * @param verifier      used to verify a value before it is returned to the user. Note that the
+     *                      value is not verified each time, but in given intervals. If the verifier is <tt>null</tt>,
+     *                      no verification will take place.
+     * @param <V>           the value type used by the cache
+     * @return a newly created cache according to the given parameters and the settings in the system config
+     * @see #createLocalCache(String, ValueComputer, ValueVerifier)
+     */
+    public static <V> Cache<String, V> createCoherentCache(String name,
+                                                           ValueComputer<String, V> valueComputer,
+                                                           ValueVerifier<V> verifier) {
+        CoherentCache<V> result = new CoherentCache<>(name, valueComputer, verifier);
+
+        verifyUniquenessOfName(name);
+        caches.put(name, result);
+        return result;
+    }
+
+    /**
+     * Creates a locally managed cache with the given name.
+     * <p>
+     * This is just a shortcut for {@link #createLocalCache(String, ValueComputer, ValueVerifier)} with neither a
      * <tt>ValueComputer</tt> nor a <tt>ValueVerifier</tt> supplied.
      *
      * @param <K>  the key field used to identify cache entries
      * @param <V>  the value type used by the cache
      * @param name the name of the cache (used to fetch settings from the system config
      * @return the newly created cache
-     * @see #createCache(String, ValueComputer, ValueVerifier)
+     * @see #createLocalCache(String, ValueComputer, ValueVerifier)
      */
-    public static <K, V> Cache<K, V> createCache(String name) {
-        return createCache(name, null, null);
+    public static <K, V> Cache<K, V> createLocalCache(String name) {
+        return createLocalCache(name, null, null);
+    }
+
+    /**
+     * Creates a coherent cache with the given name.
+     * <p>
+     * This is just a shortcut for {@link #createCoherentCache(String, ValueComputer, ValueVerifier)} with neither a
+     * <tt>ValueComputer</tt> nor a <tt>ValueVerifier</tt> supplied.
+     *
+     * @param <V>  the value type used by the cache
+     * @param name the name of the cache (used to fetch settings from the system config
+     * @return the newly created cache
+     * @see #createLocalCache(String, ValueComputer, ValueVerifier)
+     */
+    public static <V> Cache<String, V> createCoherentCache(String name) {
+        return createCoherentCache(name, null, null);
     }
 
     /**
@@ -148,5 +193,57 @@ public class CacheManager {
      */
     public static <E> InlineCache<E> createTenSecondsInlineCache(Supplier<E> computer) {
         return createInlineCache(INLINE_CACHE_DEFAULT_TTL, computer);
+    }
+
+    /**
+     * Used by {@link CoherentCache} to signal that this cache is to be cleared on all nodes.
+     *
+     * @param cache the cache to clear
+     */
+    protected static void clearCoherentCache(CoherentCache<?> cache) {
+        if (cacheCoherence != null) {
+            cacheCoherence.clear(cache);
+        } else {
+            cache.clearLocal();
+        }
+    }
+
+    /**
+     * Clears the coherent cache locally.
+     *
+     * @param cacheName the cache to clear
+     */
+    public static void clearCoherentCacheLocally(String cacheName) {
+        ManagedCache<?, ?> cache = caches.get(cacheName);
+        if (cache instanceof CoherentCache) {
+            ((CoherentCache<?>) cache).clearLocal();
+        }
+    }
+
+    /**
+     * Used by {@link CoherentCache} to signal that the given key should be removed from this cache on all nodes.
+     *
+     * @param cache the cache to remove the value from
+     * @param key   the key to remove
+     */
+    protected static void removeCoherentCacheKey(CoherentCache<?> cache, String key) {
+        if (cacheCoherence != null) {
+            cacheCoherence.removeKey(cache, key);
+        } else {
+            cache.removeLocal(key);
+        }
+    }
+
+    /**
+     * Removes the given key from the given cache locally.
+     *
+     * @param cacheName the name of the cache to remove the value from
+     * @param key       the key to remove
+     */
+    public static void removeCoherentCacheKeyLocally(String cacheName, String key) {
+        ManagedCache<?, ?> cache = caches.get(cacheName);
+        if (cache instanceof CoherentCache) {
+            ((CoherentCache<?>) cache).removeLocal(key);
+        }
     }
 }

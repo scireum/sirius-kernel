@@ -60,7 +60,7 @@ public class StructuredNode {
     private static XPathExpression compile(String xpath) throws XPathExpressionException {
         Tuple<Thread, String> key = Tuple.create(Thread.currentThread(), xpath);
         if (cache == null) {
-            cache = CacheManager.createCache("xpath");
+            cache = CacheManager.createLocalCache("xpath");
         }
         XPathExpression result = cache.get(key);
         if (result == null) {

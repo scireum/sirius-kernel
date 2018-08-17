@@ -13,8 +13,9 @@ import javax.annotation.Nullable;
 /**
  * Checks if a cached value is still valid
  * <p>
- * Can be supplied to {@link CacheManager#createCache(String, ValueComputer, ValueVerifier)} when creating a cache
- * to verify values before returning them to the caller.
+ * Can be supplied to {@link CacheManager#createLocalCache(String, ValueComputer, ValueVerifier)} or
+ * {@link CacheManager#createCoherentCache(String, ValueComputer, ValueVerifier)} when creating a cache to verify
+ * values before returning them to the caller.
  *
  * @param <V> the value type determining the type of values stored in the cache
  */

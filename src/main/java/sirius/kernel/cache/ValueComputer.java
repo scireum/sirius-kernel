@@ -14,8 +14,9 @@ import javax.annotation.Nullable;
 /**
  * Computes a value if it is not found in a cache
  * <p>
- * Can be supplied to {@link CacheManager#createCache(String, ValueComputer, ValueVerifier)} when creating a cache
- * to compute values which are not found in the cache.
+ * Can be supplied to {@link CacheManager#createLocalCache(String, ValueComputer, ValueVerifier)} or
+ * {@link CacheManager#createCoherentCache(String, ValueComputer, ValueVerifier)} when creating a cache to compute
+ * values which are not found in the cache.
  *
  * @param <K> the key type determining the type of the lookup values in the cache
  * @param <V> the value type determining the type of values stored in the cache
