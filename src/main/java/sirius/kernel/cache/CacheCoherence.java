@@ -26,7 +26,7 @@ public interface CacheCoherence {
      *
      * @param cache the cache to clear
      */
-    void clear(CoherentCache<?> cache);
+    void clear(Cache<String, ?> cache);
 
     /**
      * Notifies the coherence manager that the given key from the given cache needs to be removed on all nodes,
@@ -35,5 +35,5 @@ public interface CacheCoherence {
      * @param cache the cache to remove the key (value) from
      * @param key   the key to remove
      */
-    void removeKey(CoherentCache<?> cache, String key);
+    void removeKey(Cache<String, ?> cache, String key);
 }
