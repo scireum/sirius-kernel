@@ -68,6 +68,7 @@ public class Outcall {
      */
     public Outcall postData(Context params, Charset charset) throws IOException {
         connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         this.charset = charset;
 
         OutputStreamWriter writer = new OutputStreamWriter(getOutput(), charset.name());
