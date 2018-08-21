@@ -60,6 +60,10 @@ class CoherentCache<V> extends ManagedCache<String, V> {
 
     @Override
     public void removeIf(@Nonnull Predicate<CacheEntry<String, V>> predicate) {
+        if (data == null) {
+            return;
+        }
+
         data.asMap().values().stream().filter(predicate).map(CacheEntry::getKey).forEach(this::remove);
     }
 }
