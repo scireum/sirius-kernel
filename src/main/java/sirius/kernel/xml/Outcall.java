@@ -41,6 +41,10 @@ public class Outcall {
 
     private static final int DEFAULT_CONNECT_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
     private static final int DEFAULT_READ_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
+    private static final String REQUEST_METHOD_POST = "POST";
+    private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
+
     private HttpURLConnection connection;
     private Charset charset = Charsets.UTF_8;
 
@@ -67,8 +71,8 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public Outcall postData(Context params, Charset charset) throws IOException {
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connection.setRequestMethod(REQUEST_METHOD_POST);
+        connection.setRequestProperty(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED);
         this.charset = charset;
 
         OutputStreamWriter writer = new OutputStreamWriter(getOutput(), charset.name());
