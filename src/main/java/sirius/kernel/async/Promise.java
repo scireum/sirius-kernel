@@ -20,6 +20,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -47,6 +48,22 @@ public class Promise<V> {
     private Throwable failure;
     private volatile boolean logErrors = true;
     private List<CompletionHandler<V>> handlers = Lists.newArrayListWithCapacity(2);
+
+    /**
+     * Creates a new promise which can be fulfilled later.
+     */
+    public Promise() {
+
+    }
+
+    /**
+     * Creates an instantly successful promise containing the given value.
+     *
+     * @param successValue the value to fullfill the promise with
+     */
+    public Promise(V successValue) {
+        success(successValue);
+    }
 
     /**
      * Returns the value of the promise or <tt>null</tt> if not completed yet.
@@ -280,6 +297,36 @@ public class Promise<V> {
     }
 
     /**
+     * Chains this promise to the given future.
+     * <p>
+     * Connects both, the successful path as well as the failure handling of this promise to the given future.
+     *
+     * @param future the future to be used as completion handler for this.
+     */
+    public void chain(@Nonnull Future future) {
+        onComplete(new CompletionHandler<V>() {
+            @Override
+            public void onSuccess(V value) throws Exception {
+                future.success();
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                future.fail(throwable);
+            }
+        });
+    }
+
+    /**
+     * Returns this promise as a future.
+     *
+     * @return this promise as future
+     */
+    public Future asFuture() {
+        return (Future) this;
+    }
+
+    /**
      * Chains this promise to the given one, by transforming the result value of this promise using the given mapper.
      *
      * @param promise the promise to be used as completion handler for this.
@@ -459,6 +506,52 @@ public class Promise<V> {
             @Override
             public void onFailure(Throwable throwable) throws Exception {
                 failureHandler.accept(throwable);
+            }
+        });
+    }
+
+    /**
+     * Provides a handler which is invoked when the promise completes.
+     *
+     * @param completionHandler the handler which is invoked on completion (successful or not).
+     * @return <tt>this</tt> for fluent method chaining
+     */
+    public Promise<V> then(@Nonnull Runnable completionHandler) {
+        return onComplete(new CompletionHandler<V>() {
+            @Override
+            public void onSuccess(@Nullable V value) throws Exception {
+                completionHandler.run();
+            }
+
+            @Override
+            public void onFailure(@Nonnull Throwable throwable) throws Exception {
+                completionHandler.run();
+            }
+        });
+    }
+
+    /**
+     * Provides a handler which is invoked when the promise completes.
+     * <p>
+     * The given handler is either supplied with the success value of the promise, wrapped as optional
+     * or with an empty optional, if the promise failed.
+     * <p>
+     * Note that using this approach, one cannot determine if the promise failed or was completed
+     * with <tt>null</tt>.
+     *
+     * @param completionHandler the handler which is invoked on completion (successful or not).
+     * @return <tt>this</tt> for fluent method chaining
+     */
+    public Promise<V> then(@Nonnull Consumer<Optional<V>> completionHandler) {
+        return onComplete(new CompletionHandler<V>() {
+            @Override
+            public void onSuccess(@Nullable V value) throws Exception {
+                completionHandler.accept(Optional.ofNullable(value));
+            }
+
+            @Override
+            public void onFailure(@Nonnull Throwable throwable) throws Exception {
+                completionHandler.accept(Optional.empty());
             }
         });
     }
