@@ -339,63 +339,6 @@ public class Tasks implements Startable, Stoppable, Killable {
     }
 
     /**
-     * Turns a list of promises into a promise for a list of values.
-     * <p>
-     * Note that all values need to have the same type.
-     * <p>
-     * If only the completion of all promises matters in contrast to their actual result, a {@link Barrier} can also
-     * be used. This permits to wait for promises of different types.
-     *
-     * @param list the list of promises to convert.
-     * @param <V>  the type of each promise.
-     * @return the promise which will complete if all promises completed or if at least on failed.
-     */
-    public static <V> Promise<List<V>> sequence(List<Promise<V>> list) {
-        final Promise<List<V>> result = new Promise<>();
-
-        // Create a list with the correct length
-        final List<V> resultList = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            resultList.add(null);
-        }
-
-        // Keep track when we're finished
-        final CountDownLatch latch = new CountDownLatch(list.size());
-
-        // Iterate over all promises and create a completion handler, which either forwards a failure or which placesy
-        // a successfully computed in the created result list
-        int index = 0;
-        for (Promise<V> promise : list) {
-            final int currentIndex = index;
-            promise.onComplete(new CompletionHandler<V>() {
-                @Override
-                public void onSuccess(@Nullable V value) throws Exception {
-                    if (!result.isFailed()) {
-                        // onSuccess can be called from any thread -> sync on resultList...
-                        synchronized (resultList) {
-                            resultList.set(currentIndex, value);
-                        }
-
-                        // Keep track how many results we're waiting for and forward the result when we're finished.
-                        latch.countDown();
-                        if (latch.getCount() <= 0) {
-                            result.success(resultList);
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(Throwable throwable) throws Exception {
-                    result.fail(throwable);
-                }
-            });
-            index++;
-        }
-
-        return result;
-    }
-
-    /**
      * Returns a list of all known executors.
      *
      * @return a collection of all executors which have been used by the system.
