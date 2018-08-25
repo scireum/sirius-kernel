@@ -53,13 +53,12 @@ public class Promise<V> {
      * Creates a new promise which can be fulfilled later.
      */
     public Promise() {
-
     }
 
     /**
      * Creates an instantly successful promise containing the given value.
      *
-     * @param successValue the value to fullfill the promise with
+     * @param successValue the value to fulfill the promise with
      */
     public Promise(V successValue) {
         success(successValue);
