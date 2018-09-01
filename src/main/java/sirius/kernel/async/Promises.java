@@ -92,7 +92,7 @@ public class Promises {
      * @param <V>  the type of each promise.
      * @return the promise which will complete if all promises completed or if at least on failed.
      */
-    public static <V> Promise<List<V>> parrallel(List<Promise<V>> list) {
+    public static <V> Promise<List<V>> parallel(List<Promise<V>> list) {
         final Promise<List<V>> result = new Promise<>();
 
         // Create a list with the correct length
