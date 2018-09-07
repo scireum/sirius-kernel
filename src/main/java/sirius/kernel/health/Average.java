@@ -37,6 +37,8 @@ public class Average {
     /**
      * Creates a new average which averages up to <tt>maxSamples</tt> and then computes the effective
      * avarage and resets the counter to 1 using that value.
+     *
+     * @param maxSamples the max number of samples to use in order to build the average
      */
     public Average(long maxSamples) {
         this.maxSamples = maxSamples;

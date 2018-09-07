@@ -205,7 +205,7 @@ public class XMLReader extends DefaultHandler {
         return emptyResource();
     }
 
-    public InputSource emptyResource() {
+    private InputSource emptyResource() {
         return new InputSource(new StringReader(""));
     }
 }

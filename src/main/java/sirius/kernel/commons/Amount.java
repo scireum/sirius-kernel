@@ -18,7 +18,6 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -201,7 +200,7 @@ public class Amount implements Comparable<Amount> {
         if (amount == null || Double.isInfinite(amount) || Double.isNaN(amount)) {
             return NOTHING;
         }
-        return of(new BigDecimal(amount));
+        return of(BigDecimal.valueOf(amount));
     }
 
     /**
@@ -494,9 +493,6 @@ public class Amount implements Comparable<Amount> {
             return 1;
         }
         if (o == this) {
-            return 0;
-        }
-        if (Objects.equals(value, o.value)) {
             return 0;
         }
         if (o.value == null) {
