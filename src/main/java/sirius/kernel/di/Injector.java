@@ -124,7 +124,7 @@ public class Injector {
 
     private static void createAndCollectClassLoadAction(String className, Class<?> clazz) {
         try {
-            actions.add((ClassLoadAction) clazz.newInstance());
+            actions.add((ClassLoadAction) clazz.getDeclaredConstructor().newInstance());
         } catch (Exception e) {
             Exceptions.handle()
                       .error(e)
