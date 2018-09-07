@@ -234,10 +234,7 @@ public class MultiMap<K, V> {
      */
     public MultiMap<K, V> merge(MultiMap<K, V> other) {
         if (other != null) {
-            other.base.entrySet()
-                      .stream()
-                      .flatMap(Tuple::flatten)
-                      .forEach(t -> put(t.getFirst(), t.getSecond()));
+            other.base.entrySet().stream().flatMap(Tuple::flatten).forEach(t -> put(t.getFirst(), t.getSecond()));
         }
         return this;
     }

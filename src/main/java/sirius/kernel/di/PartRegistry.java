@@ -265,10 +265,10 @@ class PartRegistry implements MutableGlobalContext {
     }
 
     private void registerNamedPart(String uniqueName,
-                                  Object part,
-                                  String customizationName,
-                                  Class<?> clazz,
-                                  Map<String, Object> partsOfClass) {
+                                   Object part,
+                                   String customizationName,
+                                   Class<?> clazz,
+                                   Map<String, Object> partsOfClass) {
         Object currentPart = partsOfClass.get(uniqueName);
         if (currentPart == null) {
             partsOfClass.put(uniqueName, part);

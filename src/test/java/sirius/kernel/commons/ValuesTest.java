@@ -13,7 +13,8 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class ValuesTest {
     @Test
@@ -27,11 +28,10 @@ public class ValuesTest {
         assertEquals("A", Values.of(new String[]{"A", "B", "C"}).at("A").asString());
         assertEquals("C", Values.of(new String[]{"A", "B", "C"}).at("C").asString());
         List<String> test = Lists.newArrayList();
-        for(int i = 1; i < 100; i++) {
+        for (int i = 1; i < 100; i++) {
             test.add(String.valueOf(i));
         }
         assertEquals("28", Values.of(test).at("AB").asString());
         assertEquals("34", Values.of(test).at("AH").asString());
     }
-
 }

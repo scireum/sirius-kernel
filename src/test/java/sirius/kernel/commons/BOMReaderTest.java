@@ -14,7 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class BOMReaderTest {
 
@@ -66,5 +66,4 @@ public class BOMReaderTest {
         assertEquals(2, in.read(buf));
         assertEquals('H', buf[0]);
     }
-
 }

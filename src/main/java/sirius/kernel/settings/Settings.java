@@ -203,6 +203,7 @@ public class Settings {
 
     /**
      * Returns the list of strings for the given key.
+     *
      * @param key the key used to lookup the value
      * @return a list of strings stored of the given key
      */
