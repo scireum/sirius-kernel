@@ -30,7 +30,8 @@ public class FastTestLoop extends BackgroundLoop {
     }
 
     @Override
-    protected void doWork() throws Exception {
+    protected String doWork() throws Exception {
         counter.incrementAndGet();
+        return null;
     }
 }

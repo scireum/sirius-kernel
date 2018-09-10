@@ -31,8 +31,9 @@ public class SlowTestLoop extends BackgroundLoop {
     }
 
     @Override
-    protected void doWork() throws Exception {
+    protected String doWork() throws Exception {
         counter.incrementAndGet();
         Wait.seconds(2);
+        return null;
     }
 }
