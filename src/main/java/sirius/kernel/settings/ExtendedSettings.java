@@ -69,16 +69,21 @@ public class ExtendedSettings extends Settings {
      */
     public static final Pattern VALID_EXTENSION_ID = Pattern.compile("[a-z0-9\\-]+");
 
-    /*
+    /**
      * Used as cache for already loaded extension lists
      */
     private Map<String, Map<String, Extension>> cache = new ConcurrentHashMap<>();
 
-    /*
+    /**
      * Used as cache for the default values of a given extension type
      */
     private Map<String, Extension> defaultsCache = new ConcurrentHashMap<>();
 
+    /**
+     * Creates a new settings object based on the given config.
+     *
+     * @param config the config to wrap
+     */
     public ExtendedSettings(Config config) {
         super(config);
     }

@@ -322,7 +322,7 @@ public class CallContext {
         try {
             SubContext result = subContext.get(contextType);
             if (result == null) {
-                result = contextType.newInstance();
+                result = contextType.getDeclaredConstructor().newInstance();
                 subContext.put(contextType, result);
             }
 

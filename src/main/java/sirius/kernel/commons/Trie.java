@@ -71,6 +71,8 @@ public class Trie<V> {
 
     /**
      * Represents an iterator which navigates through the trie character by character.
+     *
+     * @param <V> the type of values managed by the trie
      */
     public interface ContainmentIterator<V> {
 

@@ -18,7 +18,8 @@ import java.util.regex.Pattern;
  */
 public class LogHelper {
 
-    private LogHelper() {}
+    private LogHelper() {
+    }
 
     @Part
     private static MemoryBasedHealthMonitor monitor;

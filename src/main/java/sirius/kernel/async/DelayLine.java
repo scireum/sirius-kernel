@@ -110,20 +110,24 @@ public class DelayLine extends BackgroundLoop implements MetricProvider {
     }
 
     @Override
-    protected void doWork() throws Exception {
+    protected String doWork() throws Exception {
         long now = System.currentTimeMillis();
+        int numScheduled = 0;
         synchronized (waitingTasks) {
             Iterator<WaitingTask> iter = waitingTasks.iterator();
             while (iter.hasNext()) {
                 WaitingTask next = iter.next();
                 if (next.timeout > now) {
-                    return;
+                    return "Re-Scheduled Tasks: " + numScheduled;
                 }
 
                 iter.remove();
                 tasks.executor(next.executor).start(next);
+                numScheduled++;
             }
         }
+
+        return null;
     }
 
     @Override

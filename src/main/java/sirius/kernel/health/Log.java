@@ -52,6 +52,31 @@ public class Log {
     private static final List<Log> all = Lists.newCopyOnWriteArrayList();
 
     /**
+     * Provides a generic logger for application log messages.
+     * <p>
+     * This should ony be used by application code. Use a specific logger if possible and appropriate.
+     * <p>
+     * Use {@link #SYSTEM} for generic framework / system specific events.
+     */
+    public static final Log APPLICATION = Log.get("application");
+
+    /**
+     * Provides a generic logger for system log messages.
+     * <p>
+     * This should only be used by libraries or frameworks. Use a specific logger if possible and appropriate.
+     * <p>
+     * Use {@link #APPLICATION} for generic application specific events.
+     */
+    public static final Log SYSTEM = Log.get("system");
+
+    /**
+     * Provides a logger used to log events of the background / batch execution system, like {@link sirius.kernel.async.BackgroundLoop background loops}.
+     * <p>
+     * Use a specific logger if possible and appropriate.
+     */
+    public static final Log BACKGROUND = Log.get("background");
+
+    /**
      * Used to cut endless loops while feeding taps
      */
     private static ThreadLocal<Boolean> frozen = new ThreadLocal<>();

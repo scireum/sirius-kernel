@@ -33,7 +33,7 @@ public class AutoRegisterAction implements ClassLoadAction {
 
     @Override
     public void handle(MutableGlobalContext ctx, Class<?> clazz) throws Exception {
-        Object part = clazz.newInstance();
+        Object part = clazz.getDeclaredConstructor().newInstance();
         Register r = clazz.getAnnotation(Register.class);
         if (!Sirius.isFrameworkEnabled(r.framework())) {
             return;

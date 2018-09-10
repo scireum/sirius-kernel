@@ -11,8 +11,8 @@ public class PriorityCollectorTest {
     public void test() {
         PriorityCollector<String> c = PriorityCollector.create();
         c.addDefault("B");
-        c.add(50,"A");
-        c.add(101,"C");
+        c.add(50, "A");
+        c.add(101, "C");
         assertEquals(Arrays.asList("A", "B", "C"), c.getData());
         c.getData().clear();
         assertEquals(3, c.size());
