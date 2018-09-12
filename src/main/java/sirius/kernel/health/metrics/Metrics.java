@@ -17,6 +17,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
 import sirius.kernel.timer.EveryMinute;
 
 import java.util.Collection;
@@ -36,6 +37,9 @@ import java.util.Map;
 public class Metrics implements EveryMinute {
 
     private static final String HEALTH_LIMITS_PREFIX = "health.limits.";
+    private static final String LIMIT_TYPE_GRAY = ".gray";
+    private static final String LIMIT_TYPE_WARNING = ".warning";
+    private static final String LIMIT_TYPE_ERROR = ".error";
 
     @Parts(MetricProvider.class)
     private Collection<MetricProvider> providers;
@@ -106,21 +110,8 @@ public class Metrics implements EveryMinute {
          * Computes the state of the metric based in the limits given in the config
          */
         private MetricState computeState(String limitType, double value) {
-            Limit limit = limits.get(limitType);
-            if (limit == null) {
-                limit = new Limit();
-                if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".gray")) {
-                    limit.gray = Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".gray");
-                }
-                if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".warning")) {
-                    limit.yellow =
-                            Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".warning");
-                }
-                if (Sirius.getSettings().getConfig().hasPath(HEALTH_LIMITS_PREFIX + limitType + ".error")) {
-                    limit.red = Sirius.getSettings().getConfig().getDouble(HEALTH_LIMITS_PREFIX + limitType + ".error");
-                }
-                limits.put(limitType, limit);
-            }
+            Limit limit = limits.computeIfAbsent(limitType, this::loadLimit);
+
             if (value <= limit.gray) {
                 return MetricState.GRAY;
             }
@@ -131,6 +122,28 @@ public class Metrics implements EveryMinute {
                 return MetricState.YELLOW;
             }
             return MetricState.GREEN;
+        }
+
+        private Limit loadLimit(String limitType) {
+            Limit limit = new Limit();
+            String configPrefix = HEALTH_LIMITS_PREFIX + limitType;
+            if (Sirius.getSettings().getConfig().hasPath(configPrefix + LIMIT_TYPE_GRAY)) {
+                limit.gray = Sirius.getSettings().getConfig().getDouble(configPrefix + LIMIT_TYPE_GRAY);
+            }
+            if (Sirius.getSettings().getConfig().hasPath(configPrefix + LIMIT_TYPE_WARNING)) {
+                limit.yellow = Sirius.getSettings().getConfig().getDouble(configPrefix + LIMIT_TYPE_WARNING);
+            }
+            if (Sirius.getSettings().getConfig().hasPath(configPrefix + ".warn")) {
+                Log.SYSTEM.WARN("Invalid metrics limit: '%s' - Use: '%s' instead",
+                                configPrefix + ".warn (%s)",
+                                configPrefix + LIMIT_TYPE_WARNING,
+                                Sirius.getSettings().getConfig().getConfig(configPrefix + ".warn").origin());
+            }
+            if (Sirius.getSettings().getConfig().hasPath(configPrefix + LIMIT_TYPE_ERROR)) {
+                limit.red = Sirius.getSettings().getConfig().getDouble(configPrefix + LIMIT_TYPE_ERROR);
+            }
+
+            return limit;
         }
     }
 
