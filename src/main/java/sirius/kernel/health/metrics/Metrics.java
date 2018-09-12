@@ -135,9 +135,8 @@ public class Metrics implements EveryMinute {
             }
             if (Sirius.getSettings().getConfig().hasPath(configPrefix + ".warn")) {
                 Log.SYSTEM.WARN("Invalid metrics limit: '%s' - Use: '%s' instead",
-                                configPrefix + ".warn (%s)",
-                                configPrefix + LIMIT_TYPE_WARNING,
-                                Sirius.getSettings().getConfig().getConfig(configPrefix + ".warn").origin());
+                                configPrefix + ".warn",
+                                configPrefix + LIMIT_TYPE_WARNING);
             }
             if (Sirius.getSettings().getConfig().hasPath(configPrefix + LIMIT_TYPE_ERROR)) {
                 limit.red = Sirius.getSettings().getConfig().getDouble(configPrefix + LIMIT_TYPE_ERROR);
