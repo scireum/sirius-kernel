@@ -408,7 +408,8 @@ public class Tasks implements Startable, Stoppable, Killable {
      * <p>
      * Can be used for long loops in async tasks to determine if a computation should be interrupted.
      *
-     * @return <tt>true</tt> if the system is running, <tt>false</tt> if a shutdown is in progress
+     * @return <tt>true</tt> if the system is running (straight from the start), <tt>false</tt> if a shutdown is in progress
+     * @see Sirius#isRunning() Provides a similar flag with slightly different semantics
      */
     public boolean isRunning() {
         return running;
