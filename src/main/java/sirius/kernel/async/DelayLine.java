@@ -105,7 +105,7 @@ public class DelayLine extends BackgroundLoop implements MetricProvider {
     }
 
     @Override
-    protected double maxCallFrequency() {
+    public double maxCallFrequency() {
         return 2;
     }
 
@@ -118,7 +118,7 @@ public class DelayLine extends BackgroundLoop implements MetricProvider {
             while (iter.hasNext()) {
                 WaitingTask next = iter.next();
                 if (next.timeout > now) {
-                    return "Re-Scheduled Tasks: " + numScheduled;
+                    return numScheduled > 0 ? "Re-Scheduled Tasks: " + numScheduled : null;
                 }
 
                 iter.remove();

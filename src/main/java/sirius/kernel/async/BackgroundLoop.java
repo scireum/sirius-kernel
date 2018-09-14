@@ -67,7 +67,7 @@ public abstract class BackgroundLoop {
      *
      * @return the maximal call frequency in Hertz.
      */
-    protected double maxCallFrequency() {
+    public double maxCallFrequency() {
         return EVERY_TEN_SECONDS;
     }
 

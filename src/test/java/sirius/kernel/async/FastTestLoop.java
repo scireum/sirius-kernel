@@ -19,7 +19,7 @@ public class FastTestLoop extends BackgroundLoop {
     public static AtomicInteger counter = new AtomicInteger();
 
     @Override
-    protected double maxCallFrequency() {
+    public double maxCallFrequency() {
         return 1;
     }
 
