@@ -19,7 +19,7 @@ public class FastTestLoop extends BackgroundLoop {
     public static AtomicInteger counter = new AtomicInteger();
 
     @Override
-    protected double maxCallFrequency() {
+    public double maxCallFrequency() {
         return 1;
     }
 
@@ -30,7 +30,8 @@ public class FastTestLoop extends BackgroundLoop {
     }
 
     @Override
-    protected void doWork() throws Exception {
+    protected String doWork() throws Exception {
         counter.incrementAndGet();
+        return null;
     }
 }

@@ -116,6 +116,19 @@ public class Sirius {
         return !isDev();
     }
 
+    /**
+     * Determines if the framework is up and running.
+     * <p>
+     * This flag will be set to <tt>true</tt> once the framework is being setup and will be immediatelly
+     * set to <tt>false</tt> one the framework starts to shut down.
+     *
+     * @return <tt>true</tt> once the framework is setup and running and not shutting down yet.
+     * @see Tasks#isRunning() Provides a similar flag with slightly different semantics
+     */
+    public static boolean isRunning() {
+        return started;
+    }
+
     /*
      * Once the configuration is loaded, this method applies the log level to all log4j and java.util.logging
      * loggers
@@ -188,7 +201,6 @@ public class Sirius {
         if (started) {
             stop();
         }
-        started = true;
         boolean startFailed = false;
         for (final Startable lifecycle : lifecycleStartParticipants) {
             Future future = tasks.defaultExecutor().fork(() -> startLifecycle(lifecycle));
@@ -201,6 +213,7 @@ public class Sirius {
         if (startFailed) {
             outputActiveOperations();
         }
+        started = true;
     }
 
     private static void startLifecycle(Startable lifecycle) {
@@ -374,6 +387,8 @@ public class Sirius {
         if (!started) {
             return;
         }
+        started = false;
+
         LOG.INFO("Stopping Sirius");
         LOG.INFO(SEPARATOR_LINE);
         outputActiveOperations();
@@ -381,7 +396,6 @@ public class Sirius {
         outputActiveOperations();
         waitForLifecyclePaticipants();
         outputThreadState();
-        started = false;
         initialized = false;
         settings = null;
     }

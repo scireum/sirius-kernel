@@ -12,7 +12,6 @@ import sirius.kernel.di.std.Register;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.function.Consumer;
 
 @Register
 public class ParentClassTargetClassTransformer implements Transformer<ParentClass, TargetClass> {

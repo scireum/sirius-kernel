@@ -20,7 +20,7 @@ public class SlowTestLoop extends BackgroundLoop {
     public static AtomicInteger counter = new AtomicInteger();
 
     @Override
-    protected double maxCallFrequency() {
+    public double maxCallFrequency() {
         return 1;
     }
 
@@ -31,8 +31,9 @@ public class SlowTestLoop extends BackgroundLoop {
     }
 
     @Override
-    protected void doWork() throws Exception {
+    protected String doWork() throws Exception {
         counter.incrementAndGet();
         Wait.seconds(2);
+        return null;
     }
 }

@@ -56,9 +56,9 @@ public class ThreadsCommand implements Command {
     }
 
     private void outputThreadInfo(Output output,
-                                 boolean includeWaiting,
-                                 String threadName,
-                                 Map.Entry<Thread, StackTraceElement[]> thread) {
+                                  boolean includeWaiting,
+                                  String threadName,
+                                  Map.Entry<Thread, StackTraceElement[]> thread) {
         ThreadInfo info = t.getThreadInfo(thread.getKey().getId());
         if (!"all".equalsIgnoreCase(threadName) && !thread.getKey()
                                                           .getName()

@@ -11,9 +11,11 @@ package sirius.kernel.async;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 
 /**
@@ -54,16 +56,18 @@ public abstract class BackgroundLoop {
     /**
      * Executes the actual work.
      *
+     * @return a short description of what was done during the execution or <tt>null</tt> if nothing happened
      * @throws Exception in case of any error. The outer loop has a catch all rule to log exceptions.
      */
-    protected abstract void doWork() throws Exception;
+    @Nullable
+    protected abstract String doWork() throws Exception;
 
     /**
      * Determines the maximal call frequency of {@link #doWork()} in Hertz (ticks per second).
      *
      * @return the maximal call frequency in Hertz.
      */
-    protected double maxCallFrequency() {
+    public double maxCallFrequency() {
         return EVERY_TEN_SECONDS;
     }
 
@@ -99,8 +103,8 @@ public abstract class BackgroundLoop {
                 try {
                     Watch w = Watch.start();
                     LocalDateTime now = LocalDateTime.now();
-                    doWork();
-                    executionInfo = NLS.toUserString(now) + " (" + w.duration() + ")";
+                    String executedWork = doWork();
+                    buildAndLogExecutionInfo(w, now, executedWork);
                 } finally {
                     if (orchestration != null) {
                         orchestration.backgroundLoopCompleted(getName(), executionInfo);
@@ -111,6 +115,15 @@ public abstract class BackgroundLoop {
             Exceptions.handle(Tasks.LOG, e);
         }
         loop();
+    }
+
+    private void buildAndLogExecutionInfo(Watch watch, LocalDateTime startedAt, String executedWorkDescription) {
+        if (executedWorkDescription != null) {
+            executionInfo = NLS.toUserString(startedAt) + " (" + watch.duration() + "): " + executedWorkDescription;
+            Log.BACKGROUND.INFO(getName() + ": " + executionInfo);
+        } else {
+            executionInfo = NLS.toUserString(startedAt) + " (" + watch.duration() + ") - no work executed...";
+        }
     }
 
     @Override

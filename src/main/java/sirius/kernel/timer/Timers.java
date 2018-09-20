@@ -33,6 +33,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -377,7 +378,7 @@ public class Timers implements Startable, Stoppable {
      */
     public void runEveryDayTimers(int currentHour) {
         for (final EveryDay task : getDailyTasks()) {
-            rundailyTimer(currentHour, task);
+            runDailyTimer(currentHour, task);
         }
     }
 
@@ -396,20 +397,38 @@ public class Timers implements Startable, Stoppable {
      * @param currentHour the hour to pretend
      * @param task        the task to execute
      */
-    public void rundailyTimer(int currentHour, EveryDay task) {
-        if (!Sirius.getSettings().getConfig().hasPath(TIMER_DAILY_PREFIX + task.getConfigKeyName())) {
+    public void runDailyTimer(int currentHour, EveryDay task) {
+        Optional<Integer> executionHour = getExecutionHour(task);
+        if (!executionHour.isPresent()) {
             LOG.WARN("Skipping daily timer %s as config key '%s' is missing!",
                      task.getClass().getName(),
                      TIMER_DAILY_PREFIX + task.getConfigKeyName());
             return;
         }
 
-        if (Sirius.getSettings().getInt(TIMER_DAILY_PREFIX + task.getConfigKeyName()) != currentHour) {
+        if (executionHour.get() != currentHour) {
             return;
         }
 
-        if (orchestration == null || orchestration.shouldRunDailyTask(task.getConfigKeyName())) {
-            executeTask(task);
+        if (orchestration != null && !orchestration.shouldRunDailyTask(task.getConfigKeyName())) {
+            return;
         }
+
+        executeTask(task);
+    }
+
+    /**
+     * Determines the execution hour (0..23) in which the given task is to be executed.
+     *
+     * @param task the task to check
+     * @return the execution hour wrapped as optional or an empty optional if the config is missing
+     */
+    public Optional<Integer> getExecutionHour(EveryDay task) {
+        String configPath = TIMER_DAILY_PREFIX + task.getConfigKeyName();
+        if (!Sirius.getSettings().getConfig().hasPath(configPath)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(Sirius.getSettings().getInt(configPath));
     }
 }

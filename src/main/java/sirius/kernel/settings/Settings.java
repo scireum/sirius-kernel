@@ -201,6 +201,12 @@ public class Settings {
         return get(key).asInt(0);
     }
 
+    /**
+     * Returns the list of strings for the given key.
+     *
+     * @param key the key used to lookup the value
+     * @return a list of strings stored of the given key
+     */
     public List<String> getStringList(String key) {
         return getConfig().getStringList(key);
     }

@@ -24,5 +24,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Part {
+
+    /**
+     * If set, the system config is used to determine the name used to load the part.
+     *
+     * @return the name of the system config key used to read the name of the part to load from
+     */
     String configPath() default "";
 }

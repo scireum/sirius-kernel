@@ -172,7 +172,7 @@ class PartRegistry implements MutableGlobalContext {
         registerPart(part, implementedInterfaces, predecessor, successor);
     }
 
-    public void registerPart(Object part, Class<?>[] implementedInterfaces, Class<?> predecessor, Object successor) {
+    private void registerPart(Object part, Class<?>[] implementedInterfaces, Class<?> predecessor, Object successor) {
         for (Class<?> iFace : implementedInterfaces) {
             if (successor == null) {
                 parts.put(iFace, part);
@@ -192,7 +192,7 @@ class PartRegistry implements MutableGlobalContext {
         }
     }
 
-    public Class<?> determinePredecessor(Object part, String customizationName) {
+    private Class<?> determinePredecessor(Object part, String customizationName) {
         Class<?> predecessor = part.getClass().isAnnotationPresent(Replace.class) ?
                                part.getClass().getAnnotation(Replace.class).value() :
                                null;
@@ -264,11 +264,11 @@ class PartRegistry implements MutableGlobalContext {
         registerPart(part, implementedInterfaces);
     }
 
-    public void registerNamedPart(String uniqueName,
-                                  Object part,
-                                  String customizationName,
-                                  Class<?> clazz,
-                                  Map<String, Object> partsOfClass) {
+    private void registerNamedPart(String uniqueName,
+                                   Object part,
+                                   String customizationName,
+                                   Class<?> clazz,
+                                   Map<String, Object> partsOfClass) {
         Object currentPart = partsOfClass.get(uniqueName);
         if (currentPart == null) {
             partsOfClass.put(uniqueName, part);

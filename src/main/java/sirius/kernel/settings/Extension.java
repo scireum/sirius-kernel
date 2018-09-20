@@ -20,6 +20,7 @@ import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -166,8 +167,8 @@ public class Extension extends Settings implements Comparable<Extension> {
     public Object make(String classProperty) {
         String className = get(classProperty).asString();
         try {
-            return Class.forName(className).newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            return Class.forName(className).getDeclaredConstructor().newInstance();
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw Exceptions.handle()
                             .error(e)
                             .to(LOG)

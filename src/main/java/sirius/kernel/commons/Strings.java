@@ -73,6 +73,33 @@ public class Strings {
                                                     'w',
                                                     'z'};
 
+    private static Map<Integer, String> unicodeMapping = new TreeMap<>();
+
+    static {
+        translateRange(0x00C0, "A", "A", "A", "A", "AE", "A", "AE", "C", "E", "E", "E", "E", "I", "I", "I", "I");
+        translateRange(0x00D0, "D", "N", "O", "O", "O", "O", "OE", null, null, "U", "U", "U", "UE", "Y", null, "ss");
+        translateRange(0x00E0, "a", "a", "a", "a", "ae", "a", "ae", "c", "e", "e", "e", "e", "i", "i", "i", "i");
+        translateRange(0x00F0, null, "n", "o", "o", "o", "o", "oe", null, null, "u", "u", "u", "ue", "y", null, "y");
+        translateRange(0x0130, null, null, "IJ", "ij", "J", "j", "K", "k", "k", "L", "l", "L", "l", "L", "l", "L");
+        translateRange(0xFB00,
+                       "ff",
+                       "fi",
+                       "fl",
+                       "ffi",
+                       "ffl",
+                       "ft",
+                       "st",
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null);
+    }
+
     /*
      * All methods are static, therefore no instances need to be created.
      */
@@ -357,6 +384,17 @@ public class Strings {
         return result != null ? result.toString() : "";
     }
 
+    /**
+     * Returns a string concatenation of the given array items.
+     * <p>
+     * Generates a string which contains the string representation of each item separated by the given separator.
+     * This method will filter empty values (<tt>""</tt> or <tt>null</tt>) and ignore those.
+     *
+     * @param separator the separator to place between the items
+     * @param parts     the array of items to join
+     * @return a string of all items joined together and separated by the given separator. Returns "" is the array was
+     * empty.
+     */
     @Nonnull
     public static String join(@Nonnull String separator, @Nonnull String... parts) {
         return join(Arrays.asList(parts), separator);
@@ -403,33 +441,6 @@ public class Strings {
         textToReplace = textToReplace.replace("Ä", "&Auml;");
         textToReplace = textToReplace.replace("Ü", "&Uuml;");
         return textToReplace;
-    }
-
-    private static Map<Integer, String> unicodeMapping = new TreeMap<>();
-
-    static {
-        translateRange(0x00C0, "A", "A", "A", "A", "AE", "A", "AE", "C", "E", "E", "E", "E", "I", "I", "I", "I");
-        translateRange(0x00D0, "D", "N", "O", "O", "O", "O", "OE", null, null, "U", "U", "U", "UE", "Y", null, "ss");
-        translateRange(0x00E0, "a", "a", "a", "a", "ae", "a", "ae", "c", "e", "e", "e", "e", "i", "i", "i", "i");
-        translateRange(0x00F0, null, "n", "o", "o", "o", "o", "oe", null, null, "u", "u", "u", "ue", "y", null, "y");
-        translateRange(0x0130, null, null, "IJ", "ij", "J", "j", "K", "k", "k", "L", "l", "L", "l", "L", "l", "L");
-        translateRange(0xFB00,
-                       "ff",
-                       "fi",
-                       "fl",
-                       "ffi",
-                       "ffl",
-                       "ft",
-                       "st",
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null);
     }
 
     private static void translateRange(int offset, String... replacements) {

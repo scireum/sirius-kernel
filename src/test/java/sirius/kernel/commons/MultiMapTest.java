@@ -26,5 +26,4 @@ public class MultiMapTest {
         mm.clear();
         assertArrayEquals(new String[0], mm.get("B").toArray(new String[mm.get("B").size()]));
     }
-
 }
