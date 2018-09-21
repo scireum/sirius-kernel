@@ -3,6 +3,9 @@ package sirius.kernel.commons
 import sirius.kernel.nls.NLS
 import spock.lang.Specification
 
+import java.time.LocalDate
+import java.time.LocalDateTime
+
 class ValueSpec extends Specification {
 
     private static final BigDecimal DEFAULT_BIG_DECIMAL = BigDecimal.TEN
@@ -134,6 +137,18 @@ class ValueSpec extends Specification {
         true               | true
         NLS.get("NLS.Yes") | true
         NLS.get("NLS.No")  | false
+    }
+
+
+    def "Test asLocalDate with default"() {
+        expect:
+        Value.of(input).asLocalDate(null) == output
+        where:
+        input                                | output
+        ""                                   | null
+        LocalDate.of(1994, 5, 8)             | LocalDate.of(1994, 5, 8)
+        LocalDateTime.of(1994, 5, 8, 10, 30) | LocalDate.of(1994, 5, 8)
+        1537539103268                        | LocalDate.of(2018, 9, 21)
     }
 
     def "Test coerce boolean and without default"() {
