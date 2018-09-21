@@ -841,6 +841,9 @@ public class Value {
         if (is(Instant.class)) {
             return LocalDate.from((Instant) data);
         }
+        if (is(LocalDate.class)) {
+            return (LocalDate) data;
+        }
         if (is(LocalDateTime.class)) {
             return ((LocalDateTime) data).toLocalDate();
         }
