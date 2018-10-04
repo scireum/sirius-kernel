@@ -1653,7 +1653,7 @@ public class Value {
     @Nonnull
     @CheckReturnValue
     public Value translate() {
-        return translate(NLS.getCurrentLang());
+        return translate(null);
     }
 
     /**
