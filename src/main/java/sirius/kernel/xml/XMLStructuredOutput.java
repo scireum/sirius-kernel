@@ -75,6 +75,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             }
             serializer.setOutputProperty(OutputKeys.ENCODING, encoding.name());
             serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+            serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             hd.setResult(streamResult);
             hd.startDocument();
         } catch (Exception e) {
