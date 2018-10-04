@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -70,6 +71,7 @@ public class CallContext {
     private Map<Class<? extends SubContext>, SubContext> subContext = Collections.synchronizedMap(Maps.newHashMap());
     private Watch watch = Watch.start();
     private String lang;
+    private Consumer<CallContext> lazyLanguageInstaller;
     private String fallbackLang;
 
     /**
@@ -190,6 +192,7 @@ public class CallContext {
         newCtx.addToMDC(MDC_PARENT, getMDCValue(TaskContext.MDC_SYSTEM).asString());
         subContext.forEach((key, value) -> newCtx.subContext.put(key, value.fork()));
         newCtx.lang = lang;
+        newCtx.lazyLanguageInstaller = lazyLanguageInstaller;
         newCtx.fallbackLang = fallbackLang;
         return newCtx;
     }
@@ -357,8 +360,12 @@ public class CallContext {
      */
     public String getLang() {
         if (lang == null) {
-            return NLS.getDefaultLanguage();
+            lang = NLS.getDefaultLanguage();
+            if (lazyLanguageInstaller != null) {
+                lazyLanguageInstaller.accept(this);
+            }
         }
+
         return lang;
     }
 
@@ -383,7 +390,27 @@ public class CallContext {
     public void setLang(@Nullable String lang) {
         if (Strings.isFilled(lang)) {
             this.lang = lang;
+            this.lazyLanguageInstaller = null;
         }
+    }
+
+    /**
+     * Adds a language supplier.
+     * <p>
+     * In certain circumstances the current language might be influenced by something which is hard to compute.
+     * For example a web request in <b>sirius-web</b> might either provide a user with a language attached via
+     * its session or it might contain a language header which itself isn't quite easy to parse.
+     * <p>
+     * Worst of all, in many cases, the current language might not be used at all.
+     * <p>
+     * Therefore, we permit lazy computations which are only evaluated as required.
+     *
+     * @param languageInstaller a callback which installs the appropriate language into the given call context
+     *                          (is passed again to support {@link #fork() forking}).
+     */
+    public void deferredSetLang(@Nonnull Consumer<CallContext> languageInstaller) {
+        this.lang = null;
+        this.lazyLanguageInstaller = languageInstaller;
     }
 
     /**
