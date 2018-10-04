@@ -830,9 +830,9 @@ public class NLS {
         }
         if (data instanceof Boolean) {
             if (((Boolean) data).booleanValue()) {
-                return CommonKeys.YES.translated();
+                return NLS.get(CommonKeys.YES.key(), lang);
             } else {
-                return CommonKeys.NO.translated();
+                return NLS.get(CommonKeys.NO.key(), lang);
             }
         }
         if (data instanceof Temporal) {
@@ -1138,10 +1138,10 @@ public class NLS {
             return (V) Amount.of(parseDecimalNumberFromUser(value, lang));
         }
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
-            if (CommonKeys.YES.translated().equalsIgnoreCase(value)) {
+            if (NLS.get(CommonKeys.YES.key(), lang).equalsIgnoreCase(value)) {
                 return (V) Boolean.TRUE;
             }
-            if (CommonKeys.NO.translated().equalsIgnoreCase(value)) {
+            if (NLS.get(CommonKeys.NO.key(), lang).equalsIgnoreCase(value)) {
                 return (V) Boolean.FALSE;
             }
             return (V) Boolean.valueOf(Boolean.parseBoolean(value));
