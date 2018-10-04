@@ -159,8 +159,9 @@ public class NLS {
     public static String getFallbackLanguage() {
         String fallback = CallContext.getCurrent().getFallbackLang();
         if (Strings.isEmpty(fallback)) {
-            fallback = getDefaultLanguage();
+            return getDefaultLanguage();
         }
+
         return fallback;
     }
 
