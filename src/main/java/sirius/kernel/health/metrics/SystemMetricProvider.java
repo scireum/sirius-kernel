@@ -8,20 +8,14 @@
 
 package sirius.kernel.health.metrics;
 
-import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.MemoryBasedHealthMonitor;
 
-import java.io.IOException;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
-import java.nio.file.FileStore;
-import java.nio.file.FileSystems;
 import java.util.List;
 
 /**
@@ -29,8 +23,6 @@ import java.util.List;
  */
 @Register
 public class SystemMetricProvider implements MetricProvider {
-
-    private static final String OSX_DEV_FS = "devfs";
 
     private List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
     private List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
@@ -42,7 +34,6 @@ public class SystemMetricProvider implements MetricProvider {
     public void gather(MetricsCollector collector) {
         gatherMemoryMetrics(collector);
         gatherGCMetrics(collector);
-        gatherFS(collector);
 
         collector.differentialMetric("kernel_interactions",
                                      "sys-interactions",
@@ -64,11 +55,6 @@ public class SystemMetricProvider implements MetricProvider {
                                      "Unique Incidents",
                                      monitor.getNumUniqueIncidents(),
                                      "/min");
-
-        collector.metric("sys-log-size",
-                         "Log files size",
-                         Sirius.getSetup().estimateLogFilesSize() / 1024d / 1024d,
-                         "MB");
     }
 
     private void gatherGCMetrics(MetricsCollector collector) {
@@ -89,21 +75,6 @@ public class SystemMetricProvider implements MetricProvider {
                                  "JVM Heap (" + pool.getName() + ")",
                                  100d * pool.getUsage().getUsed() / pool.getUsage().getMax(),
                                  "%");
-            }
-        }
-    }
-
-    private void gatherFS(MetricsCollector collector) {
-        for (FileStore store : FileSystems.getDefault().getFileStores()) {
-            try {
-                // OSX stupidly reports "/dev" as "devfs" which is always 100% utilized...
-                // Also Linux reports some virtual file systems without a size.
-                if (!Strings.areEqual(store.name(), OSX_DEV_FS) && store.getTotalSpace() > 0) {
-                    double usage = 100d - (100d * store.getUsableSpace() / store.getTotalSpace());
-                    collector.metric("sys-fs", "FS: Usage of " + store.name(), usage, "%");
-                }
-            } catch (IOException e) {
-                Exceptions.ignore(e);
             }
         }
     }

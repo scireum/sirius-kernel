@@ -337,28 +337,6 @@ public class Setup {
     }
 
     /**
-     * Estimates the total size of all log files.
-     *
-     * @return the size in bytes of all log files
-     */
-    public long estimateLogFilesSize() {
-        if (!shouldLogToFile()) {
-            return 0L;
-        }
-
-        File logsDir = new File(getLogsDirectory());
-        if (!logsDir.exists()) {
-            return 0L;
-        }
-        File[] children = logsDir.listFiles();
-        if (children == null) {
-            return 0L;
-        }
-
-        return Arrays.stream(children).filter(File::isFile).mapToLong(File::length).sum();
-    }
-
-    /**
      * Returns the name of the log file.
      *
      * @return the name of the log file
