@@ -85,7 +85,7 @@ public class Setup {
         this.mode = mode;
         this.loader = loader;
         logToConsole = mode != Mode.PROD || getProperty("console").asBoolean(false);
-        logToFile = mode == Mode.PROD;
+        logToFile = mode == Mode.PROD && !getProperty("disableLogfile").asBoolean(false);
     }
 
     /**
