@@ -88,22 +88,22 @@ public class Metrics implements EveryMinute {
         }
 
         @Override
-        public void metric(String title, double value, String unit, MetricState state) {
-            collector.add(new Metric(title, value, state, unit));
+        public void metric(String code, String label, double value, String unit, MetricState state) {
+            collector.add(new Metric(code, label, value, state, unit));
         }
 
         @Override
-        public void metric(String limitType, String title, double value, String unit) {
-            collector.add(new Metric(title, value, computeState(limitType, value), unit));
+        public void metric(String code, String limitType, String label, double value, String unit) {
+            collector.add(new Metric(code, label, value, computeState(limitType, value), unit));
         }
 
         @Override
-        public void differentialMetric(String id, String limitType, String title, double currentValue, String unit) {
-            Double lastValue = differentials.get(id);
+        public void differentialMetric(String code, String limitType, String label, double currentValue, String unit) {
+            Double lastValue = differentials.get(code);
             if (lastValue != null) {
-                metric(limitType, title, currentValue - lastValue, unit);
+                metric(code, limitType, label, currentValue - lastValue, unit);
             }
-            differentials.put(id, currentValue);
+            differentials.put(code, currentValue);
         }
 
         /*

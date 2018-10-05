@@ -44,14 +44,22 @@ public class SystemMetricProvider implements MetricProvider {
         gatherGCMetrics(collector);
         gatherFS(collector);
 
-        collector.differentialMetric("sys-interactions",
+        collector.differentialMetric("kernel_interactions",
                                      "sys-interactions",
                                      "Interactions",
                                      CallContext.getInteractionCounter().getCount(),
                                      "/min");
-        collector.differentialMetric("sys-logs", "sys-logs", "Log Messages", monitor.getNumLogMessages(), "/min");
-        collector.differentialMetric("sys-incidents", "sys-incidents", "Incidents", monitor.getNumIncidents(), "/min");
-        collector.differentialMetric("sys-unique-incidents",
+        collector.differentialMetric("kernel_log_entries",
+                                     "sys-logs",
+                                     "Log Messages",
+                                     monitor.getNumLogMessages(),
+                                     "/min");
+        collector.differentialMetric("kernel_incidents",
+                                     "sys-incidents",
+                                     "Incidents",
+                                     monitor.getNumIncidents(),
+                                     "/min");
+        collector.differentialMetric("kernel_unique_incidents",
                                      "sys-unique-incidents",
                                      "Unique Incidents",
                                      monitor.getNumUniqueIncidents(),
@@ -65,7 +73,7 @@ public class SystemMetricProvider implements MetricProvider {
 
     private void gatherGCMetrics(MetricsCollector collector) {
         for (GarbageCollectorMXBean gc : gcs) {
-            collector.differentialMetric("jvm-gc-" + gc.getName(),
+            collector.differentialMetric("jvm_gc_" + gc.getName().toLowerCase(),
                                          "jvm-gc",
                                          "GC - " + gc.getName(),
                                          gc.getCollectionCount(),
@@ -76,7 +84,8 @@ public class SystemMetricProvider implements MetricProvider {
     private void gatherMemoryMetrics(MetricsCollector collector) {
         for (MemoryPoolMXBean pool : pools) {
             if (pool.getName().toLowerCase().contains("old") && pool.getUsage().getMax() > 0) {
-                collector.metric("jvm-old-heap",
+                collector.metric("jvm_old_heap",
+                                 "jvm-old-heap",
                                  "JVM Heap (" + pool.getName() + ")",
                                  100d * pool.getUsage().getUsed() / pool.getUsage().getMax(),
                                  "%");

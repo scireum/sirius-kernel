@@ -133,7 +133,7 @@ public class DelayLine extends BackgroundLoop implements MetricProvider {
     @Override
     public void gather(MetricsCollector collector) {
         if (backgroundTasks.getCount() > 0) {
-            collector.differentialMetric("delay-line-tasks",
+            collector.differentialMetric("kernel_delay_line_tasks",
                                          "delay-line-tasks",
                                          "Delay-Line Tasks",
                                          backgroundTasks.getCount(),
@@ -144,6 +144,6 @@ public class DelayLine extends BackgroundLoop implements MetricProvider {
         synchronized (waitingTasks) {
             length = waitingTasks.size();
         }
-        collector.metric("delay-line-length", "Delay-Line Length", length, null);
+        collector.metric("kernel_delay_line_length", "delay-line-length", "Delay-Line Length", length, null);
     }
 }

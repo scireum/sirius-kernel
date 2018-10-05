@@ -22,33 +22,44 @@ import java.util.Objects;
  */
 public class Metric implements Comparable<Metric> {
 
+    private String code;
     private final String unit;
-    private String name;
+    private String label;
     private double value;
     private MetricState state;
 
     /**
      * Creates a new metric using the given values
      *
-     * @param name  the name of the metric
+     * @param code  the unique technical name of the metric
+     * @param label the name of the metric
      * @param value the actual value
      * @param state the interpretation of the value
      * @param unit  the unit in which the value is measured or <tt>null</tt> if there is no unit
      */
-    public Metric(String name, double value, MetricState state, String unit) {
+    public Metric(String code, String label, double value, MetricState state, String unit) {
+        this.code = code;
         this.unit = unit;
-        this.name = name;
+        this.label = label;
         this.value = Double.isNaN(value) ? 0 : value;
         this.state = state;
     }
 
     /**
-     * Returns the name of the metric.
-     *
-     * @return the name of the metric
+     * Returns the unique code of the metric.
+     * @return the ocde of this metric.
      */
-    public String getName() {
-        return name;
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * Returns the label of the metric.
+     *
+     * @return the label of the metric
+     */
+    public String getLabel() {
+        return label;
     }
 
     /**
@@ -100,7 +111,7 @@ public class Metric implements Comparable<Metric> {
         if (o.state != state) {
             return o.state.ordinal() - state.ordinal();
         }
-        return name.compareTo(o.name);
+        return code.compareTo(o.code);
     }
 
     @Override
@@ -112,11 +123,11 @@ public class Metric implements Comparable<Metric> {
             return false;
         }
         Metric metric = (Metric) o;
-        return Objects.equals(name, metric.name) && Objects.equals(state, metric.state);
+        return Objects.equals(code, metric.code) && state == metric.state;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, state);
+        return Objects.hash(code, state);
     }
 }

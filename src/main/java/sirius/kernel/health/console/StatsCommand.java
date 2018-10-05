@@ -29,7 +29,7 @@ public class StatsCommand implements Command {
         output.apply("%-8s %-30s %15s", "STATE", "NAME", "VALUE");
         output.separator();
         for (Metric metric : metrics.getMetrics()) {
-            output.apply("%-8s %-30s %15s", metric.getState(), metric.getName(), metric.getValueAsString());
+            output.apply("%-8s %-30s %15s", metric.getState(), metric.getLabel(), metric.getValueAsString());
         }
         output.separator();
     }

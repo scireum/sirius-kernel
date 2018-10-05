@@ -112,8 +112,9 @@ public class Operation implements AutoCloseable {
 
         @Override
         public void gather(MetricsCollector collector) {
-            collector.metric("active-operations", "Active-Operations", ops.size(), null);
-            collector.metric("hanging-operations",
+            collector.metric("kernel_active_operations", "active-operations", "Active-Operations", ops.size(), null);
+            collector.metric("kernel_hanging_operations",
+                             "hanging-operations",
                              "Hanging-Operations",
                              getActiveOperations().stream().filter(Operation::isOvertime).count(),
                              null);
