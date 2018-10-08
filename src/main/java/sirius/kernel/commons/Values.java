@@ -8,8 +8,11 @@
 
 package sirius.kernel.commons;
 
+import com.google.common.collect.Iterators;
+
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,7 +28,7 @@ import java.util.Objects;
  * Also this supports access via "Excel Style" column names ("A", "B", ...,  "AH") which is beneficial when importing
  * external data.
  */
-public class Values {
+public class Values implements Iterable<Object> {
     private List<?> dataList;
     private Object[] dataArray;
 
@@ -144,6 +147,15 @@ public class Values {
         result--;
 
         return result;
+    }
+
+    @Override
+    public Iterator<Object> iterator() {
+        if (dataArray != null) {
+            return Iterators.forArray(dataArray);
+        } else {
+            return Iterators.unmodifiableIterator(dataList.iterator());
+        }
     }
 
     @Override
