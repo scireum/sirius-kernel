@@ -129,8 +129,9 @@ public class ScenarioSuite extends WildcardPatternSuite {
     protected List<Runner> getChildren() {
         List<Runner> tests = super.getChildren();
         List<Runner> result = new ArrayList<>();
-        result.add(new ScenarioRunner(null, null, null, tests));
-        if (scenarios != null) {
+        if (scenarios == null) {
+            result.add(new ScenarioRunner(null, null, null, tests));
+        } else {
             scenarios.stream()
                      .map(scenario -> new ScenarioRunner(scenario.file(),
                                                          scenario.includes(),
