@@ -151,6 +151,37 @@ public class Extension extends Settings implements Comparable<Extension> {
     }
 
     /**
+     * Returns the {@link Value} defined for the given key or throws a <tt>HandledException</tt> if no value was found
+     * <p>
+     * If this extension doesn't provide a value for this key, but there is an extension with the name
+     * <tt>default</tt> which provides a value, this is used.
+     * <p>
+     * Returning a {@link Value} instead of a plain object provides lots of conversion methods on the one hand
+     * and also guarantees a non null result on the other hand, since a <tt>Value</tt> can be empty.
+     * <p>
+     * In contrast to {@link #require(String)} this will not perform an automatic translation
+     * if the value starts with a dollar sign.
+     *
+     * @param path the access path to retrieve the value
+     * @return the value wrapping the contents for the given path. This will never by <tt>null</tt>.
+     * @throws sirius.kernel.health.HandledException if no value was found for the given <tt>path</tt>
+     */
+    @Nonnull
+    public Value requireRaw(String path) {
+        Value result = getRaw(path);
+        if (result.isNull()) {
+            throw Exceptions.handle()
+                            .to(LOG)
+                            .withSystemErrorMessage("The extension '%s' of type '%s' doesn't provide a value for: '%s'",
+                                                    id,
+                                                    type,
+                                                    path)
+                            .handle();
+        }
+        return result;
+    }
+
+    /**
      * Creates a new instance of the class which is named in <tt>classProperty</tt>
      * <p>
      * Tries to lookup the value for <tt>classProperty</tt>, fetches the corresponding class and creates a new
