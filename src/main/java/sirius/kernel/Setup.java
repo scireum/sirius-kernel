@@ -92,7 +92,7 @@ public class Setup {
     /**
      * Specifies whether logging should be configured or not
      *
-     * @param logging - true|false
+     * @param logging determines if the log4j system should be configured by sirius
      * @return the setup itself for fluent method calls
      */
     public Setup withConfigureLogging(boolean logging) {
