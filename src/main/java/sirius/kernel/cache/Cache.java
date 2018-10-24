@@ -26,9 +26,9 @@ import java.util.function.Predicate;
  * time so that only values which are really used remain in the cache. Therefore system resources (most essentially
  * heap storage) is released if no longer required.
  * <p>
- * A new Cache is created by invoking {@link CacheManager#createCache(String)}. The maximal size as well as the
+ * A new Cache is created by invoking {@link CacheManager#createCoherentCache(String)} (String)}. The maximal size as well as the
  * time to live value for each entry is set via the <tt>cache.[cacheName]</tt> extension. Additionally
- * {@link CacheManager#createCache(String, ValueComputer, ValueVerifier)} can be used to supply a
+ * {@link CacheManager#createCoherentCache(String, ValueComputer, ValueVerifier)} can be used to supply a
  * <tt>ValueComputer</tt> as well as a <tt>ValueVerifier</tt>. Those classes are responsible for creating non-
  * existent cache values or to verify that cached values are still up to date, before they are returned to a
  * user of the cache.

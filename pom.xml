@@ -10,9 +10,27 @@
     </parent>
     <artifactId>sirius-kernel</artifactId>
     <name>SIRIUS kernel</name>
-    <version>DEVELOPMENT-SNAPSHOT</version>
+    <version>12.0-rc27adbe1</version>
     <description>Provides common core classes and the microkernel powering all Sirius applications</description>
-
+    <build>
+        <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <version>3.0.0-M1</version>
+            <configuration>
+            <skip>false</skip>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <configuration>
+                <skip>true</skip>
+            </configuration>
+        </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <!-- Provides the tools to load the system configuration -->
         <dependency>
@@ -56,4 +74,18 @@
             <version>0.34.0</version>
         </dependency>
     </dependencies>
+    <distributionManagement>
+    <repository>
+      <id>${maven-release-repo-id}</id>
+      <uniqueVersion>false</uniqueVersion>
+      <name>Release Repository</name>
+      <url>${maven-release-repo-url}</url>
+    </repository>
+    <snapshotRepository>
+      <id>${maven-snapshot-repo-id}</id>
+      <uniqueVersion>true</uniqueVersion>
+      <name>Snapshot Repository</name>
+      <url>${maven-snapshot-repo-url}</url>
+    </snapshotRepository>
+    </distributionManagement>
 </project>

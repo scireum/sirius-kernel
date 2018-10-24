@@ -37,7 +37,7 @@ import java.util.function.Function;
  * the computation is completed.
  * <p>
  * Since promises can be chained ({@link #chain(Promise)}, {@link #failChain(Promise, sirius.kernel.commons.Callback)})
- * or aggregated ({@link Tasks#sequence(java.util.List)}, {@link Barrier}) complex computations can be glued
+ * or aggregated, {@link Barrier}) complex computations can be glued
  * together using simple components.
  *
  * @param <V> contains the type of the value which is to be computed
