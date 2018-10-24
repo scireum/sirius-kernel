@@ -69,6 +69,7 @@ public class Setup {
 
     protected ClassLoader loader;
     protected Mode mode;
+    protected boolean configureLogging = true;
     protected boolean logToConsole;
     protected boolean logToFile;
     protected Level defaultLevel = Level.INFO;
@@ -86,6 +87,17 @@ public class Setup {
         this.loader = loader;
         logToConsole = mode != Mode.PROD || getProperty("console").asBoolean(false);
         logToFile = mode == Mode.PROD && !getProperty("disableLogfile").asBoolean(false);
+    }
+
+    /**
+     * Specifies whether logging should be configured or not
+     *
+     * @param logging - true|false
+     * @return the setup itself for fluent method calls
+     */
+    public Setup withConfigureLogging(boolean logging) {
+        this.configureLogging = logging;
+        return this;
     }
 
     /**
@@ -259,6 +271,9 @@ public class Setup {
      * log into the logs directory.
      */
     protected void setupLogging() {
+        if (!shouldConfigureLogging()) {
+            return;
+        }
         final LoggerRepository repository = Logger.getRootLogger().getLoggerRepository();
         repository.resetConfiguration();
         Logger.getRootLogger().setLevel(defaultLevel);
@@ -343,6 +358,15 @@ public class Setup {
      */
     protected String getLogFileName() {
         return DEFAULT_LOG_FILE_NAME;
+    }
+
+    /**
+     * Determines if custom logging should be configured
+     *
+     * @return <tt>true</tt> if the framework should configure logging
+     */
+    protected boolean shouldConfigureLogging() {
+        return configureLogging;
     }
 
     /**
