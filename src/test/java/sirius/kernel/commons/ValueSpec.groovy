@@ -135,8 +135,8 @@ class ValueSpec extends Specification {
         "true"             | true
         false              | false
         true               | true
-        NLS.get("NLS.Yes") | true
-        NLS.get("NLS.No")  | false
+        NLS.get("NLS.yes") | true
+        NLS.get("NLS.no")  | false
     }
 
 
@@ -161,7 +161,7 @@ class ValueSpec extends Specification {
         "true"             | true
         false              | false
         true               | true
-        NLS.get("NLS.Yes") | true
-        NLS.get("NLS.No")  | false
+        NLS.get("NLS.yes") | true
+        NLS.get("NLS.no")  | false
     }
 }
