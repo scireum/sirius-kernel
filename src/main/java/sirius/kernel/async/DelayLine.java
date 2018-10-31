@@ -101,7 +101,7 @@ public class DelayLine extends BackgroundLoop implements MetricProvider {
     @Nonnull
     @Override
     public String getName() {
-        return "DelayLine";
+        return "delay-line";
     }
 
     @Override
