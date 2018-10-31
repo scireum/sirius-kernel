@@ -120,7 +120,7 @@ public abstract class BackgroundLoop {
     private void buildAndLogExecutionInfo(Watch watch, LocalDateTime startedAt, String executedWorkDescription) {
         if (executedWorkDescription != null) {
             executionInfo = NLS.toUserString(startedAt) + " (" + watch.duration() + "): " + executedWorkDescription;
-            Log.BACKGROUND.INFO(getName() + ": " + executionInfo);
+            Log.BACKGROUND.FINE(getName() + ": " + executionInfo);
         } else {
             executionInfo = NLS.toUserString(startedAt) + " (" + watch.duration() + ") - no work executed...";
         }
