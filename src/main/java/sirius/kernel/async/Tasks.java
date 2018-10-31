@@ -379,7 +379,6 @@ public class Tasks implements Startable, Stoppable, Killable {
 
     @Override
     public void started() {
-        executors.clear();
         running = true;
         startScheduler();
         startBackgroundLoops();
@@ -407,6 +406,7 @@ public class Tasks implements Startable, Stoppable, Killable {
                 blockUnitExecutorTerminates(e.getKey(), exec);
             }
         }
+        executors.clear();
     }
 
     private void blockUnitExecutorTerminates(String name, AsyncExecutor exec) {
