@@ -395,6 +395,20 @@ public class CallContext {
     }
 
     /**
+     * Sets the current language for the current thread, only if no other language has been set already.
+     * <p>
+     * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
+     * </p>
+     *
+     * @param lang the two-letter language code for this thread.
+     */
+    public void setLangIfEmpty(@Nullable String lang) {
+        if (Strings.isEmpty(this.lang)) {
+            setLang(lang);
+        }
+    }
+
+    /**
      * Adds a language supplier.
      * <p>
      * In certain circumstances the current language might be influenced by something which is hard to compute.
