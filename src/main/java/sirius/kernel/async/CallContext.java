@@ -402,7 +402,7 @@ public class CallContext {
      *
      * @param lang the two-letter language code for this thread.
      */
-    public void provideLang(@Nullable String lang) {
+    public void setLangIfEmpty(@Nullable String lang) {
         if (Strings.isEmpty(this.lang)) {
             setLang(lang);
         }
