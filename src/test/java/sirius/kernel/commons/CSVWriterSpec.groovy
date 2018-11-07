@@ -70,4 +70,17 @@ class CSVWriterSpec extends BaseSpecification {
         output.toString() == '"a;b\\"";\\\\;c'
     }
 
+    def "escaping of separator with escape-char works if there is no quotation-char"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output)
+        writer.withQuotation('\0' as char)
+        when:
+        writer.writeArray("a;b")
+        and:
+        output.close()
+        then:
+        output.toString() == 'a\\;b'
+    }
 }

@@ -165,9 +165,9 @@ public class CSVWriter implements Closeable {
             stringValue = "";
         }
         StringBuilder effectiveValue = new StringBuilder();
-        boolean shouldQuote =
-                stringValue.contains(String.valueOf(separator)) || stringValue.contains("\n") || stringValue.contains(
-                        "\r");
+        boolean shouldQuote = quotation != '\0' && (stringValue.contains(String.valueOf(separator))
+                                                    || stringValue.contains("\n")
+                                                    || stringValue.contains("\r"));
         for (int i = 0; i < stringValue.length(); i++) {
             char currentChar = stringValue.charAt(i);
             processCharacter(currentChar, effectiveValue, shouldQuote);
