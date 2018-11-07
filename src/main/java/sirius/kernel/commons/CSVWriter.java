@@ -165,10 +165,12 @@ public class CSVWriter implements Closeable {
             stringValue = "";
         }
         StringBuilder effectiveValue = new StringBuilder();
-        boolean shouldQuote = false;
+        boolean shouldQuote =
+                stringValue.contains(String.valueOf(separator)) || stringValue.contains("\n") || stringValue.contains(
+                        "\r");
         for (int i = 0; i < stringValue.length(); i++) {
             char currentChar = stringValue.charAt(i);
-            shouldQuote = processCharacter(currentChar, effectiveValue, shouldQuote);
+            processCharacter(currentChar, effectiveValue, shouldQuote);
         }
         if (shouldQuote) {
             writer.append(quotation);
@@ -179,19 +181,15 @@ public class CSVWriter implements Closeable {
         }
     }
 
-    private boolean processCharacter(char currentChar, StringBuilder effectiveValue, boolean shouldQuote) {
+    private void processCharacter(char currentChar, StringBuilder effectiveValue, boolean shouldQuote) {
         if (currentChar == escape) {
             effectiveValue.append(escape).append(currentChar);
-            return shouldQuote;
+            return;
         }
 
         if (quotation == '\0') {
             processCharacterWithoutQuotation(currentChar, effectiveValue);
-            return shouldQuote;
-        }
-
-        if (currentChar == separator || currentChar == '\r' || currentChar == '\n') {
-            shouldQuote = true;
+            return;
         }
 
         if (shouldQuote && currentChar == quotation) {
@@ -203,7 +201,6 @@ public class CSVWriter implements Closeable {
             }
         }
         effectiveValue.append(currentChar);
-        return shouldQuote;
     }
 
     private void processCharacterWithoutQuotation(char currentChar, StringBuilder effectiveValue) {
