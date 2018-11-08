@@ -8,7 +8,9 @@
 
 package sirius.kernel.cache;
 
+import sirius.kernel.Stoppable;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
@@ -244,6 +246,19 @@ public class CacheManager {
         ManagedCache<?, ?> cache = caches.get(cacheName);
         if (cache instanceof CoherentCache) {
             ((CoherentCache<?>) cache).removeLocal(key);
+        }
+    }
+
+    /**
+     * Clears the caches when Sirius is shutting down
+     */
+    @Register
+    public static class CacheManagerLifecycle implements Stoppable {
+
+        @Override
+        public void stopped() {
+            caches.values().forEach(ManagedCache::clear);
+            caches.clear();
         }
     }
 }
