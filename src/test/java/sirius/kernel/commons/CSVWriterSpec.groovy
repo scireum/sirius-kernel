@@ -83,4 +83,65 @@ class CSVWriterSpec extends BaseSpecification {
         then:
         output.toString() == 'a\\;b'
     }
+
+    def "throw an exception if we have to escape quotes, but there is no escape-char"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output)
+        writer.withEscape('\0' as char)
+        when:
+        def thrownException
+        try {
+            writer.writeArray('"a";b')
+        } catch (Exception e) {
+            thrownException = e
+        }
+        and:
+        output.close()
+        then:
+        thrownException instanceof IllegalArgumentException
+        thrownException.getMessage() == "Cannot output a quotation character within a quoted string without an escape character."
+    }
+
+    def "throw an exception if there is a separator in the text, but there is no quotation-char and no escape-char"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output)
+        writer.withQuotation('\0' as char)
+        writer.withEscape('\0' as char)
+        when:
+        def thrownException
+        try {
+            writer.writeArray('a;b')
+        } catch (Exception e) {
+            thrownException = e
+        }
+        and:
+        output.close()
+        then:
+        thrownException instanceof IllegalArgumentException
+        thrownException.getMessage() == "Cannot output a column which contains the separator character ';' without an escape or quotation character."
+    }
+
+    def "throw an exception if there is a new line in the text, but there is no quotation-char"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output)
+        writer.withQuotation('\0' as char)
+        when:
+        def thrownException
+        try {
+            writer.writeArray('a\nb')
+        } catch (Exception e) {
+            thrownException = e
+        }
+        and:
+        output.close()
+        then:
+        thrownException instanceof IllegalArgumentException
+        thrownException.getMessage() == "Cannot output a column which contains a line break without an quotation character."
+    }
 }
