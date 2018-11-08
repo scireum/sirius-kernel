@@ -246,4 +246,9 @@ public class CacheManager {
             ((CoherentCache<?>) cache).removeLocal(key);
         }
     }
+
+    protected static void reset() {
+        caches.values().forEach(ManagedCache::clear);
+        caches.clear();
+    }
 }
