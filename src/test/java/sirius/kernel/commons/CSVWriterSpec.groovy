@@ -10,8 +10,6 @@ package sirius.kernel.commons
 
 import sirius.kernel.BaseSpecification
 
-import java.util.function.Consumer
-
 class CSVWriterSpec extends BaseSpecification {
 
     def "simple data is output as CSV"() {
@@ -44,6 +42,21 @@ class CSVWriterSpec extends BaseSpecification {
         output.toString() == '"a;";b;c\n1;"2\n2";3'
     }
 
+    def "escaping of quotation works when using quotation"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output)
+        when:
+        writer.writeArray('"a"\nb')
+        writer.writeArray('"a";b')
+        then:
+        and:
+        output.close()
+        then:
+        output.toString() == '"\\"a\\"\nb"\n"\\"a\\";b"'
+    }
+
     def "escaping works for escape character and quotation"() {
         given:
         StringWriter output = new StringWriter()
@@ -57,4 +70,63 @@ class CSVWriterSpec extends BaseSpecification {
         output.toString() == '"a;b\\"";\\\\;c'
     }
 
+    def "escaping of separator with escape-char works if there is no quotation-char"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output)
+        writer.withQuotation('\0' as char)
+        when:
+        writer.writeArray("a;b")
+        and:
+        output.close()
+        then:
+        output.toString() == 'a\\;b'
+    }
+
+    def "throw an exception if we have to escape quotes, but there is no escape-char"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output)
+        writer.withEscape('\0' as char)
+        when:
+        writer.writeArray('"a";b')
+        and:
+        output.close()
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.getMessage() == "Cannot output a quotation character within a quoted string without an escape character."
+    }
+
+    def "throw an exception if there is a separator in the text, but there is no quotation-char and no escape-char"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output)
+        writer.withQuotation('\0' as char)
+        writer.withEscape('\0' as char)
+        when:
+        writer.writeArray('a;b')
+        and:
+        output.close()
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.getMessage() == "Cannot output a column which contains the separator character ';' without an escape or quotation character."
+    }
+
+    def "throw an exception if there is a new line in the text, but there is no quotation-char"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output)
+        writer.withQuotation('\0' as char)
+        when:
+        writer.writeArray('a\nb')
+        and:
+        output.close()
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.getMessage() == "Cannot output a column which contains a line break without an quotation character."
+    }
 }

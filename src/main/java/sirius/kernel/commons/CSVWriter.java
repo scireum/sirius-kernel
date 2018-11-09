@@ -33,8 +33,11 @@ public class CSVWriter implements Closeable {
     private Writer writer;
     private boolean firstLine = true;
     private char separator = ';';
+    private String separatorString = String.valueOf(';');
     private char quotation = '"';
+    private boolean isQuotationEmpty = false;
     private char escape = '\\';
+    private boolean isEscapeEmpty = false;
     private boolean trim = true;
 
     /**
@@ -58,6 +61,7 @@ public class CSVWriter implements Closeable {
      */
     public CSVWriter withSeparator(char separator) {
         this.separator = separator;
+        this.separatorString = String.valueOf(separator);
         return this;
     }
 
@@ -72,6 +76,7 @@ public class CSVWriter implements Closeable {
      */
     public CSVWriter withQuotation(char quotation) {
         this.quotation = quotation;
+        this.isQuotationEmpty = quotation == '\0';
         return this;
     }
 
@@ -87,6 +92,7 @@ public class CSVWriter implements Closeable {
      */
     public CSVWriter withEscape(char escape) {
         this.escape = escape;
+        this.isEscapeEmpty = escape == '\0';
         return this;
     }
 
@@ -165,10 +171,10 @@ public class CSVWriter implements Closeable {
             stringValue = "";
         }
         StringBuilder effectiveValue = new StringBuilder();
-        boolean shouldQuote = false;
+        boolean shouldQuote = shouldQuote(stringValue);
         for (int i = 0; i < stringValue.length(); i++) {
             char currentChar = stringValue.charAt(i);
-            shouldQuote = processCharacter(currentChar, effectiveValue, shouldQuote);
+            processCharacter(currentChar, effectiveValue, shouldQuote);
         }
         if (shouldQuote) {
             writer.append(quotation);
@@ -179,23 +185,26 @@ public class CSVWriter implements Closeable {
         }
     }
 
-    private boolean processCharacter(char currentChar, StringBuilder effectiveValue, boolean shouldQuote) {
+    private boolean shouldQuote(String stringValue) {
+        if (isQuotationEmpty) {
+            return false;
+        }
+        return stringValue.contains(separatorString) || stringValue.contains("\n") || stringValue.contains("\r");
+    }
+
+    private void processCharacter(char currentChar, StringBuilder effectiveValue, boolean shouldQuote) {
         if (currentChar == escape) {
             effectiveValue.append(escape).append(currentChar);
-            return shouldQuote;
+            return;
         }
 
-        if (quotation == '\0') {
+        if (isQuotationEmpty) {
             processCharacterWithoutQuotation(currentChar, effectiveValue);
-            return shouldQuote;
-        }
-
-        if (currentChar == separator || currentChar == '\r' || currentChar == '\n') {
-            shouldQuote = true;
+            return;
         }
 
         if (shouldQuote && currentChar == quotation) {
-            if (escape == '\0') {
+            if (isEscapeEmpty) {
                 throw new IllegalArgumentException(
                         "Cannot output a quotation character within a quoted string without an escape character.");
             } else {
@@ -203,18 +212,17 @@ public class CSVWriter implements Closeable {
             }
         }
         effectiveValue.append(currentChar);
-        return shouldQuote;
     }
 
     private void processCharacterWithoutQuotation(char currentChar, StringBuilder effectiveValue) {
         if (currentChar == separator) {
-            if (escape != '\0') {
-                effectiveValue.append(escape).append(currentChar);
-            } else {
+            if (isEscapeEmpty) {
                 throw new IllegalArgumentException(Strings.apply(
                         "Cannot output a column which contains the separator character '%s' "
                         + "without an escape or quotation character.",
                         separator));
+            } else {
+                effectiveValue.append(escape).append(currentChar);
             }
         } else if (currentChar == '\r' || currentChar == '\n') {
             throw new IllegalArgumentException(
