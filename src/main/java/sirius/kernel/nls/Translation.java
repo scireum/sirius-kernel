@@ -9,8 +9,9 @@
 package sirius.kernel.nls;
 
 import com.google.common.collect.Maps;
-import sirius.kernel.commons.Strings;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -20,9 +21,7 @@ import java.util.Map;
  */
 public class Translation {
     private boolean autocreated;
-    private String file;
     private String key;
-    private boolean accessed;
     private Map<String, String> translationTable = Maps.newTreeMap();
 
     /**
@@ -53,41 +52,14 @@ public class Translation {
     }
 
     /**
-     * Sets the name of the file in which the property is defined.
-     *
-     * @param file the name of the file in which the property is defined
-     */
-    protected void setFile(String file) {
-        this.file = file;
-    }
-
-    /**
-     * Returns the name of the file in which the property is defined.
-     *
-     * @return the name of the file in which the property is defined
-     */
-    public String getFile() {
-        return file;
-    }
-
-    /**
      * Adds a translation for the given language.
      *
-     * @param lang   a two-letter language code for which the given translation should be used
-     * @param value  the translation for the given language
-     * @param silent determines if a warning is issued if an existing translation is overridden. Setting
-     *               silent to <tt>true</tt> will prevent such warnings and is used to load customer specific
-     *               translations which purpose is ti override existing translations.
+     * @param lang  a two-letter language code for which the given translation should be used
+     * @param value the translation for the given language
+     * @return the previous translation stored for the given language or <tt>null</tt> if there was none present.
      */
-    public void addTranslation(String lang, String value, boolean silent) {
-        if (!silent && translationTable.containsKey(lang) && !Strings.areEqual(translationTable.get(lang), value)) {
-            Babelfish.LOG.WARN("Overriding translation for '%s' in language %s: '%s' --> '%s'",
-                               key,
-                               lang,
-                               translationTable.get(lang),
-                               value);
-        }
-        translationTable.put(lang, value);
+    public String addTranslation(String lang, String value) {
+        return translationTable.put(lang, value);
     }
 
     /**
@@ -100,25 +72,16 @@ public class Translation {
     }
 
     /**
-     * Determines whether the translation was already accessed
-     *
-     * @return <tt>true</tt> if the translation was already accessed, <tt>false</tt> otherwise
-     */
-    public boolean isAccessed() {
-        return accessed;
-    }
-
-    /**
      * Returns the translation for the given language
      *
-     * @param lang the language as two-letter code
+     * @param lang     the language as two-letter code
+     * @param fallback the fallback language as two-letter code
      * @return a translation in the requested language or the key if no translation was found
      */
-    public String translate(String lang) {
-        this.accessed = true;
+    public String translate(@Nonnull String lang, @Nullable String fallback) {
         String result = translationTable.get(lang);
-        if (result == null) {
-            result = translationTable.get(NLS.getFallbackLanguage());
+        if (result == null && fallback != null) {
+            result = translationTable.get(fallback);
         }
         if (result == null) {
             return key;
@@ -144,41 +107,5 @@ public class Translation {
      */
     public boolean hasTranslation(String lang) {
         return translationTable.containsKey(lang);
-    }
-
-    /**
-     * Checks if the given filter is either contained in the key or in one of the translations
-     *
-     * @param effectiveFilter the filter to be applied. <tt>null</tt> indicates that no filtering should take place
-     * @return <tt>true</tt> if the given filter was <tt>null</tt> or if it either occurred in the key
-     * or in one of the translations.
-     */
-    protected boolean containsText(String effectiveFilter) {
-        if (effectiveFilter == null) {
-            return true;
-        }
-        if (key.toLowerCase().contains(effectiveFilter)) {
-            return true;
-        }
-        for (String string : translationTable.values()) {
-            if (string.toLowerCase().contains(effectiveFilter)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Writes all translations into the given map
-     *
-     * @param propMap the target map with maps two-letter language codes to <tt>StoredProperties</tt>
-     */
-    protected void writeTo(Map<String, SortedProperties> propMap) {
-        for (Map.Entry<String, String> entry : translationTable.entrySet()) {
-            if (Strings.isFilled(entry.getValue())) {
-                SortedProperties props = propMap.computeIfAbsent(entry.getKey(), k -> new SortedProperties());
-                props.setProperty(key, entry.getValue());
-            }
-        }
     }
 }
