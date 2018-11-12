@@ -441,6 +441,25 @@ public class NLS {
         return blubb.get(property, fallback, true).translate(getCurrentLang(), getFallbackLanguage());
     }
 
+    /**
+     * Translates the given string if it starts with a $ sign.
+     *
+     * @param keyOrString the string to translate if it starts with a $ sign
+     * @return the translated string or the original string if it doesn't start with a $ sign or if no matching
+     * translation was found
+     */
+    @SuppressWarnings("squid:S2583")
+    @Explain("Duplicate null check as predicate is not enforced by the compiler")
+    public static String smartGet(@Nonnull String keyOrString) {
+        if (keyOrString == null) {
+            return keyOrString;
+        }
+
+        if (keyOrString.length() > 2 && keyOrString.charAt(0) == '$' && keyOrString.charAt(1) != '{') {
+            return NLS.getIfExists(keyOrString, null).orElse(keyOrString);
+        }
+
+        return keyOrString;
     }
 
     /**
