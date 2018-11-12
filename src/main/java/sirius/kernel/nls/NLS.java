@@ -1215,7 +1215,7 @@ public class NLS {
         if (!value.contains(".") || value.contains(",")) {
             return null;
         }
-        if (value.indexOf(".") == value.lastIndexOf(".") && value.indexOf(".") > value.length() - 4) {
+        if (value.indexOf('.') == value.lastIndexOf('.') && value.indexOf('.') > value.length() - 4) {
             try {
                 return Double.valueOf(value);
             } catch (Exception e) {
