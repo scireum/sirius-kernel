@@ -116,6 +116,11 @@ public class Babelfish {
         if (property == null) {
             throw new IllegalArgumentException("property");
         }
+        if (Strings.isEmpty(property)) {
+            Translation entry = new Translation("");
+            entry.setAutocreated(true);
+            return entry;
+        }
         Translation entry = translationMap.get(property);
         if (entry == null && fallback != null) {
             entry = translationMap.get(fallback);
