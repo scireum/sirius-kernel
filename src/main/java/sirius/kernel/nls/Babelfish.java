@@ -19,19 +19,14 @@ import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -77,18 +72,6 @@ public class Babelfish {
     private static final ResourceBundle.Control CONTROL = new NonCachingUTF8Control();
 
     /**
-     * Enumerates all translations matching the given filter.
-     *
-     * @param filter the filter to apply when enumerating translations. The given filter must occur in either the key
-     *               or in one of the translations.
-     * @return a stream of all translations matching the given filter
-     */
-    public Stream<Translation> getTranslations(@Nullable String filter) {
-        String effectiveFilter = Strings.isEmpty(filter) ? null : filter.toLowerCase();
-        return translationMap.values().stream().filter(e -> e.containsText(effectiveFilter));
-    }
-
-    /**
      * Enumerates all translations which key starts with the given prefix
      *
      * @param key the prefix with which the key must start
@@ -116,23 +99,32 @@ public class Babelfish {
         if (property == null) {
             throw new IllegalArgumentException("property");
         }
+
         Translation entry = translationMap.get(property);
-        if (entry == null && fallback != null) {
-            entry = translationMap.get(fallback);
+        if (entry != null) {
+            return entry;
         }
+
+        return getWithFallback(property, fallback, create);
+    }
+
+    private Translation getWithFallback(@Nonnull String property, @Nullable String fallback, boolean create) {
+        Translation entry = translationMap.get(fallback);
         if (entry == null && create) {
-            LOG.INFO("Non-existent translation: %s", property);
-            entry = new Translation(property);
-            entry.setAutocreated(true);
-            Map<String, Translation> copy = new TreeMap<>(translationMap);
-            translationsWriteLock.lock();
-            try {
-                copy.put(entry.getKey(), entry);
-                translationMap = copy;
-            } finally {
-                translationsWriteLock.unlock();
-            }
+            entry = autocreateMissingEntry(property);
         }
+
+        return entry;
+    }
+
+    private Translation autocreateMissingEntry(@Nonnull String property) {
+        LOG.INFO("Non-existent translation: %s", property);
+        Translation entry = new Translation(property);
+        entry.setAutocreated(true);
+
+        inLock(newTranslations -> {
+            newTranslations.put(entry.getKey(), entry);
+        });
 
         return entry;
     }
@@ -143,7 +135,18 @@ public class Babelfish {
      * @return a list of all loaded resource bundles (.properties files)
      */
     public List<String> getLoadedResourceBundles() {
-        return loadedResourceBundles;
+        return Collections.unmodifiableList(loadedResourceBundles);
+    }
+
+    private void inLock(Consumer<Map<String, Translation>> propertiesModifier) {
+        translationsWriteLock.lock();
+        try {
+            Map<String, Translation> copy = new TreeMap<>(translationMap);
+            propertiesModifier.accept(copy);
+            translationMap = copy;
+        } finally {
+            translationsWriteLock.unlock();
+        }
     }
 
     /**
@@ -154,6 +157,16 @@ public class Babelfish {
      * @param classpath the classpath used to discover all relevant properties files
      */
     protected void init(final Classpath classpath) {
+        inLock(newTranslations -> {
+            // "" is silently returned as "". This is the most memory efficient way
+            // to ensure that this happens without any additional logging etc.
+            newTranslations.put("", new Translation(""));
+
+            loadProvidedProperties(classpath, newTranslations);
+        });
+    }
+
+    private void loadProvidedProperties(Classpath classpath, Map<String, Translation> newTranslations) {
         // Load core translations and keep customizations in a separate list as we have to work out the
         // correct ordering first...
         List<Matcher> customizations = Lists.newArrayList();
@@ -161,7 +174,7 @@ public class Babelfish {
             if (Sirius.isCustomizationResource(value.group())) {
                 customizations.add(value);
             } else {
-                loadMatchedResource(value);
+                loadMatchedResource(value, newTranslations);
             }
         });
 
@@ -173,18 +186,18 @@ public class Babelfish {
         });
 
         // Apply translations in correct order
-        customizations.forEach(this::loadMatchedResource);
+        customizations.forEach(value -> loadMatchedResource(value, newTranslations));
     }
 
-    private void loadMatchedResource(Matcher value) {
+    private void loadMatchedResource(Matcher value, Map<String, Translation> newTranslations) {
         LOG.FINE("Loading: %s", value.group());
         String baseName = value.group(1);
         String lang = value.group(2);
-        importProperties(baseName, lang);
+        importProperties(baseName, lang, newTranslations);
         loadedResourceBundles.add(value.group());
     }
 
-    /*
+    /**
      * Reloads the given properties file
      */
     protected void reloadBundle(String name) {
@@ -193,7 +206,36 @@ public class Babelfish {
         if (m.matches()) {
             String baseName = m.group(1);
             String lang = m.group(2);
-            importProperties(baseName, lang);
+            inLock(newTranslations -> {
+                importProperties(baseName, lang, newTranslations);
+            });
+        }
+    }
+
+    private void importProperties(String baseName, String lang, Map<String, Translation> newTranslations) {
+        ResourceBundle bundle = ResourceBundle.getBundle(baseName + "_" + lang, CONTROL);
+        for (String key : bundle.keySet()) {
+            String value = bundle.getString(key);
+            importProperty(newTranslations, lang, baseName, key, value);
+        }
+    }
+
+    private void importProperty(Map<String, Translation> modifyableTranslationsCopy,
+                                String lang,
+                                String file,
+                                String key,
+                                String value) {
+        Translation entry = modifyableTranslationsCopy.computeIfAbsent(key, Translation::new);
+        entry.setAutocreated(false);
+
+        String previous = entry.addTranslation(lang, value);
+        if (previous != null && !Strings.areEqual(previous, value) && !Sirius.isCustomizationResource(file)) {
+            Babelfish.LOG.WARN("Overriding translation for '%s' (%s) in language %s: '%s' --> '%s'",
+                               key,
+                               file,
+                               lang,
+                               previous,
+                               value);
         }
     }
 
@@ -214,86 +256,5 @@ public class Babelfish {
         if (Strings.isFilled(missing)) {
             throw Exceptions.handle().withSystemErrorMessage("Missing translations found: %s", missing).handle();
         }
-    }
-
-    /*
-     * Disables the cache for properties files to enable reloading
-     * and loads UTF-8 stored properties
-     */
-    private static class NonCachingUTF8Control extends ResourceBundle.Control {
-
-        @Override
-        public long getTimeToLive(String baseName, Locale locale) {
-            return ResourceBundle.Control.TTL_DONT_CACHE;
-        }
-
-        @Override
-        public ResourceBundle newBundle(String baseName,
-                                        Locale locale,
-                                        String format,
-                                        ClassLoader loader,
-                                        boolean reload)
-                throws IllegalAccessException, InstantiationException, IOException {
-            // The below is a copy of the default implementation.
-            String bundleName = toBundleName(baseName, locale);
-            String resourceName = toResourceName(bundleName, "properties");
-            ResourceBundle bundle = null;
-            InputStream stream = null;
-            if (reload) {
-                URL url = loader.getResource(resourceName);
-                if (url != null) {
-                    URLConnection connection = url.openConnection();
-                    if (connection != null) {
-                        connection.setUseCaches(false);
-                        stream = connection.getInputStream();
-                    }
-                }
-            } else {
-                stream = loader.getResourceAsStream(resourceName);
-            }
-            if (stream != null) {
-                // Only this line is changed to make it to read properties files as UTF-8.
-                try (InputStreamReader reader = new InputStreamReader(stream, "UTF-8")) {
-                    bundle = new PropertyResourceBundle(reader);
-                } finally {
-                    stream.close();
-                }
-            }
-            return bundle;
-        }
-    }
-
-    private void importProperties(String baseName, String lang) {
-        ResourceBundle bundle = ResourceBundle.getBundle(baseName + "_" + lang, CONTROL);
-        translationsWriteLock.lock();
-        try {
-            Map<String, Translation> copy = new TreeMap<>(translationMap);
-            for (String key : bundle.keySet()) {
-                String value = bundle.getString(key);
-                importProperty(copy, lang, baseName, key, value);
-            }
-            translationMap = copy;
-        } finally {
-            translationsWriteLock.unlock();
-        }
-    }
-
-    private static void importProperty(Map<String, Translation> modifyableTranslationsCopy,
-                                       String lang,
-                                       String file,
-                                       String key,
-                                       String value) {
-        Translation entry = modifyableTranslationsCopy.get(key);
-        if (entry != null && entry.isAutocreated()) {
-            // The entry was previously auto created - therefore we now replace it with our contents. This is a rare
-            // case where a static initialize might fetch a property before the initialization of this class.
-            entry = null;
-        }
-        if (entry == null) {
-            entry = new Translation(key);
-            entry.setFile(file);
-            modifyableTranslationsCopy.put(key, entry);
-        }
-        entry.addTranslation(lang, value, file.startsWith("configurations"));
     }
 }

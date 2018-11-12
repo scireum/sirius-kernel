@@ -296,7 +296,7 @@ public class NLS {
      * or the property itself if no translation for neither of both languages is available.
      */
     public static String get(@Nonnull String property) {
-        return blubb.get(property, null, true).translate(getCurrentLang());
+        return blubb.get(property, null, true).translate(getCurrentLang(), getFallbackLanguage());
     }
 
     /**
@@ -308,8 +308,11 @@ public class NLS {
      * @param lang     a two-letter language code for which the translation is requested
      * @return a translated string in the requested language or a fallback value if no translation was found
      */
+    @SuppressWarnings("squid:S2637")
+    @Explain("Strings.isEmpty checks for null on lang")
     public static String get(@Nonnull String property, @Nullable String lang) {
-        return blubb.get(property, null, true).translate(Strings.isEmpty(lang) ? getCurrentLang() : lang);
+        return blubb.get(property, null, true)
+                    .translate(Strings.isEmpty(lang) ? getCurrentLang() : lang, getFallbackLanguage());
     }
 
     /**
@@ -391,12 +394,19 @@ public class NLS {
      * @return a translated text in the requested language (or in the default language if no translation for the given
      * language was found). Returns an empty optional if no translation for this property exists at all.
      */
+    @SuppressWarnings("squid:S2637")
+    @Explain("Strings.isEmpty checks for null on lang")
     public static Optional<String> getIfExists(@Nonnull String property, @Nullable String lang) {
+        if (Strings.isEmpty(property)) {
+            return Optional.empty();
+        }
+
         Translation translation = blubb.get(property, null, false);
         if (translation == null) {
             return Optional.empty();
         }
-        return Optional.of(translation.translate(Strings.isEmpty(lang) ? getCurrentLang() : lang));
+        return Optional.of(translation.translate(Strings.isEmpty(lang) ? getCurrentLang() : lang,
+                                                 getFallbackLanguage()));
     }
 
     /**
@@ -410,8 +420,11 @@ public class NLS {
      * of both doesn't provide a translation for the given language, the translation for the default
      * language is returned. If neither of both keys exist <tt>property</tt> will be returned.
      */
+    @SuppressWarnings("squid:S2637")
+    @Explain("Strings.isEmpty checks for null on lang")
     public static String safeGet(@Nonnull String property, @Nonnull String fallback, @Nullable String lang) {
-        return blubb.get(property, fallback, true).translate(Strings.isEmpty(lang) ? getCurrentLang() : lang);
+        return blubb.get(property, fallback, true)
+                    .translate(Strings.isEmpty(lang) ? getCurrentLang() : lang, getFallbackLanguage());
     }
 
     /**
@@ -425,7 +438,28 @@ public class NLS {
      * language is returned. If neither of both keys exist <tt>property</tt> will be returned.
      */
     public static String safeGet(@Nonnull String property, @Nonnull String fallback) {
-        return blubb.get(property, fallback, true).translate(getCurrentLang());
+        return blubb.get(property, fallback, true).translate(getCurrentLang(), getFallbackLanguage());
+    }
+
+    /**
+     * Translates the given string if it starts with a $ sign.
+     *
+     * @param keyOrString the string to translate if it starts with a $ sign
+     * @return the translated string or the original string if it doesn't start with a $ sign or if no matching
+     * translation was found
+     */
+    @SuppressWarnings("squid:S2583")
+    @Explain("Duplicate null check as predicate is not enforced by the compiler")
+    public static String smartGet(@Nonnull String keyOrString) {
+        if (keyOrString == null) {
+            return keyOrString;
+        }
+
+        if (keyOrString.length() > 2 && keyOrString.charAt(0) == '$' && keyOrString.charAt(1) != '{') {
+            return NLS.getIfExists(keyOrString, null).orElse(keyOrString);
+        }
+
+        return keyOrString;
     }
 
     /**
@@ -1181,7 +1215,7 @@ public class NLS {
         if (!value.contains(".") || value.contains(",")) {
             return null;
         }
-        if (value.indexOf(".") == value.lastIndexOf(".") && value.indexOf(".") > value.length() - 4) {
+        if (value.indexOf('.') == value.lastIndexOf('.') && value.indexOf('.') > value.length() - 4) {
             try {
                 return Double.valueOf(value);
             } catch (Exception e) {
