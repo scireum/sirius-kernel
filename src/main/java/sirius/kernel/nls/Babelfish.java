@@ -158,6 +158,10 @@ public class Babelfish {
      */
     protected void init(final Classpath classpath) {
         inLock(newTranslations -> {
+            // "" is silently returned as "". This is the most memory efficient way
+            // to ensure that this happens without any additional logging etc.
+            newTranslations.put("", new Translation(""));
+
             loadProvidedProperties(classpath, newTranslations);
         });
     }
