@@ -109,7 +109,7 @@ public class Babelfish {
     }
 
     private Translation getWithFallback(@Nonnull String property, @Nullable String fallback, boolean create) {
-        Translation entry = translationMap.get(fallback);
+        Translation entry = fallback != null ? translationMap.get(fallback) : null;
         if (entry == null && create) {
             entry = autocreateMissingEntry(property);
         }
