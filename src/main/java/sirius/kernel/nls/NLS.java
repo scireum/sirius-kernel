@@ -456,7 +456,7 @@ public class NLS {
         }
 
         if (keyOrString.length() > 2 && keyOrString.charAt(0) == '$' && keyOrString.charAt(1) != '{') {
-            return NLS.getIfExists(keyOrString, null).orElse(keyOrString);
+            return NLS.getIfExists(keyOrString.substring(1), null).orElseGet(() -> keyOrString.substring(1));
         }
 
         return keyOrString;
@@ -474,6 +474,7 @@ public class NLS {
 
     /**
      * Creates a formatted using the pattern supplied by the translation value for the given <tt>property</tt>.
+     * smasmassm
      *
      * @param property the property to used to retrieve a translated pattern
      * @param lang     a two-letter language code for which the translation is requested
