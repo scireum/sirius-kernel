@@ -1669,8 +1669,8 @@ public class Value {
     @Nonnull
     @CheckReturnValue
     public Value translate(String lang) {
-        if (isFilled()) {
-            return Value.of(NLS.smartGet(asString()));
+        if (isFilled() && is(String.class)) {
+            return Value.of(NLS.smartGet(asString(), lang));
         } else {
             return this;
         }

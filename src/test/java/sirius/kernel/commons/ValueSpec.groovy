@@ -1,12 +1,12 @@
 package sirius.kernel.commons
 
+import sirius.kernel.BaseSpecification
 import sirius.kernel.nls.NLS
-import spock.lang.Specification
 
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class ValueSpec extends Specification {
+class ValueSpec extends BaseSpecification {
 
     private static final BigDecimal DEFAULT_BIG_DECIMAL = BigDecimal.TEN
 
@@ -163,5 +163,17 @@ class ValueSpec extends Specification {
         true               | true
         NLS.get("NLS.yes") | true
         NLS.get("NLS.no")  | false
+    }
+
+    def "Test translate works as expected"() {
+        expect:
+        Value.of(input).translate(lang).get() == output
+        where:
+        input                    | output                   | lang
+        'regular string'         | "regular string"         | "de"
+        '$nls.test.translate'    | "übersetzungs test"      | "de"
+        '$nls.test.translate'    | "translation test"       | "en"
+        LocalDate.of(1999, 1, 1) | LocalDate.of(1999, 1, 1) | null
+        ["test1", "test2"]       | ["test1", "test2"]       | null
     }
 }

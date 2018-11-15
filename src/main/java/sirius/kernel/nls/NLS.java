@@ -448,15 +448,27 @@ public class NLS {
      * @return the translated string or the original string if it doesn't start with a $ sign or if no matching
      * translation was found
      */
+    public static String smartGet(@Nonnull String keyOrString) {
+        return smartGet(keyOrString, null);
+    }
+
+    /**
+     * Translates the given string if it starts with a $ sign.
+     *
+     * @param keyOrString the string to translate if it starts with a $ sign
+     * @param lang        a two-letter language code for which the translation is requested
+     * @return the translated string or the original string if it doesn't start with a $ sign or if no matching
+     * translation was found
+     */
     @SuppressWarnings("squid:S2583")
     @Explain("Duplicate null check as predicate is not enforced by the compiler")
-    public static String smartGet(@Nonnull String keyOrString) {
+    public static String smartGet(@Nonnull String keyOrString, @Nullable String lang) {
         if (keyOrString == null) {
             return keyOrString;
         }
 
         if (keyOrString.length() > 2 && keyOrString.charAt(0) == '$' && keyOrString.charAt(1) != '{') {
-            return NLS.getIfExists(keyOrString.substring(1), null).orElseGet(() -> keyOrString.substring(1));
+            return NLS.getIfExists(keyOrString.substring(1), lang).orElseGet(() -> keyOrString.substring(1));
         }
 
         return keyOrString;
