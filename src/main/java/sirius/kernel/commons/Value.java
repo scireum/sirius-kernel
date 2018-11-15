@@ -1670,7 +1670,7 @@ public class Value {
     @CheckReturnValue
     public Value translate(String lang) {
         if (isFilled()) {
-            return Value.of(NLS.smartGet(asString()));
+            return Value.of(NLS.smartGet(asString(), lang));
         } else {
             return this;
         }
