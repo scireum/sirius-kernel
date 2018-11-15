@@ -462,7 +462,7 @@ public class NLS {
      */
     @SuppressWarnings("squid:S2583")
     @Explain("Duplicate null check as predicate is not enforced by the compiler")
-    public static String smartGet(@Nonnull String keyOrString, String lang) {
+    public static String smartGet(@Nonnull String keyOrString, @Nullable String lang) {
         if (keyOrString == null) {
             return keyOrString;
         }
