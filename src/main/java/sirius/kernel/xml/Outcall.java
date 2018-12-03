@@ -30,6 +30,8 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Used to call an URL and send or receive data.
@@ -44,6 +46,7 @@ public class Outcall {
     private static final String REQUEST_METHOD_POST = "POST";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
+    private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
 
     private HttpURLConnection connection;
     private Charset charset = Charsets.UTF_8;
@@ -205,11 +208,17 @@ public class Outcall {
      * @return the charset used by the server or <tt>UTF-8</tt> as default
      */
     public Charset getContentEncoding() {
-        if (connection.getContentEncoding() == null) {
+        String contentType = connection.getContentType();
+        if (contentType == null) {
             return charset;
         }
         try {
-            return Charset.forName(connection.getContentEncoding());
+            Matcher m = CHARSET_PATTERN.matcher(contentType);
+            if (m.find()) {
+                return Charset.forName(m.group(1).trim().toUpperCase());
+            } else {
+                return charset;
+            }
         } catch (Exception e) {
             Exceptions.ignore(e);
             return Charsets.UTF_8;
