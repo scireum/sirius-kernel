@@ -401,11 +401,12 @@ public class Exceptions {
         StackTraceElement deprecatedMethod = stack[2];
         StackTraceElement caller = stack[3];
         DEPRECATION_LOG.WARN("The deprecated method '%s.%s' was called by '%s.%s'",
-                             deprecatedMethod.getClassName(),
-                             deprecatedMethod.getMethodName(),
-                             caller.getClassName(),
-                             caller.getMethodName());
-
+                deprecatedMethod.getClassName(),
+                deprecatedMethod.getMethodName(),
+                caller.getClassName(),
+                caller.getMethodName());
+    }
+    
     /**
      * Retrieves the actual root {@link Throwable} which ended in the given exception.
      *
