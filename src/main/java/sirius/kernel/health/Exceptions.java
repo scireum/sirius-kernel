@@ -194,7 +194,6 @@ public class Exceptions {
                 processError = false;
                 LOG.FINE("Did not process the exception %s because its root (%s) was already handled",
                         ex.getMessage(), Exceptions.getRootCause(ex).getMessage());
-
             }
 
             try {
@@ -414,14 +413,16 @@ public class Exceptions {
      * @return the root {@link Throwable} of the given one
      */
     public static Throwable getRootCause(@Nullable Throwable e) {
-        if (e == null){
+        if (e == null) {
             return null;
         }
 
         Throwable cause = e;
 
-        while (cause.getCause() != null) {
+        int circuitBreaker = 11;
+        while (circuitBreaker > 0 && cause.getCause() != null) {
             cause = cause.getCause();
+            circuitBreaker--;
         }
 
         return cause;
