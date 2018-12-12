@@ -16,6 +16,7 @@ import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.nls.NLS;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -188,6 +189,13 @@ public class Exceptions {
             if (ex instanceof HandledException) {
                 return (HandledException) ex;
             }
+
+            if (Exceptions.getRootCause(ex) instanceof HandledException) {
+                processError = false;
+                LOG.FINE("Did not process the exception %s because its root (%s) was already handled",
+                        ex.getMessage(), Exceptions.getRootCause(ex).getMessage());
+            }
+
             try {
                 String message = computeMessage();
                 HandledException result = new HandledException(message, ex);
@@ -392,9 +400,31 @@ public class Exceptions {
         StackTraceElement deprecatedMethod = stack[2];
         StackTraceElement caller = stack[3];
         DEPRECATION_LOG.WARN("The deprecated method '%s.%s' was called by '%s.%s'",
-                             deprecatedMethod.getClassName(),
-                             deprecatedMethod.getMethodName(),
-                             caller.getClassName(),
-                             caller.getMethodName());
+                deprecatedMethod.getClassName(),
+                deprecatedMethod.getMethodName(),
+                caller.getClassName(),
+                caller.getMethodName());
+    }
+    
+    /**
+     * Retrieves the actual root {@link Throwable} which ended in the given exception.
+     *
+     * @param e the throwable to begin with
+     * @return the root {@link Throwable} of the given one
+     */
+    public static Throwable getRootCause(@Nullable Throwable e) {
+        if (e == null) {
+            return null;
+        }
+
+        Throwable cause = e;
+
+        int circuitBreaker = 11;
+        while (circuitBreaker > 0 && cause.getCause() != null) {
+            cause = cause.getCause();
+            circuitBreaker--;
+        }
+
+        return cause;
     }
 }
