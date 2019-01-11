@@ -67,4 +67,32 @@ class XMLReaderSpec extends BaseSpecification {
         and:
         attributeValue == "abc"
     }
+
+    def "reading non existing attributes does not throw errors"() {
+        given:
+        def check = ValueHolder.of(null)
+        def attributes
+        def attributeValue
+        def attributeValues
+        def r = new XMLReader()
+        and:
+        r.addHandler("test", { n ->
+            try {
+                attributes = n.getAttributes()
+                attributeValue = n.getAttributeValue("namedAttribute")
+                attributeValues = n.getAttributeValues()
+            } catch (XPathExpressionException e) {
+                throw Exceptions.handle(e)
+            }
+        } as NodeHandler)
+        when:
+        r.parse(new ByteArrayInputStream(
+                "<doc><test>1</test></doc>".getBytes()))
+        then:
+        attributes.size() == 0
+        and:
+        attributeValues.get("namedAttribute2") == null
+        and:
+        attributeValue == ""
+    }
 }
