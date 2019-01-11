@@ -9,6 +9,7 @@
 package sirius.kernel.xml;
 
 import com.google.common.base.Charsets;
+import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -170,12 +171,9 @@ public class StructuredNode {
      */
     @Nonnull
     public Value getAttribute(String name) {
-        NamedNodeMap attributes = getNode().getAttributes();
-        if (attributes != null) {
-            Node attribute = attributes.getNamedItem(name);
-            if (attribute != null) {
-                return Value.of(attribute.getNodeValue());
-            }
+        StructuredNode attribute = queryNode("@" + name);
+        if (attribute != null && attribute.getNode() instanceof Attr) {
+            return Value.of(attribute.getNode().getNodeValue());
         }
         return Value.EMPTY;
     }
