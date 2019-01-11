@@ -44,18 +44,12 @@ class XMLReaderSpec extends BaseSpecification {
         given:
         def check = ValueHolder.of(null)
         def attributes
-        def attributeValue
-        def attributeValues
+        def attribute
         def r = new XMLReader()
         and:
         r.addHandler("test", { n ->
-            try {
-                attributes = n.getAttributes()
-                attributeValue = n.getAttributeValue("namedAttribute")
-                attributeValues = n.getAttributeValues()
-            } catch (XPathExpressionException e) {
-                throw Exceptions.handle(e)
-            }
+            attributes = n.getAttributes()
+            attribute = n.getAttribute("namedAttribute")
         } as NodeHandler)
         when:
         r.parse(new ByteArrayInputStream(
@@ -63,27 +57,19 @@ class XMLReaderSpec extends BaseSpecification {
         then:
         attributes.size() == 2
         and:
-        attributeValues.get("namedAttribute2") == "xyz"
-        and:
-        attributeValue == "abc"
+        attribute.asString() == "abc"
     }
 
     def "reading non existing attributes does not throw errors"() {
         given:
         def check = ValueHolder.of(null)
         def attributes
-        def attributeValue
-        def attributeValues
+        def attribute
         def r = new XMLReader()
         and:
         r.addHandler("test", { n ->
-            try {
-                attributes = n.getAttributes()
-                attributeValue = n.getAttributeValue("namedAttribute")
-                attributeValues = n.getAttributeValues()
-            } catch (XPathExpressionException e) {
-                throw Exceptions.handle(e)
-            }
+            attributes = n.getAttributes()
+            attribute = n.getAttribute("namedAttribute")
         } as NodeHandler)
         when:
         r.parse(new ByteArrayInputStream(
@@ -91,8 +77,6 @@ class XMLReaderSpec extends BaseSpecification {
         then:
         attributes.size() == 0
         and:
-        attributeValues.get("namedAttribute2") == null
-        and:
-        attributeValue == ""
+        attribute.asString() == ""
     }
 }
