@@ -205,10 +205,7 @@ public class StructuredNode {
      */
     @Nonnull
     public Map<String, String> getAttributeValues() {
-        if (nodeAttributes == null) {
-            compileAttributes();
-        }
-        return Maps.transformValues(nodeAttributes, attribute -> attribute.getNode().getNodeValue());
+        return Maps.transformValues(getAttributes(), attribute -> attribute.getNode().getNodeValue());
     }
 
     /**

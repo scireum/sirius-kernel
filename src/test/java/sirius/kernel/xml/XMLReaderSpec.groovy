@@ -45,12 +45,14 @@ class XMLReaderSpec extends BaseSpecification {
         def check = ValueHolder.of(null)
         def attributes
         def attributeValue
+        def attributeValues
         def r = new XMLReader()
         and:
         r.addHandler("test", { n ->
             try {
                 attributes = n.getAttributes()
                 attributeValue = n.getAttributeValue("namedAttribute")
+                attributeValues = n.getAttributeValues()
             } catch (XPathExpressionException e) {
                 throw Exceptions.handle(e)
             }
@@ -60,8 +62,9 @@ class XMLReaderSpec extends BaseSpecification {
                 "<doc><test namedAttribute=\"abc\" namedAttribute2=\"xyz\">1</test></doc>".getBytes()))
         then:
         attributes.size() == 2
-        attributeValue == "abc"
         and:
-        attributes.get("namedAttribute2").getNode().getNodeValue() == "xyz"
+        attributeValues.get("namedAttribute2") == "xyz"
+        and:
+        attributeValue == "abc"
     }
 }
