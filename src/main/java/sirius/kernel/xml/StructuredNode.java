@@ -10,6 +10,7 @@ package sirius.kernel.xml;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -171,6 +172,43 @@ public class StructuredNode {
             }
         }
         nodeAttributes = attributes;
+    }
+
+    /**
+     * Returns the attribute with the given name.
+     *
+     * @return the attribute as a {@link StructuredNode} if an attribute exists for the given name, <tt>null</tt> otherwise
+     */
+    @Nullable
+    public StructuredNode getAttribute(String name) {
+        return getAttributes().get(name);
+    }
+
+    /**
+     * Returns the value of the  attribute with the given name.
+     *
+     * @return the value of the attribute as a {@link String} if an attribute exists for the given name, <tt>""</tt> otherwise
+     */
+    @Nonnull
+    public String getAttributeValue(String name) {
+        StructuredNode attribute = getAttribute(name);
+        if (attribute != null) {
+            return attribute.getNode().getNodeValue();
+        }
+        return "";
+    }
+
+    /**
+     * Returns a map of all attribute values of this DOM node with their names as keys.
+     *
+     * @return a list containing all attribute values of this node. If no attributes exist, an empty list will be returned.
+     */
+    @Nonnull
+    public Map<String, String> getAttributeValues() {
+        if (nodeAttributes == null) {
+            compileAttributes();
+        }
+        return Maps.transformValues(nodeAttributes, attribute -> attribute.getNode().getNodeValue());
     }
 
     /**
