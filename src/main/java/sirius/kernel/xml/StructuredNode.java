@@ -152,7 +152,7 @@ public class StructuredNode {
     /**
      * Returns a map of all attributes of this DOM node with their names as keys.
      *
-     * @return a list containing all attributes of this node. If no attributes exist, an empty list will be returned.
+     * @return a map containing all attributes of this node. If no attributes exist, an empty map will be returned.
      */
     @Nonnull
     public ImmutableMap<String, StructuredNode> getAttributes() {
