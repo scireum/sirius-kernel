@@ -9,6 +9,8 @@
 package sirius.kernel.xml;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import sirius.kernel.cache.Cache;
@@ -27,7 +29,9 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -44,6 +48,7 @@ public class StructuredNode {
     private static final XPathFactory XPATH = XPathFactory.newInstance();
 
     private Node node;
+    private Map<String, StructuredNode> nodeAttributes;
 
     /**
      * Wraps the given node
@@ -141,6 +146,31 @@ public class StructuredNode {
             resultList.add(new StructuredNode(result.item(i)));
         }
         return resultList;
+    }
+
+    /**
+     * Returns a map of all attributes of this DOM node with their names as keys.
+     *
+     * @return a list containing all attributes of this node. If no attributes exist, an empty list will be returned.
+     */
+    @Nonnull
+    public ImmutableMap<String, StructuredNode> getAttributes() {
+        if (nodeAttributes == null) {
+            compileAttributes();
+        }
+        return ImmutableMap.copyOf(nodeAttributes);
+    }
+
+    private void compileAttributes() {
+        Map<String, StructuredNode> attributes = new HashMap<>();
+        NamedNodeMap result = node.getAttributes();
+        if (result != null) {
+            for (int i = 0; i < result.getLength(); i++) {
+                StructuredNode structuredNode = new StructuredNode(result.item(i));
+                attributes.put(structuredNode.getNodeName(), structuredNode);
+            }
+        }
+        nodeAttributes = attributes;
     }
 
     /**
