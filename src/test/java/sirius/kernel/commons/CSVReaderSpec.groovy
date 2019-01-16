@@ -200,4 +200,34 @@ class CSVReaderSpec extends BaseSpecification {
         output.get(0).at("C") == 'b""'
     }
 
+    def "limit the number of line to read"() {
+        given:
+        def data = "a;b;c\n1;2;3\r\n4;5;6"
+        def completeData = ""
+        for (int i = 0; i < 100; i++) {
+            completeData += data + "\n"
+        }
+        when:
+        List<Values> output = []
+        and:
+        new CSVReader(new StringReader(completeData)).withLimit(new Limit(0, 100)).execute(({ row -> output.add(row) } as Consumer<Values>))
+        then:
+        output.size() == 100
+    }
+
+    def "skip and limit the number of line to read"() {
+        given:
+        def data = "a;b;c\n1;2;3\r\n4;5;6"
+        def completeData = ""
+        for (int i = 0; i < 100; i++) {
+            completeData += data + "\n"
+        }
+        when:
+        List<Values> output = []
+        and:
+        new CSVReader(new StringReader(completeData)).withLimit(new Limit(250, 100)).execute(({ row -> output.add(row) } as Consumer<Values>))
+        then:
+        output.size() == 50
+    }
+
 }

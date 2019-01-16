@@ -48,6 +48,7 @@ public class CSVReader {
     private char escape = '\\';
     private Consumer<Values> consumer;
     private int buffer;
+    private Limit limit = Limit.UNLIMITED;
 
     /**
      * Creates a new reader which processes the given input.
@@ -121,6 +122,19 @@ public class CSVReader {
     }
 
     /**
+     * Can set a limit to read only a specific range of rows from the file.
+     * <p>
+     * By default all rows are read.
+     *
+     * @param limit the limit to use reading the rows from the file.
+     * @return the reader itself for fluent method calls
+     */
+    public CSVReader withLimit(Limit limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    /**
      * Parses the previously supplied input and calls the given consumer for each row.
      * <p>
      * Note that this method will close the given input.
@@ -133,7 +147,7 @@ public class CSVReader {
             this.consumer = consumer;
             TaskContext tc = TaskContext.get();
             read();
-            while (tc.isActive() && !isEOF()) {
+            while (tc.isActive() && !isEOF() && limit.shouldContinue()) {
                 readRow();
                 consumeNewLine();
             }
@@ -173,7 +187,10 @@ public class CSVReader {
                 read();
             }
         }
-        consumer.accept(Values.of(row));
+
+        if (limit.nextRow()) {
+            consumer.accept(Values.of(row));
+        }
     }
 
     /*
