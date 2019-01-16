@@ -9,6 +9,7 @@
 package sirius.kernel.xml;
 
 import com.google.common.base.Charsets;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import sirius.kernel.cache.Cache;
@@ -27,7 +28,9 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -141,6 +144,40 @@ public class StructuredNode {
             resultList.add(new StructuredNode(result.item(i)));
         }
         return resultList;
+    }
+
+    /**
+     * Returns a map of all attribute values of this DOM node with their names as keys.
+     *
+     * @return a map containing all attributes of this node. If no attributes exist, an empty map will be returned.
+     */
+    @Nonnull
+    public Map<String, String> getAttributes() {
+        Map<String, String> attributes = new HashMap<>();
+        NamedNodeMap result = node.getAttributes();
+        if (result != null) {
+            for (int i = 0; i < result.getLength(); i++) {
+                attributes.put(result.item(i).getNodeName(), result.item(i).getNodeValue());
+            }
+        }
+        return attributes;
+    }
+
+    /**
+     * Returns the value of the attribute with the given name.
+     *
+     * @return a {@link Value} filled with the attribute value if an attribute exists for the given name, an empty {@link Value} otherwise.
+     */
+    @Nonnull
+    public Value getAttribute(String name) {
+        NamedNodeMap attributes = getNode().getAttributes();
+        if (attributes != null) {
+            Node attribute = attributes.getNamedItem(name);
+            if (attribute != null) {
+                return Value.of(attribute.getNodeValue());
+            }
+        }
+        return Value.EMPTY;
     }
 
     /**

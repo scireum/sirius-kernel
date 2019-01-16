@@ -39,4 +39,44 @@ class XMLReaderSpec extends BaseSpecification {
         and:
         nodes.getCount() == 3
     }
+
+    def "XMLReader reads attributes"() {
+        given:
+        def check = ValueHolder.of(null)
+        def attributes
+        def attribute
+        def r = new XMLReader()
+        and:
+        r.addHandler("test", { n ->
+            attributes = n.getAttributes()
+            attribute = n.getAttribute("namedAttribute")
+        } as NodeHandler)
+        when:
+        r.parse(new ByteArrayInputStream(
+                "<doc><test namedAttribute=\"abc\" namedAttribute2=\"xyz\">1</test></doc>".getBytes()))
+        then:
+        attributes.size() == 2
+        and:
+        attribute.asString() == "abc"
+    }
+
+    def "reading non existing attributes does not throw errors"() {
+        given:
+        def check = ValueHolder.of(null)
+        def attributes
+        def attribute
+        def r = new XMLReader()
+        and:
+        r.addHandler("test", { n ->
+            attributes = n.getAttributes()
+            attribute = n.getAttribute("namedAttribute")
+        } as NodeHandler)
+        when:
+        r.parse(new ByteArrayInputStream(
+                "<doc><test>1</test></doc>".getBytes()))
+        then:
+        attributes.size() == 0
+        and:
+        attribute.asString() == ""
+    }
 }
