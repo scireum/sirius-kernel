@@ -331,8 +331,8 @@ public class AdvancedDateParser {
         result.getTime();
     }
 
-    private String[] getI18n(String key) {
-        return getI18nText(key).split(MODIFIER_SEPARATOR);
+    private String[] getI18n(String key, String... extraKeys) {
+        return join(getI18nText(key).split(MODIFIER_SEPARATOR), extraKeys);
     }
 
     private String getI18nText(String key) {
@@ -355,11 +355,11 @@ public class AdvancedDateParser {
     }
 
     private String[] end() {
-        return join(getI18n("AdvancedDateParser.end"), new String[]{"end"});
+        return getI18n("AdvancedDateParser.end", "end");
     }
 
     private String[] calendarWeek() {
-        return join(getI18n("AdvancedDateParser.calendarWeek"), new String[]{"week"});
+        return getI18n("AdvancedDateParser.calendarWeek", "week");
     }
 
     private void parseStartModifier() throws ParseException {
@@ -405,27 +405,27 @@ public class AdvancedDateParser {
     }
 
     private String[] of() {
-        return join(getI18n("AdvancedDateParser.of"), new String[]{"of"});
+        return getI18n("AdvancedDateParser.of", "of");
     }
 
     private String[] day() {
-        return join(getI18n("AdvancedDateParser.day"), new String[]{"day"});
+        return getI18n("AdvancedDateParser.day", "day");
     }
 
     private String[] week() {
-        return join(getI18n("AdvancedDateParser.week"), new String[]{"week"});
+        return getI18n("AdvancedDateParser.week", "week");
     }
 
     private String[] month() {
-        return join(getI18n("AdvancedDateParser.month"), new String[]{"month"});
+        return getI18n("AdvancedDateParser.month", "month");
     }
 
     private String[] year() {
-        return join(getI18n("AdvancedDateParser.year"), new String[]{"year"});
+        return getI18n("AdvancedDateParser.year", "year");
     }
 
     private String[] start() {
-        return join(getI18n("AdvancedDateParser.start"), new String[]{"start"});
+        return getI18n("AdvancedDateParser.start", "start");
     }
 
     private void parseDelta(Calendar fixPoint, Tokenizer tokenizer) throws ParseException {
@@ -487,31 +487,31 @@ public class AdvancedDateParser {
     }
 
     private String[] years() {
-        return join(getI18n("AdvancedDateParser.years"), new String[]{"year", "years"});
+        return getI18n("AdvancedDateParser.years", "year", "years");
     }
 
     private String[] months() {
-        return join(getI18n("AdvancedDateParser.months"), new String[]{"month", "months"});
+        return getI18n("AdvancedDateParser.months", "month", "months");
     }
 
     private String[] weeks() {
-        return join(getI18n("AdvancedDateParser.weeks"), new String[]{"week", "weeks"});
+        return getI18n("AdvancedDateParser.weeks", "week", "weeks");
     }
 
     private String[] days() {
-        return join(getI18n("AdvancedDateParser.days"), new String[]{"day", "days"});
+        return getI18n("AdvancedDateParser.days", "day", "days");
     }
 
     private String[] hours() {
-        return join(getI18n("AdvancedDateParser.hours"), new String[]{"hour", "hours"});
+        return getI18n("AdvancedDateParser.hours", "hour", "hours");
     }
 
     private String[] minutes() {
-        return join(getI18n("AdvancedDateParser.minutes"), new String[]{"minute", "minutes"});
+        return getI18n("AdvancedDateParser.minutes", "minute", "minutes");
     }
 
     private String[] seconds() {
-        return join(getI18n("AdvancedDateParser.seconds"), new String[]{"second", "seconds"});
+        return getI18n("AdvancedDateParser.seconds", "second", "seconds");
     }
 
     private String[] join(String[]... arrays) {
@@ -547,7 +547,7 @@ public class AdvancedDateParser {
     }
 
     private String[] nowToken() {
-        return join(getI18n("AdvancedDateParser.now"), new String[]{"now"});
+        return getI18n("AdvancedDateParser.now", "now");
     }
 
     private Calendar now() {
