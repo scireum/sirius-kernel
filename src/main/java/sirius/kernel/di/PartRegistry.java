@@ -269,7 +269,19 @@ class PartRegistry implements MutableGlobalContext {
                                    String customizationName,
                                    Class<?> clazz,
                                    Map<String, Object> partsOfClass) {
-        Object currentPart = partsOfClass.computeIfAbsent(uniqueName, name -> part);
+        if (partsOfClass.containsKey(uniqueName)) {
+            checkOverwriteForNamedPart(uniqueName, part, customizationName, clazz, partsOfClass);
+        } else {
+            partsOfClass.put(uniqueName, part);
+        }
+    }
+
+    private void checkOverwriteForNamedPart(String uniqueName,
+                                            Object part,
+                                            String customizationName,
+                                            Class<?> clazz,
+                                            Map<String, Object> partsOfClass) {
+        Object currentPart = partsOfClass.get(uniqueName);
         String currentCustomization = Sirius.getCustomizationName(currentPart.getClass().getName());
         int comp = Sirius.compareCustomizations(currentCustomization, customizationName);
         if (comp > 0) {
