@@ -159,20 +159,12 @@ public class Tasks implements Startable, Stoppable, Killable {
     }
 
     private AsyncExecutor findExecutor(String category) {
-        AsyncExecutor exec = executors.get(category);
-        if (exec == null) {
-            synchronized (executors) {
-                exec = executors.get(category);
-                if (exec == null) {
-                    Extension config = Sirius.getSettings().getExtension("async.executor", category);
-                    exec = new AsyncExecutor(category,
-                                             config.get("poolSize").getInteger(),
-                                             config.get("queueLength").getInteger());
-                    executors.put(category, exec);
-                }
-            }
-        }
-        return exec;
+        return executors.computeIfAbsent(category, categoryName -> {
+            Extension config = Sirius.getSettings().getExtension("async.executor", categoryName);
+            return new AsyncExecutor(categoryName,
+                                     config.get("poolSize").getInteger(),
+                                     config.get("queueLength").getInteger());
+        });
     }
 
     private synchronized void schedule(ExecutionBuilder.TaskWrapper wrapper) {

@@ -194,6 +194,7 @@ public class StructuredNode {
             if (result == null) {
                 return null;
             }
+
             return new StructuredNode(result);
         } catch (XPathExpressionException e) {
             throw new IllegalArgumentException(e);

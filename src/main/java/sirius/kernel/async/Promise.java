@@ -388,6 +388,8 @@ public class Promise<V> {
      * @return <tt>this</tt> for fluent method chaining
      */
     @Nonnull
+    @SuppressWarnings("squid:S2589")
+    @Explain("We really want to ensure that the given value is not null and not just rely on annotation.")
     public Promise<V> onComplete(@Nonnull CompletionHandler<V> handler) {
         if (handler != null) {
             if (isSuccessful()) {

@@ -118,15 +118,7 @@ public class ConfigBuilder {
          * @return the scope with the given name
          */
         private Scope getScope(String name) {
-            Scope scope = scopes.get(name);
-
-            if (scope == null) {
-                scope = new Scope(name);
-
-                scopes.put(name, scope);
-            }
-
-            return scope;
+            return scopes.computeIfAbsent(name, Scope::new);
         }
 
         /**

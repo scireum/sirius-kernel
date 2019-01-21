@@ -36,9 +36,7 @@ public class PartAnnotationProcessor implements FieldAnnotationProcessor {
             String value = Sirius.getSettings().getString(annotation.configPath());
             if (Strings.isFilled(value)) {
                 Object part = ctx.findPart(value, field.getType());
-                if (part != null) {
-                    field.set(object, part);
-                }
+                field.set(object, part);
             }
         } else {
             Object part = ctx.getPart(field.getType());
