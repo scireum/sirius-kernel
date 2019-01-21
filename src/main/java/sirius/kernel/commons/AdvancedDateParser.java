@@ -45,6 +45,7 @@ import java.util.TreeSet;
  */
 public class AdvancedDateParser {
 
+    private static final String[] EMPTY_STRING_ARRAY = {};
     private String lang;
 
     private static final String NEGATIVE_DELTA = "-";
@@ -514,7 +515,7 @@ public class AdvancedDateParser {
         for (String[] array : arrays) {
             values.addAll(Arrays.asList(array));
         }
-        return values.toArray(new String[values.size()]);
+        return values.toArray(EMPTY_STRING_ARRAY);
     }
 
     private Calendar parseFixPoint() throws ParseException {
