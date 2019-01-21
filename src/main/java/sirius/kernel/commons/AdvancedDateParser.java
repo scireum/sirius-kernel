@@ -260,15 +260,15 @@ public class AdvancedDateParser {
      * we simply cut this block.
      */
     private String eliminateTextInBrackets(String input) {
-        int first = input.indexOf("[");
-        int last = input.lastIndexOf("]");
+        int first = input.indexOf('[');
+        int last = input.lastIndexOf(']');
         if (first < 0) {
             return input.trim();
         }
         String result = input.substring(0, first);
-        //noinspection UnnecessaryParentheses
+
         if ((last > -1) && (last < input.length() - 1)) {
-            result += input.substring(last + 1, input.length());
+            result += input.substring(last + 1);
         }
         return result.trim();
     }
