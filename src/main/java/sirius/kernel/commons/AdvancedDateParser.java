@@ -471,16 +471,11 @@ public class AdvancedDateParser {
 
     private int parseDeltaAmount(Tokenizer tokenizer) throws ParseException {
         expectKeyword(POSITIVE_DELTA, NEGATIVE_DELTA);
-        boolean add = true;
-        if (POSITIVE_DELTA.equals(tokenizer.getToken())) {
-            add = true;
-        } else if (NEGATIVE_DELTA.equals(tokenizer.getToken())) {
-            add = false;
-        }
+        boolean subtract = NEGATIVE_DELTA.equals(tokenizer.getToken());
         tokenizer.nextToken();
         expectNumber();
         int amount = Integer.parseInt(tokenizer.getToken());
-        if (!add) {
+        if (subtract) {
             amount *= -1;
         }
         return amount;
