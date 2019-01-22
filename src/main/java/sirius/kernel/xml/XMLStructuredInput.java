@@ -10,6 +10,7 @@ package sirius.kernel.xml;
 
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+import sirius.kernel.commons.Explain;
 
 import javax.annotation.Nonnull;
 import javax.xml.parsers.DocumentBuilder;
@@ -62,6 +63,8 @@ public class XMLStructuredInput implements StructuredInput {
      *
      * @param node the new root node of this input
      */
+    @SuppressWarnings("squid:S2589")
+    @Explain("We really want to ensure that the given value is not null and not just rely on annotation.")
     public void setNewParent(@Nonnull StructuredNode node) {
         if (node != null) {
             this.node = node;

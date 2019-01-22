@@ -64,7 +64,6 @@ public class Exec {
                     logger.append("\n");
                     line = br.readLine();
                 }
-                br.close();
             } catch (IOException e) {
                 logger.append(NLS.toUserString(e));
                 exHolder.set(e);
