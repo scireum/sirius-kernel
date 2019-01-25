@@ -64,6 +64,9 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
     @ConfigValue("docker.pull")
     private boolean pull;
 
+    @ConfigValue("docker.keepRunning")
+    private boolean keepRunning;
+
     private static final Log LOG = Log.get("docker");
 
     private DockerCompose dockerCompose;
@@ -211,6 +214,10 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
     @Override
     public void awaitTermination() {
         if (Strings.isEmpty(dockerfile)) {
+            return;
+        }
+
+        if (keepRunning) {
             return;
         }
 
