@@ -8,6 +8,7 @@
 
 package sirius.kernel.async;
 
+import sirius.kernel.Sirius;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
@@ -35,6 +36,7 @@ import java.time.LocalDateTime;
  */
 public abstract class BackgroundLoop {
 
+    private static final double EVERY_SECOND = 1;
     private static final double EVERY_TEN_SECONDS = 0.1;
 
     @Part
@@ -68,7 +70,7 @@ public abstract class BackgroundLoop {
      * @return the maximal call frequency in Hertz.
      */
     public double maxCallFrequency() {
-        return EVERY_TEN_SECONDS;
+        return Sirius.isStartedAsTest() ? EVERY_SECOND : EVERY_TEN_SECONDS;
     }
 
     /**
