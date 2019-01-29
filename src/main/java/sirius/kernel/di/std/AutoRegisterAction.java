@@ -26,6 +26,8 @@ import java.util.Set;
  */
 public class AutoRegisterAction implements ClassLoadAction {
 
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
+
     @Override
     public Class<? extends Annotation> getTrigger() {
         return Register.class;
@@ -33,11 +35,11 @@ public class AutoRegisterAction implements ClassLoadAction {
 
     @Override
     public void handle(MutableGlobalContext ctx, Class<?> clazz) throws Exception {
-        Object part = clazz.getDeclaredConstructor().newInstance();
         Register r = clazz.getAnnotation(Register.class);
         if (!Sirius.isFrameworkEnabled(r.framework())) {
             return;
         }
+
         Set<Class<?>> classes = Sets.newHashSet(r.classes());
         if (classes.isEmpty()) {
             classes = Sets.newHashSet(clazz.getInterfaces());
@@ -48,6 +50,8 @@ public class AutoRegisterAction implements ClassLoadAction {
                     + "register for...",
                     clazz.getName());
         }
+
+        Object part = clazz.getDeclaredConstructor().newInstance();
         String name = r.name();
         if (part instanceof Named) {
             classes.remove(Named.class);
@@ -64,9 +68,9 @@ public class AutoRegisterAction implements ClassLoadAction {
             }
         }
         if (Strings.isFilled(name)) {
-            ctx.registerPart(name, part, classes.toArray(new Class<?>[classes.size()]));
+            ctx.registerPart(name, part, classes.toArray(EMPTY_CLASS_ARRAY));
         } else {
-            ctx.registerPart(part, classes.toArray(new Class<?>[classes.size()]));
+            ctx.registerPart(part, classes.toArray(EMPTY_CLASS_ARRAY));
         }
     }
 }
