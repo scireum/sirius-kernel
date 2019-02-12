@@ -16,6 +16,7 @@ import sirius.kernel.health.MemoryBasedHealthMonitor;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryUsage;
 import java.util.List;
 
 /**
@@ -68,6 +69,9 @@ public class SystemMetricProvider implements MetricProvider {
     }
 
     private void gatherMemoryMetrics(MetricsCollector collector) {
+        reportHeapUsage(collector);
+        reportOffHeapUsage(collector);
+
         for (MemoryPoolMXBean pool : pools) {
             if (pool.getName().toLowerCase().contains("old") && pool.getUsage().getMax() > 0) {
                 collector.metric("jvm_old_heap",
@@ -77,5 +81,24 @@ public class SystemMetricProvider implements MetricProvider {
                                  "%");
             }
         }
+    }
+
+    private void reportHeapUsage(MetricsCollector collector) {
+        MemoryUsage heapMemoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+        collector.metric("jvm-heap",
+                         "JVM Heap",
+                         heapMemoryUsage.getUsed() * 100d / heapMemoryUsage.getMax(),
+                         "%",
+                         MetricState.GREEN);
+        collector.metric("jvm-heap-max",
+                         "JVM Heap Max",
+                         heapMemoryUsage.getMax() / 1024d / 1024d,
+                         "MB",
+                         MetricState.GRAY);
+    }
+
+    private void reportOffHeapUsage(MetricsCollector collector) {
+        long memoryUsage = ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage().getUsed();
+        collector.metric("jvm-non-heap", "JVM Non Heap", memoryUsage / 1024d / 1024d, "MB", MetricState.GRAY);
     }
 }
