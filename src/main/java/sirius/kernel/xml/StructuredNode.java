@@ -166,6 +166,7 @@ public class StructuredNode {
     /**
      * Returns the value of the attribute with the given name.
      *
+     * @param name the name of the attribute to read
      * @return a {@link Value} filled with the attribute value if an attribute exists for the given name, an empty {@link Value} otherwise.
      */
     @Nonnull
