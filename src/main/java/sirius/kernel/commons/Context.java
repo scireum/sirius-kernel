@@ -39,6 +39,16 @@ public class Context implements Map<String, Object> {
         return data.containsKey(key);
     }
 
+    /**
+     * Determines if the underlying map contains all keys in the given collection.
+     *
+     * @param keys the collection of keys to heck for
+     * @return <tt>true</tt> if all keys exist in the given map, <tt>false</tt> otherwise
+     */
+    public boolean containsAllKeys(Collection<String> keys) {
+        return keys.stream().allMatch(data::containsKey);
+    }
+
     @Override
     public boolean containsValue(Object value) {
         return data.containsValue(value);
@@ -90,6 +100,43 @@ public class Context implements Map<String, Object> {
     @Override
     public void clear() {
         data.clear();
+    }
+
+    /**
+     * Removes all entries containing a <tt>null</tt> value.
+     *
+     * @return the context itself (with null entries removed) for fluent method calls
+     */
+    public Context removeNulls() {
+        data.entrySet().removeIf(entry -> entry.getValue() == null);
+        return this;
+    }
+
+    /**
+     * Removes all entries containing an {@link Strings#isEmpty(Object) empty} value.
+     *
+     * @return the context itself (with empty entries removed) for fluent method calls
+     */
+    public Context removeEmpty() {
+        data.entrySet().removeIf(entry -> Strings.isEmpty(entry.getValue()));
+        return this;
+    }
+
+    /**
+     * Loads all entries from the given context for which no own entry is present.
+     * <p>
+     * Note that even a <tt>null</tt> entry is enogh to not load the entry from the given other.
+     * Use {@link #removeNulls()} to remove such entries before hand.
+     *
+     * @param other the context to load entries from
+     * @return the context itself for fluent method calls
+     */
+    public Context completeWith(Context other) {
+        for (Map.Entry<String, Object> entry : other.data.entrySet()) {
+            data.putIfAbsent(entry.getKey(), entry.getValue());
+        }
+
+        return this;
     }
 
     @Override
