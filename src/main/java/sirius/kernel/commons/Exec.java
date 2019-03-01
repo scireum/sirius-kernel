@@ -123,7 +123,9 @@ public class Exec {
     }
 
     /**
-     * Executes the given command and returns a transcript of stderr and stdout.
+     * Executes the given command with and returns a transcript of stderr and stdout.
+     * <p>
+     * This is using a default operation timeout of five minutes - after which it is logged as hanging.
      *
      * @param command         the command to execute
      * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
@@ -131,8 +133,21 @@ public class Exec {
      * @throws ExecException in case the external program fails
      */
     public static String exec(String command, boolean ignoreExitCodes) throws ExecException {
+        return exec(command, ignoreExitCodes, Duration.ofMinutes(5));
+    }
+
+    /**
+     * Executes the given command and returns a transcript of stderr and stdout.
+     *
+     * @param command         the command to execute
+     * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
+     * @param opTimeout       the duration after which the execution should be logged as hanging
+     * @return the transcript of stderr and stdout produced by the executed command
+     * @throws ExecException in case the external program fails
+     */
+    public static String exec(String command, boolean ignoreExitCodes, Duration opTimeout) throws ExecException {
         StringBuffer logger = new StringBuffer();
-        try (Operation op = new Operation(() -> command, Duration.ofMinutes(5))) {
+        try (Operation op = new Operation(() -> command, opTimeout)) {
             Process p = Runtime.getRuntime().exec(command);
             Semaphore completionSynchronizer = new Semaphore(2);
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger, completionSynchronizer);
