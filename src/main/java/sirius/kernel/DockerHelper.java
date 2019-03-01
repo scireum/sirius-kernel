@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * Initializes <b>Docker Composer</b> if requested by the framework.
  * <p>
  * This basically uses <tt>docker.file</tt> from the system config to determine which
- * compser file to use and start / stops docker for each test run or staging environment.
+ * composer file to use and start / stops docker for each test run or staging environment.
  * <p>
  * Also it provides a {@link PortMapper} to map the desired production ports to the
  * ones provided by the docker containers.
