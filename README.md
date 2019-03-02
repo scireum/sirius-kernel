@@ -18,7 +18,44 @@ Important files of this module: [Default configuration](src/main/resources/compo
 
 ## The Kernel
 
+The main classes of SIRIUS are [Sirius](src/main/java/sirius/kernel/Sirius.java) and 
+[Setup](src/main/java/sirius/kernel/Setup.java). Where the former mainly controls the framework bootstrap and shutdown
+process and the latter determines how exactly things are handled. The setup class can be subclassed to customize things 
+like the location of config files or the target directory of logs.
+ 
+This is especially useful if SIRIUS is embedded in an application and manually started / stopped with its helper
+methods. If SIRIUS itself launches the application, it is strongly recommended to use the standard implementation.
+In this scenario one can use the *main* method of the **Setup** class to launch SIRIUS in the **IDE** or use
+[IPL](https://github.com/scireum/docker-sirius-runtime/blob/master/src/main/java/IPL.java) via the supplied *docker*
+runtime to build an image.
+
+Note that [Sirius](src/main/java/sirius/kernel/Sirius.java) itself doesn't do anything more than launching all 
+frameworks in an appropriate order. Once the [Dependency Injection Microkernel](src/main/java/sirius/kernel/di) is up 
+and running, it uses this framework to execute all [startup](src/main/java/sirius/kernel/Startable.java) actions 
+supplied by the modules or the application.
+
+Note that the [Classpath](src/main/java/sirius/kernel/Classpath.java) also represents a central class of SIRIUS but
+will most commonly not be used directly. Its only job is to iterate over the whole classpath and enumerate resources
+(or classes) matching a given filter query. In order to control which JARs and other classpath roots are scanned during
+the startup process, each SIRIUS module and the application itself must place a file named **component.marker** in
+its resources folder so that it ends up in the top-level directory of the resulting JAR file. The file can be left empty.
+
 ## Customizations
+
+Customizations are a central feature of SIRIUS as they permit to ship the same software to different customers as some
+functionalities, settings or customer specific overwrites can be dis- or enabled by setting a configuration key.
+
+Each customization can provide its own configuration, classes and resources. These must be placed in a sub-folder
+or package of *customizations*. So if a customization would be named *foo** the base package would be 
+**customizations.foo** and the resources root **customizatons/foo/**. Also custom settings can be provided via
+**customizations/foo/settings.conf**.
+
+The framework will only pickup classes, resources and settings of enabled customizations. Also, the order of these
+is defined, therefor one customization can further customize / overwrite others.
+
+To setup which customizations are enabled in what order specify an array for *sirius.customizations* in the 
+**instance.conf**.
+
 
 ## Frameworks
 
@@ -49,8 +86,11 @@ Provides some static information which has been assembled at compile time.
 
 ## Testing
 
-Tests are based on **spock** and written in **Groovy**, a base specification which proper setup of the
-framework can be found in [BaseSpecification](src/test/java/sirius/kernel/BaseSpecification.groovy).
+Tests are based on **spock** and written in **Groovy**, a base specification providing a proper setup of the
+system can be found in [BaseSpecification](src/test/java/sirius/kernel/BaseSpecification.groovy).
+Our **golden rule** for tests is: _No matter if you start the while test suite, a single specification or just
+as single test (method) - the test have to function independently of their surroundings. Therefore a test
+has to either succeed in all three scenarios or it must fail each time. Everything else indicates an invalid test setup._
 
 Each module and application should provide its own test suite as subclass of 
 [ScenarioSuite](src/test/java/sirius/kernel/ScenarioSuite.java).
