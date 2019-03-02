@@ -1,3 +1,5 @@
+![sirius](sirius.jpg)
+
 # Usage
 
 SIRIUS can be obtained via maven. To use this library in your own project include:

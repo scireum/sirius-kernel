@@ -1,3 +1,5 @@
+![sirius](sirius.jpg)
+
 # License
 
 SIRIUS is licensed under the MIT License:

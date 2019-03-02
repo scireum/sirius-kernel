@@ -1,3 +1,5 @@
+![sirius](sirius.jpg)
+
 # Why SIRIUS
 
 ## Discovery Based Programming

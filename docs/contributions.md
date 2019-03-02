@@ -1,3 +1,5 @@
+![sirius](sirius.jpg)
+
 # Contributions
 
 Contributions as issues or pull requests are always welcome. 
