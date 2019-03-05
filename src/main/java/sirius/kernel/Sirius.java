@@ -276,7 +276,7 @@ public class Sirius {
 
         config = ConfigFactory.empty();
 
-        Config instanceConfig = null;
+        Config instanceConfig = ConfigFactory.systemEnvironment();
         if (isStartedAsTest()) {
             config = setup.applyTestConfig(config);
             config = setup.applyTestScenarioConfig(System.getProperty(SIRIUS_TEST_SCENARIO_PROPERTY), config);
@@ -286,7 +286,7 @@ public class Sirius {
             if (Sirius.isDev()) {
                 config = setup.applyDeveloperConfig(config);
             }
-            instanceConfig = setup.loadInstanceConfig();
+            instanceConfig = instanceConfig.withFallback(setup.loadInstanceConfig());
         }
 
         // Setup customer customizations...
