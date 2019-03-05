@@ -286,7 +286,8 @@ public class Sirius {
             if (Sirius.isDev()) {
                 config = setup.applyDeveloperConfig(config);
             }
-            instanceConfig = instanceConfig.withFallback(setup.loadInstanceConfig());
+
+            instanceConfig = setup.applyInstanceConfig(instanceConfig);
         }
 
         // Setup customer customizations...

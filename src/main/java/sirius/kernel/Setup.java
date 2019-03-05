@@ -512,26 +512,27 @@ public class Setup {
     /**
      * Loads the instance configuration which configures the app for the machine it is running on.
      * <p>
-     * By default this loads "instance.conf" from the file system
+     * By default this loads "instance.conf" from the file system and applies it as fallback to the given config.
      * <p>
      * This will later be applied to the overall system configuration and will override all other settings.
      *
-     * @return the instance configuration or <tt>null</tt> if no config was found.
+     * @param config to config to be extended by the instance config
+     * @return the given config extended by the instance configuration
      */
-    @Nullable
-    public Config loadInstanceConfig() {
+    @Nonnull
+    public Config applyInstanceConfig(@Nonnull Config config) {
         if (new File("instance.conf").exists()) {
             Sirius.LOG.INFO("using instance.conf from filesystem...");
             try {
-                return ConfigFactory.parseFile(new File("instance.conf"));
+                config = config.withFallback(ConfigFactory.parseFile(new File("instance.conf")));
             } catch (Exception e) {
                 Exceptions.ignore(e);
                 Sirius.LOG.WARN("Cannot load instance.conf: %s", e.getMessage());
-                return null;
             }
         } else {
             Sirius.LOG.INFO("instance.conf not present work in directory");
-            return null;
         }
+
+        return config;
     }
 }
