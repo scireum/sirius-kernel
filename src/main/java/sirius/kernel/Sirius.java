@@ -276,7 +276,7 @@ public class Sirius {
 
         config = ConfigFactory.empty();
 
-        Config instanceConfig = ConfigFactory.systemEnvironment();
+        Config instanceConfig = null;
         if (isStartedAsTest()) {
             config = setup.applyTestConfig(config);
             config = setup.applyTestScenarioConfig(System.getProperty(SIRIUS_TEST_SCENARIO_PROPERTY), config);
@@ -287,7 +287,7 @@ public class Sirius {
                 config = setup.applyDeveloperConfig(config);
             }
 
-            instanceConfig = setup.applyInstanceConfig(instanceConfig);
+            instanceConfig = setup.loadInstanceConfig();
         }
 
         // Setup customer customizations...
@@ -316,6 +316,9 @@ public class Sirius {
         if (instanceConfig != null) {
             config = instanceConfig.withFallback(config);
         }
+
+        // Apply environment settings last, as these are often used in docker(-compose) setups
+        config = setup.applyEnvironment(config);
 
         LOG.INFO(SEPARATOR_LINE);
     }

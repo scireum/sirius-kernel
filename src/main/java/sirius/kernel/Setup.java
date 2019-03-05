@@ -30,12 +30,14 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Used to configure the setup of the SIRIUS framework.
@@ -512,27 +514,50 @@ public class Setup {
     /**
      * Loads the instance configuration which configures the app for the machine it is running on.
      * <p>
-     * By default this loads "instance.conf" from the file system and applies it as fallback to the given config.
+     * By default this loads "instance.conf" from the file system
      * <p>
      * This will later be applied to the overall system configuration and will override all other settings.
      *
-     * @param config to config to be extended by the instance config
-     * @return the given config extended by the instance configuration
+     * @return the instance configuration or <tt>null</tt> if no config was found.
      */
-    @Nonnull
-    public Config applyInstanceConfig(@Nonnull Config config) {
+    @Nullable
+    public Config loadInstanceConfig() {
         if (new File("instance.conf").exists()) {
             Sirius.LOG.INFO("using instance.conf from filesystem...");
             try {
-                config = config.withFallback(ConfigFactory.parseFile(new File("instance.conf")));
+                return ConfigFactory.parseFile(new File("instance.conf"));
             } catch (Exception e) {
                 Exceptions.ignore(e);
                 Sirius.LOG.WARN("Cannot load instance.conf: %s", e.getMessage());
+                return null;
             }
         } else {
             Sirius.LOG.INFO("instance.conf not present work in directory");
+            return null;
         }
+    }
 
+    @Nonnull
+    public Config applyEnvironment(@Nonnull Config config) {
+        Map<String, String> propertiesAsMap = System.getProperties()
+                                                    .entrySet()
+                                                    .stream()
+                                                    .collect(Collectors.toMap(e -> String.valueOf(e.getKey()),
+                                                                              e -> String.valueOf(e.getValue())));
+        try {
+            config = ConfigFactory.parseMap(System.getenv(), "Environment").withFallback(config);
+        } catch (Exception e) {
+            Sirius.LOG.WARN("An error occured while reading the environment: %s (%s)",
+                            e.getMessage(),
+                            e.getClass().getName());
+        }
+        try {
+            config = ConfigFactory.parseMap(propertiesAsMap, "System Properties").withFallback(config);
+        } catch (Exception e) {
+            Sirius.LOG.WARN("An error occured while reading the system properties: %s (%s)",
+                            e.getMessage(),
+                            e.getClass().getName());
+        }
         return config;
     }
 }
