@@ -30,14 +30,12 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Used to configure the setup of the SIRIUS framework.
@@ -537,13 +535,18 @@ public class Setup {
         }
     }
 
+    /**
+     * Loads <b>and parses</b> the environment.
+     * <p>
+     * {@link ConfigFactory} by default treats every environment variable as key instead of as path. Therefore we
+     * manually load the environment be treating variables as path so that compound keys like sirius.nodeName
+     * can be specified.
+     *
+     * @param config the current config to extend
+     * @return the extended config
+     */
     @Nonnull
     public Config applyEnvironment(@Nonnull Config config) {
-        Map<String, String> propertiesAsMap = System.getProperties()
-                                                    .entrySet()
-                                                    .stream()
-                                                    .collect(Collectors.toMap(e -> String.valueOf(e.getKey()),
-                                                                              e -> String.valueOf(e.getValue())));
         try {
             config = ConfigFactory.parseMap(System.getenv(), "Environment").withFallback(config);
         } catch (Exception e) {
@@ -551,13 +554,7 @@ public class Setup {
                             e.getMessage(),
                             e.getClass().getName());
         }
-        try {
-            config = ConfigFactory.parseMap(propertiesAsMap, "System Properties").withFallback(config);
-        } catch (Exception e) {
-            Sirius.LOG.WARN("An error occured while reading the system properties: %s (%s)",
-                            e.getMessage(),
-                            e.getClass().getName());
-        }
+
         return config;
     }
 }
