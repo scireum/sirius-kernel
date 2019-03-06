@@ -6,12 +6,19 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>5.8</version>
+        <version>6.0.1</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
     <name>SIRIUS kernel</name>
     <version>DEVELOPMENT-SNAPSHOT</version>
     <description>Provides common core classes and the microkernel powering all Sirius applications</description>
+
+    <repositories>
+        <repository>
+            <id>scireum-mvn</id>
+            <url>https://mvn.scireum.com</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <!-- Provides the tools to load the system configuration -->
