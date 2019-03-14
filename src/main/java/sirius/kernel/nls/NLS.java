@@ -723,6 +723,17 @@ public class NLS {
     }
 
     /**
+     * Returns the date and time format (with seconds) for the given language.
+     *
+     * @param lang the language for which the format is requested
+     * @return a format initialized with the pattern described by the given language
+     */
+    public static DateTimeFormatter getDateTimeFormatWithSeconds(String lang) {
+        return dateTimeFormatters.computeIfAbsent(lang,
+                                                  l -> DateTimeFormatter.ofPattern(get("NLS.patternDateFullTime", l)));
+    }
+
+    /**
      * Returns the format for the current language to format decimal numbers
      *
      * @return a format initialized with the pattern described by the current language
