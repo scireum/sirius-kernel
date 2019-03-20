@@ -286,6 +286,7 @@ public class Sirius {
             if (Sirius.isDev()) {
                 config = setup.applyDeveloperConfig(config);
             }
+
             instanceConfig = setup.loadInstanceConfig();
         }
 
@@ -315,6 +316,9 @@ public class Sirius {
         if (instanceConfig != null) {
             config = instanceConfig.withFallback(config);
         }
+
+        // Apply environment settings last, as these are often used in docker(-compose) setups
+        config = setup.applyEnvironment(config);
 
         LOG.INFO(SEPARATOR_LINE);
     }

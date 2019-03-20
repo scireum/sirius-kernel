@@ -534,4 +534,27 @@ public class Setup {
             return null;
         }
     }
+
+    /**
+     * Loads <b>and parses</b> the environment.
+     * <p>
+     * {@link ConfigFactory} by default treats every environment variable as key instead of as path. Therefore we
+     * manually load the environment be treating variables as path so that compound keys like sirius.nodeName
+     * can be specified.
+     *
+     * @param config the current config to extend
+     * @return the extended config
+     */
+    @Nonnull
+    public Config applyEnvironment(@Nonnull Config config) {
+        try {
+            config = ConfigFactory.parseMap(System.getenv(), "Environment").withFallback(config);
+        } catch (Exception e) {
+            Sirius.LOG.WARN("An error occured while reading the environment: %s (%s)",
+                            e.getMessage(),
+                            e.getClass().getName());
+        }
+
+        return config;
+    }
 }

@@ -420,7 +420,7 @@ public class Exceptions {
         Throwable cause = e;
 
         int circuitBreaker = 11;
-        while (circuitBreaker > 0 && cause.getCause() != null) {
+        while (circuitBreaker > 0 && cause.getCause() != null && !cause.equals(cause.getCause())) {
             cause = cause.getCause();
             circuitBreaker--;
         }
