@@ -712,7 +712,7 @@ public class NLS {
     }
 
     /**
-     * Returns the date and time format (without seconds) for the given language.
+     * Returns the date and time format (with seconds) for the given language.
      *
      * @param lang the language for which the format is requested
      * @return a format initialized with the pattern described by the given language
@@ -720,6 +720,19 @@ public class NLS {
     public static DateTimeFormatter getDateTimeFormat(String lang) {
         return dateTimeFormatters.computeIfAbsent(lang,
                                                   l -> DateTimeFormatter.ofPattern(get("NLS.patternDateTime", l)));
+    }
+
+    /**
+     * Returns the date and time format (without seconds) for the given language.
+     *
+     * @param lang the language for which the format is requested
+     * @return a format initialized with the pattern described by the given language
+     */
+    public static DateTimeFormatter getDateTimeFormatWithoutSeconds(String lang) {
+        return dateTimeFormatters.computeIfAbsent(lang,
+                                                  l -> DateTimeFormatter.ofPattern(get(
+                                                          "NLS.patternDateTime.withoutSeconds",
+                                                          l)));
     }
 
     /**
