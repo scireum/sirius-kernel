@@ -20,15 +20,16 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * A flexible parser which can parse dates like DD.MM.YYYY or YYYY/DD/MM along with some computations.
+ * A flexible parser which can parse dates like DD.MM.YYYY, DD-MM-YYYY or YYYY/DD/MM along with some computations.
  * <p>
  * A valid expression is defined by the following grammar:
  * <ul>
  * <li><code><b>ROOT</b> ::= (MODIFIER ",")* (":")? ("now" | DATE)? (("+" | "-") NUMBER (UNIT)?)</code></li>
  * <li><code><b>UNIT</b> ::= ("day" | "days" | "week" | "weeks" | "month" | "months" | "year" | "years")</code></li>
  * <li><code><b>NUMBER</b> ::=(0-9)+</code></li>
- * <li><code><b>DATE</b> ::= GERMAN_DATE | ENGLISH_DATE | YM_EXPRESSION</code></li>
+ * <li><code><b>DATE</b> ::= GERMAN_DATE | DUTCH_DATE | ENGLISH_DATE | YM_EXPRESSION</code></li>
  * <li><code><b>GERMAN_DATE</b> ::= NUMBER "." NUMBER ("." NUMBER)? (NUMBER (":" NUMBER (":" NUMBER)?)?)?</code></li>
+ * <li><code><b>DUTCH_DATE</b> ::= NUMBER "-" NUMBER ("-" NUMBER)? (NUMBER (":" NUMBER (":" NUMBER)?)?)?</code></li>
  * <li><code><b>ENGLISH_DATE</b> ::=  NUMBER "/" NUMBER ("/" NUMBER)? (NUMBER (":" NUMBER (":" NUMBER)?)?)? ("am" |
  * "pm")?)?</code></li>
  * <li><code><b>YM_EXPRESSION</b> ::= NUMBER</code></li>
@@ -57,6 +58,7 @@ public class AdvancedDateParser {
     private static final String TIME_SEPARATOR = ":";
     private static final String ENGLISH_DATE_SEPARATOR = "/";
     private static final String GERMAN_DATE_SEPARATOR = ".";
+    private static final String DUTCH_DATE_SEPARATOR = "-";
 
     private Tokenizer tokenizer;
     private boolean startOfDay = false;
@@ -591,12 +593,13 @@ public class AdvancedDateParser {
         int firstNumber = Integer.parseInt(tokenizer.getToken());
         tokenizer.nextToken();
         if (!GERMAN_DATE_SEPARATOR.equals(tokenizer.getToken())
+            && !DUTCH_DATE_SEPARATOR.equals(tokenizer.getToken())
             && !ENGLISH_DATE_SEPARATOR.equals(tokenizer.getToken())) {
             return parseYMExpression(firstNumber);
         }
-        expectKeyword(GERMAN_DATE_SEPARATOR, ENGLISH_DATE_SEPARATOR);
-        if (GERMAN_DATE_SEPARATOR.equals(tokenizer.getToken())) {
-            return parseGermanDate(firstNumber);
+        expectKeyword(GERMAN_DATE_SEPARATOR, ENGLISH_DATE_SEPARATOR, DUTCH_DATE_SEPARATOR);
+        if (GERMAN_DATE_SEPARATOR.equals(tokenizer.getToken()) || DUTCH_DATE_SEPARATOR.equals(tokenizer.getToken())) {
+            return parseDayMonthYearDate(firstNumber);
         } else {
             return parseEnglishDate(firstNumber);
         }
@@ -698,13 +701,13 @@ public class AdvancedDateParser {
         return result;
     }
 
-    private Calendar parseGermanDate(int day) throws ParseException {
+    private Calendar parseDayMonthYearDate(int day) throws ParseException {
         tokenizer.nextToken();
         expectNumber();
         int month = Integer.parseInt(tokenizer.getToken());
         tokenizer.nextToken();
         int year = now().get(Calendar.YEAR);
-        if (in(GERMAN_DATE_SEPARATOR)) {
+        if (in(GERMAN_DATE_SEPARATOR, DUTCH_DATE_SEPARATOR)) {
             tokenizer.nextToken();
             if (tokenizer.getType() == Tokenizer.NUMBER) {
                 year = Integer.parseInt(tokenizer.getToken());
