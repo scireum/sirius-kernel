@@ -27,9 +27,8 @@ import java.util.TreeSet;
  * <li><code><b>ROOT</b> ::= (MODIFIER ",")* (":")? ("now" | DATE)? (("+" | "-") NUMBER (UNIT)?)</code></li>
  * <li><code><b>UNIT</b> ::= ("day" | "days" | "week" | "weeks" | "month" | "months" | "year" | "years")</code></li>
  * <li><code><b>NUMBER</b> ::=(0-9)+</code></li>
- * <li><code><b>DATE</b> ::= GERMAN_DATE | DUTCH_DATE | ENGLISH_DATE | YM_EXPRESSION</code></li>
- * <li><code><b>GERMAN_DATE</b> ::= NUMBER "." NUMBER ("." NUMBER)? (NUMBER (":" NUMBER (":" NUMBER)?)?)?</code></li>
- * <li><code><b>DUTCH_DATE</b> ::= NUMBER "-" NUMBER ("-" NUMBER)? (NUMBER (":" NUMBER (":" NUMBER)?)?)?</code></li>
+ * <li><code><b>DATE</b> ::= DAY_MONTH_YEAR_DATE | ENGLISH_DATE | YM_EXPRESSION</code></li>
+ * <li><code><b>DAY_MONTH_YEAR_DATE</b> ::= NUMBER ("." | "-") NUMBER (("." | "-") NUMBER)? (NUMBER (":" NUMBER (":" NUMBER)?)?)?</code></li>
  * <li><code><b>ENGLISH_DATE</b> ::=  NUMBER "/" NUMBER ("/" NUMBER)? (NUMBER (":" NUMBER (":" NUMBER)?)?)? ("am" |
  * "pm")?)?</code></li>
  * <li><code><b>YM_EXPRESSION</b> ::= NUMBER</code></li>
