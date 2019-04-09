@@ -2,16 +2,23 @@
 
 # Usage
 
-SIRIUS can be obtained via maven. To use this library in your own project include:
+SIRIUS can be obtained via our custom maven repository. To use this library in your own project include:
 ```
+<repositories>
+    <repository>
+        <id>scireum-mvn</id>
+        <url>https://mvn.scireum.com</url>
+    </repository>
+</repositories>
+    
 <dependency>
     <groupId>com.scireum</groupId>
     <artifactId>sirius-MODULE</artifactId>
     <version>PICK A VERSION</version>
 </dependency>
 ```
-An overview of all versions can be found on
-[Sonatype](https://oss.sonatype.org/content/groups/public/com/scireum/). 
+An overview of all versions can be found in
+[our Maven repository](https://mvn.scireum.com/com/scireum/). 
 Releases are also available in **Maven Central**
 
 When writing server software 

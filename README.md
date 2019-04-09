@@ -14,12 +14,15 @@ To learn more about what sirius is please refer to the following links:
 Being the foundation of all other modules, the kernel module has a minimal set of dependencies but also provides
 the core frameworks and a fair amount of commonly used classes.
 
-Important files of this module: [Default configuration](src/main/resources/component-kernel.conf), [Maven setup](pom.xml). 
+## Important files of this module: 
+
+* [Default configuration](src/main/resources/component-kernel.conf)
+* [Maven setup](pom.xml). 
 
 ## The Kernel
 
 The main classes of SIRIUS are [Sirius](src/main/java/sirius/kernel/Sirius.java) and 
-[Setup](src/main/java/sirius/kernel/Setup.java). Where the former mainly controls the framework bootstrap and shutdown
+[Setup](src/main/java/sirius/kernel/Setup.java). The former mainly controls the framework bootstrap and shutdown
 process and the latter determines how exactly things are handled. The setup class can be subclassed to customize things 
 like the location of config files or the target directory of logs.
  
