@@ -39,7 +39,7 @@ public class URLBuilder {
     public URLBuilder(@Nonnull String baseURL) {
         url = new StringBuilder();
         if (baseURL.endsWith("/")) {
-            url.append(baseURL.substring(0, baseURL.length() - 1));
+            url.append(baseURL, 0, baseURL.length() - 1);
         } else {
             url.append(baseURL);
         }

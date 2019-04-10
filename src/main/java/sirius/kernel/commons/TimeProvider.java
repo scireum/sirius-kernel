@@ -19,8 +19,11 @@ import java.time.LocalTime;
  * Wrapper for static time functions which can be injected using a {@link sirius.kernel.di.std.Part} annotation.
  * <p>
  * Using this wrapper instead of the static methods permits to use mocking in tests.
+ * <p>
+ * @deprecated use a {@link java.time.Clock} parameter instead
  */
 @Register(classes = TimeProvider.class)
+@Deprecated
 public class TimeProvider {
 
     /**

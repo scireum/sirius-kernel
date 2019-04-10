@@ -101,7 +101,7 @@ public abstract class BackgroundLoop {
      */
     private void executeWork() {
         try {
-            if (orchestration == null || orchestration.tryExecuteBackgroundLoop(getName())) {
+            if (Sirius.isRunning() && (orchestration == null || orchestration.tryExecuteBackgroundLoop(getName()))) {
                 try {
                     Watch w = Watch.start();
                     LocalDateTime now = LocalDateTime.now();
