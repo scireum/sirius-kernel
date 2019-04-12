@@ -96,7 +96,7 @@ system can be found in [BaseSpecification](src/test/java/sirius/kernel/BaseSpeci
 
 Our **golden rule** for tests is: 
 >_No matter if you start the whole test suite, a single specification or just
-as single test (method) - the test have to function independently of their surroundings. Therefore a test
+as single test (method) - the tests have to function independently of their surroundings. Therefore a test
 has to either succeed in all three scenarios or it must fail each time. Everything else indicates an invalid test setup._
 
 Each module and application should provide its own test suite as subclass of 
