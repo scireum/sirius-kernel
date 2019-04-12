@@ -93,7 +93,9 @@ Provides some static information which has been assembled at compile time.
 
 Tests are based on **spock** and written in **Groovy**, a base specification providing a proper setup of the
 system can be found in [BaseSpecification](src/test/java/sirius/kernel/BaseSpecification.groovy).
-Our **golden rule** for tests is: _No matter if you start the while test suite, a single specification or just
+
+Our **golden rule** for tests is: 
+>_No matter if you start the whole test suite, a single specification or just
 as single test (method) - the test have to function independently of their surroundings. Therefore a test
 has to either succeed in all three scenarios or it must fail each time. Everything else indicates an invalid test setup._
 

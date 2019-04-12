@@ -15,7 +15,7 @@ document into a single [StructuredNode](StructuredNode.java).
 
 ## Writing XML
 
-With the help of [XMLStructuredOutput](XMLStructuredOutput.java) or a [XMLGenerator](XMLGenerator.java) XML data
+With the help of [XMLStructuredOutput](XMLStructuredOutput.java) or an [XMLGenerator](XMLGenerator.java), XML data
 can be generated quite easily.
 
 ## Abstraction
