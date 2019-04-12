@@ -24,4 +24,4 @@ reloaded on change.
 Also, the framework keeps track of unknown translations and reports these. A missing translation will
 also fail any unit test automatically.
 
-Next to that, the framework also warns if a property is defined more than once.
+The framework also warns if a property is defined more than once.
