@@ -19,7 +19,7 @@ document into a single [StructuredNode](StructuredNode.java).
 
 ## Abstraction
 
-Note that both **XMLStructuredInput** and **XMLStructuredOutput** are specified by the interfaces
+**XMLStructuredInput** and **XMLStructuredOutput** are specified by the interfaces
 [StructuredInput](StructuredInput.java) and [StructuredOutput](StructuredOutput.java). This is used
 by [sirius-web](https://github.com/scireum/sirius-web) which provides implementations for these interfaces
 to read and write JSON data. This way services can be created which are capable of reading and
