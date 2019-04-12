@@ -1,7 +1,7 @@
 ![sirius](docs/sirius.jpg)
 
 Welcome to the **kernel module** of the SIRIUS OpenSource framework created by [scireum GmbH](https://www.scireum.de). 
-To learn more about what sirius is please refer to the following links:
+To learn more about what SIRIUS is please refer to the following links:
 
 * [Why SIRIUS](docs/why.md)
 * [Overview of SIRIUS](docs/overview.md)
@@ -43,6 +43,8 @@ will most commonly not be used directly. Its only job is to iterate over the who
 the startup process, each SIRIUS module and the application itself must place a file named **component.marker** in
 its resources folder so that it ends up in the top-level directory of the resulting JAR file. The file can be left empty.
 
+More documentation for the core classes can be found here: [Core Classes](src/main/java/sirius/kernel)
+
 ## Customizations
 
 Customizations are a central feature of SIRIUS as they permit to ship the same software to different customers as some
@@ -80,7 +82,7 @@ the cache utilization and providing a uniform configuration using the **System C
 Provides various helpers to simplify internationalization and formatting of strings.
 * [Timer Framework](src/main/java/sirius/kernel/timer)\
 Responsible for discovering and executing certain tasks in regular intervals.
-* [XML Framework](src/main/java/sirius/kernel/timer)\
+* [XML Framework](src/main/java/sirius/kernel/xml)\
 Supplies helper classes to generate and process huge XML files without running into memory issues or giving up convenience.
 * [System Health Framework](src/main/java/sirius/kernel/health)\
 Provides the foundations of the built-in console, metrics monitoring and the central logging and exception handling facility.

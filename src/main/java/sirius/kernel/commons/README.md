@@ -2,11 +2,17 @@
 
 Contains common classes which are used throughout SIRIUS.
 
-One of the most commonly used classes would be the [Strings](Strings.java) helper.
-Additionally the [Value](Value.java) class takes care of transforming input values
-into desired datatypes.
+## Central Classes
 
-Furthermore the [Amount](Amount.java) class provides an abstraction above **BigDecimal**
-to simplify its usage.
+* [Strings](Strings.java)\
+Contains various helper methods when dealing with strings.
+* [Value](Value.java)\
+Takes care of transforming input values into desired datatypes.
+* [Amount](Amount.java)\
+Provides an abstraction above **BigDecimal** to simplify its usage.
+* [Tuple](Tuple.java)\
+Provides a pair of values. If the first value is comparable, you can use [ComparableTuple](ComparableTuple.java).
+* [Watch](Watch.java)\
+Provides a simple time measurement facility.
 
 
