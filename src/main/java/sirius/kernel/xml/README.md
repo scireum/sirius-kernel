@@ -15,12 +15,11 @@ document into a single [StructuredNode](StructuredNode.java).
 
 ## Writing XML
 
-With the help of [XMLStructuredOutput](XMLStructuredOutput.java) or a [XMLGenerator](XMLGenerator.java) XML data
-can be generated quite easily.
+[XMLStructuredOutput](XMLStructuredOutput.java) and [XMLGenerator](XMLGenerator.java) can generate XML.
 
 ## Abstraction
 
-Note that both **XMLStructuredInput** and **XMLStructuredOutput** are specified by the interfaces
+**XMLStructuredInput** and **XMLStructuredOutput** are specified by the interfaces
 [StructuredInput](StructuredInput.java) and [StructuredOutput](StructuredOutput.java). This is used
 by [sirius-web](https://github.com/scireum/sirius-web) which provides implementations for these interfaces
 to read and write JSON data. This way services can be created which are capable of reading and
