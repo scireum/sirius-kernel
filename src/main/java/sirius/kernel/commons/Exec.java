@@ -14,6 +14,7 @@ import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -146,9 +147,25 @@ public class Exec {
      * @throws ExecException in case the external program fails
      */
     public static String exec(String command, boolean ignoreExitCodes, Duration opTimeout) throws ExecException {
+        return exec(command, ignoreExitCodes, opTimeout, null);
+    }
+
+    /**
+     * Executes the given command and returns a transcript of stderr and stdout.
+     *
+     * @param command         the command to execute
+     * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
+     * @param opTimeout       the duration after which the execution should be logged as hanging
+     * @param directory       the working directory of the subprocess,
+     *                        or <tt>null</tt> if the subprocess should inherit the working directory of the current process.
+     * @return the transcript of stderr and stdout produced by the executed command
+     * @throws ExecException in case the external program fails
+     */
+    public static String exec(String command, boolean ignoreExitCodes, Duration opTimeout, File directory)
+            throws ExecException {
         StringBuffer logger = new StringBuffer();
         try (Operation op = new Operation(() -> command, opTimeout)) {
-            Process p = Runtime.getRuntime().exec(command);
+            Process p = Runtime.getRuntime().exec(command, null, directory);
             Semaphore completionSynchronizer = new Semaphore(2);
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger, completionSynchronizer);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger, completionSynchronizer);
