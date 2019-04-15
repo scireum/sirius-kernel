@@ -13,6 +13,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -161,7 +162,7 @@ public class Exec {
      * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails
      */
-    public static String exec(String command, boolean ignoreExitCodes, Duration opTimeout, File directory)
+    public static String exec(String command, boolean ignoreExitCodes, Duration opTimeout, @Nullable File directory)
             throws ExecException {
         StringBuffer logger = new StringBuffer();
         try (Operation op = new Operation(() -> command, opTimeout)) {
