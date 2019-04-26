@@ -94,6 +94,7 @@ public class NLS {
             DateTimeFormatter.ofPattern("H:mm[:ss]", Locale.ENGLISH);
     private static final DateTimeFormatter MACHINE_FORMAT_TIME_FORMAT =
             DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ENGLISH);
+    private static final Map<String, DateTimeFormatter> fullDateTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> dateTimeFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> dateFormatters = Maps.newTreeMap();
     private static final Map<String, DateTimeFormatter> shortDateFormatters = Maps.newTreeMap();
@@ -718,8 +719,8 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getDateTimeFormat(String lang) {
-        return dateTimeFormatters.computeIfAbsent(lang,
-                                                  l -> DateTimeFormatter.ofPattern(get("NLS.patternDateTime", l)));
+        return fullDateTimeFormatters.computeIfAbsent(lang,
+                                                      l -> DateTimeFormatter.ofPattern(get("NLS.patternDateTime", l)));
     }
 
     /**

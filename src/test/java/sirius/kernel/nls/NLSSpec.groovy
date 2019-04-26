@@ -218,4 +218,19 @@ class NLSSpec extends BaseSpecification {
         '$nls.test.translate' | "übersetzungs test"  | "de"
         '$nls.test.translate' | "translation test"   | "en"
     }
+
+    def "test various formatters"(){
+        given:
+        LocalDateTime date = LocalDateTime.of(2000, 1, 2, 3, 4, 5)
+        expect:
+        NLS.getTimeFormat("de").format(date) == "03:04"
+        NLS.getTimeFormat("en").format(date) == "03:04 AM"
+        NLS.getDateTimeFormat("de").format(date) == "02.01.2000 03:04:05"
+        NLS.getDateTimeFormat("en").format(date) == "01/02/2000 03:04:05"
+        NLS.getDateTimeFormatWithoutSeconds("de").format(date) == "02.01.2000 03:04"
+        NLS.getDateTimeFormatWithoutSeconds("en").format(date) == "01/02/2000 03:04"
+        NLS.getTimeFormatWithSeconds("de").format(date) == "03:04:05"
+        NLS.getTimeFormatWithSeconds("en").format(date) == "03:04:05 AM"
+
+    }
 }
