@@ -96,7 +96,7 @@ public class Barrier {
     }
 
     /**
-     * Generates a new {@link Future} which completes if the las added promise completes or if any one of those fails.
+     * Generates a new {@link Future} which completes if the last added promise completes or if any one of those fails.
      *
      * @return a new future which can used to add completion handlers for all added promises.
      */
