@@ -8,8 +8,10 @@
 
 package sirius.kernel.commons;
 
+import sirius.kernel.Sirius;
 import sirius.kernel.di.std.Register;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,12 +21,12 @@ import java.time.LocalTime;
  * Wrapper for static time functions which can be injected using a {@link sirius.kernel.di.std.Part} annotation.
  * <p>
  * Using this wrapper instead of the static methods permits to use mocking in tests.
- * <p>
- * @deprecated use a {@link java.time.Clock} parameter instead
  */
 @Register(classes = TimeProvider.class)
-@Deprecated
 public class TimeProvider {
+
+    private Clock clock = Clock.systemDefaultZone();
+    private Clock utcClock = Clock.systemDefaultZone();
 
     /**
      * Wrapper for {@link LocalDateTime#now()}.
@@ -32,7 +34,7 @@ public class TimeProvider {
      * @return the current time as {@link LocalDateTime}.
      */
     public LocalDateTime localDateTimeNow() {
-        return LocalDateTime.now();
+        return LocalDateTime.now(clock);
     }
 
     /**
@@ -41,7 +43,7 @@ public class TimeProvider {
      * @return the current time as {@link LocalDate}.
      */
     public LocalDate localDateNow() {
-        return LocalDate.now();
+        return LocalDate.now(clock);
     }
 
     /**
@@ -50,7 +52,7 @@ public class TimeProvider {
      * @return the current time as {@link LocalTime}.
      */
     public LocalTime localTimeNow() {
-        return LocalTime.now();
+        return LocalTime.now(clock);
     }
 
     /**
@@ -59,7 +61,7 @@ public class TimeProvider {
      * @return current time as {@link Instant}.
      */
     public Instant instantNow() {
-        return Instant.now();
+        return Instant.now(utcClock);
     }
 
     /**
@@ -78,5 +80,52 @@ public class TimeProvider {
      */
     public long nanoTime() {
         return System.nanoTime();
+    }
+
+    /**
+     * Returns the current clock being used.
+     *
+     * @return the clock being used for the system default time zone
+     */
+    public Clock getClock() {
+        return clock;
+    }
+
+    /**
+     * Specifies the clock to use for the system default time zone.
+     * <p>
+     * NOTE: This must only be used in test environments.
+     *
+     * @param clock the clock to use
+     */
+    public void setClock(Clock clock) {
+        if (!Sirius.isStartedAsTest()) {
+            throw new IllegalStateException("Cannot change the clock in production systems");
+        }
+        this.clock = clock;
+    }
+
+    /**
+     * Returns the clock for UTC.
+     *
+     * @return the clock with UTC as time zone.
+     */
+    public Clock getUTCClock() {
+        return utcClock;
+    }
+
+    /**
+     * Specifies the clock to use for the UTC time zone.
+     * <p>
+     * NOTE: This must only be used in test environments.
+     *
+     * @param clock the clock to use
+     */
+    public void setUTCClock(Clock clock) {
+        if (!Sirius.isStartedAsTest()) {
+            throw new IllegalStateException("Cannot change the clock in production systems");
+        }
+
+        this.utcClock = clock;
     }
 }
