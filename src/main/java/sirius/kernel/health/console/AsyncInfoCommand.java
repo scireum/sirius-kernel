@@ -12,6 +12,7 @@ import sirius.kernel.async.AsyncExecutor;
 import sirius.kernel.async.BackgroundLoop;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Part;
@@ -28,6 +29,8 @@ import java.util.List;
  */
 @Register
 public class AsyncInfoCommand implements Command {
+
+    private static final String NAME_VALUE_PATTERN = "%-60s %s";
 
     @Part
     private Tasks tasks;
@@ -48,7 +51,7 @@ public class AsyncInfoCommand implements Command {
         output.separator();
         for (AsyncExecutor exec : tasks.getExecutors()) {
             output.apply("%-20s %8d %8d %8d %12.1f %8d %8d",
-                         exec.getCategory(),
+                         Strings.limit(exec.getCategory(), 20, false),
                          exec.getActiveCount(),
                          exec.getQueue().size(),
                          exec.getExecuted(),
@@ -61,14 +64,21 @@ public class AsyncInfoCommand implements Command {
         output.apply("Frequency Limited Tasks");
         output.separator();
         for (Tuple<String, LocalDateTime> task : tasks.getScheduledTasks()) {
-            output.apply("%-60s %s", task.getFirst(), NLS.toUserString(task.getSecond()));
+            output.apply(NAME_VALUE_PATTERN,
+                         Strings.limit(task.getFirst(), 60, false),
+                         NLS.toUserString(task.getSecond()));
         }
         output.separator();
         output.blankLine();
         output.apply("Background Loops");
+        output.apply(NAME_VALUE_PATTERN, "NAME", "EXECUTION ATTEMPT");
         output.separator();
         for (BackgroundLoop loop : loops) {
-            output.apply("%-60s %s", loop.getName(), loop.getExecutionInfo());
+            output.apply(NAME_VALUE_PATTERN,
+                         Strings.limit(loop.getName(), 60, false),
+                         NLS.toUserString(loop.getLastExecutionAttempt()));
+            output.line(loop.getExecutionInfo());
+            output.blankLine();
         }
         output.separator();
         output.blankLine();

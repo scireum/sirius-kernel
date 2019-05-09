@@ -8,7 +8,6 @@
 
 package sirius.kernel.async;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.ValueHolder;
@@ -19,6 +18,7 @@ import sirius.kernel.health.Log;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -37,8 +37,7 @@ import java.util.function.Function;
  * the computation is completed.
  * <p>
  * Since promises can be chained ({@link #chain(Promise)}, {@link #failChain(Promise, sirius.kernel.commons.Callback)})
- * or aggregated ({@link Tasks#sequence(java.util.List)}, {@link Barrier}) complex computations can be glued
- * together using simple components.
+ * or aggregated ({@link Barrier}) complex computations can be glued together using simple components.
  *
  * @param <V> contains the type of the value which is to be computed
  */
@@ -47,7 +46,7 @@ public class Promise<V> {
     private ValueHolder<V> value;
     private Throwable failure;
     private volatile boolean logErrors = true;
-    private List<CompletionHandler<V>> handlers = Lists.newArrayListWithCapacity(2);
+    private final List<CompletionHandler<V>> handlers = new ArrayList<>(2);
 
     /**
      * Creates a new promise which can be fulfilled later.
@@ -81,12 +80,14 @@ public class Promise<V> {
      * @return <tt>this</tt> for fluent method chaining
      */
     public Promise<V> success(@Nullable final V value) {
-        this.value = new ValueHolder<>(value);
-        for (final CompletionHandler<V> handler : handlers) {
-            completeHandler(value, handler);
-        }
+        synchronized (handlers) {
+            this.value = new ValueHolder<>(value);
+            for (final CompletionHandler<V> handler : handlers) {
+                completeHandler(value, handler);
+            }
 
-        return this;
+            return this;
+        }
     }
 
     /*
@@ -107,19 +108,21 @@ public class Promise<V> {
      * @return <tt>this</tt> for fluent method chaining
      */
     public Promise<V> fail(@Nonnull final Throwable exception) {
-        this.failure = exception;
+        synchronized (handlers) {
+            this.failure = exception;
 
-        if (logErrors) {
-            Exceptions.handle(Tasks.LOG, exception);
-        } else if (Tasks.LOG.isFINE() && !(exception instanceof HandledException)) {
-            Tasks.LOG.FINE(Exceptions.createHandled().error(exception));
+            if (logErrors) {
+                Exceptions.handle(Tasks.LOG, exception);
+            } else if (Tasks.LOG.isFINE() && !(exception instanceof HandledException)) {
+                Tasks.LOG.FINE(Exceptions.createHandled().error(exception));
+            }
+
+            for (final CompletionHandler<V> handler : handlers) {
+                failHandler(exception, handler);
+            }
+
+            return this;
         }
-
-        for (final CompletionHandler<V> handler : handlers) {
-            failHandler(exception, handler);
-        }
-
-        return this;
     }
 
     /*
@@ -392,13 +395,15 @@ public class Promise<V> {
     @Explain("We really want to ensure that the given value is not null and not just rely on annotation.")
     public Promise<V> onComplete(@Nonnull CompletionHandler<V> handler) {
         if (handler != null) {
-            if (isSuccessful()) {
-                completeHandler(get(), handler);
-            } else if (isFailed()) {
-                failHandler(getFailure(), handler);
-            } else {
-                this.handlers.add(handler);
-                logErrors = false;
+            synchronized (handlers) {
+                if (isSuccessful()) {
+                    completeHandler(get(), handler);
+                } else if (isFailed()) {
+                    failHandler(getFailure(), handler);
+                } else {
+                    this.handlers.add(handler);
+                    logErrors = false;
+                }
             }
         }
 
