@@ -17,6 +17,7 @@ import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
@@ -45,6 +46,7 @@ public abstract class BackgroundLoop {
     @Part
     private Orchestration orchestration;
 
+    private long lastExecutionAttempt;
     private String executionInfo = "-";
 
     /**
@@ -71,6 +73,20 @@ public abstract class BackgroundLoop {
      */
     public double maxCallFrequency() {
         return Sirius.isStartedAsTest() ? EVERY_SECOND : EVERY_TEN_SECONDS;
+    }
+
+    /**
+     * Defines the maximal (expected) runtime for this loop.
+     * <p>
+     * By default, we use the {@link #maxCallFrequency()}, compute the period of this frequency and multiply it by 5
+     * to have some safety margin.
+     * <p>
+     * For loops with other runtime behaviours, this method should be overwritten.
+     *
+     * @return the maximal expected runtime, which is by default {@code 1 / frequency * 5}
+     */
+    public double maxRuntimeInSeconds() {
+        return 1d / maxCallFrequency() * 5;
     }
 
     /**
@@ -101,6 +117,7 @@ public abstract class BackgroundLoop {
      */
     private void executeWork() {
         try {
+            lastExecutionAttempt = System.currentTimeMillis();
             if (Sirius.isRunning() && (orchestration == null || orchestration.tryExecuteBackgroundLoop(getName()))) {
                 try {
                     Watch w = Watch.start();
@@ -130,7 +147,13 @@ public abstract class BackgroundLoop {
 
     @Override
     public String toString() {
-        return "BackgroundLoop '" + getName() + "': " + getExecutionInfo();
+        return "BackgroundLoop '"
+               + getName()
+               + "': "
+               + getExecutionInfo()
+               + " (Last execution attempt: "
+               + NLS.toUserString(getLastExecutionAttempt())
+               + ")";
     }
 
     /**
@@ -140,5 +163,14 @@ public abstract class BackgroundLoop {
      */
     public String getExecutionInfo() {
         return executionInfo;
+    }
+
+    /**
+     * Contains the timestamp of the last execution (or execution attempt) of this loop to detect jams.
+     *
+     * @return the last timestamp when an execution was attempted
+     */
+    public Instant getLastExecutionAttempt() {
+        return Instant.ofEpochMilli(lastExecutionAttempt);
     }
 }

@@ -8,15 +8,22 @@
 
 package sirius.kernel.health.metrics;
 
+import sirius.kernel.async.BackgroundLoop;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Log;
 import sirius.kernel.health.MemoryBasedHealthMonitor;
+import sirius.kernel.nls.NLS;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -30,6 +37,9 @@ public class SystemMetricProvider implements MetricProvider {
 
     @Part
     private MemoryBasedHealthMonitor monitor;
+
+    @Parts(BackgroundLoop.class)
+    private PartCollection<BackgroundLoop> loops;
 
     @Override
     public void gather(MetricsCollector collector) {
@@ -56,6 +66,32 @@ public class SystemMetricProvider implements MetricProvider {
                                      "Unique Incidents",
                                      monitor.getNumUniqueIncidents(),
                                      "/min");
+
+        gatherBlockingLoops(collector);
+    }
+
+    private void gatherBlockingLoops(MetricsCollector collector) {
+        int blockingLoops = 0;
+        Instant now = Instant.now();
+        for (BackgroundLoop loop : loops) {
+            long observedRuntimeSeconds = Duration.between(loop.getLastExecutionAttempt(), now).getSeconds();
+            if (observedRuntimeSeconds > loop.maxRuntimeInSeconds()) {
+                blockingLoops++;
+                Log.BACKGROUND.WARN("BackgroundLoop %s has exceeded its runtime! Expected runtime %ss."
+                                    + " Observed runtime: %ss."
+                                    + " Last execution attempt: %s",
+                                    loop.getName(),
+                                    loop.maxRuntimeInSeconds(),
+                                    observedRuntimeSeconds,
+                                    NLS.toUserString(loop.getLastExecutionAttempt()));
+            }
+        }
+
+        collector.metric("blocked-loops",
+                         "Blocked Background Loops",
+                         blockingLoops,
+                         null,
+                         blockingLoops > 0 ? MetricState.RED : MetricState.GRAY);
     }
 
     private void gatherGCMetrics(MetricsCollector collector) {
