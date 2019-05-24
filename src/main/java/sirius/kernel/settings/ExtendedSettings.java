@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
+import sirius.kernel.Sirius;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -97,7 +98,7 @@ public class ExtendedSettings extends Settings {
      */
     @Nullable
     public Extension getExtension(String type, String id) {
-        if (!VALID_EXTENSION_ID.matcher(id).matches()) {
+        if (Sirius.isDev() && !VALID_EXTENSION_ID.matcher(id).matches()) {
             Extension.LOG.WARN("Bad extension id detected: '%s' (for type: %s). Names should only consist of"
                                + " lowercase letters, digits or '-'", id, type);
         }
