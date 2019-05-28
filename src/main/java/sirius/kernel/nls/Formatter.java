@@ -14,6 +14,8 @@ import sirius.kernel.commons.Strings;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * An alternative for <tt>MessageFormat</tt> which generates strings by replacing named parameters in a given template.
@@ -46,6 +48,8 @@ public class Formatter {
     private boolean urlEncode = false;
     private boolean smartFormat = false;
     private Map<String, String> replacement = Maps.newTreeMap();
+    private Function<String, Optional<String>> parameterProvider;
+    private boolean ignoreMissingPrameters;
     private String pattern;
     private String lang;
 
@@ -164,6 +168,33 @@ public class Formatter {
     }
 
     /**
+     * Adds a provider which can supply the formatter with parameter values.
+     * <p>
+     * As long as an non empty <tt>Optional</tt> is used, the returned value will be used. Otherwise the value provided
+     * via one of the <tt>set</tt> methods is used.
+     *
+     * @param parameterProvider the provider used to determine the value for a given parameter
+     * @return <tt>this</tt> to permit fluent method chains
+     */
+    public Formatter withParameterProvider(Function<String, Optional<String>> parameterProvider) {
+        this.parameterProvider = parameterProvider;
+        return this;
+    }
+
+    /**
+     * Automatically ignores missing parameters.
+     * <p>
+     * By default an exception is thrown when a completely unknown parameter is being referenced. By calling this method
+     * the parameter is simply assumed to be empty ("").
+     *
+     * @return <tt>this</tt> to permit fluent method chains
+     */
+    public Formatter ignoreMissingParameters() {
+        this.ignoreMissingPrameters = true;
+        return this;
+    }
+
+    /**
      * Generates the formatted string.
      * <p>
      * Applies all supplied replacement values on detected parameters formatted like {@code ${param}}.
@@ -246,17 +277,32 @@ public class Formatter {
                                                              pattern));
         }
         String key = pattern.substring(keyStart, index);
-        String value = replacement.computeIfAbsent(key, s -> {
-            throw new IllegalArgumentException(Strings.apply("Unknown value '%s' used at index %d in '%s'",
-                                                             key,
-                                                             keyStart - 1,
-                                                             pattern));
-        });
+        String value = obtainParameterValue(keyStart, key);
         if (Strings.isFilled(value)) {
             currentBlock.output.append(value);
             currentBlock.replacementFound = true;
         }
         return index;
+    }
+
+    private String obtainParameterValue(int position, String parameter) {
+        if (parameterProvider != null) {
+            Optional<String> optinalValue = parameterProvider.apply(parameter);
+            if (optinalValue.isPresent()) {
+                return optinalValue.get();
+            }
+        }
+
+        return replacement.computeIfAbsent(parameter, ignored -> {
+            if (ignoreMissingPrameters) {
+                return "";
+            } else {
+                throw new IllegalArgumentException(Strings.apply("Unknown value '%s' used at index %d in '%s'",
+                                                                 parameter,
+                                                                 position - 1,
+                                                                 pattern));
+            }
+        });
     }
 
     private Block startBlock(List<Block> blocks, int index) {
