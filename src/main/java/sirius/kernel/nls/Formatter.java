@@ -168,7 +168,7 @@ public class Formatter {
     }
 
     /**
-     * Adds a provider which can supply the formatter with paramete rvalues.
+     * Adds a provider which can supply the formatter with parameter values.
      * <p>
      * As long as an non empty <tt>Optional</tt> is used, the returned value will be used. Otherwise the value provided
      * via one of the <tt>set</tt> methods is used.
