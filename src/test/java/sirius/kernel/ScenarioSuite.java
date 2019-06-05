@@ -16,11 +16,14 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,6 +39,7 @@ import java.util.stream.Stream;
  */
 public class ScenarioSuite extends WildcardPatternSuite {
 
+    private static Map<String, Boolean> scopeSettings = new HashMap<>();
     private List<Scenario> scenarios;
 
     private static class ScenarioRunner extends Runner {
@@ -58,6 +62,8 @@ public class ScenarioSuite extends WildcardPatternSuite {
 
         protected List<Runner> getEffectiveTests() {
             Stream<Runner> stream = allTests.stream();
+
+            // Filter on includes / excludes defined by @Scenario
             if (Strings.isFilled(includes)) {
                 Pattern filterPattern = Pattern.compile(includes);
                 stream = stream.filter(r -> filterPattern.matcher(r.getDescription().getClassName()).matches());
@@ -99,7 +105,7 @@ public class ScenarioSuite extends WildcardPatternSuite {
             }
 
             try {
-                getEffectiveTests().forEach(runner -> runner.run(runNotifier));
+                getEffectiveTests().forEach(runner -> run(runNotifier, runner));
             } finally {
                 runNotifier.fireTestStarted(FRAMEWORK_TEARDOWN);
                 try {
@@ -108,6 +114,17 @@ public class ScenarioSuite extends WildcardPatternSuite {
                     runNotifier.fireTestFinished(FRAMEWORK_TEARDOWN);
                 }
             }
+        }
+        private void run(RunNotifier runNotifier, Runner runner) {
+
+            // Ignore tests if their Scope isn't enabled.
+            Scope scope = runner.getDescription().getTestClass().getAnnotation(Scope.class);
+            if (scope != null && !isScopeEnabled(scope.value())) {
+                runNotifier.fireTestIgnored(runner.getDescription());
+                return;
+            }
+
+            runner.run(runNotifier);
         }
     }
 
@@ -132,6 +149,7 @@ public class ScenarioSuite extends WildcardPatternSuite {
         result.add(new ScenarioRunner(null, null, null, tests));
         if (scenarios != null) {
             scenarios.stream()
+                     .filter(scenario -> isScopeEnabled(scenario.scope()))
                      .map(scenario -> new ScenarioRunner(scenario.file(),
                                                          scenario.includes(),
                                                          scenario.excludes(),
@@ -140,5 +158,25 @@ public class ScenarioSuite extends WildcardPatternSuite {
         }
 
         return result;
+    }
+
+    /**
+     * Determines if the given test scope is enabled.
+     * <p>
+     * This is either done by sepcifying <tt>-Dtest.SCOPE=true</tt> or
+     * <tt>-Dtest.all=true</tt>.
+     *
+     * @param scope the scope to check
+     * @return <tt>true</tt> if the scope is enabled, <tt>false</tt> otherwise
+     */
+    public static boolean isScopeEnabled(String scope) {
+        if (Strings.isEmpty(scope)) {
+            return true;
+        }
+
+        return scopeSettings.computeIfAbsent(scope, ignored -> {
+            return Value.of(System.getProperty("test." + scope))
+                        .asBoolean(Value.of(System.getProperty("test.all")).asBoolean());
+        });
     }
 }
