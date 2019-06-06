@@ -9,8 +9,10 @@
 package sirius.kernel.async
 
 import sirius.kernel.BaseSpecification
+import sirius.kernel.Scope
 import sirius.kernel.commons.Wait
 
+@Scope(Scope.SCOPE_NIGHTLY)
 class BackgroundLoopSpec extends BaseSpecification {
 
     def "BackgroundLoop limits to max frequency"() {
