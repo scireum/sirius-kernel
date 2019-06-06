@@ -138,7 +138,7 @@ public class ScenarioSuite extends WildcardPatternSuite {
         }
 
         /**
-         * Warn is {@link spock.lang.Unroll} is used was it crushes the output of JUNIT in every sane IDE.
+         * Warn if {@link spock.lang.Unroll} is used as it crushes the output of JUNIT in every sane IDE.
          * <p>
          * Checks if a given suite is run via <tt>Sputnik</tt> and therefore based on Spock. If so, we check
          * if an Unroll annotation is present and abort the spec if so.
