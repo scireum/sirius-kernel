@@ -8,6 +8,8 @@
 
 package sirius.kernel.async;
 
+import java.util.function.Supplier;
+
 /**
  * Default implementation for <tt>TaskContextAdapter</tt>
  */
@@ -42,6 +44,21 @@ public class BasicTaskContextAdapter implements TaskContextAdapter {
     @Override
     public void setState(String message) {
         this.state = message;
+    }
+
+    @Override
+    public void logLimited(Object message) {
+        // Ignored by the default implementation.
+    }
+
+    @Override
+    public void smartLogLimited(Supplier<Object> messageSupplier) {
+        // Ignored by the default implementation.
+    }
+
+    @Override
+    public void addTiming(String counter, long millis) {
+        // Ignored by the default implementation.
     }
 
     @Override
