@@ -14,6 +14,7 @@ import sirius.kernel.di.std.Part;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Provides an interface between a running task and a monitoring system.
@@ -120,6 +121,50 @@ public class TaskContext implements SubContext {
      */
     public void setState(String newState, Object... args) {
         adapter.setState(Strings.apply(newState, args));
+    }
+
+    /**
+     * Logs the given message unless the method is called too frequently.
+     * <p>
+     * This method has an internal rate limit and can therefore be used by loops etc. to report the progress
+     * every now and then.
+     * <p>
+     * A caller can rely on the rate limit and therefore can invoke this method as often as desired. However
+     * one must not rely on any message to be shown.
+     * <p>
+     * Note that the default implementation will skip these logs entirely.
+     *
+     * @param message the message to add to the logs.
+     */
+    public void logLimited(Object message) {
+        adapter.logLimited(message);
+    }
+
+    /**
+     * Logs the given message unless the method is called too frequently.
+     * <p>
+     * Note that the given supplier is only evaluated if the message will be actually invoked and thus might save the
+     * system from doing excessive computations.
+     *
+     * @param messageSupplier the supplier which yields the message to log on demand
+     */
+    public void smartLogLimited(Supplier<Object> messageSupplier) {
+        adapter.smartLogLimited(messageSupplier);
+    }
+
+    /**
+     * Increments the given performance counter by one and supplies a loop duration in milliseconds.
+     * <p>
+     * The avarage value will be computed for the given counter and gives the user a rough estimate what the current
+     * task is doing.
+     * <p>
+     * Note that the default implementation will simply ignore the provided timings.
+     *
+     * @param counter the counter to increment
+     * @param millis  the current duration for the block being counted
+     */
+    public void addTiming(String counter, long millis) {
+        adapter.addTiming(counter, millis);
     }
 
     /**

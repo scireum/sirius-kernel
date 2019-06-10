@@ -8,6 +8,8 @@
 
 package sirius.kernel.async;
 
+import java.util.function.Supplier;
+
 /**
  * Implementations of this interface can be attached to a {@link sirius.kernel.async.TaskContext} of a thread to
  * perform
@@ -35,6 +37,29 @@ public interface TaskContextAdapter {
      * @param message the message to set as state
      */
     void setState(String message);
+
+    /**
+     * Invoked if {@link sirius.kernel.async.TaskContext#logLimited(Object)} is called in the attached context.
+     *
+     * @param message the message to add to the logs.
+     */
+    void logLimited(Object message);
+
+    /**
+     * Invoked if {@link sirius.kernel.async.TaskContext#smartLogLimited(Supplier)} is called in the attached context.
+     *
+     * @param messageSupplier the supplier which yields the message to log on demand
+     * @see #logLimited(Object)
+     */
+    void smartLogLimited(Supplier<Object> messageSupplier);
+
+    /**
+     * Invoked if {@link sirius.kernel.async.TaskContext#addTiming(String, long)} is called in the attached context.
+     *
+     * @param counter the counter to increment
+     * @param millis  the current duration for the block being counted
+     */
+    void addTiming(String counter, long millis);
 
     /**
      * Invoked if {@link TaskContext#markErroneous()} is called in the attached context.
