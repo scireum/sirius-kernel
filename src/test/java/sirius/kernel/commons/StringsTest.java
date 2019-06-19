@@ -46,11 +46,11 @@ public class StringsTest {
 
     @Test
     public void areTrimmedEqual() {
-        assertTrue(Strings.areTimmedEqual("A ", "A"));
-        assertFalse(Strings.areTimmedEqual("a", "A  "));
-        assertTrue(Strings.areTimmedEqual("", null));
-        assertTrue(Strings.areTimmedEqual(" ", null));
-        assertTrue(Strings.areTimmedEqual(null, null));
+        assertTrue(Strings.areTrimmedEqual("A ", "A"));
+        assertFalse(Strings.areTrimmedEqual("a", "A  "));
+        assertTrue(Strings.areTrimmedEqual("", null));
+        assertTrue(Strings.areTrimmedEqual(" ", null));
+        assertTrue(Strings.areTrimmedEqual(null, null));
     }
 
     @Test
