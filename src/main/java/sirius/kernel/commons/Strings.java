@@ -191,7 +191,7 @@ public class Strings {
      * @param right the second string to be compared with
      * @return <tt>true</tt> if both values are empty or if both strings are equal - <tt>false</tt> otherwise
      */
-    public static boolean areTimmedEqual(@Nullable Object left, @Nullable Object right) {
+    public static boolean areTrimmedEqual(@Nullable Object left, @Nullable Object right) {
         return areEqual(left, right, Strings::trim);
     }
 
