@@ -144,10 +144,31 @@ public class Strings {
      * while ignoring their case - <tt>false</tt> otherwise
      */
     public static boolean equalIgnoreCase(@Nullable String left, @Nullable String right) {
+        // Implementation node: This doesn't use areEqual with toLowerCase as modified
+        // as the implementation of String.equalsIgnoreCase is more efficient.
         if (isEmpty(left)) {
             return isEmpty(right);
         }
         return left.equalsIgnoreCase(right);
+    }
+
+    /**
+     * Compares the given <tt>Strings</tt> just like {@link String#compareTo(String)}
+     * but with graceful handling for <tt>null</tt> values.
+     *
+     * @param left     the first string to be compared
+     * @param right    the second string to be compared with
+     * @param modifier the modifier function to be applied on both arguments. This has to handle <tt>null</tt> values
+     *                 correctly
+     * @return <tt>true</tt> if both values are empty or if both strings are equal - <tt>false</tt> otherwise
+     */
+    public static boolean areEqual(@Nullable Object left, @Nullable Object right, Function<Object, Object> modifier) {
+        Object effectiveLeft = modifier.apply(left);
+        Object effectiveRight = modifier.apply(right);
+        if (isEmpty(effectiveLeft)) {
+            return isEmpty(effectiveRight);
+        }
+        return Objects.equal(effectiveLeft, effectiveRight);
     }
 
     /**
@@ -159,10 +180,19 @@ public class Strings {
      * @return <tt>true</tt> if both values are empty or if both strings are equal - <tt>false</tt> otherwise
      */
     public static boolean areEqual(@Nullable Object left, @Nullable Object right) {
-        if (isEmpty(left) && isEmpty(right)) {
-            return true;
-        }
-        return Objects.equal(left, right);
+        return areEqual(left, right, Function.identity());
+    }
+
+    /**
+     * Compares the given <tt>Strings</tt> just like {@link String#compareTo(String)}
+     * but with graceful handling for <tt>null</tt> values.
+     *
+     * @param left  the first string to be compared
+     * @param right the second string to be compared with
+     * @return <tt>true</tt> if both values are empty or if both strings are equal - <tt>false</tt> otherwise
+     */
+    public static boolean areTimmedEqual(@Nullable Object left, @Nullable Object right) {
+        return areEqual(left, right, Strings::trim);
     }
 
     /**
