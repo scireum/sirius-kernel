@@ -10,6 +10,7 @@ package sirius.kernel;
 
 import com.google.common.base.Objects;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.health.Log;
 
 import java.io.File;
@@ -19,7 +20,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -81,7 +81,21 @@ public class Classpath {
         if (componentRoots == null) {
             try {
                 componentRoots = Collections.list(loader.getResources(componentName));
-                componentRoots.sort(Comparator.comparing(URL::toString));
+                componentRoots.sort((url1, url2) -> {
+                    String asString1 = Value.of(Strings.toString(url1)).asString();
+                    String asString2 = Value.of(Strings.toString(url2)).asString();
+
+                    // put the files from jar-files in front of the files of the project, so library-files will be read
+                    // first, and therefore can be overwritten by an actual applications
+                    if (asString1.startsWith("jar") && asString2.startsWith("file")) {
+                        return -1;
+                    }
+                    if (asString1.startsWith("file") && asString2.startsWith("jar")) {
+                        return 1;
+                    }
+
+                    return asString1.compareTo(asString2);
+                });
             } catch (IOException e) {
                 LOG.SEVERE(e);
             }
