@@ -239,7 +239,7 @@ public class Babelfish {
         entry.setAutocreated(false);
 
         String previous = entry.addTranslation(lang, value);
-        if (previous != null && !Strings.areEqual(previous, value) && !Sirius.isCustomizationResource(file)) {
+        if (shouldLogOverrideWarning(file, value, previous)) {
             Babelfish.LOG.WARN("Overriding translation for '%s' (%s) in language %s: '%s' --> '%s'",
                                key,
                                file,
@@ -247,6 +247,19 @@ public class Babelfish {
                                previous,
                                value);
         }
+    }
+
+    private boolean shouldLogOverrideWarning(String file, String value, String previous) {
+        if (previous == null) {
+            return false;
+        }
+        if (Strings.areEqual(previous, value)) {
+            return false;
+        }
+        if (Sirius.isCustomizationResource(file)) {
+            return false;
+        }
+        return !"product".equals(file);
     }
 
     /**
