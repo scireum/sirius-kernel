@@ -167,16 +167,26 @@ public class Babelfish {
     }
 
     private void loadProvidedProperties(Classpath classpath, Map<String, Translation> newTranslations) {
-        // Load core translations and keep customizations in a separate list as we have to work out the
-        // correct ordering first...
+        // Load core translations.
+        // Files loaded later in the process will overwrite translations added by earlier files.
+        // The order is as follows:
+        // 1. Load the regualar files.
+        // 2. Load the "product"-prefix files.
+        // 3. Load the customizations files.
+
         List<Matcher> customizations = Lists.newArrayList();
+        List<Matcher> productFiles = Lists.newArrayList();
         classpath.find(PROPERTIES_FILE).forEach(value -> {
             if (Sirius.isCustomizationResource(value.group())) {
                 customizations.add(value);
+            } else if (value.group().startsWith("product")) {
+                productFiles.add(value);
             } else {
                 loadMatchedResource(value, newTranslations);
             }
         });
+
+        productFiles.forEach(value -> loadMatchedResource(value, newTranslations));
 
         // Sort configurations according to system config
         customizations.sort((a, b) -> {
