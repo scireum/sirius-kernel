@@ -428,6 +428,13 @@ public class CallContext {
     }
 
     /**
+     * Sets the lang back to null. Use with caution.
+     */
+    public void resetLang() {
+        lang = null;
+    }
+
+    /**
      * Sets the current fallback language for the current thread.
      *
      * @param fallbackLang the two-letter language code for this thread.
