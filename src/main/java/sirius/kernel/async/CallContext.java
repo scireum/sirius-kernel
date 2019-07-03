@@ -428,6 +428,15 @@ public class CallContext {
     }
 
     /**
+     * Sets the lang back to null.
+     * <p>
+     * This method should only be used to re-initialize the language. Use {@link #setLang(String)} to specify a new language.
+     */
+    public void resetLang() {
+        lang = null;
+    }
+
+    /**
      * Sets the current fallback language for the current thread.
      *
      * @param fallbackLang the two-letter language code for this thread.
