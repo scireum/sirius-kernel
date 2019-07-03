@@ -367,7 +367,7 @@ public class Log {
         } else {
             logger.warn(NLS.toUserString(msg));
         }
-        tap(msg, true, Level.WARN);
+        tap(msg, Level.WARN.isGreaterOrEqual(logger.getEffectiveLevel()), Level.WARN);
     }
 
     /**
@@ -383,7 +383,7 @@ public class Log {
 
         fixMDC();
         logger.warn(msg);
-        tap(msg, true, Level.WARN);
+        tap(msg, Level.WARN.isGreaterOrEqual(logger.getEffectiveLevel()), Level.WARN);
     }
 
     /**
@@ -402,7 +402,7 @@ public class Log {
         } else {
             logger.error(NLS.toUserString(msg));
         }
-        tap(msg, true, Level.ERROR);
+        tap(msg, Level.ERROR.isGreaterOrEqual(logger.getEffectiveLevel()), Level.ERROR);
     }
 
     /**
