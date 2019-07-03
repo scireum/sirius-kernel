@@ -61,13 +61,11 @@ public class MemoryBasedHealthMonitor implements ExceptionHandler, LogTap {
 
     @Override
     public void handleLogMessage(LogMessage msg) {
-        if (msg.isReceiverWouldLog()) {
-            synchronized (messages) {
-                messages.add(0, msg);
-                numLogMessages.inc();
-                while (messages.size() > maxMsg) {
-                    messages.remove(messages.size() - 1);
-                }
+        synchronized (messages) {
+            messages.add(0, msg);
+            numLogMessages.inc();
+            while (messages.size() > maxMsg) {
+                messages.remove(messages.size() - 1);
             }
         }
     }

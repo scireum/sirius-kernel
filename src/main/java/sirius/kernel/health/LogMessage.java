@@ -21,25 +21,22 @@ public class LogMessage {
     private long timestamp;
     private Level logLevel;
     private Log receiver;
-    boolean receiverWouldLog;
     private String thread;
 
     /**
      * Creates a new log message based on the given parameters.
      *
-     * @param message          the message to log
-     * @param logLevel         the level of the message
-     * @param receiver         the original receiver
-     * @param receiverWouldLog determines if the receiver would have logged the message
-     * @param thread           the thread in which the message was logged
+     * @param message  the message to log
+     * @param logLevel the level of the message
+     * @param receiver the original receiver
+     * @param thread   the thread in which the message was logged
      */
-    public LogMessage(String message, Level logLevel, Log receiver, boolean receiverWouldLog, String thread) {
+    public LogMessage(String message, Level logLevel, Log receiver, String thread) {
         this.thread = thread;
         this.timestamp = System.currentTimeMillis();
         this.message = message;
         this.logLevel = logLevel;
         this.receiver = receiver;
-        this.receiverWouldLog = receiverWouldLog;
     }
 
     /**
@@ -67,15 +64,6 @@ public class LogMessage {
      */
     public Log getReceiver() {
         return receiver;
-    }
-
-    /**
-     * Returns whether the receiver has logged this message.
-     *
-     * @return whether the receiver has logged this message
-     */
-    public boolean isReceiverWouldLog() {
-        return receiverWouldLog;
     }
 
     /**
