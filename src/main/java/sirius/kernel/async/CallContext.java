@@ -428,7 +428,7 @@ public class CallContext {
     }
 
     /**
-     * Sets the lang back to null.
+     * Sets the lang back to <tt>null</tt>.
      * <p>
      * This method should only be used to re-initialize the language. Use {@link #setLang(String)} to specify a new language.
      */
