@@ -23,8 +23,9 @@ public class LoggerCommand implements Command {
     @Override
     public void execute(Output output, String... params) {
         if (params.length == 2) {
-            output.apply("Setting %s to: %s", params[0], params[1]);
-            Log.setLevel(params[0], Level.toLevel(params[1]));
+            Level level = Level.toLevel(params[1]);
+            output.apply("Setting %s to: %s", params[0], level);
+            Log.setLevel(params[0], level);
             output.blankLine();
         } else {
             output.line("Usage: logger <name> <LEVEL>");
@@ -32,7 +33,7 @@ public class LoggerCommand implements Command {
             output.line("Known loggers:");
             output.separator();
             for (Log l : Log.getAllLoggers()) {
-                output.line(l.getName());
+                output.apply("%-30s %-10s", l.getName(), l.getLevel());
             }
             output.separator();
         }

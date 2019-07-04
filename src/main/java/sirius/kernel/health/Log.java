@@ -232,9 +232,7 @@ public class Log {
             } else {
                 logger.info(msg.toString());
             }
-            tap(msg, true, Level.INFO);
-        } else {
-            tap(msg, false, Level.INFO);
+            tap(msg, Level.INFO);
         }
     }
 
@@ -259,10 +257,7 @@ public class Log {
         }
     }
 
-    /*
-     * Notify all log taps
-     */
-    private void tap(Object msg, boolean wouldLog, Level level) {
+    private void tap(Object msg, Level level) {
         if (Boolean.TRUE.equals(frozen.get())) {
             return;
         }
@@ -270,7 +265,7 @@ public class Log {
             frozen.set(Boolean.TRUE);
             if (taps != null) {
                 for (LogTap tap : taps) {
-                    invokeTap(msg, wouldLog, level, tap);
+                    invokeTap(msg, level, tap);
                 }
             }
         } finally {
@@ -278,13 +273,9 @@ public class Log {
         }
     }
 
-    private void invokeTap(Object msg, boolean wouldLog, Level level, LogTap tap) {
+    private void invokeTap(Object msg, Level level, LogTap tap) {
         try {
-            tap.handleLogMessage(new LogMessage(NLS.toUserString(msg),
-                                                level,
-                                                this,
-                                                wouldLog,
-                                                Thread.currentThread().getName()));
+            tap.handleLogMessage(new LogMessage(NLS.toUserString(msg), level, this, Thread.currentThread().getName()));
         } catch (Exception e) {
             // Ignored - if we can't log s.th. let's just give up...
         }
@@ -299,13 +290,11 @@ public class Log {
      * @param params the parameters used to format the resulting log message
      */
     public void INFO(String msg, Object... params) {
-        msg = Strings.apply(msg, params);
         if (logger.isInfoEnabled()) {
+            String effectiveMessage = Strings.apply(msg, params);
             fixMDC();
-            logger.info(msg);
-            tap(msg, true, Level.INFO);
-        } else {
-            tap(msg, false, Level.INFO);
+            logger.info(effectiveMessage);
+            tap(effectiveMessage, Level.INFO);
         }
     }
 
@@ -326,9 +315,7 @@ public class Log {
             } else {
                 logger.debug(NLS.toUserString(msg));
             }
-            tap(msg, true, Level.DEBUG);
-        } else {
-            tap(msg, false, Level.DEBUG);
+            tap(msg, Level.DEBUG);
         }
     }
 
@@ -342,13 +329,11 @@ public class Log {
      * @param params the parameters used to format the resulting log message
      */
     public void FINE(String msg, Object... params) {
-        msg = Strings.apply(msg, params);
         if (logger.isDebugEnabled()) {
+            String effectiveMessage = Strings.apply(msg, params);
             fixMDC();
-            logger.debug(msg);
-            tap(msg, true, Level.DEBUG);
-        } else {
-            tap(msg, false, Level.DEBUG);
+            logger.debug(effectiveMessage);
+            tap(effectiveMessage, Level.DEBUG);
         }
     }
 
@@ -361,13 +346,15 @@ public class Log {
      * @param msg the message to be logged
      */
     public void WARN(Object msg) {
-        fixMDC();
-        if (msg instanceof Throwable) {
-            logger.warn(((Throwable) msg).getMessage(), (Throwable) msg);
-        } else {
-            logger.warn(NLS.toUserString(msg));
+        if (Level.WARN.isGreaterOrEqual(logger.getEffectiveLevel())) {
+            fixMDC();
+            if (msg instanceof Throwable) {
+                logger.warn(((Throwable) msg).getMessage(), (Throwable) msg);
+            } else {
+                logger.warn(NLS.toUserString(msg));
+            }
+            tap(msg, Level.WARN);
         }
-        tap(msg, true, Level.WARN);
     }
 
     /**
@@ -379,11 +366,12 @@ public class Log {
      * @param params the parameters used to format the resulting log message
      */
     public void WARN(String msg, Object... params) {
-        msg = Strings.apply(msg, params);
-
-        fixMDC();
-        logger.warn(msg);
-        tap(msg, true, Level.WARN);
+        if (Level.WARN.isGreaterOrEqual(logger.getEffectiveLevel())) {
+            String effectiveMessage = Strings.apply(msg, params);
+            fixMDC();
+            logger.warn(effectiveMessage);
+            tap(effectiveMessage, Level.WARN);
+        }
     }
 
     /**
@@ -396,13 +384,15 @@ public class Log {
      * @param msg the message to be logged
      */
     public void SEVERE(Object msg) {
-        fixMDC();
-        if (msg instanceof Throwable) {
-            logger.error(((Throwable) msg).getMessage(), (Throwable) msg);
-        } else {
-            logger.error(NLS.toUserString(msg));
+        if (Level.ERROR.isGreaterOrEqual(logger.getEffectiveLevel())) {
+            fixMDC();
+            if (msg instanceof Throwable) {
+                logger.error(((Throwable) msg).getMessage(), (Throwable) msg);
+            } else {
+                logger.error(NLS.toUserString(msg));
+            }
+            tap(msg, Level.ERROR);
         }
-        tap(msg, true, Level.ERROR);
     }
 
     /**
@@ -429,5 +419,14 @@ public class Log {
      */
     public String getName() {
         return logger.getName();
+    }
+
+    /**
+     * Returns the effective log level of this logger.
+     *
+     * @return the effective log level
+     */
+    public Level getLevel() {
+        return logger.getEffectiveLevel();
     }
 }
