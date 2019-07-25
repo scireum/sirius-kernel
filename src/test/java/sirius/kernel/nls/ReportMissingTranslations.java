@@ -18,7 +18,7 @@ import sirius.kernel.di.std.Register;
  * translations.
  */
 @Register
-public class MissingTranslations implements TestLifecycleParticipant {
+public class ReportMissingTranslations implements TestLifecycleParticipant {
 
     @Override
     public int getPriority() {
