@@ -9,10 +9,12 @@
 package sirius.kernel.di;
 
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.std.Priorized;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Used to access parts managed by the {@link Injector}.
@@ -88,6 +90,17 @@ public interface GlobalContext {
      */
     @Nonnull
     <P> Collection<P> getParts(@Nonnull Class<? extends P> partInterface);
+
+    /**
+     * Returns all parts which are currently registered for the given lookup class, sorted by their priority
+     *
+     * @param partInterface one of the lookup classes for which the parts of interest were registered
+     * @param <P>           the type of the requested parts
+     * @return a list of all parts registered for the given class. If no parts were found,
+     * an empty list is returned
+     */
+    @Nonnull
+    <P extends Priorized> List<P> getPriorizedParts(@Nonnull Class<? extends P> partInterface);
 
     /**
      * Returns all parts which are currently registered for the given lookup class and have a name attached.

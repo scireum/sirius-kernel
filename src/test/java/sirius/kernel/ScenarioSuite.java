@@ -106,6 +106,8 @@ public class ScenarioSuite extends WildcardPatternSuite {
             runNotifier.fireTestStarted(FRAMEWORK_SETUP);
             try {
                 TestHelper.setUp(ScenarioSuite.class);
+            } catch (Exception e) {
+                runNotifier.fireTestFailure(new Failure(FRAMEWORK_SETUP, e));
             } finally {
                 runNotifier.fireTestFinished(FRAMEWORK_SETUP);
             }
@@ -116,6 +118,8 @@ public class ScenarioSuite extends WildcardPatternSuite {
                 runNotifier.fireTestStarted(FRAMEWORK_TEARDOWN);
                 try {
                     TestHelper.tearDown(ScenarioSuite.class);
+                } catch (Exception e) {
+                    runNotifier.fireTestFailure(new Failure(FRAMEWORK_TEARDOWN, e));
                 } finally {
                     runNotifier.fireTestFinished(FRAMEWORK_TEARDOWN);
                 }
