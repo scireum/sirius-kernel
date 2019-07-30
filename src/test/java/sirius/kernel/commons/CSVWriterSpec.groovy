@@ -27,6 +27,21 @@ class CSVWriterSpec extends BaseSpecification {
         output.toString() == "a;b;c\n1;2;3\nd;e;f"
     }
 
+    def "changing the lineSeparator works"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output).withLineSeparator("\r\n")
+        when:
+        writer.writeArray("a", "b", "c")
+        writer.writeArray(1, 2, 3)
+        writer.writeList(Arrays.asList("d", "e", "f"))
+        and:
+        output.close()
+        then:
+        output.toString() == "a;b;c\r\n1;2;3\r\nd;e;f"
+    }
+
     def "quotation works for separator and new line"() {
         given:
         StringWriter output = new StringWriter()

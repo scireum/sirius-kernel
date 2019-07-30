@@ -110,6 +110,19 @@ public class CSVWriter implements Closeable {
     }
 
     /**
+     * Specifies the lineSeparator used to create new lines.
+     * <p>
+     * By default this is <tt>\n</tt>.
+     *
+     * @param lineSeparator the lineSeparator to use
+     * @return the writer itself for fluent method calls
+     */
+    public CSVWriter withLineSeparator(String lineSeparator) {
+        this.lineSeparator = lineSeparator;
+        return this;
+    }
+
+    /**
      * Writes the given list of values as row.
      *
      * @param row the data to write. <tt>null</tt> values will be completely skipped.
