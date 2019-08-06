@@ -43,7 +43,7 @@ public class StructuredNode {
     /**
      * Cache to improve speed of xpath...
      */
-    private static Cache<Tuple<Thread, String>, XPathExpression> cache;
+    private static Cache<Tuple<Thread, String>, XPathExpression> cache = CacheManager.createLocalCache("xpath");
     private static final XPathFactory XPATH = XPathFactory.newInstance();
 
     private Node node;
@@ -62,9 +62,6 @@ public class StructuredNode {
      */
     private static XPathExpression compile(String xpath) throws XPathExpressionException {
         Tuple<Thread, String> key = Tuple.create(Thread.currentThread(), xpath);
-        if (cache == null) {
-            cache = CacheManager.createLocalCache("xpath");
-        }
         XPathExpression result = cache.get(key);
         if (result == null) {
             result = XPATH.newXPath().compile(xpath);
