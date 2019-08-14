@@ -71,9 +71,12 @@ public class Value {
     public static Value of(@Nullable Object data) {
         if (data == null) {
             return EMPTY;
-        } else if (data instanceof Value) {
+        }
+
+        if (data instanceof Value) {
             return (Value) data;
         }
+
         Value val = new Value();
         val.data = data;
         return val;
@@ -419,7 +422,7 @@ public class Value {
      * @return a converted instance of type targetClass or the defaultValue if no conversion was possible
      * @throws IllegalArgumentException if the given <tt>targetClazz</tt> is unknown
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     public <T> T coerce(Class<T> targetClazz, T defaultValue) {
         if (boolean.class.equals(targetClazz) && defaultValue == null) {
             if (Strings.isEmpty(data)) {
