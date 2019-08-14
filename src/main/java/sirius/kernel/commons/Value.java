@@ -170,6 +170,18 @@ public class Value {
     }
 
     /**
+     * Calls the given <tt>consumer</tt> with the result of the given <tt>extractor</tt> if the value is filled.
+     *
+     * @param extractor the extractor to call with this object if it is filled
+     * @param consumer  the consumer to call with this object if it is filled
+     */
+    public <T> void ifFilled(Function<Value, T> extractor, Consumer<T> consumer) {
+        if (isFilled()) {
+            consumer.accept(extractor.apply(this));
+        }
+    }
+
+    /**
      * Returns a new {@link Value} which will be empty its value equals one of the given ignored values.
      *
      * @param ignoredValues the list of values which will be replaced by an empty value
