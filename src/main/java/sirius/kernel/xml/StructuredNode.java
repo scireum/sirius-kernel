@@ -17,6 +17,7 @@ import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
@@ -56,6 +57,7 @@ public class StructuredNode {
      * <p>
      * E.g. <a:tag></a:tag> would belong to the namespace a and we need to add it to query it.
      */
+    @Part
     private static NamespaceContext namespaceContext;
 
     /**
