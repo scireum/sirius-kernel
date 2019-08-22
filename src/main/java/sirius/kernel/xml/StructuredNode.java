@@ -26,6 +26,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import javax.xml.namespace.NamespaceContext;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,6 +50,15 @@ public class StructuredNode {
     private Node node;
 
     /**
+     * Handles any namespace logic within the xml.
+     * <p>
+     * We need to add a namespace context to query nodes which belong to a namespace.
+     * <p>
+     * E.g. <a:tag></a:tag> would belong to the namespace a and we need to add it to query it.
+     */
+    private static NamespaceContext namespaceContext;
+
+    /**
      * Wraps the given node
      *
      * @param root the node to wrap
@@ -64,7 +74,14 @@ public class StructuredNode {
         Tuple<Thread, String> key = Tuple.create(Thread.currentThread(), xpath);
         XPathExpression result = cache.get(key);
         if (result == null) {
-            result = XPATH.newXPath().compile(xpath);
+            XPath xPathInstance = XPATH.newXPath();
+
+            if (namespaceContext != null) {
+                xPathInstance.setNamespaceContext(namespaceContext);
+            }
+
+            result = xPathInstance.compile(xpath);
+
             cache.put(key, result);
         }
         return result;
