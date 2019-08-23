@@ -24,8 +24,6 @@ public class ConfigBasedNamespaceContext implements NamespaceContext {
         if (prefixNamespaceMap == null) {
             initializeMap();
         }
-
-
         return prefixNamespaceMap.getOrDefault(prefix, XMLConstants.NULL_NS_URI);
     }
 
@@ -40,10 +38,12 @@ public class ConfigBasedNamespaceContext implements NamespaceContext {
     }
 
     private void initializeMap() {
-        prefixNamespaceMap = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
 
         for (Extension extension : Sirius.getSettings().getExtensions("xpath.namespaces")) {
-            prefixNamespaceMap.put(extension.getId(), extension.getString("namespace"));
+            map.put(extension.getId(), extension.getString("namespace"));
         }
+
+        this.prefixNamespaceMap = map;
     }
 }
