@@ -1,26 +1,33 @@
 package sirius.kernel.xml;
 
 import sirius.kernel.Sirius;
-import sirius.kernel.commons.Strings;
-import sirius.kernel.di.std.Register;
 import sirius.kernel.settings.Extension;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
- * Provides all the namespaces for each prefix.
+ * Resolves namespace prefixes into URLs based in the system configuration (<tt>xpath.namespaces</tt>).
  */
-@Register(classes = NamespaceContext.class)
 public class ConfigBasedNamespaceContext implements NamespaceContext {
+
+    private Map<String, String> prefixNamespaceMap;
+
+    public ConfigBasedNamespaceContext() {
+        prefixNamespaceMap = new HashMap<>();
+
+        for (Extension extension : Sirius.getSettings().getExtensions("xpath.namespaces")) {
+            prefixNamespaceMap.put(extension.getId(), extension.getString("namespace"));
+        }
+    }
 
     @Override
     public String getNamespaceURI(String prefix) {
-        for (Extension extension : Sirius.getSettings().getExtensions("xpath.namespaces")) {
-            if (Strings.areEqual(prefix, extension.getId())) {
-                return extension.getString("namespace");
-            }
+        if (prefixNamespaceMap.containsKey(prefix)) {
+            return prefixNamespaceMap.get(prefix);
         }
 
         return XMLConstants.NULL_NS_URI;
