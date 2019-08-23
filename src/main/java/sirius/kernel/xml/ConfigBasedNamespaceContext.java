@@ -14,23 +14,19 @@ import java.util.Map;
  */
 public class ConfigBasedNamespaceContext implements NamespaceContext {
 
+    /**
+     * Holds key value pairs of the namespace prefix and the namespace uri.
+     */
     private Map<String, String> prefixNamespaceMap;
-
-    public ConfigBasedNamespaceContext() {
-        prefixNamespaceMap = new HashMap<>();
-
-        for (Extension extension : Sirius.getSettings().getExtensions("xpath.namespaces")) {
-            prefixNamespaceMap.put(extension.getId(), extension.getString("namespace"));
-        }
-    }
 
     @Override
     public String getNamespaceURI(String prefix) {
-        if (prefixNamespaceMap.containsKey(prefix)) {
-            return prefixNamespaceMap.get(prefix);
+        if (prefixNamespaceMap == null) {
+            initializeMap();
         }
 
-        return XMLConstants.NULL_NS_URI;
+
+        return prefixNamespaceMap.getOrDefault(prefix, XMLConstants.NULL_NS_URI);
     }
 
     @Override
@@ -41,5 +37,13 @@ public class ConfigBasedNamespaceContext implements NamespaceContext {
     @Override
     public Iterator getPrefixes(String namespaceURI) {
         throw new UnsupportedOperationException();
+    }
+
+    private void initializeMap() {
+        prefixNamespaceMap = new HashMap<>();
+
+        for (Extension extension : Sirius.getSettings().getExtensions("xpath.namespaces")) {
+            prefixNamespaceMap.put(extension.getId(), extension.getString("namespace"));
+        }
     }
 }
