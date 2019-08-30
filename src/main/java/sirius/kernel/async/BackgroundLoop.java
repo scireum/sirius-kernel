@@ -51,7 +51,7 @@ public abstract class BackgroundLoop {
     @Part
     private static GlobalContext globalContext;
 
-    private Future loopExecuted;
+    private Future loopExecuted = new Future();
     private volatile boolean enabled = true;
     private long lastExecutionAttempt;
     private String executionInfo = "-";
