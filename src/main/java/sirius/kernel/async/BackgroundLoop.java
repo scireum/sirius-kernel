@@ -203,7 +203,7 @@ public abstract class BackgroundLoop {
     }
 
     /**
-     * Returns the execution future of the given background loop
+     * Returns the execution future of the given background loop.
      * <p>
      * This is only intended to be used by tests to await the execution of a background loop.
      *
