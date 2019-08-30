@@ -9,7 +9,9 @@
 package sirius.kernel.async;
 
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
+import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -46,6 +48,11 @@ public abstract class BackgroundLoop {
     @Part
     private Orchestration orchestration;
 
+    @Part
+    private static GlobalContext globalContext;
+
+    private Future loopExecuted;
+    private volatile boolean enabled = true;
     private long lastExecutionAttempt;
     private String executionInfo = "-";
 
@@ -109,31 +116,52 @@ public abstract class BackgroundLoop {
      * call frequency as determined by {@code maxCallFrequency()}.
      */
     protected void loop() {
-        tasks.executor(determineExecutor()).frequency(this, maxCallFrequency()).start(this::executeWork);
+        tasks.executor(determineExecutor()).frequency(this, maxCallFrequency()).start(this::tryExecuteWork);
     }
 
-    /**
-     * Calls {@code doWork()} with proper error handling and then {@code loop()} again to schedule the next call.
-     */
-    private void executeWork() {
+    private void tryExecuteWork() {
         try {
             lastExecutionAttempt = System.currentTimeMillis();
-            if (Sirius.isRunning() && (orchestration == null || orchestration.tryExecuteBackgroundLoop(getName()))) {
-                try {
-                    Watch w = Watch.start();
-                    LocalDateTime now = LocalDateTime.now();
-                    String executedWork = doWork();
-                    buildAndLogExecutionInfo(w, now, executedWork);
-                } finally {
-                    if (orchestration != null) {
-                        orchestration.backgroundLoopCompleted(getName(), executionInfo);
-                    }
-                }
+            if (shouldExecute()) {
+                executeWork();
             }
         } catch (Exception e) {
             Exceptions.handle(Tasks.LOG, e);
         }
+
         loop();
+    }
+
+    private void executeWork() throws Exception {
+        Future executionFuture = loopExecuted;
+        loopExecuted = new Future();
+        try {
+            Watch w = Watch.start();
+            LocalDateTime now = LocalDateTime.now();
+            String executedWork = doWork();
+            buildAndLogExecutionInfo(w, now, executedWork);
+        } finally {
+            if (orchestration != null) {
+                orchestration.backgroundLoopCompleted(getName(), executionInfo);
+            }
+            executionFuture.success();
+        }
+    }
+
+    private boolean shouldExecute() {
+        if (!enabled) {
+            return false;
+        }
+
+        if (!Sirius.isRunning()) {
+            return false;
+        }
+
+        if (orchestration != null) {
+            return orchestration.tryExecuteBackgroundLoop(getName());
+        } else {
+            return true;
+        }
     }
 
     private void buildAndLogExecutionInfo(Watch watch, LocalDateTime startedAt, String executedWorkDescription) {
@@ -172,5 +200,92 @@ public abstract class BackgroundLoop {
      */
     public Instant getLastExecutionAttempt() {
         return Instant.ofEpochMilli(lastExecutionAttempt);
+    }
+
+    /**
+     * Returns the execution future of the given background loop.
+     * <p>
+     * This is only intended to be used by tests to await the execution of a background loop.
+     *
+     * @param type the type of the background loop to fetch the future from
+     * @return the future which will be fulfilled after the next completion of the given background loop
+     */
+    public static Future nextExecution(Class<? extends BackgroundLoop> type) {
+        if (!Sirius.isStartedAsTest()) {
+            throw new IllegalStateException("BackgroundLoop.extExecution may only be called in tests.");
+        }
+        return findLoop(type).loopExecuted;
+    }
+
+    private static BackgroundLoop findLoop(Class<? extends BackgroundLoop> type) {
+        return globalContext.getParts(BackgroundLoop.class)
+                            .stream()
+                            .filter(loop -> type.equals(loop.getClass()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException(Strings.apply("Unknown background loop: %s",
+                                                                                          type)));
+    }
+
+    /**
+     * Disables the background loop.
+     * <p>
+     * This is only intended to be used by tests to make sure a loop isn't executed while preparing a scenario.
+     * <p>
+     * Note that this call actually awaits the next run of the loop to then toggle the flag just in the right moment.
+     * This is done to not add any locking overheads during production usage.
+     *
+     * @param type the loop to disable
+     * @return a future which is completed once the loop is known to be disabled
+     */
+    public static Future disable(Class<? extends BackgroundLoop> type) {
+        if (!Sirius.isStartedAsTest()) {
+            throw new IllegalStateException("BackgroundLoop.disable may only be called in tests.");
+        }
+
+        BackgroundLoop loop = findLoop(type);
+
+        return loop.loopExecuted.onSuccess(() -> {
+            loop.enabled = false;
+        });
+    }
+
+    /**
+     * Enables the given background loop.
+     * <p>
+     * This is only intended to be used by tests which called {@link #disable(Class)} before.
+     *
+     * @param type the loop to enable
+     */
+    public static void enable(Class<? extends BackgroundLoop> type) {
+        if (!Sirius.isStartedAsTest()) {
+            throw new IllegalStateException("BackgroundLoop.enable may only be called in tests.");
+        }
+
+        findLoop(type).enabled = true;
+    }
+
+    /**
+     * Executes the background loop out of order.
+     * <p>
+     * This is only intended to be used by tests. Note that the background loop must be {@link #disable(Class) disabled}
+     * for this.
+     *
+     * @param type the loop to forcefully execute
+     */
+    public static void executeOutOfOrder(Class<? extends BackgroundLoop> type) {
+        if (!Sirius.isStartedAsTest()) {
+            throw new IllegalStateException("BackgroundLoop.executeOutOfOrder may only be called in tests.");
+        }
+
+        BackgroundLoop loop = findLoop(type);
+        if (loop.enabled) {
+            throw new IllegalStateException("BackgroundLoop.executeOutOfOrder may only be called for disabled loops");
+        }
+
+        try {
+            loop.executeWork();
+        } catch (Exception e) {
+            Exceptions.handle(Tasks.LOG, e);
+        }
     }
 }
