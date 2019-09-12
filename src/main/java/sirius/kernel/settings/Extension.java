@@ -219,6 +219,10 @@ public class Extension extends Settings implements Comparable<Extension> {
         return type + "." + id;
     }
 
+    public int getPriority() {
+        return priority;
+    }
+
     /**
      * Determined if this extension is an artifically created default extension.
      *
