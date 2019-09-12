@@ -219,6 +219,14 @@ public class Extension extends Settings implements Comparable<Extension> {
         return type + "." + id;
     }
 
+    /**
+     * Returns the priority of the extension.
+     * <p>
+     * Defined in the config-file or the default priority defined in {@link PriorityCollector#DEFAULT_PRIORITY} if no
+     * priority is defined in the config.
+     *
+     * @return the priority of the extension
+     */
     public int getPriority() {
         return priority;
     }
