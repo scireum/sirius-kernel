@@ -1173,6 +1173,9 @@ public class Value {
             if (data instanceof BigDecimal) {
                 return (BigDecimal) data;
             }
+            if (data instanceof Amount) {
+                return ((Amount) data).getAmount();
+            }
             if (data instanceof Double) {
                 return BigDecimal.valueOf((Double) data);
             }
