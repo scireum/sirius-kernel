@@ -1218,6 +1218,9 @@ public class Value {
      * @see #getBigDecimal(java.math.BigDecimal)
      */
     public Amount getAmount() {
+        if (data instanceof Amount) {
+            return (Amount) data;
+        }
         return Amount.of(getBigDecimal());
     }
 
