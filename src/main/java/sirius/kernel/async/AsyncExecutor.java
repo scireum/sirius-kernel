@@ -61,6 +61,16 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
     @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
         try {
+            // If the executor is used by another Java framework, we cannot recover anything and
+            // simply try to execute while blocking the caller...
+            if (!(r instanceof ExecutionBuilder.TaskWrapper)) {
+                r.run();
+                blocked.inc();
+                return;
+            }
+
+            // Otherwise we invoke the drop handler if present or otherwise also attempt a
+            // blocking execution.
             ExecutionBuilder.TaskWrapper wrapper = (ExecutionBuilder.TaskWrapper) r;
             if (wrapper.dropHandler != null) {
                 wrapper.drop();

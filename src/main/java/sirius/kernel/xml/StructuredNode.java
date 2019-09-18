@@ -26,6 +26,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import javax.xml.namespace.NamespaceContext;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,10 +44,19 @@ public class StructuredNode {
     /**
      * Cache to improve speed of xpath...
      */
-    private static Cache<Tuple<Thread, String>, XPathExpression> cache;
+    private static Cache<Tuple<Thread, String>, XPathExpression> cache = CacheManager.createLocalCache("xpath");
     private static final XPathFactory XPATH = XPathFactory.newInstance();
 
     private Node node;
+
+    /**
+     * Handles any namespace logic within the xml.
+     * <p>
+     * We need to add a namespace context to query nodes which belong to a namespace.
+     * <p>
+     * E.g. <a:tag></a:tag> would belong to the namespace a and we need to add it to query it.
+     */
+    private static NamespaceContext namespaceContext = new ConfigBasedNamespaceContext();
 
     /**
      * Wraps the given node
@@ -62,12 +72,12 @@ public class StructuredNode {
      */
     private static XPathExpression compile(String xpath) throws XPathExpressionException {
         Tuple<Thread, String> key = Tuple.create(Thread.currentThread(), xpath);
-        if (cache == null) {
-            cache = CacheManager.createLocalCache("xpath");
-        }
         XPathExpression result = cache.get(key);
         if (result == null) {
-            result = XPATH.newXPath().compile(xpath);
+            XPath xPathInstance = XPATH.newXPath();
+            xPathInstance.setNamespaceContext(namespaceContext);
+            result = xPathInstance.compile(xpath);
+
             cache.put(key, result);
         }
         return result;
@@ -167,7 +177,8 @@ public class StructuredNode {
      * Returns the value of the attribute with the given name.
      *
      * @param name the name of the attribute to read
-     * @return a {@link Value} filled with the attribute value if an attribute exists for the given name, an empty {@link Value} otherwise.
+     * @return a {@link Value} filled with the attribute value if an attribute exists for the given name, an empty
+     * {@link Value} otherwise.
      */
     @Nonnull
     public Value getAttribute(String name) {
@@ -263,8 +274,7 @@ public class StructuredNode {
     }
 
     /**
-     * Queries a string via the given XPath. All contained XML is converted to a
-     * string.
+     * Queries a string via the given XPath. All XML is converted to a string.
      *
      * @param path the xpath used to retrieve the xml sub tree
      * @return a string representing the xml sub-tree returned by the given xpath expression
@@ -272,6 +282,23 @@ public class StructuredNode {
      */
     @Nullable
     public String queryXMLString(String path) {
+        return queryXMLString(path, true);
+    }
+
+    /**
+     * Queries a string via the given XPath. All inner XML is converted to a string.
+     *
+     * @param path the xpath used to retrieve the xml sub tree
+     * @return a string representing the xml sub-tree returned by the given xpath expression
+     * @throws IllegalArgumentException if an invalid xpath was given
+     */
+    @Nullable
+    public String queryInnerXMLString(String path) {
+        return queryXMLString(path, false);
+    }
+
+    @Nullable
+    private String queryXMLString(String path, boolean includeOuter) {
         try {
             XPath xpath = XPATH.newXPath();
             Object result = xpath.evaluate(path, node, XPathConstants.NODE);
@@ -279,7 +306,7 @@ public class StructuredNode {
                 return null;
             }
             if (result instanceof Node) {
-                return serializeNodeAsXML((Node) result);
+                return serializeNodeAsXML((Node) result, includeOuter);
             }
             return result.toString().trim();
         } catch (XPathExpressionException e) {
@@ -287,10 +314,10 @@ public class StructuredNode {
         }
     }
 
-    private String serializeNodeAsXML(Node result) {
+    private String serializeNodeAsXML(Node result, boolean includeOuter) {
         try {
             StringWriter writer = new StringWriter();
-            XMLGenerator.writeXML(result, writer, Charsets.UTF_8.name(), true);
+            XMLGenerator.writeXML(result, writer, Charsets.UTF_8.name(), true, includeOuter);
             return writer.toString();
         } catch (Exception e) {
             Exceptions.handle(e);

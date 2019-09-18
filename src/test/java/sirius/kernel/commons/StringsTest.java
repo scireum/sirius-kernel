@@ -37,9 +37,20 @@ public class StringsTest {
     public void areEqual() {
         assertTrue(Strings.areEqual("A", "A"));
         assertFalse(Strings.areEqual("a", "A"));
+        assertFalse(Strings.areEqual("a", "A"));
+        assertTrue(Strings.areEqual("a", "A", x -> x.toString().toLowerCase()));
         assertTrue(Strings.areEqual("", null));
         assertFalse(Strings.areEqual(" ", null));
         assertTrue(Strings.areEqual(null, null));
+    }
+
+    @Test
+    public void areTrimmedEqual() {
+        assertTrue(Strings.areTrimmedEqual("A ", "A"));
+        assertFalse(Strings.areTrimmedEqual("a", "A  "));
+        assertTrue(Strings.areTrimmedEqual("", null));
+        assertTrue(Strings.areTrimmedEqual(" ", null));
+        assertTrue(Strings.areTrimmedEqual(null, null));
     }
 
     @Test

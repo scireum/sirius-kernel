@@ -143,6 +143,9 @@ public class Sirius {
         if (config.hasPath("log")) {
             LOG.WARN("Found 'log' in the system configuration - use 'logging' to configure loggers!");
         }
+        if (config.hasPath("logger")) {
+            LOG.WARN("Found 'logger' in the system configuration - use 'logging' to configure loggers!");
+        }
         if (config.hasPath("logs")) {
             LOG.WARN("Found 'logs' in the system configuration - use 'logging' to configure loggers!");
         }

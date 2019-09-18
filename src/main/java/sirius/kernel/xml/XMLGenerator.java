@@ -90,6 +90,25 @@ public class XMLGenerator extends XMLStructuredOutput {
      */
     public static void writeXML(Node doc, Writer writer, String encoding, boolean omitXMLDeclaration)
             throws TransformerException {
+        writeXML(doc, writer, encoding, omitXMLDeclaration, true);
+    }
+
+    /**
+     * Writes the given XML document to the given writer.
+     *
+     * @param doc                the XML document to write
+     * @param writer             the target to write the XML to
+     * @param encoding           the encoding used to write the XML
+     * @param omitXMLDeclaration determines whether the XML declaration should be skipped (<tt>true</tt>) or not
+     *                           (<tt>false</tt>).
+     * @param includeOuter       <tt>true</tt> if the outer XML should be included, <tt>false</tt> otherwise
+     * @throws TransformerException if an exception during serialization occurs
+     */
+    public static void writeXML(Node doc,
+                                Writer writer,
+                                String encoding,
+                                boolean omitXMLDeclaration,
+                                boolean includeOuter) throws TransformerException {
         StreamResult streamResult = new StreamResult(writer);
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer serializer = tf.newTransformer();
@@ -98,8 +117,20 @@ public class XMLGenerator extends XMLStructuredOutput {
         if (omitXMLDeclaration) {
             serializer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         }
-        DOMSource domSource = new DOMSource(doc);
-        serializer.transform(domSource, streamResult);
+
+        if (includeOuter) {
+            DOMSource domSource = new DOMSource(doc);
+            serializer.transform(domSource, streamResult);
+
+            return;
+        }
+
+        doc = doc.getFirstChild();
+        while (doc != null) {
+            DOMSource domSource = new DOMSource(doc);
+            serializer.transform(domSource, streamResult);
+            doc = doc.getNextSibling();
+        }
     }
 
     /**
