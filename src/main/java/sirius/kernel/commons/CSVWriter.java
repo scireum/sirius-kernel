@@ -36,6 +36,7 @@ public class CSVWriter implements Closeable {
     private String separatorString = String.valueOf(';');
     private char quotation = '"';
     private boolean isQuotationEmpty = false;
+    private boolean forceQuotation = false;
     private char escape = '\\';
     private boolean isEscapeEmpty = false;
     private boolean trim = true;
@@ -106,6 +107,33 @@ public class CSVWriter implements Closeable {
      */
     public CSVWriter withInputTrimming(boolean trim) {
         this.trim = trim;
+        return this;
+    }
+
+    /**
+     * Specifies the lineSeparator used to create new lines.
+     * <p>
+     * By default this is <tt>\n</tt>.
+     *
+     * @param lineSeparator the lineSeparator to use
+     * @return the writer itself for fluent method calls
+     */
+    public CSVWriter withLineSeparator(String lineSeparator) {
+        this.lineSeparator = lineSeparator;
+        return this;
+    }
+
+    /**
+     * Specifies wether or not all fields in the generated CSV should be enclosed with the specified quotation character.
+     * <p>
+     * By default this is <tt>false</tt>, which means only fields that require quotation because they contain
+     * the separator character or a line break are enclosed with quotations.
+     *
+     * @param force if all fields should be quoted regardless of content or not
+     * @return the writer itself for fluent method calls
+     */
+    public CSVWriter withForceQuotation(boolean force) {
+        this.forceQuotation = force;
         return this;
     }
 
@@ -188,6 +216,9 @@ public class CSVWriter implements Closeable {
     private boolean shouldQuote(String stringValue) {
         if (isQuotationEmpty) {
             return false;
+        }
+        if (forceQuotation) {
+            return true;
         }
         return stringValue.contains(separatorString) || stringValue.contains("\n") || stringValue.contains("\r");
     }

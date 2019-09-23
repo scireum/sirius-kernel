@@ -71,9 +71,12 @@ public class Value {
     public static Value of(@Nullable Object data) {
         if (data == null) {
             return EMPTY;
-        } else if (data instanceof Value) {
+        }
+
+        if (data instanceof Value) {
             return (Value) data;
         }
+
         Value val = new Value();
         val.data = data;
         return val;
@@ -164,6 +167,18 @@ public class Value {
             consumer.accept(this);
         }
         return this;
+    }
+
+    /**
+     * Calls the given <tt>consumer</tt> with the result of the given <tt>extractor</tt> if the value is filled.
+     *
+     * @param extractor the extractor to call with this object if it is filled
+     * @param consumer  the consumer to call with this object if it is filled
+     */
+    public <T> void ifFilled(Function<Value, T> extractor, Consumer<T> consumer) {
+        if (isFilled()) {
+            consumer.accept(extractor.apply(this));
+        }
     }
 
     /**
@@ -437,7 +452,7 @@ public class Value {
      * @return a converted instance of type targetClass or the defaultValue if no conversion was possible
      * @throws IllegalArgumentException if the given <tt>targetClazz</tt> is unknown
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     public <T> T coerce(Class<T> targetClazz, T defaultValue) {
         if (boolean.class.equals(targetClazz) && defaultValue == null) {
             if (Strings.isEmpty(data)) {
@@ -1191,6 +1206,9 @@ public class Value {
             if (data instanceof BigDecimal) {
                 return (BigDecimal) data;
             }
+            if (data instanceof Amount) {
+                return ((Amount) data).getAmount();
+            }
             if (data instanceof Double) {
                 return BigDecimal.valueOf((Double) data);
             }
@@ -1218,6 +1236,9 @@ public class Value {
      * @see #getBigDecimal(java.math.BigDecimal)
      */
     public Amount getAmount() {
+        if (data instanceof Amount) {
+            return (Amount) data;
+        }
         return Amount.of(getBigDecimal());
     }
 

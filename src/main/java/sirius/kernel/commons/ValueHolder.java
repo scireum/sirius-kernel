@@ -8,6 +8,7 @@
 
 package sirius.kernel.commons;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -47,6 +48,15 @@ public class ValueHolder<T> implements Supplier<T>, Consumer<T> {
     @Override
     public T get() {
         return value;
+    }
+
+    /**
+     * Returns the inner value wrapped as <tt>Optional</tt>.
+     *
+     * @return the value wrapped as optional
+     */
+    public Optional<T> asOptional() {
+        return Optional.ofNullable(value);
     }
 
     /**

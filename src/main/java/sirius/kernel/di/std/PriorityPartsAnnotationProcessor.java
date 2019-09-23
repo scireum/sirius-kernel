@@ -8,14 +8,12 @@
 
 package sirius.kernel.di.std;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.di.FieldAnnotationProcessor;
 import sirius.kernel.di.MutableGlobalContext;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Handles the {@link sirius.kernel.di.std.PriorityParts} annotation.
@@ -38,20 +36,7 @@ public class PriorityPartsAnnotationProcessor implements FieldAnnotationProcesso
                 throw new IllegalArgumentException(
                         "PriorityParts annotations may only be used with classes implementing 'Priorized'");
             }
-            List<Priorized> result = Lists.newArrayList(ctx.getParts(parts.value()));
-            result.sort((o1, o2) -> {
-                if (o1 == o2) {
-                    return 0;
-                }
-                if (o2 == null) {
-                    return -1;
-                }
-                if (o1 == null) {
-                    return 1;
-                }
-                return o1.getPriority() - o2.getPriority();
-            });
-            field.set(object, result);
+            field.set(object, ctx.getPriorizedParts(parts.value()));
         } else {
             throw new IllegalArgumentException(
                     "Only fields of type Collection or List are allowed whe using @PriorityParts.");

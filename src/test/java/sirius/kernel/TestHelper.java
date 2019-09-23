@@ -8,6 +8,7 @@
 
 package sirius.kernel;
 
+import sirius.kernel.di.Injector;
 import sirius.kernel.nls.NLS;
 
 /**
@@ -35,6 +36,10 @@ public class TestHelper {
             frameworkStarter = testClass;
             Sirius.start(new Setup(Setup.Mode.TEST, Sirius.class.getClassLoader()));
             NLS.setDefaultLanguage("de");
+
+            Injector.context()
+                    .getPriorizedParts(TestLifecycleParticipant.class)
+                    .forEach(TestLifecycleParticipant::beforeTests);
         }
     }
 
@@ -45,8 +50,12 @@ public class TestHelper {
      */
     public static void tearDown(Class<?> testClass) {
         if (frameworkStarter == testClass) {
+            Injector.context()
+                    .getPriorizedParts(TestLifecycleParticipant.class)
+                    .forEach(TestLifecycleParticipant::afterTests);
+
             Sirius.stop();
-            NLS.getTranslationEngine().reportMissingTranslations();
+
             frameworkStarter = null;
         }
     }

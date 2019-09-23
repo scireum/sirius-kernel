@@ -146,6 +146,23 @@ public class Values {
         return result;
     }
 
+    /**
+     * Provides access to the wrapped values as list.
+     * <p>
+     * Note that this will return the internally stored list (if one is available) to minimize load on the garbage
+     * collector. Therefore the result must be copied before any mutation is performed.
+     *
+     * @return the underlying array or list
+     */
+    @SuppressWarnings("unchecked")
+    public List<Object> asList() {
+        if (dataArray != null) {
+            return Arrays.asList(dataArray);
+        } else {
+            return (List<Object>) dataList;
+        }
+    }
+
     @Override
     public String toString() {
         if (dataArray != null) {

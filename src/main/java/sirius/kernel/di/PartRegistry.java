@@ -15,18 +15,22 @@ import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.std.Priorized;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * An instance of PartRegistry is kept by {@link sirius.kernel.di.Injector} to track all registered
@@ -102,6 +106,14 @@ class PartRegistry implements MutableGlobalContext {
     @Override
     public <L, P> Collection<P> getParts(@Nonnull Class<L> lookupClass, @Nonnull Class<? extends P> partType) {
         return (Collection<P>) parts.get(lookupClass);
+    }
+
+    @Nonnull
+    @Override
+    public <P extends Priorized> List<P> getPriorizedParts(@Nonnull Class<? extends P> partInterface) {
+        return getParts(partInterface).stream()
+                                      .sorted(Comparator.comparingInt(Priorized::getPriority))
+                                      .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
