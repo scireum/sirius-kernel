@@ -250,9 +250,10 @@ public class Value {
 
     /**
      * Returns an optional value computed by the given mapper. If this value is <tt>empty</tt> the mapper will not
-     * be called, but an empty optional will be returned. This method is similar to {@link #map(Function)},
-     * but the provided mapper is one whose result is already an {@link Optional}, and if invoked,
-     * {@code flatMap} does not wrap it with an additional {@link Optional}.
+     * be called, but an empty optional will be returned.
+     * <p>
+     * This method is similar to {@link #map(Function)}, but the provided mapper is one whose result is already an {@link Optional},
+     * and if invoked, {@code flatMap} does not wrap it with an additional {@link Optional}.
      *
      * @param mapper the function used to convert the value into the desired optional object
      * @param <R>    the type of the desired result
