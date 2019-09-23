@@ -232,18 +232,37 @@ public class Value {
     }
 
     /**
-     * Returns an optional value computed by the given mapper. If this value is <tt>empty</tt> the mapper will not
+     * Returns an optional wrapping the value computed by the given mapper. If this value is <tt>empty</tt> the mapper will not
      * be called, but an empty optional will be returned.
      *
      * @param mapper the function used to convert the value into the desired object
      * @param <R>    the type of the desired result
-     * @return an Optional object wrapping the result of the computation or an empty Optional, if the value wasn't
-     * filled
+     * @return an Optional object wrapping the result of the computation or an empty Optional, if the value wasn't filled
      */
     @Nonnull
     public <R> Optional<R> map(@Nonnull Function<Value, R> mapper) {
         if (isFilled()) {
             return Optional.ofNullable(mapper.apply(this));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Returns an optional value computed by the given mapper. If this value is <tt>empty</tt> the mapper will not
+     * be called, but an empty optional will be returned.
+     * <p>
+     * This method is similar to {@link #map(Function)}, but the provided mapper is one whose result is already an {@link Optional},
+     * and if invoked, {@code flatMap} does not wrap it with an additional {@link Optional}.
+     *
+     * @param mapper the function used to convert the value into the desired optional object
+     * @param <R>    the type of the desired result
+     * @return the Optional object from the result of the computation or an empty Optional, if the value wasn't filled
+     */
+    @Nonnull
+    public <R> Optional<R> flatMap(@Nonnull Function<Value, Optional<R>> mapper) {
+        if (isFilled()) {
+            return mapper.apply(this);
         } else {
             return Optional.empty();
         }

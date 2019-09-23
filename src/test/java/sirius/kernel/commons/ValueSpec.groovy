@@ -181,4 +181,30 @@ class ValueSpec extends BaseSpecification {
         expect:
         Value.of(Amount.of(0.00001)).getAmount() == Amount.of(0.00001)
     }
+    
+    def "map() does not call the mapper on an empty Value"() {
+        given:
+        def count = 0
+        def mapper = { value ->
+            count++
+            ""
+        }
+        when:
+        Value.EMPTY.map(mapper)
+        then:
+        count == 0
+    }
+
+    def "flatMap() does not call the mapper on an empty Value"() {
+        given:
+        def count = 0
+        def mapper = { value ->
+            count++
+            Optional.empty()
+        }
+        when:
+        Value.EMPTY.flatMap(mapper)
+        then:
+        count == 0
+    }
 }
