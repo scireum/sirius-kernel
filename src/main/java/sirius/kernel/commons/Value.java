@@ -663,6 +663,15 @@ public class Value {
         if (data instanceof Boolean) {
             return (Boolean) data;
         }
+
+        // fast-track for common cases without the need to involve NLS framework
+        if ("true".equalsIgnoreCase(String.valueOf(data))) {
+            return true;
+        }
+        if ("false".equalsIgnoreCase(String.valueOf(data))) {
+            return false;
+        }
+
         return NLS.parseUserString(Boolean.class, String.valueOf(data).trim());
     }
 
