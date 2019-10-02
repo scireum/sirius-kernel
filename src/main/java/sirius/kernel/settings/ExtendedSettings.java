@@ -12,7 +12,6 @@ import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
-import sirius.kernel.Sirius;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 /**
  * Provides an advanced wrapper for a {@link Config} object, which supports to represent inner maps as {@link Extension
@@ -66,11 +64,6 @@ import java.util.regex.Pattern;
 public class ExtendedSettings extends Settings {
 
     /**
-     * Provides a regular expression which verifies if an extension name is well formed.
-     */
-    public static final Pattern VALID_EXTENSION_ID = Pattern.compile("[a-z0-9\\-]+");
-
-    /**
      * Used as cache for already loaded extension lists
      */
     private Map<String, Map<String, Extension>> cache = new ConcurrentHashMap<>();
@@ -98,11 +91,6 @@ public class ExtendedSettings extends Settings {
      */
     @Nullable
     public Extension getExtension(String type, String id) {
-        if (Sirius.isDev() && !VALID_EXTENSION_ID.matcher(id).matches()) {
-            Extension.LOG.WARN("Bad extension id detected: '%s' (for type: %s). Names should only consist of"
-                               + " lowercase letters, digits or '-'", id, type);
-        }
-
         Extension result = getExtensionMap(type).get(id);
         if (result == null) {
             return getDefault(type);
