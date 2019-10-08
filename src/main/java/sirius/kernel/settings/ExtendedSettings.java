@@ -64,12 +64,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ExtendedSettings extends Settings {
 
     /**
-     * Used as cache for already loaded extension lists
+     * Used as cache for already loaded extension lists.
      */
     private Map<String, Map<String, Extension>> cache = new ConcurrentHashMap<>();
 
     /**
-     * Used as cache for the default values of a given extension type
+     * Used as cache for the default values of a given extension type.
      */
     private Map<String, Extension> defaultsCache = new ConcurrentHashMap<>();
 
@@ -83,7 +83,7 @@ public class ExtendedSettings extends Settings {
     }
 
     /**
-     * Returns the <tt>Extension</tt> for the given <tt>id</tt> of the given <tt>type</tt>
+     * Returns the <tt>Extension</tt> for the given <tt>id</tt> of the given <tt>type</tt>.
      *
      * @param type the type of the extension to be returned
      * @param id   the unique id of the extension to be returned
@@ -100,7 +100,7 @@ public class ExtendedSettings extends Settings {
     }
 
     /**
-     * Returns all extensions available for the given type
+     * Returns all extensions available for the given type.
      * <p>
      * The order of the extensions can be defined, setting a property named <tt>priority</tt>. If no value is
      * present {@link sirius.kernel.commons.PriorityCollector#DEFAULT_PRIORITY} is assumed.
