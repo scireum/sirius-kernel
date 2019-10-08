@@ -62,7 +62,7 @@ public class Module {
     }
 
     /**
-     * Creates a string which is unqiue for each released version (based on its commit hash and build number.
+     * Creates a string which is unqiue for each released version (based on its commit hash and build number).
      * <p>
      * For development and test systems which have neigther of both, a random string is created for each
      * running instance.
