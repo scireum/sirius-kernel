@@ -9,23 +9,27 @@
 package sirius.kernel.commons;
 
 /**
- * Implements the {@link java.util.function.Consumer} pattern which permits the handler to throw an exception.
+ * Implements the {@link java.util.function.Function} pattern but permits the function to throw an exception.
  * <p>
  * This sometimes might simplify exception handling. If this feature is not required use a plain
- * {@link java.util.function.Consumer} instead.
+ * {@link java.util.function.Function} instead.
  *
- * @param <T> the type of the object passed to the callback
- * @see Processor
+ * @param <T> the type of the input to the function
+ * @param <R> the type of the result of the function
+ *
+ * @see Callback
  * @see Producer
  */
 @FunctionalInterface
-public interface Callback<T> {
+public interface Processor<T, R> {
+
     /**
-     * Invokes the callback with <tt>value</tt>
+     * Applies this function to the given argument.
      *
-     * @param value the value to supply to the callback.
+     * @param t the function argument
+     * @return the function result
      * @throws Exception the callee may throw any exception during the computation. Therefore the caller should
      *                   implement proper error handling without relying on specific exception types.
      */
-    void invoke(T value) throws Exception;
+    R apply(T t) throws Exception;
 }
