@@ -36,4 +36,14 @@ public interface CacheCoherence {
      * @param key   the key to remove
      */
     void removeKey(Cache<String, ?> cache, String key);
+
+    /**
+     * Notifies the other nodes about a put on this node.
+     * <p>
+     * The other nodes will remove the key from their cache.
+     *
+     * @param cache the cache into which a value was put
+     * @param key   the key for which put was called
+     */
+    void signalPut(Cache<String, ?> cache, String key);
 }

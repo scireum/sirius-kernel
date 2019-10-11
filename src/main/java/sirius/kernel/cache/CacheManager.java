@@ -250,6 +250,20 @@ public class CacheManager {
     }
 
     /**
+     * Notifies the other nodes about a put on this node.
+     * <p>
+     * The other nodes will remove the key from their cache.
+     *
+     * @param cache the cache into which a value was put
+     * @param key   the key for which put was called
+     */
+    public static void signalPut(CoherentCache<?> cache, String key) {
+        if (cacheCoherence != null) {
+            cacheCoherence.signalPut(cache, key);
+        }
+    }
+
+    /**
      * Clears the caches when Sirius is shutting down
      */
     @Register
