@@ -403,7 +403,7 @@ public class Exceptions {
         StringBuilder msg = new StringBuilder();
         StackTraceElement deprecatedMethod = stack[2];
         StackTraceElement caller = stack[3];
-        msg.append(Strings.apply("The deprecated method '%s.%s' was called by %s.%s",
+        msg.append(Strings.apply("The deprecated method '%s.%s' was called by '%s.%s'",
                                  deprecatedMethod.getClassName(),
                                  deprecatedMethod.getMethodName(),
                                  caller.getClassName(),
