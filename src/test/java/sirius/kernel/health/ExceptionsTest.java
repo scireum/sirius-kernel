@@ -38,8 +38,8 @@ public class ExceptionsTest {
         caller();
         assertTrue(LogHelper.hasMessage(Level.WARN,
                                         Exceptions.DEPRECATION_LOG,
-                                        "^The deprecated method 'sirius.kernel.health.ExceptionsTest.deprecatedMethod' "
-                                        + "was called by 'sirius.kernel.health.ExceptionsTest.caller'$"));
+                                        "^The deprecated method 'sirius.kernel.health.ExceptionsTest.deprecatedMethod'"
+                                        + " was called by 'sirius.kernel.health.ExceptionsTest.caller'"));
     }
 
     private void caller() {
