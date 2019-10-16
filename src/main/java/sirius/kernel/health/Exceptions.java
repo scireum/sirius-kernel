@@ -12,11 +12,13 @@ import com.google.common.collect.Maps;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -193,7 +195,8 @@ public class Exceptions {
             if (Exceptions.getRootCause(ex) instanceof HandledException) {
                 processError = false;
                 LOG.FINE("Did not process the exception %s because its root (%s) was already handled",
-                        ex.getMessage(), Exceptions.getRootCause(ex).getMessage());
+                         ex.getMessage(),
+                         Exceptions.getRootCause(ex).getMessage());
             }
 
             try {
@@ -397,15 +400,25 @@ public class Exceptions {
             Exceptions.handle().withSystemErrorMessage("Cannot log deprecated API call for short stacktrace!").handle();
         }
 
+        StringBuilder msg = new StringBuilder();
         StackTraceElement deprecatedMethod = stack[2];
         StackTraceElement caller = stack[3];
-        DEPRECATION_LOG.WARN("The deprecated method '%s.%s' was called by '%s.%s'",
-                deprecatedMethod.getClassName(),
-                deprecatedMethod.getMethodName(),
-                caller.getClassName(),
-                caller.getMethodName());
+        msg.append(Strings.apply("The deprecated method '%s.%s' was called by '%s.%s'",
+                                 deprecatedMethod.getClassName(),
+                                 deprecatedMethod.getMethodName(),
+                                 caller.getClassName(),
+                                 caller.getMethodName()));
+        List<Tuple<String, String>> mdc = CallContext.getCurrent().getMDC();
+        if (mdc != null) {
+            msg.append("\n---------------------------------------------------\n");
+            for (Tuple<String, String> t : mdc) {
+                msg.append(t.getFirst()).append(": ").append(t.getSecond()).append("\n");
+            }
+        }
+
+        DEPRECATION_LOG.WARN(msg);
     }
-    
+
     /**
      * Retrieves the actual root {@link Throwable} which ended in the given exception.
      *

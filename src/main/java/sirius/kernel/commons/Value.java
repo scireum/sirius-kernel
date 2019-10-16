@@ -158,6 +158,9 @@ public class Value {
 
     /**
      * Calls the given consumer with <tt>this</tt> if the value is filled.
+     * <p>
+     * Note that if the consumer throws an exception use {@link #ifPresent(Callback)}
+     * to tunnel exceptions back to the caller.
      *
      * @param consumer the consumer to call with this object if it is filled
      * @return the value itself for fluent method calls
@@ -170,7 +173,26 @@ public class Value {
     }
 
     /**
+     * Calls the given callback with <tt>this</tt> if the value is filled.
+     * <p>
+     * Note that if there are no exceptions declared by the consumer, use {@link #ifFilled(Consumer)}.
+     *
+     * @param callback the callback to call with this object if it is filled
+     * @return the value itself for fluent method calls
+     * @throws Exception if the callback itself throws an exception
+     */
+    public Value ifPresent(Callback<Value> callback) throws Exception {
+        if (isFilled()) {
+            callback.invoke(this);
+        }
+        return this;
+    }
+
+    /**
      * Calls the given <tt>consumer</tt> with the result of the given <tt>extractor</tt> if the value is filled.
+     * <p>
+     * Note that if the extractor or the consumer throws an exception use {@link #ifPresent(Processor, Callback)}
+     * to tunnel exceptions back to the caller.
      *
      * @param extractor the extractor to call with this object if it is filled
      * @param consumer  the consumer to call with this object if it is filled
@@ -178,6 +200,21 @@ public class Value {
     public <T> void ifFilled(Function<Value, T> extractor, Consumer<T> consumer) {
         if (isFilled()) {
             consumer.accept(extractor.apply(this));
+        }
+    }
+
+    /**
+     * Calls the given <tt>consumer</tt> with the result of the given <tt>extractor</tt> if the value is filled.
+     * <p>
+     * Note that if there are no exceptions declared by the extractor or the callback, use {@link #ifFilled(Consumer)}.
+     *
+     * @param extractor the extractor to call with this object if it is filled
+     * @param callback  the callback to call with this object if it is filled
+     * @throws Exception if either the extractor or the callback itself throws an exception
+     */
+    public <T> void ifPresent(Processor<Value, T> extractor, Callback<T> callback) throws Exception {
+        if (isFilled()) {
+            callback.invoke(extractor.apply(this));
         }
     }
 
@@ -1284,7 +1321,7 @@ public class Value {
      * @return the enum constant wrapped as optional or an empty optional if no conversion was possible.
      */
     public <E extends Enum<E>> Optional<E> getEnum(Class<E> clazz) {
-        return Optional.ofNullable((E) asEnum(clazz));
+        return Optional.ofNullable(asEnum(clazz));
     }
 
     /**

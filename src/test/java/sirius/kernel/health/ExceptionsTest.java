@@ -14,6 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import sirius.kernel.TestHelper;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -37,8 +38,8 @@ public class ExceptionsTest {
         caller();
         assertTrue(LogHelper.hasMessage(Level.WARN,
                                         Exceptions.DEPRECATION_LOG,
-                                        "^The deprecated method 'sirius.kernel.health.ExceptionsTest.deprecatedMethod' "
-                                        + "was called by 'sirius.kernel.health.ExceptionsTest.caller'$"));
+                                        "^The deprecated method 'sirius.kernel.health.ExceptionsTest.deprecatedMethod'"
+                                        + " was called by 'sirius.kernel.health.ExceptionsTest.caller'"));
     }
 
     private void caller() {
@@ -48,4 +49,12 @@ public class ExceptionsTest {
     private void deprecatedMethod() {
         Exceptions.logDeprecatedMethodUse();
     }
+
+    @Test
+    public void testRootCauseRemains() {
+        HandledException root = Exceptions.createHandled().withSystemErrorMessage("Root Cause").handle();
+        HandledException ex = Exceptions.handle(new Exception(new IllegalArgumentException(root)));
+        assertEquals(root, Exceptions.getRootCause(ex));
+    }
+
 }
