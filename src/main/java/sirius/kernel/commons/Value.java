@@ -191,7 +191,7 @@ public class Value {
     /**
      * Calls the given <tt>consumer</tt> with the result of the given <tt>extractor</tt> if the value is filled.
      * <p>
-     * Note that if the extrrctor or the consumer throws an exception use {@link #ifPresent(Processor, Callback)}
+     * Note that if the extractor or the consumer throws an exception use {@link #ifPresent(Processor, Callback)}
      * to tunnel exceptions back to the caller.
      *
      * @param extractor the extractor to call with this object if it is filled
