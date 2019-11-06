@@ -13,7 +13,7 @@ platform:
   arch: amd64
 
 clone:
-  depth: 1
+  depth: 100
 
 steps:
   - name: compile
@@ -22,8 +22,19 @@ steps:
       - mvn clean compile
     volumes: *scireum_volumes
     when:
+      branch:
+        - master
       event:
-      - push
+        - push
+
+  - name: cron_unit_tests
+    image: scireum/sirius-build
+    commands:
+      - mvn clean test -Dtests.nightly=true
+    volumes: *scireum_volumes
+    when:
+      event:
+      - cron
 
   - name: test
     image: scireum/sirius-build
