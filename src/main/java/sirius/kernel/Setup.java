@@ -418,7 +418,7 @@ public class Setup {
         Sirius.getClasspath().find(Pattern.compile("application-([^.]*?)\\.conf")).forEach(value -> {
             try {
                 Sirius.LOG.INFO("Loading config: %s", value.group());
-                result.set(result.get().withFallback(ConfigFactory.load(getLoader(), value.group())));
+                result.set(result.get().withFallback(ConfigFactory.parseResources(getLoader(), value.group())));
             } catch (Exception e) {
                 Exceptions.ignore(e);
                 Sirius.LOG.WARN("Cannot load %s: %s", value, e.getMessage());
@@ -428,7 +428,7 @@ public class Setup {
         if (Sirius.class.getResource("/application.conf") != null) {
             Sirius.LOG.INFO("using application.conf from classpath...");
             try {
-                result.set(ConfigFactory.load(loader, "application.conf").withFallback(result.get()));
+                result.set(ConfigFactory.parseResources(loader, "application.conf").withFallback(result.get()));
             } catch (Exception e) {
                 Exceptions.ignore(e);
                 Sirius.LOG.WARN("Cannot load application.conf: %s", e.getMessage());
@@ -454,7 +454,7 @@ public class Setup {
         if (Sirius.class.getResource("/test.conf") != null) {
             Sirius.LOG.INFO("using test.conf from classpath...");
             try {
-                return ConfigFactory.load(loader, "test.conf").withFallback(config);
+                return ConfigFactory.parseResources(loader, "test.conf").withFallback(config);
             } catch (Exception e) {
                 Exceptions.ignore(e);
                 Sirius.LOG.WARN("Cannot load test.conf: %s", e.getMessage());
@@ -482,7 +482,7 @@ public class Setup {
 
         Sirius.LOG.INFO("using %s from classpath...", scenarioFile);
         try {
-            return ConfigFactory.load(loader, scenarioFile).withFallback(config);
+            return ConfigFactory.parseResources(loader, scenarioFile).withFallback(config);
         } catch (Exception e) {
             Exceptions.ignore(e);
             Sirius.LOG.WARN("Cannot load test.conf: %s", e.getMessage());

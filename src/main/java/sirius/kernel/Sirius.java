@@ -306,7 +306,7 @@ public class Sirius {
                 LOG.INFO("loading settings.conf for customization '" + conf + "'");
                 String configName = "customizations/" + conf + "/settings.conf";
                 try {
-                    config = ConfigFactory.load(setup.getLoader(), configName).withFallback(config);
+                    config = ConfigFactory.parseResources(setup.getLoader(), configName).withFallback(config);
                 } catch (Exception e) {
                     handleConfigError(configName, e);
                 }
@@ -343,7 +343,7 @@ public class Sirius {
             classpath.find(Pattern.compile("component-test-([^.]*?)\\.conf")).forEach(value -> {
                 try {
                     LOG.INFO("Loading test config: %s", value.group());
-                    config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
+                    config = config.withFallback(ConfigFactory.parseResources(setup.getLoader(), value.group()));
                 } catch (Exception e) {
                     handleConfigError(value.group(), e);
                 }
@@ -355,12 +355,14 @@ public class Sirius {
             if (!"test".equals(value.group(1))) {
                 try {
                     LOG.INFO("Loading config: %s", value.group());
-                    config = config.withFallback(ConfigFactory.load(setup.getLoader(), value.group()));
+                    config = config.withFallback(ConfigFactory.parseResources(setup.getLoader(), value.group()));
                 } catch (Exception e) {
                     handleConfigError(value.group(), e);
                 }
             }
         });
+
+        config = config.resolve();
 
         LOG.INFO(SEPARATOR_LINE);
     }
