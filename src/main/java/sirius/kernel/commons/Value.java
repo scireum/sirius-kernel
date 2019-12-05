@@ -165,7 +165,8 @@ public class Value {
      * @param consumer the consumer to call with this object if it is filled
      * @return the value itself for fluent method calls
      */
-    public Value ifFilled(Consumer<Value> consumer) {
+    @Nonnull
+    public Value ifFilled(@Nonnull Consumer<Value> consumer) {
         if (isFilled()) {
             consumer.accept(this);
         }
@@ -181,7 +182,8 @@ public class Value {
      * @return the value itself for fluent method calls
      * @throws Exception if the callback itself throws an exception
      */
-    public Value ifPresent(Callback<Value> callback) throws Exception {
+    @Nonnull
+    public Value ifPresent(@Nonnull Callback<Value> callback) throws Exception {
         if (isFilled()) {
             callback.invoke(this);
         }
@@ -197,7 +199,7 @@ public class Value {
      * @param extractor the extractor to call with this object if it is filled
      * @param consumer  the consumer to call with this object if it is filled
      */
-    public <T> void ifFilled(Function<Value, T> extractor, Consumer<T> consumer) {
+    public <T> void ifFilled(@Nonnull Function<Value, T> extractor, @Nonnull Consumer<T> consumer) {
         if (isFilled()) {
             consumer.accept(extractor.apply(this));
         }
@@ -212,7 +214,7 @@ public class Value {
      * @param callback  the callback to call with this object if it is filled
      * @throws Exception if either the extractor or the callback itself throws an exception
      */
-    public <T> void ifPresent(Processor<Value, T> extractor, Callback<T> callback) throws Exception {
+    public <T> void ifPresent(@Nonnull Processor<Value, T> extractor, @Nonnull Callback<T> callback) throws Exception {
         if (isFilled()) {
             callback.invoke(extractor.apply(this));
         }
@@ -226,7 +228,7 @@ public class Value {
      * Otherwise the current value is returned.
      */
     @Nonnull
-    public Value ignore(String... ignoredValues) {
+    public Value ignore(@Nonnull String... ignoredValues) {
         if (isEmptyString()) {
             return this;
         }
@@ -1320,6 +1322,7 @@ public class Value {
      * or <tt>null</tt> if no matching constant was found
      */
     @SuppressWarnings("unchecked")
+    @Nullable
     public <E extends Enum<E>> E asEnum(Class<E> clazz) {
         if (data == null) {
             return null;
@@ -1342,6 +1345,7 @@ public class Value {
      * @param <E>   to generic type of the enum
      * @return the enum constant wrapped as optional or an empty optional if no conversion was possible.
      */
+    @Nonnull
     public <E extends Enum<E>> Optional<E> getEnum(Class<E> clazz) {
         return Optional.ofNullable(asEnum(clazz));
     }
