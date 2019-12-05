@@ -213,7 +213,6 @@ class NLSSpec extends BaseSpecification {
         where:
         input                 | output               | lang
         "nls.test.translate"  | "nls.test.translate" | "de"
-        null                  | null                 | null
         '$nls.test.translate' | "übersetzungs test"  | null
         '$nls.test.translate' | "übersetzungs test"  | "de"
         '$nls.test.translate' | "translation test"   | "en"
