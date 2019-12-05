@@ -319,7 +319,7 @@ public class Value {
      */
     @Nonnull
     public <T> Optional<T> asOptional(@Nonnull Class<T> type) {
-        return Optional.ofNullable(get(type));
+        return Optional.ofNullable(get(type, null));
     }
 
     /**
