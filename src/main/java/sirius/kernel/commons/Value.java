@@ -459,8 +459,7 @@ public class Value {
      * @param defaultValue the value to use if the inner value is <tt>null</tt>
      * @return the wrapped value or the given defaultValue if the wrapped value is <tt>null</tt>
      */
-    @Nonnull
-    public Object get(@Nonnull Object defaultValue) {
+    public Object get(Object defaultValue) {
         return data == null ? defaultValue : data;
     }
 
@@ -609,29 +608,10 @@ public class Value {
      * or the <tt>defaultValue</tt> otherwise
      */
     @SuppressWarnings("unchecked")
-    @Nonnull
-    public <V> V get(Class<V> clazz, @Nonnull V defaultValue) {
-        Object result = get(defaultValue);
-        if (!clazz.isAssignableFrom(result.getClass())) {
-            return defaultValue;
-        }
-        return (V) result;
-    }
-
-    /**
-     * Returns the wrapped value if it is an instance of the given clazz or <tt>null</tt> otherwise.
-     *
-     * @param clazz the desired class of the return type
-     * @param <V>   the expected type of the wrapped value
-     * @return the wrapped value if the given <tt>clazz</tt> is assignable from wrapped values class or <tt>null</tt>
-     * otherwise
-     */
-    @Nullable
-    @SuppressWarnings("unchecked")
-    public <V> V get(Class<V> clazz) {
+    public <V> V get(Class<V> clazz, V defaultValue) {
         Object result = get();
         if (result == null || !clazz.isAssignableFrom(result.getClass())) {
-            return null;
+            return defaultValue;
         }
         return (V) result;
     }
@@ -1245,8 +1225,7 @@ public class Value {
      * @return the wrapped value casted or converted to <tt>BigDecimal</tt> or <tt>defaultValue</tt>
      * if no conversion is possible.
      */
-    @Nonnull
-    public BigDecimal getBigDecimal(@Nonnull BigDecimal defaultValue) {
+    public BigDecimal getBigDecimal(BigDecimal defaultValue) {
         BigDecimal result = getBigDecimal();
         if (result == null) {
             return defaultValue;
