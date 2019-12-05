@@ -766,18 +766,6 @@ public class Value {
     }
 
     /**
-     * Tries to convert the wrapped value to a roman numeral representation
-     * This only works if the wrapped value can be converted to <tt>int</tt> and is &gt;0 and &lt;4000.
-     *
-     * @param defaultValue the value to be converted to roman numeral if the wrapped value can not be converted
-     * @return a roman numeral representation of either the wrapped value or the defaultValue. values &gt;=4000 and
-     * &lt;=0  are represented as an empty String
-     */
-    public String asRomanNumeral(int defaultValue) {
-        return RomanNumeral.toRoman(asInt(defaultValue));
-    }
-
-    /**
      * Returns the int value for the wrapped value or <tt>null</tt> if the wrapped value isn't an integer and
      * cannot be converted to one.
      * <p>
