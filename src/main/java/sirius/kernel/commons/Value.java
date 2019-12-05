@@ -492,11 +492,14 @@ public class Value {
      */
     @SuppressWarnings("unchecked")
     public <T> T coerce(Class<T> targetClazz, T defaultValue) {
-        if (boolean.class.equals(targetClazz) && defaultValue == null) {
-            if (Strings.isEmpty(data)) {
+        if (Boolean.class.equals(targetClazz) || boolean.class.equals(targetClazz)) {
+            if (isEmptyString()) {
                 return (T) Boolean.FALSE;
             }
-            return (T) NLS.parseUserString(Boolean.class, String.valueOf(data));
+            if (data instanceof Boolean) {
+                return (T) data;
+            }
+            return (T) NLS.parseMachineString(Boolean.class, String.valueOf(data));
         }
         if (data == null) {
             return defaultValue;
