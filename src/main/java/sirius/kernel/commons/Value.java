@@ -317,7 +317,7 @@ public class Value {
      */
     @Nonnull
     public <T> Optional<T> asOptional(@Nonnull Class<T> type) {
-        return Optional.ofNullable(get(type, null));
+        return Optional.ofNullable(get(type));
     }
 
     /**
@@ -604,10 +604,29 @@ public class Value {
      * or the <tt>defaultValue</tt> otherwise
      */
     @SuppressWarnings("unchecked")
-    public <V> V get(Class<V> clazz, V defaultValue) {
+    @Nonnull
+    public <V> V get(Class<V> clazz, @Nonnull V defaultValue) {
         Object result = get(defaultValue);
         if (!clazz.isAssignableFrom(result.getClass())) {
             return defaultValue;
+        }
+        return (V) result;
+    }
+
+    /**
+     * Returns the wrapped value if it is an instance of the given clazz or <tt>null</tt> otherwise.
+     *
+     * @param clazz the desired class of the return type
+     * @param <V>   the expected type of the wrapped value
+     * @return the wrapped value if the given <tt>clazz</tt> is assignable from wrapped values class or <tt>null</tt>
+     * otherwise
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public <V> V get(Class<V> clazz) {
+        Object result = get();
+        if (result == null || !clazz.isAssignableFrom(result.getClass())) {
+            return null;
         }
         return (V) result;
     }
