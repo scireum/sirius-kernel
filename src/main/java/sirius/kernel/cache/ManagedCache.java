@@ -242,11 +242,12 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         }
 
         // Apply verifier if present
-        if (verifier != null && verificationInterval > 0 && entry.getNextVerification() < now) {
-            if (!verifier.valid(entry.getValue())) {
-                data.invalidate(entry.getKey());
-                return null;
-            }
+        if (verifier != null
+            && verificationInterval > 0
+            && entry.getNextVerification() < now
+            && !verifier.valid(entry.getValue())) {
+            data.invalidate(entry.getKey());
+            return null;
         }
         return entry;
     }
