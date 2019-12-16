@@ -26,6 +26,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -64,12 +65,6 @@ public class Settings {
 
     /**
      * Returns the {@link Value} defined for the given key.
-     * <p>
-     * If this extension doesn't provide a value for this key, but there is an extension with the name
-     * <tt>default</tt> which provides a value, this is used.
-     * <p>
-     * If the value in the config file starts with a dollar sign, the value is treated as an i18n key and the
-     * returned value will contain the translation for the current language.
      *
      * @param path the access path to retrieve the value
      * @return the value wrapping the contents for the given path. This will never by <tt>null</tt>,
@@ -86,9 +81,9 @@ public class Settings {
     }
 
     /**
-     * Returns all values defined in this extension as {@link Context}.
+     * Returns all values defined in this setting as {@link Context}.
      *
-     * @return a context containing all values defined by this extension or the <tt>default</tt> extension.
+     * @return a context containing all values defined by this setting
      */
     @Nonnull
     public Context getContext() {
@@ -108,7 +103,12 @@ public class Settings {
      */
     @Nullable
     public Config getConfig(String key) {
-        return getConfig().getConfig(key);
+        try {
+            return getConfig().getConfig(key);
+        } catch (ConfigException e) {
+            Exceptions.handle(e);
+            return null;
+        }
     }
 
     /**
@@ -165,19 +165,16 @@ public class Settings {
 
     /**
      * Returns the duration in milliseconds defined for the given key.
-     * <p>
-     * If this extension doesn't provide a value for this key, but there is an extension with the name
-     * <tt>default</tt> which provides a value, this is used.
      *
      * @param path the access path to retrieve the value
      * @return the encoded duration as milliseconds.
-     * @throws sirius.kernel.health.HandledException if an invalid value was given in the config
      */
     public long getMilliseconds(String path) {
         try {
             return config.getDuration(path, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            throw Exceptions.handle(e);
+            Exceptions.handle(e);
+            return 0;
         }
     }
 
@@ -208,7 +205,12 @@ public class Settings {
      * @return a list of strings stored of the given key
      */
     public List<String> getStringList(String key) {
-        return getConfig().getStringList(key);
+        try {
+            return getConfig().getStringList(key);
+        } catch (ConfigException e) {
+            Exceptions.handle(e);
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -219,11 +221,16 @@ public class Settings {
      */
     public Map<String, String> getMap(String key) {
         Map<String, String> result = new HashMap<>();
-        config.getConfig(key)
-              .entrySet()
-              .forEach(e -> result.put(e.getKey(), Value.of(e.getValue().unwrapped()).asString()));
+        try {
+            config.getConfig(key)
+                  .entrySet()
+                  .forEach(e -> result.put(e.getKey(), Value.of(e.getValue().unwrapped()).asString()));
 
-        return result;
+            return result;
+        } catch (ConfigException e) {
+            Exceptions.handle(e);
+            return Collections.emptyMap();
+        }
     }
 
     /**
