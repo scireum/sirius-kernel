@@ -560,12 +560,12 @@ public class Value {
                                                           Timestamp.class)) {
             return (T) asZonedDateTime((ZonedDateTime) defaultValue);
         }
-        if (LocalTime.class.equals(targetClazz) && data instanceof TemporalAccessor && is(TemporalAccessor.class,
-                                                                                          Calendar.class,
-                                                                                          Date.class,
-                                                                                          java.sql.Date.class,
-                                                                                          Timestamp.class,
-                                                                                          Time.class)) {
+        if (LocalTime.class.equals(targetClazz) && is(TemporalAccessor.class,
+                                                      Calendar.class,
+                                                      Date.class,
+                                                      java.sql.Date.class,
+                                                      Timestamp.class,
+                                                      Time.class)) {
             return (T) asLocalTime((LocalTime) defaultValue);
         }
 
