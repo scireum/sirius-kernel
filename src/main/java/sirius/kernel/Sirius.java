@@ -606,7 +606,7 @@ public class Sirius {
      */
     public static ExtendedSettings getSettings() {
         if (settings == null && config != null) {
-            settings = new ExtendedSettings(config);
+            settings = new ExtendedSettings(config, true);
         }
         return settings;
     }
