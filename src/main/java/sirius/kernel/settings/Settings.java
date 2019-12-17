@@ -145,6 +145,18 @@ public class Settings {
     }
 
     /**
+     * Returns the sub settings available for the given key.
+     *
+     * @param key name of the sub settings to retrieve
+     * @return the sub settings for the given key or <tt>null</tt> if no such config exists.
+     */
+    @Nullable
+    public Settings getSettings(String key) {
+        Config subConfig = getConfig(key);
+        return new Settings(subConfig, strict);
+    }
+
+    /**
      * Returns all config objects underneath the given key.
      * <p>
      * Assume we have the following config:
