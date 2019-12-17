@@ -210,6 +210,7 @@ public class Settings {
      * @param key the key used to lookup the string value
      * @return the string value stored of the given key
      */
+    @Nonnull
     public String getString(String key) {
         return get(key).asString();
     }
@@ -230,6 +231,7 @@ public class Settings {
      * @param key the key used to lookup the value
      * @return a list of strings stored of the given key
      */
+    @Nonnull
     public List<String> getStringList(String key) {
         try {
             return getConfig().getStringList(key);
