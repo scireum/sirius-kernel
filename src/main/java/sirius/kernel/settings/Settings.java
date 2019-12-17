@@ -101,6 +101,16 @@ public class Settings {
     }
 
     /**
+     * Determines if the requested path exists in the underlying config.
+     *
+     * @param path the path to check
+     * @return <tt>true</tt> if the requested path exists, <tt>false</tt> otherwise
+     */
+    public boolean has(String path) {
+        return getConfig().hasPath(path);
+    }
+
+    /**
      * Returns all values defined in this extension as {@link Context}.
      *
      * @return a context containing all values defined by this extension or the <tt>default</tt> extension.
