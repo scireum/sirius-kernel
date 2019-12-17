@@ -329,6 +329,7 @@ public class Value {
      *
      * @return the internal value wrapped as Optional or an empty Optional if the value is not filled or non-integer
      */
+    @Nonnull
     public Optional<Integer> asOptionalInt() {
         return isFilled() ? Optional.of(getInteger()) : Optional.empty();
     }
@@ -340,6 +341,7 @@ public class Value {
      *
      * @return the internal value wrapped as Optional or an empty Optional if the value is not filled
      */
+    @Nonnull
     public Optional<String> asOptionalString() {
         return isFilled() ? Optional.of(asString()) : Optional.empty();
     }
