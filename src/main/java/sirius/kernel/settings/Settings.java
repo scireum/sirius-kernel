@@ -199,18 +199,19 @@ public class Settings {
     /**
      * Returns the duration in milliseconds defined for the given key.
      * <p>
-     * If this extension doesn't provide a value for this key, but there is an extension with the name
-     * <tt>default</tt> which provides a value, this is used.
+     * If no config is present at the given path, or it can not be converted to a duration, 0 is returned.
      *
      * @param path the access path to retrieve the value
-     * @return the encoded duration as milliseconds.
-     * @throws sirius.kernel.health.HandledException if an invalid value was given in the config
+     * @return the duration as milliseconds
      */
     public long getMilliseconds(String path) {
         try {
             return config.getDuration(path, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            throw Exceptions.handle(e);
+            if (strict) {
+                Exceptions.handle(e);
+            }
+            return 0;
         }
     }
 
