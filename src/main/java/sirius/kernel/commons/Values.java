@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Wraps an array or list of uncertain size for safe access.
@@ -37,6 +38,8 @@ public class Values {
 
     /**
      * Creates a wrapper for the given list
+     * <p>
+     * Note that the given list is internally used without copying to reduce the load on the garbage collector.
      *
      * @param list the list to wrap
      * @return a wrapped instance of the given list
@@ -53,6 +56,8 @@ public class Values {
 
     /**
      * Creates a wrapper for the given array
+     * <p>
+     * Note that the given array is internally used without copying to reduce the load on the garbage collector.
      *
      * @param array the array to wrap
      * @return a wrapped instance of the given array
@@ -150,7 +155,11 @@ public class Values {
      * Provides access to the wrapped values as list.
      * <p>
      * Note that this will return the internally stored list (if one is available) to minimize load on the garbage
-     * collector. Therefore the result must be copied before any mutation is performed.
+     * collector. Therefore the result must be copied before any mutation is performed. However, if an array is present
+     * this will be wrapped into a list.
+     * <p>
+     * Note that {@link #stream()} provides stream based access without any copying or API leakage (access to internal
+     * data structures).
      *
      * @return the underlying array or list
      */
@@ -160,6 +169,19 @@ public class Values {
             return Arrays.asList(dataArray);
         } else {
             return (List<Object>) dataList;
+        }
+    }
+
+    /**
+     * Provides the internally stored objects as {@link Stream} or {@link Value values}.
+     *
+     * @return a stream which yields all values in the underlying array or list.
+     */
+    public Stream<Value> stream() {
+        if (dataArray != null) {
+            return Arrays.stream(dataArray).map(Value::of);
+        } else {
+            return dataList.stream().map(Value::of);
         }
     }
 
