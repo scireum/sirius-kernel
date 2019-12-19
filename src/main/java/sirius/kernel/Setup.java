@@ -12,7 +12,6 @@ import com.google.common.base.Charsets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.DailyRollingFileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -29,8 +28,6 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
-import java.util.Arrays;
-import java.util.function.Predicate;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -57,9 +54,6 @@ import java.util.regex.Pattern;
  */
 public class Setup {
 
-    private static final String LOGS_DIRECTORY = "logs";
-    private static final String DEFAULT_LOG_FILE_NAME = "application.log";
-
     /**
      * Determines the mode in which the framework should run. This mainly effects logging and the configuration.
      */
@@ -69,11 +63,8 @@ public class Setup {
 
     protected ClassLoader loader;
     protected Mode mode;
-    protected boolean logToConsole;
-    protected boolean logToFile;
     protected Level defaultLevel = Level.INFO;
     protected String consoleLogFormat = "[%d{yyyy-MM-dd'T'HH:mm:ss,SSS}] %-5p [%t%X{flow}] %c - %m%n";
-    protected String fileLogFormat = "%d %-5p [%t%X{flow}] %c - %m%n";
 
     /**
      * Creates a new setup for the given mode and class loader.
@@ -84,30 +75,6 @@ public class Setup {
     public Setup(Mode mode, ClassLoader loader) {
         this.mode = mode;
         this.loader = loader;
-        logToConsole = mode != Mode.PROD || getProperty("console").asBoolean(false);
-        logToFile = mode == Mode.PROD && !getProperty("disableLogfile").asBoolean(false);
-    }
-
-    /**
-     * Overwrites the settings for the console appender.
-     *
-     * @param flag determines if logging to the console is enabled or not.
-     * @return the setup itself for fluent method calls
-     */
-    public Setup withLogToConsole(boolean flag) {
-        this.logToConsole = flag;
-        return this;
-    }
-
-    /**
-     * Overwrites the settings for the file appender.
-     *
-     * @param flag determines if logging to the log file is enabled or not.
-     * @return the setup itself for fluent method calls
-     */
-    public Setup withLogToFile(boolean flag) {
-        this.logToFile = flag;
-        return this;
     }
 
     /**
@@ -134,19 +101,6 @@ public class Setup {
      */
     public Setup withConsoleLogFormat(String format) {
         this.consoleLogFormat = format;
-        return this;
-    }
-
-    /**
-     * Specifies the pattern used to format log messages in the log file.
-     * <p>
-     * Refer to {@link org.apache.log4j.PatternLayout} for available options.
-     *
-     * @param format the template string to use
-     * @return the setup itself for fluent method calls
-     */
-    public Setup withFileLogFormat(String format) {
-        this.fileLogFormat = format;
         return this;
     }
 
@@ -263,104 +217,13 @@ public class Setup {
         repository.resetConfiguration();
         Logger.getRootLogger().setLevel(defaultLevel);
 
-        if (shouldLogToConsole()) {
-            ConsoleAppender console = new ConsoleAppender();
-            console.setLayout(new PatternLayout(consoleLogFormat));
-            console.setThreshold(Level.DEBUG);
-            console.activateOptions();
-            Logger.getRootLogger().addAppender(console);
-        }
-
-        if (shouldLogToFile()) {
-            File logsDirectory = new File(getLogsDirectory());
-            if (!logsDirectory.exists()) {
-                logsDirectory.mkdirs();
-            }
-            DailyRollingFileAppender fa = new DailyRollingFileAppender();
-            fa.setName("FileLogger");
-            fa.setFile(getLogFilePath());
-            fa.setLayout(new PatternLayout(fileLogFormat));
-            fa.setThreshold(Level.DEBUG);
-            fa.setAppend(true);
-            fa.activateOptions();
-            Logger.getRootLogger().addAppender(fa);
-        }
+        ConsoleAppender console = new ConsoleAppender();
+        console.setLayout(new PatternLayout(consoleLogFormat));
+        console.setThreshold(Level.DEBUG);
+        console.activateOptions();
+        Logger.getRootLogger().addAppender(console);
 
         redirectJavaLoggerToLog4j();
-    }
-
-    /**
-     * Returns the name of the log directory.
-     *
-     * @return the name of the log directory
-     */
-    protected String getLogsDirectory() {
-        return LOGS_DIRECTORY;
-    }
-
-    /**
-     * Computes the effective name for the log file.
-     *
-     * @return computes the log file which is getLogsDirectory() / getLogFileName()
-     */
-    protected String getLogFilePath() {
-        return getLogsDirectory() + File.separator + getLogFileName();
-    }
-
-    /**
-     * Invoked by Sirius itself on a regular basis to clean old log files.
-     *
-     * @param retentionInMillis the desired retention time in milli seconds before a file is deleted.
-     */
-    public void cleanOldLogFiles(long retentionInMillis) {
-        if (!shouldLogToFile()) {
-            return;
-        }
-
-        File logsDir = new File(getLogsDirectory());
-        if (!logsDir.exists()) {
-            return;
-        }
-        File[] children = logsDir.listFiles();
-        if (children == null) {
-            return;
-        }
-
-        // The file must start with the log file name, but have an extension (we don't want to delete
-        // the main log file).
-        Predicate<File> validLogFileName =
-                f -> f.getName().startsWith(getLogFileName()) && !f.getName().equals(getLogFileName());
-
-        Predicate<File> isOldEnough = f -> System.currentTimeMillis() - f.lastModified() > retentionInMillis;
-
-        Arrays.stream(children).filter(File::isFile).filter(validLogFileName).filter(isOldEnough).forEach(File::delete);
-    }
-
-    /**
-     * Returns the name of the log file.
-     *
-     * @return the name of the log file
-     */
-    protected String getLogFileName() {
-        return DEFAULT_LOG_FILE_NAME;
-    }
-
-    /**
-     * Determines if a console appender should be installed
-     *
-     * @return <tt>true</tt> if the framework should log to the console
-     */
-    protected boolean shouldLogToConsole() {
-        return logToConsole;
-    }
-
-    /**
-     * Determines if a file appender should be installed
-     *
-     * @return <tt>true</tt> if the framework should log into a file
-     */
-    protected boolean shouldLogToFile() {
-        return logToFile;
     }
 
     /**
