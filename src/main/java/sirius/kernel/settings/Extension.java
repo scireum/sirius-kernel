@@ -43,7 +43,7 @@ public class Extension extends Settings implements Comparable<Extension> {
     private final ConfigObject defaultConfig;
 
     protected Extension(String type, String id, ConfigObject configObject, ConfigObject defaultConfig) {
-        super(configObject.toConfig());
+        super(configObject.toConfig(), false);
         this.type = type;
         this.id = id;
         this.configObject = configObject;

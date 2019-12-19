@@ -329,11 +329,9 @@ class PartRegistry implements MutableGlobalContext {
         Set<Object> initializedObjects = new HashSet<>();
         parts.getUnderlyingMap().values().stream().flatMap(Collection::stream).forEach(part -> {
             wire(part);
-            if (part instanceof Initializable) {
-                if (!initializedObjects.contains(part)) {
-                    initializedObjects.add(part);
-                    initialize(part);
-                }
+            if (part instanceof Initializable && !initializedObjects.contains(part)) {
+                initializedObjects.add(part);
+                initialize(part);
             }
         });
     }

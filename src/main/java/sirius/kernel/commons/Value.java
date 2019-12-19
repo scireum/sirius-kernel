@@ -37,11 +37,9 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 /**
- * Provides a generic wrapper for a value which is read from an untyped context
- * like HTTP parameters.
+ * Provides a generic wrapper for a value which is read from an untyped context like HTTP parameters.
  * <p>
- * It supports elegant {@code null} handling and type
- * conversions.
+ * It supports elegant {@code null} handling and type conversions.
  */
 public class Value {
 
@@ -55,7 +53,7 @@ public class Value {
     private Object data;
 
     /**
-     * Use {@code Amount.of} to create a new instance.
+     * Use {@code Value.of} to create a new instance.
      */
     private Value() {
         super();
@@ -562,12 +560,13 @@ public class Value {
                                                           Timestamp.class)) {
             return (T) asZonedDateTime((ZonedDateTime) defaultValue);
         }
-        if (LocalTime.class.equals(targetClazz) && is(TemporalAccessor.class,
-                                                      Calendar.class,
-                                                      Date.class,
-                                                      java.sql.Date.class,
-                                                      Timestamp.class,
-                                                      Time.class)) {
+
+        if (LocalTime.class.equals(targetClazz) && data instanceof TemporalAccessor && is(TemporalAccessor.class,
+                                                                                          Calendar.class,
+                                                                                          Date.class,
+                                                                                          java.sql.Date.class,
+                                                                                          Timestamp.class,
+                                                                                          Time.class)) {
             return (T) asLocalTime((LocalTime) defaultValue);
         }
 

@@ -78,10 +78,8 @@ public class Barrier {
             @Override
             public void onSuccess(@Nullable Object value) throws Exception {
                 semaphore.release();
-                if (!completionFuture.isCompleted()) {
-                    if (promisesOpen.decrementAndGet() == 0) {
-                        completionFuture.success();
-                    }
+                if (!completionFuture.isCompleted() && promisesOpen.decrementAndGet() == 0) {
+                    completionFuture.success();
                 }
             }
 

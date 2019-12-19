@@ -605,10 +605,8 @@ public class Sirius {
      * @return the initialized settings object or <tt>null</tt> if the framework is not setup yet.
      */
     public static ExtendedSettings getSettings() {
-        if (settings == null) {
-            if (config != null) {
-                settings = new ExtendedSettings(config);
-            }
+        if (settings == null && config != null) {
+            settings = new ExtendedSettings(config, true);
         }
         return settings;
     }

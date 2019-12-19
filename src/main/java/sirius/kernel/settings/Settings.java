@@ -11,10 +11,12 @@ package sirius.kernel.settings;
 import com.google.common.collect.Lists;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
 import com.typesafe.config.ConfigValueFactory;
 import com.typesafe.config.ConfigValueType;
+import sirius.kernel.Sirius;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
@@ -24,8 +26,10 @@ import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Field;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,20 +41,31 @@ import java.util.concurrent.TimeUnit;
  * Provides a wrapper around a {@link Config} supplied by <tt>typesafe config</tt>.
  * <p>
  * Contains various boilerplate methods to safe- and quickly access the underlying config.
+ * <p>
+ * Note that this class will (in normal use-cases) never throws an exception. However, if it is created as
+ * <tt>strict</tt>, it will log an error if a requested config path does not exist. An example of a string settings
+ * instance is the system configuration found in {@link Sirius#getSettings()}. Most user specific configs will most
+ * probably be non-strict.
  */
+@ParametersAreNonnullByDefault
 public class Settings {
 
     private static final String PRIORITY = "priority";
     private static final String ID = "id";
+
     private final Config config;
+    private final boolean strict;
 
     /**
      * Creates a new wrapper for the given config.
      *
      * @param config the config to wrap
+     * @param strict determines if the config is strict. A strict config will log an error if an unkown path is
+     *               requested
      */
-    public Settings(@Nonnull Config config) {
+    public Settings(Config config, boolean strict) {
         this.config = config;
+        this.strict = strict;
     }
 
     /**
@@ -65,14 +80,11 @@ public class Settings {
     /**
      * Returns the {@link Value} defined for the given key.
      * <p>
-     * If this extension doesn't provide a value for this key, but there is an extension with the name
-     * <tt>default</tt> which provides a value, this is used.
-     * <p>
-     * If the value in the config file starts with a dollar sign, the value is treated as an i18n key and the
-     * returned value will contain the translation for the current language.
+     * Note that if this config is <tt>strict</tt>, an error is logged if the requested path does not exist. However,
+     * no exception will be thrown.
      *
      * @param path the access path to retrieve the value
-     * @return the value wrapping the contents for the given path. This will never by <tt>null</tt>,
+     * @return the value wrapping the contents for the given path. This will never be <tt>null</tt>,
      * but might be empty: {@link Value#isNull()}
      */
     @Nonnull
@@ -80,9 +92,22 @@ public class Settings {
         try {
             return Value.of(getConfig().getAnyRef(path));
         } catch (ConfigException e) {
-            Exceptions.handle(e);
+            if (strict) {
+                Exceptions.handle(e);
+            }
+
             return Value.EMPTY;
         }
+    }
+
+    /**
+     * Determines if the requested path exists in the underlying config.
+     *
+     * @param path the path to check
+     * @return <tt>true</tt> if the requested path exists, <tt>false</tt> otherwise
+     */
+    public boolean has(String path) {
+        return getConfig().hasPath(path);
     }
 
     /**
@@ -108,7 +133,27 @@ public class Settings {
      */
     @Nullable
     public Config getConfig(String key) {
-        return getConfig().getConfig(key);
+        try {
+            return getConfig().getConfig(key);
+        } catch (Exception e) {
+            if (strict) {
+                Exceptions.handle(e);
+            }
+
+            return ConfigFactory.empty();
+        }
+    }
+
+    /**
+     * Returns the sub settings available for the given key.
+     *
+     * @param key name of the sub settings to retrieve
+     * @return the sub settings for the given key or <tt>null</tt> if no such config exists.
+     */
+    @Nullable
+    public Settings getSettings(String key) {
+        Config subConfig = getConfig(key);
+        return new Settings(subConfig, strict);
     }
 
     /**
@@ -166,18 +211,19 @@ public class Settings {
     /**
      * Returns the duration in milliseconds defined for the given key.
      * <p>
-     * If this extension doesn't provide a value for this key, but there is an extension with the name
-     * <tt>default</tt> which provides a value, this is used.
+     * If no config is present at the given path, or it can not be converted to a duration, 0 is returned.
      *
      * @param path the access path to retrieve the value
-     * @return the encoded duration as milliseconds.
-     * @throws sirius.kernel.health.HandledException if an invalid value was given in the config
+     * @return the duration as milliseconds
      */
     public long getMilliseconds(String path) {
         try {
             return config.getDuration(path, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            throw Exceptions.handle(e);
+            if (strict) {
+                Exceptions.handle(e);
+            }
+            return 0;
         }
     }
 
@@ -187,6 +233,7 @@ public class Settings {
      * @param key the key used to lookup the string value
      * @return the string value stored of the given key
      */
+    @Nonnull
     public String getString(String key) {
         return get(key).asString();
     }
@@ -207,8 +254,16 @@ public class Settings {
      * @param key the key used to lookup the value
      * @return a list of strings stored of the given key
      */
+    @Nonnull
     public List<String> getStringList(String key) {
-        return getConfig().getStringList(key);
+        try {
+            return getConfig().getStringList(key);
+        } catch (ConfigException e) {
+            if (strict) {
+                Exceptions.handle(e);
+            }
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -219,9 +274,7 @@ public class Settings {
      */
     public Map<String, String> getMap(String key) {
         Map<String, String> result = new HashMap<>();
-        config.getConfig(key)
-              .entrySet()
-              .forEach(e -> result.put(e.getKey(), Value.of(e.getValue().unwrapped()).asString()));
+        getConfig(key).entrySet().forEach(e -> result.put(e.getKey(), Value.of(e.getValue().unwrapped()).asString()));
 
         return result;
     }

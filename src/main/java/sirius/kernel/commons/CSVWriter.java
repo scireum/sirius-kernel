@@ -186,33 +186,30 @@ public class CSVWriter implements Closeable {
         }
     }
 
-    private void writeColumn(Object o) throws IOException {
-        String stringValue;
+    /**
+     * Effectively outputs the given object as next column value.
+     *
+     * @param object the value to output
+     * @throws IOException in case of an IO error while writing
+     */
+    private void writeColumn(Object object) throws IOException {
+        String stringValue = convertToString(object);
 
-        if (!(o instanceof String) || trim) {
-            stringValue = NLS.toMachineString(o);
-        } else {
-            stringValue = Strings.toString(o);
-        }
-
-        if (stringValue == null) {
-            stringValue = "";
-        }
-        StringBuilder effectiveValue = new StringBuilder();
-        boolean shouldQuote = shouldQuote(stringValue);
-        for (int i = 0; i < stringValue.length(); i++) {
-            char currentChar = stringValue.charAt(i);
-            processCharacter(currentChar, effectiveValue, shouldQuote);
-        }
-        if (shouldQuote) {
+        if (shouldQuote(stringValue)) {
             writer.append(quotation);
-            writer.append(effectiveValue);
+            writer.append(escapeValue(stringValue, true));
             writer.append(quotation);
         } else {
-            writer.append(effectiveValue);
+            writer.append(escapeValue(stringValue, false));
         }
     }
 
+    /**
+     * Determines if the given value needs to be quoted.
+     *
+     * @param stringValue the value to check
+     * @return <tt>true</tt> if the value should be output as a quoted string, <tt>false</tt> otherwise
+     */
     private boolean shouldQuote(String stringValue) {
         if (isQuotationEmpty) {
             return false;
@@ -221,6 +218,45 @@ public class CSVWriter implements Closeable {
             return true;
         }
         return stringValue.contains(separatorString) || stringValue.contains("\n") || stringValue.contains("\r");
+    }
+
+    /**
+     * Transforms the value into a string representation suitable for outputting in a CSV file.
+     *
+     * @param object the object to convert
+     * @return a machine readable string representation
+     */
+    private String convertToString(Object object) {
+        if (object == null) {
+            return "";
+        }
+
+        if (object instanceof String) {
+            if (trim) {
+                return ((String) object).trim();
+            } else {
+                return (String) object;
+            }
+        }
+
+        return NLS.toMachineString(object);
+    }
+
+    /**
+     * Escapes the given string if needed.
+     *
+     * @param stringValue the string to escape
+     * @param shouldQuote a flag which determines if the resulting string will be quoted or not
+     * @return the properly escaped string
+     */
+    private String escapeValue(String stringValue, boolean shouldQuote) {
+        StringBuilder effectiveValue = new StringBuilder();
+        for (int i = 0; i < stringValue.length(); i++) {
+            char currentChar = stringValue.charAt(i);
+            processCharacter(currentChar, effectiveValue, shouldQuote);
+        }
+
+        return effectiveValue.toString();
     }
 
     private void processCharacter(char currentChar, StringBuilder effectiveValue, boolean shouldQuote) {
