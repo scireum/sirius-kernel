@@ -77,9 +77,11 @@ public class ExtendedSettings extends Settings {
      * Creates a new settings object based on the given config.
      *
      * @param config the config to wrap
+     * @param strict determines if the config is strict. A strict config will log an error if an unkown path is
+     *               requested
      */
-    public ExtendedSettings(Config config) {
-        super(config);
+    public ExtendedSettings(Config config, boolean strict) {
+        super(config, strict);
     }
 
     /**

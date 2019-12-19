@@ -535,30 +535,34 @@ public class Value {
 
     @SuppressWarnings("unchecked")
     private <T> T continueCoerceWithDateTypes(Class<T> targetClazz, T defaultValue) {
-        if (LocalDate.class.equals(targetClazz)) {
-            if (is(TemporalAccessor.class, Calendar.class, Date.class, java.sql.Date.class, Timestamp.class)) {
-                return (T) asLocalDate((LocalDate) defaultValue);
-            }
+        if (LocalDate.class.equals(targetClazz) && is(TemporalAccessor.class,
+                                                      Calendar.class,
+                                                      Date.class,
+                                                      java.sql.Date.class,
+                                                      Timestamp.class)) {
+            return (T) asLocalDate((LocalDate) defaultValue);
         }
-        if (LocalDateTime.class.equals(targetClazz)) {
-            if (is(TemporalAccessor.class, Calendar.class, Date.class, java.sql.Date.class, Timestamp.class)) {
-                return (T) asLocalDateTime((LocalDateTime) defaultValue);
-            }
+        if (LocalDateTime.class.equals(targetClazz) && is(TemporalAccessor.class,
+                                                          Calendar.class,
+                                                          Date.class,
+                                                          java.sql.Date.class,
+                                                          Timestamp.class)) {
+            return (T) asLocalDateTime((LocalDateTime) defaultValue);
         }
-        if (ZonedDateTime.class.equals(targetClazz)) {
-            if (is(TemporalAccessor.class, Calendar.class, Date.class, java.sql.Date.class, Timestamp.class)) {
-                return (T) asZonedDateTime((ZonedDateTime) defaultValue);
-            }
+        if (ZonedDateTime.class.equals(targetClazz) && is(TemporalAccessor.class,
+                                                          Calendar.class,
+                                                          Date.class,
+                                                          java.sql.Date.class,
+                                                          Timestamp.class)) {
+            return (T) asZonedDateTime((ZonedDateTime) defaultValue);
         }
-        if (LocalTime.class.equals(targetClazz) && data instanceof TemporalAccessor) {
-            if (is(TemporalAccessor.class,
-                   Calendar.class,
-                   Date.class,
-                   java.sql.Date.class,
-                   Timestamp.class,
-                   Time.class)) {
-                return (T) asLocalTime((LocalTime) defaultValue);
-            }
+        if (LocalTime.class.equals(targetClazz) && data instanceof TemporalAccessor && is(TemporalAccessor.class,
+                                                                                          Calendar.class,
+                                                                                          Date.class,
+                                                                                          java.sql.Date.class,
+                                                                                          Timestamp.class,
+                                                                                          Time.class)) {
+            return (T) asLocalTime((LocalTime) defaultValue);
         }
         return continueCoerceWithEnumTypes(targetClazz, defaultValue);
     }

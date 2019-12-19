@@ -66,19 +66,19 @@ public class FilesTest {
 
     @Test
     public void toSaneFilename() {
-        assertEquals(Files.toSaneFileName("test.pdf").orElse(""), "test.pdf");
-        assertEquals(Files.toSaneFileName("test").orElse(""), "test");
-        assertEquals(Files.toSaneFileName(".pdf").orElse(""), ".pdf");
-        assertEquals(Files.toSaneFileName("test.").orElse(""), "test.");
-        assertEquals(Files.toSaneFileName("test..").orElse(""), "test_.");
-        assertEquals(Files.toSaneFileName("..test").orElse(""), "_.test");
-        assertEquals(Files.toSaneFileName("Test pdf").orElse(""), "Test_pdf");
-        assertEquals(Files.toSaneFileName("Hallöle").orElse(""), "Halloele");
-        assertEquals(Files.toSaneFileName("test/datei").orElse(""), "test_datei");
-        assertEquals(Files.toSaneFileName("test-datei").orElse(""), "test-datei");
-        assertEquals(Files.toSaneFileName(" test ").orElse(""), "test");
-        assertEquals(Files.toSaneFileName("test.datei.pdf").orElse(""), "test_datei.pdf");
-        assertEquals(Files.toSaneFileName("   "), Optional.empty());
-        assertEquals(Files.toSaneFileName(""), Optional.empty());
+        assertEquals("test.pdf", Files.toSaneFileName("test.pdf").orElse(""));
+        assertEquals("test", Files.toSaneFileName("test").orElse(""));
+        assertEquals(".pdf", Files.toSaneFileName(".pdf").orElse(""));
+        assertEquals("test.", Files.toSaneFileName("test.").orElse(""));
+        assertEquals("test_.", Files.toSaneFileName("test..").orElse(""));
+        assertEquals("_.test", Files.toSaneFileName("..test").orElse(""));
+        assertEquals("Test_pdf", Files.toSaneFileName("Test pdf").orElse(""));
+        assertEquals("Halloele", Files.toSaneFileName("Hallöle").orElse(""));
+        assertEquals("test_datei", Files.toSaneFileName("test/datei").orElse(""));
+        assertEquals("test-datei", Files.toSaneFileName("test-datei").orElse(""));
+        assertEquals("test", Files.toSaneFileName(" test ").orElse(""));
+        assertEquals("test_datei.pdf", Files.toSaneFileName("test.datei.pdf").orElse(""));
+        assertEquals(Optional.empty(), Files.toSaneFileName("   "));
+        assertEquals(Optional.empty(), Files.toSaneFileName(""));
     }
 }
