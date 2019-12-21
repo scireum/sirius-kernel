@@ -37,11 +37,9 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 /**
- * Provides a generic wrapper for a value which is read from an untyped context
- * like HTTP parameters.
+ * Provides a generic wrapper for a value which is read from an untyped context like HTTP parameters.
  * <p>
- * It supports elegant {@code null} handling and type
- * conversions.
+ * It supports elegant {@code null} handling and type conversions.
  */
 public class Value {
 
@@ -55,7 +53,7 @@ public class Value {
     private Object data;
 
     /**
-     * Use {@code Amount.of} to create a new instance.
+     * Use {@code Value.of} to create a new instance.
      */
     private Value() {
         super();
@@ -165,7 +163,8 @@ public class Value {
      * @param consumer the consumer to call with this object if it is filled
      * @return the value itself for fluent method calls
      */
-    public Value ifFilled(Consumer<Value> consumer) {
+    @Nonnull
+    public Value ifFilled(@Nonnull Consumer<Value> consumer) {
         if (isFilled()) {
             consumer.accept(this);
         }
@@ -181,7 +180,8 @@ public class Value {
      * @return the value itself for fluent method calls
      * @throws Exception if the callback itself throws an exception
      */
-    public Value ifPresent(Callback<Value> callback) throws Exception {
+    @Nonnull
+    public Value ifPresent(@Nonnull Callback<Value> callback) throws Exception {
         if (isFilled()) {
             callback.invoke(this);
         }
@@ -197,7 +197,7 @@ public class Value {
      * @param extractor the extractor to call with this object if it is filled
      * @param consumer  the consumer to call with this object if it is filled
      */
-    public <T> void ifFilled(Function<Value, T> extractor, Consumer<T> consumer) {
+    public <T> void ifFilled(@Nonnull Function<Value, T> extractor, @Nonnull Consumer<T> consumer) {
         if (isFilled()) {
             consumer.accept(extractor.apply(this));
         }
@@ -212,7 +212,7 @@ public class Value {
      * @param callback  the callback to call with this object if it is filled
      * @throws Exception if either the extractor or the callback itself throws an exception
      */
-    public <T> void ifPresent(Processor<Value, T> extractor, Callback<T> callback) throws Exception {
+    public <T> void ifPresent(@Nonnull Processor<Value, T> extractor, @Nonnull Callback<T> callback) throws Exception {
         if (isFilled()) {
             callback.invoke(extractor.apply(this));
         }
@@ -226,7 +226,7 @@ public class Value {
      * Otherwise the current value is returned.
      */
     @Nonnull
-    public Value ignore(String... ignoredValues) {
+    public Value ignore(@Nonnull String... ignoredValues) {
         if (isEmptyString()) {
             return this;
         }
@@ -317,7 +317,7 @@ public class Value {
      */
     @Nonnull
     public <T> Optional<T> asOptional(@Nonnull Class<T> type) {
-        return Optional.ofNullable(get(type));
+        return Optional.ofNullable(get(type, null));
     }
 
     /**
@@ -327,6 +327,7 @@ public class Value {
      *
      * @return the internal value wrapped as Optional or an empty Optional if the value is not filled or non-integer
      */
+    @Nonnull
     public Optional<Integer> asOptionalInt() {
         return isFilled() ? Optional.of(getInteger()) : Optional.empty();
     }
@@ -338,6 +339,7 @@ public class Value {
      *
      * @return the internal value wrapped as Optional or an empty Optional if the value is not filled
      */
+    @Nonnull
     public Optional<String> asOptionalString() {
         return isFilled() ? Optional.of(asString()) : Optional.empty();
     }
@@ -457,8 +459,7 @@ public class Value {
      * @param defaultValue the value to use if the inner value is <tt>null</tt>
      * @return the wrapped value or the given defaultValue if the wrapped value is <tt>null</tt>
      */
-    @Nonnull
-    public Object get(@Nonnull Object defaultValue) {
+    public Object get(Object defaultValue) {
         return data == null ? defaultValue : data;
     }
 
@@ -492,11 +493,14 @@ public class Value {
      */
     @SuppressWarnings("unchecked")
     public <T> T coerce(Class<T> targetClazz, T defaultValue) {
-        if (boolean.class.equals(targetClazz) && defaultValue == null) {
-            if (Strings.isEmpty(data)) {
+        if (Boolean.class.equals(targetClazz) || boolean.class.equals(targetClazz)) {
+            if (isEmptyString()) {
                 return (T) Boolean.FALSE;
             }
-            return (T) NLS.parseUserString(Boolean.class, String.valueOf(data));
+            if (data instanceof Boolean) {
+                return (T) data;
+            }
+            return (T) NLS.parseMachineString(Boolean.class, String.valueOf(data));
         }
         if (data == null) {
             return defaultValue;
@@ -556,14 +560,16 @@ public class Value {
                                                           Timestamp.class)) {
             return (T) asZonedDateTime((ZonedDateTime) defaultValue);
         }
-        if (LocalTime.class.equals(targetClazz) && data instanceof TemporalAccessor && is(TemporalAccessor.class,
-                                                                                          Calendar.class,
-                                                                                          Date.class,
-                                                                                          java.sql.Date.class,
-                                                                                          Timestamp.class,
-                                                                                          Time.class)) {
+
+        if (LocalTime.class.equals(targetClazz) && is(TemporalAccessor.class,
+                                                      Calendar.class,
+                                                      Date.class,
+                                                      java.sql.Date.class,
+                                                      Timestamp.class,
+                                                      Time.class)) {
             return (T) asLocalTime((LocalTime) defaultValue);
         }
+
         return continueCoerceWithEnumTypes(targetClazz, defaultValue);
     }
 
@@ -608,29 +614,10 @@ public class Value {
      * or the <tt>defaultValue</tt> otherwise
      */
     @SuppressWarnings("unchecked")
-    @Nonnull
-    public <V> V get(Class<V> clazz, @Nonnull V defaultValue) {
-        Object result = get(defaultValue);
-        if (!clazz.isAssignableFrom(result.getClass())) {
-            return defaultValue;
-        }
-        return (V) result;
-    }
-
-    /**
-     * Returns the wrapped value if it is an instance of the given clazz or <tt>null</tt> otherwise.
-     *
-     * @param clazz the desired class of the return type
-     * @param <V>   the expected type of the wrapped value
-     * @return the wrapped value if the given <tt>clazz</tt> is assignable from wrapped values class or <tt>null</tt>
-     * otherwise
-     */
-    @Nullable
-    @SuppressWarnings("unchecked")
-    public <V> V get(Class<V> clazz) {
+    public <V> V get(Class<V> clazz, V defaultValue) {
         Object result = get();
         if (result == null || !clazz.isAssignableFrom(result.getClass())) {
-            return null;
+            return defaultValue;
         }
         return (V) result;
     }
@@ -777,18 +764,6 @@ public class Value {
             Exceptions.ignore(e);
             return defaultValue;
         }
-    }
-
-    /**
-     * Tries to convert the wrapped value to a roman numeral representation
-     * This only works if the wrapped value can be converted to <tt>int</tt> and is &gt;0 and &lt;4000.
-     *
-     * @param defaultValue the value to be converted to roman numeral if the wrapped value can not be converted
-     * @return a roman numeral representation of either the wrapped value or the defaultValue. values &gt;=4000 and
-     * &lt;=0  are represented as an empty String
-     */
-    public String asRomanNumeral(int defaultValue) {
-        return RomanNumeral.toRoman(asInt(defaultValue));
     }
 
     /**
@@ -1244,8 +1219,7 @@ public class Value {
      * @return the wrapped value casted or converted to <tt>BigDecimal</tt> or <tt>defaultValue</tt>
      * if no conversion is possible.
      */
-    @Nonnull
-    public BigDecimal getBigDecimal(@Nonnull BigDecimal defaultValue) {
+    public BigDecimal getBigDecimal(BigDecimal defaultValue) {
         BigDecimal result = getBigDecimal();
         if (result == null) {
             return defaultValue;
@@ -1321,6 +1295,7 @@ public class Value {
      * or <tt>null</tt> if no matching constant was found
      */
     @SuppressWarnings("unchecked")
+    @Nullable
     public <E extends Enum<E>> E asEnum(Class<E> clazz) {
         if (data == null) {
             return null;
@@ -1343,6 +1318,7 @@ public class Value {
      * @param <E>   to generic type of the enum
      * @return the enum constant wrapped as optional or an empty optional if no conversion was possible.
      */
+    @Nonnull
     public <E extends Enum<E>> Optional<E> getEnum(Class<E> clazz) {
         return Optional.ofNullable(asEnum(clazz));
     }

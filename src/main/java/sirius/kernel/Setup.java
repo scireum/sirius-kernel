@@ -12,11 +12,11 @@ import com.google.common.base.Charsets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.DailyRollingFileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggerRepository;
+import sirius.kernel.commons.Producer;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.ValueHolder;
@@ -29,8 +29,6 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
-import java.util.Arrays;
-import java.util.function.Predicate;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -57,9 +55,6 @@ import java.util.regex.Pattern;
  */
 public class Setup {
 
-    private static final String LOGS_DIRECTORY = "logs";
-    private static final String DEFAULT_LOG_FILE_NAME = "application.log";
-
     /**
      * Determines the mode in which the framework should run. This mainly effects logging and the configuration.
      */
@@ -69,11 +64,8 @@ public class Setup {
 
     protected ClassLoader loader;
     protected Mode mode;
-    protected boolean logToConsole;
-    protected boolean logToFile;
     protected Level defaultLevel = Level.INFO;
     protected String consoleLogFormat = "[%d{yyyy-MM-dd'T'HH:mm:ss,SSS}] %-5p [%t%X{flow}] %c - %m%n";
-    protected String fileLogFormat = "%d %-5p [%t%X{flow}] %c - %m%n";
 
     /**
      * Creates a new setup for the given mode and class loader.
@@ -84,30 +76,6 @@ public class Setup {
     public Setup(Mode mode, ClassLoader loader) {
         this.mode = mode;
         this.loader = loader;
-        logToConsole = mode != Mode.PROD || getProperty("console").asBoolean(false);
-        logToFile = mode == Mode.PROD && !getProperty("disableLogfile").asBoolean(false);
-    }
-
-    /**
-     * Overwrites the settings for the console appender.
-     *
-     * @param flag determines if logging to the console is enabled or not.
-     * @return the setup itself for fluent method calls
-     */
-    public Setup withLogToConsole(boolean flag) {
-        this.logToConsole = flag;
-        return this;
-    }
-
-    /**
-     * Overwrites the settings for the file appender.
-     *
-     * @param flag determines if logging to the log file is enabled or not.
-     * @return the setup itself for fluent method calls
-     */
-    public Setup withLogToFile(boolean flag) {
-        this.logToFile = flag;
-        return this;
     }
 
     /**
@@ -138,19 +106,6 @@ public class Setup {
     }
 
     /**
-     * Specifies the pattern used to format log messages in the log file.
-     * <p>
-     * Refer to {@link org.apache.log4j.PatternLayout} for available options.
-     *
-     * @param format the template string to use
-     * @return the setup itself for fluent method calls
-     */
-    public Setup withFileLogFormat(String format) {
-        this.fileLogFormat = format;
-        return this;
-    }
-
-    /**
      * Creates and starts a new setup based on system properties.
      * <p>
      * Essentially this is <tt>debug</tt> which switches from PROD to DEV and <tt>console</tt> which enables
@@ -159,7 +114,10 @@ public class Setup {
      * @param loader the class loader to use
      */
     public static void createAndStartEnvironment(ClassLoader loader) {
-        Sirius.start(new Setup(getProperty("debug").asBoolean(false) ? Mode.DEV : Mode.PROD, loader));
+        Sirius.start(new Setup(getProperty("debug",
+                                           false,
+                                           "Determines if debug logs and some safety checks are enabled.").asBoolean(
+                false) ? Mode.DEV : Mode.PROD, loader));
     }
 
     /**
@@ -245,11 +203,20 @@ public class Setup {
     /**
      * Reads the given system property.
      *
-     * @param property the property to read
+     * @param property     the property to read
+     * @param defaultValue the default value to use if no value is present
+     * @param description  the description to output
      * @return the contents of the property wrapped as {@link Value}
      */
-    protected static Value getProperty(String property) {
-        return Value.of(System.getProperty(property));
+    protected static Value getProperty(String property, Object defaultValue, String description) {
+        Value result = Value.of(System.getProperty(property));
+        Sirius.LOG.INFO("Reading property %s (Value: %s, Default: %s) - %s",
+                        property,
+                        result.replaceEmptyWith("(missing)"),
+                        defaultValue,
+                        description);
+
+        return result.replaceIfEmpty(() -> defaultValue);
     }
 
     /**
@@ -263,104 +230,13 @@ public class Setup {
         repository.resetConfiguration();
         Logger.getRootLogger().setLevel(defaultLevel);
 
-        if (shouldLogToConsole()) {
-            ConsoleAppender console = new ConsoleAppender();
-            console.setLayout(new PatternLayout(consoleLogFormat));
-            console.setThreshold(Level.DEBUG);
-            console.activateOptions();
-            Logger.getRootLogger().addAppender(console);
-        }
-
-        if (shouldLogToFile()) {
-            File logsDirectory = new File(getLogsDirectory());
-            if (!logsDirectory.exists()) {
-                logsDirectory.mkdirs();
-            }
-            DailyRollingFileAppender fa = new DailyRollingFileAppender();
-            fa.setName("FileLogger");
-            fa.setFile(getLogFilePath());
-            fa.setLayout(new PatternLayout(fileLogFormat));
-            fa.setThreshold(Level.DEBUG);
-            fa.setAppend(true);
-            fa.activateOptions();
-            Logger.getRootLogger().addAppender(fa);
-        }
+        ConsoleAppender console = new ConsoleAppender();
+        console.setLayout(new PatternLayout(consoleLogFormat));
+        console.setThreshold(Level.DEBUG);
+        console.activateOptions();
+        Logger.getRootLogger().addAppender(console);
 
         redirectJavaLoggerToLog4j();
-    }
-
-    /**
-     * Returns the name of the log directory.
-     *
-     * @return the name of the log directory
-     */
-    protected String getLogsDirectory() {
-        return LOGS_DIRECTORY;
-    }
-
-    /**
-     * Computes the effective name for the log file.
-     *
-     * @return computes the log file which is getLogsDirectory() / getLogFileName()
-     */
-    protected String getLogFilePath() {
-        return getLogsDirectory() + File.separator + getLogFileName();
-    }
-
-    /**
-     * Invoked by Sirius itself on a regular basis to clean old log files.
-     *
-     * @param retentionInMillis the desired retention time in milli seconds before a file is deleted.
-     */
-    public void cleanOldLogFiles(long retentionInMillis) {
-        if (!shouldLogToFile()) {
-            return;
-        }
-
-        File logsDir = new File(getLogsDirectory());
-        if (!logsDir.exists()) {
-            return;
-        }
-        File[] children = logsDir.listFiles();
-        if (children == null) {
-            return;
-        }
-
-        // The file must start with the log file name, but have an extension (we don't want to delete
-        // the main log file).
-        Predicate<File> validLogFileName =
-                f -> f.getName().startsWith(getLogFileName()) && !f.getName().equals(getLogFileName());
-
-        Predicate<File> isOldEnough = f -> System.currentTimeMillis() - f.lastModified() > retentionInMillis;
-
-        Arrays.stream(children).filter(File::isFile).filter(validLogFileName).filter(isOldEnough).forEach(File::delete);
-    }
-
-    /**
-     * Returns the name of the log file.
-     *
-     * @return the name of the log file
-     */
-    protected String getLogFileName() {
-        return DEFAULT_LOG_FILE_NAME;
-    }
-
-    /**
-     * Determines if a console appender should be installed
-     *
-     * @return <tt>true</tt> if the framework should log to the console
-     */
-    protected boolean shouldLogToConsole() {
-        return logToConsole;
-    }
-
-    /**
-     * Determines if a file appender should be installed
-     *
-     * @return <tt>true</tt> if the framework should log into a file
-     */
-    protected boolean shouldLogToFile() {
-        return logToFile;
     }
 
     /**
@@ -401,6 +277,22 @@ public class Setup {
         rootLogger.setLevel(java.util.logging.Level.INFO);
     }
 
+    @Nullable
+    private Config loadConfig(String resourceName, Producer<Config> configMaker, @Nullable Config fallback) {
+        try {
+            Sirius.LOG.INFO("Loading config: %s", resourceName);
+            Config config = configMaker.create();
+            if (fallback != null) {
+                config = config.withFallback(fallback);
+            }
+            return config;
+        } catch (Exception e) {
+            Exceptions.ignore(e);
+            Sirius.LOG.WARN("Cannot load %s: %s", resourceName, e.getMessage());
+            return fallback;
+        }
+    }
+
     /**
      * Loads the main application configuration which is shipped with the app.
      * <p>
@@ -415,25 +307,16 @@ public class Setup {
         final ValueHolder<Config> result = new ValueHolder<>(ConfigFactory.empty());
 
         // Load component configurations
-        Sirius.getClasspath().find(Pattern.compile("application-([^.]*?)\\.conf")).forEach(value -> {
-            try {
-                Sirius.LOG.INFO("Loading config: %s", value.group());
-                result.set(result.get().withFallback(ConfigFactory.parseResources(getLoader(), value.group())));
-            } catch (Exception e) {
-                Exceptions.ignore(e);
-                Sirius.LOG.WARN("Cannot load %s: %s", value, e.getMessage());
-            }
-        });
+        Sirius.getClasspath()
+              .find(Pattern.compile("application-([^.]*?)\\.conf"))
+              .forEach(value -> result.set(loadConfig(value.group(),
+                                                      () -> ConfigFactory.parseResources(loader, value.group()),
+                                                      result.get())));
 
         if (Sirius.class.getResource("/application.conf") != null) {
-            Sirius.LOG.INFO("using application.conf from classpath...");
-            try {
-                result.set(ConfigFactory.parseResources(loader, "application.conf").withFallback(result.get()));
-            } catch (Exception e) {
-                Exceptions.ignore(e);
-                Sirius.LOG.WARN("Cannot load application.conf: %s", e.getMessage());
-                Sirius.LOG.WARN("Cannot load application.conf: %s", e.getMessage());
-            }
+            result.set(loadConfig("application.conf",
+                                  () -> ConfigFactory.parseResources(loader, "application.conf"),
+                                  result.get()));
         } else {
             Sirius.LOG.INFO("application.conf not present in classpath");
         }
@@ -452,14 +335,7 @@ public class Setup {
     @Nonnull
     public Config applyTestConfig(@Nonnull Config config) {
         if (Sirius.class.getResource("/test.conf") != null) {
-            Sirius.LOG.INFO("using test.conf from classpath...");
-            try {
-                return ConfigFactory.parseResources(loader, "test.conf").withFallback(config);
-            } catch (Exception e) {
-                Exceptions.ignore(e);
-                Sirius.LOG.WARN("Cannot load test.conf: %s", e.getMessage());
-                return config;
-            }
+            return loadConfig("test.conf", () -> ConfigFactory.parseResources(loader, "test.conf"), config);
         } else {
             Sirius.LOG.INFO("test.conf not present in classpath");
             return config;
@@ -480,14 +356,7 @@ public class Setup {
             return config;
         }
 
-        Sirius.LOG.INFO("using %s from classpath...", scenarioFile);
-        try {
-            return ConfigFactory.parseResources(loader, scenarioFile).withFallback(config);
-        } catch (Exception e) {
-            Exceptions.ignore(e);
-            Sirius.LOG.WARN("Cannot load test.conf: %s", e.getMessage());
-            return config;
-        }
+        return loadConfig(scenarioFile, () -> ConfigFactory.parseResources(loader, scenarioFile), config);
     }
 
     /**
@@ -500,11 +369,13 @@ public class Setup {
      */
     @Nonnull
     public Config applyDeveloperConfig(@Nonnull Config config) {
-        if (new File("develop.conf").exists()) {
-            Sirius.LOG.INFO("using develop.conf from filesystem...");
-            return ConfigFactory.parseFile(new File("develop.conf")).withFallback(config);
+        String developConfFile = getProperty("sirius_develop_conf",
+                                             "develop.conf",
+                                             "Determines the filename of the developer config.").asString();
+        if (new File(developConfFile).exists()) {
+            return loadConfig(developConfFile, () -> ConfigFactory.parseFile(new File(developConfFile)), config);
         } else {
-            Sirius.LOG.INFO("develop.conf not present in work directory");
+            Sirius.LOG.INFO("%s not present work in directory", developConfFile);
             return config;
         }
     }
@@ -520,17 +391,13 @@ public class Setup {
      */
     @Nullable
     public Config loadInstanceConfig() {
-        if (new File("instance.conf").exists()) {
-            Sirius.LOG.INFO("using instance.conf from filesystem...");
-            try {
-                return ConfigFactory.parseFile(new File("instance.conf"));
-            } catch (Exception e) {
-                Exceptions.ignore(e);
-                Sirius.LOG.WARN("Cannot load instance.conf: %s", e.getMessage());
-                return null;
-            }
+        String instanceConfFile = getProperty("sirius_instance_conf",
+                                              "instance.conf",
+                                              "Determines the filename of the instance config.").asString();
+        if (new File(instanceConfFile).exists()) {
+            return loadConfig(instanceConfFile, () -> ConfigFactory.parseFile(new File(instanceConfFile)), null);
         } else {
-            Sirius.LOG.INFO("instance.conf not present work in directory");
+            Sirius.LOG.INFO("%s not present work in directory", instanceConfFile);
             return null;
         }
     }
@@ -548,13 +415,12 @@ public class Setup {
     @Nonnull
     public Config applyEnvironment(@Nonnull Config config) {
         try {
-            config = ConfigFactory.parseMap(System.getenv(), "Environment").withFallback(config);
+            return ConfigFactory.parseMap(System.getenv(), "Environment").withFallback(config);
         } catch (Exception e) {
             Sirius.LOG.WARN("An error occured while reading the environment: %s (%s)",
                             e.getMessage(),
                             e.getClass().getName());
+            return config;
         }
-
-        return config;
     }
 }

@@ -161,8 +161,6 @@ class ValueSpec extends BaseSpecification {
         "true"             | true
         false              | false
         true               | true
-        NLS.get("NLS.yes") | true
-        NLS.get("NLS.no")  | false
     }
 
     def "Test translate works as expected"() {
