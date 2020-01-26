@@ -1649,6 +1649,15 @@ public class Value {
     }
 
     /**
+     * Returns a wrapped string which represents the {@link #toUpperCase() upper-case} representation of this value.
+     *
+     * @return a value which wraps the upper-cased version of this value
+     */
+    public Value upperCase() {
+        return isNull() ? this : Value.of(asString().toUpperCase());
+    }
+
+    /**
      * Returns an lowercase version of the string representation of the wrapped value.
      *
      * @return an lowercase version of the string representation of the wrapped value or {@code ""} if the
@@ -1660,6 +1669,15 @@ public class Value {
             return "";
         }
         return asString().toLowerCase();
+    }
+
+    /**
+     * Returns a wrapped string which represents the {@link #toLowerCase() lower-case} representation of this value.
+     *
+     * @return a value which wraps the lower-cased version of this value
+     */
+    public Value lowerCase() {
+        return isNull() ? this : Value.of(asString().toLowerCase());
     }
 
     /**
