@@ -237,7 +237,7 @@ public class StructuredNode {
     /**
      * Returns the property at the given relative path as string.
      * <p>
-     * Note that this will method will return an untrimmed string and also <tt>null</tt> if no value is present.
+     * Note that this method will return an untrimmed string and also <tt>null</tt> if no value is present.
      *
      * @param path the xpath used to retrieve property
      * @return a string representation of the value returned by the given xpath expression or <tt>null</tt> if no value
@@ -265,7 +265,7 @@ public class StructuredNode {
     /**
      * Returns the property at the given relative path as trimmed string.
      * <p>
-     * Note that this will method return <tt>null</tt> if no value is present.
+     * Note that this method will return <tt>null</tt> if no value is present.
      *
      * @param path the xpath used to retrieve property
      * @return a trimmed string representation of the value returned by the given xpath expression or <tt>null</tt>
