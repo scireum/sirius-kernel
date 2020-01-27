@@ -685,7 +685,7 @@ public class Value {
     }
 
     /**
-     * Returns the umprocessed string representation of the wrapped value.
+     * Returns the unprocessed string representation of the wrapped value.
      * <p>
      * In contrast to {@link #getString()} this method <b>will not</b> trim the wrapped string value.
      *
