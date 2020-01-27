@@ -21,12 +21,12 @@ import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import javax.xml.namespace.NamespaceContext;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -236,41 +236,73 @@ public class StructuredNode {
 
     /**
      * Returns the property at the given relative path as string.
+     * <p>
+     * Note that this will method will return an untrimmed string and also <tt>null</tt> if no value is present.
      *
      * @param path the xpath used to retrieve property
-     * @return a string representation of the value returned by the given xpath expression
+     * @return a string representation of the value returned by the given xpath expression or <tt>null</tt> if no value
+     * is present
      * @throws IllegalArgumentException if an invalid xpath was given
+     * @see #queryString(String)
      */
     @Nullable
-    public String queryString(String path) {
+    public String queryRawString(String path) {
         try {
             Object result = compile(path).evaluate(node, XPathConstants.NODE);
             if (result == null) {
                 return null;
             }
             if (result instanceof Node) {
-                String s = ((Node) result).getTextContent();
-                if (s != null) {
-                    return s.trim();
-                }
-                return s;
+                return ((Node) result).getTextContent();
             }
-            return result.toString().trim();
+
+            return result.toString();
         } catch (XPathExpressionException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
     /**
-     * Queries a {@link sirius.kernel.commons.Value} by evaluating the given xpath.
+     * Returns the property at the given relative path as trimmed string.
+     * <p>
+     * Note that this will method return <tt>null</tt> if no value is present.
      *
      * @param path the xpath used to retrieve property
-     * @return a Value wrapping the value returned by the given xpath expression
+     * @return a trimmed string representation of the value returned by the given xpath expression or <tt>null</tt>
+     * if no value is present
+     * @throws IllegalArgumentException if an invalid xpath was given
+     * @see #queryRawString(String)
+     */
+    public String queryString(String path) {
+        return Value.of(queryRawString(path)).trim();
+    }
+
+    /**
+     * Queries a {@link sirius.kernel.commons.Value} by evaluating the given xpath.
+     *
+     * @param path the xpath used to retrieve property.
+     * @return a Value wrapping the value returned by the given xpath expression. Note that string values are
+     * automatically trimmed.
      * @throws java.lang.IllegalArgumentException if an invalid xpath was given
+     * @see #queryRawValue(String)
      */
     @Nonnull
     public Value queryValue(String path) {
         return Value.of(queryString(path));
+    }
+
+    /**
+     * Queries a {@link sirius.kernel.commons.Value} by evaluating the given xpath.
+     *
+     * @param path the xpath used to retrieve property.
+     * @return a Value wrapping the value returned by the given xpath expression. Note that this will return the
+     * unmodified (untrimmed) contents wrapped as value.
+     * @throws java.lang.IllegalArgumentException if an invalid xpath was given
+     * @see #queryValue(String)
+     */
+    @Nonnull
+    public Value queryRawValue(String path) {
+        return Value.of(queryRawString(path));
     }
 
     /**
