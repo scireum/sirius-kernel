@@ -708,6 +708,7 @@ public class Value {
      *
      * @return {@link Value#EMPTY} if an empty string is wrapped otherwise <tt>this</tt> will be returned
      */
+    @Nonnull
     public Value replaceEmptyWithNull() {
         if (isEmptyString()) {
             return Value.EMPTY;
