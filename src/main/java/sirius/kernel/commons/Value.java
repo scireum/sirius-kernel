@@ -717,6 +717,23 @@ public class Value {
     }
 
     /**
+     * Boilerplate method which will replace empty strings and "only whitespace" strings by <tt>null</tt>.
+     * <p>
+     * Note that if a string is present, it will remain unprocessed (untrimmed) within the value.
+     *
+     * @return {@link Value#EMPTY} if an empty string or one that only consists of whitespaced is wrapped,
+     * otherwise <tt>this</tt> will be returned
+     */
+    @Nonnull
+    public Value replaceWhitespaceWithNull() {
+        if (trimmed().isEmptyString()) {
+            return Value.EMPTY;
+        } else {
+            return this;
+        }
+    }
+
+    /**
      * Returns the wrapped data converted to a string like {@link #asString()}
      * while "smart rounding" ({@link NLS#smartRound(double)} <tt>Double</tt> and <tt>BigDecimal</tt> values.
      * <p>
