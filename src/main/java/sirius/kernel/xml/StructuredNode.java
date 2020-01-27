@@ -274,7 +274,9 @@ public class StructuredNode {
      * @see #queryRawString(String)
      */
     public String queryString(String path) {
-        return Value.of(queryRawString(path)).trim();
+        // The internal call to Value.asString will perform a trim but still yield null if the original
+        // value is null
+        return Value.of(queryRawString(path)).asOptionalString().orElse(null);
     }
 
     /**
