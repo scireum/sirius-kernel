@@ -625,9 +625,15 @@ public class Value {
     /**
      * Returns the data converted to a string, or <tt>null</tt> if the wrapped value is null
      * <p>
-     * The conversion method used is {@link NLS#toMachineString(Object)}
+     * The conversion method used is {@link NLS#toMachineString(Object)}. <b>Note</b> that this method will
+     * perform an automatic {@link String#trim()} if the wrapped value is a String. Use {@link #getRawString()}
+     * to suppress this behaviour.
+     * <p>
+     * Also note that there is a null-safe method {@link #asString()} or {@link #asString(String)} which replaces
+     * <tt>null</tt> with an empty string.
      *
      * @return a string representation of the wrapped object or <tt>null</tt> if the wrapped value is <tt>null</tt>
+     * @see #getRawString()
      */
     @Nullable
     public String getString() {
@@ -637,11 +643,16 @@ public class Value {
     /**
      * Returns the wrapped data converted to a string or <tt>defaultValue</tt> if the wrapped value is <tt>null</tt>
      * <p>
-     * The conversion method used is {@link NLS#toMachineString(Object)}
+     * The conversion method used is {@link NLS#toMachineString(Object)}. <b>Note</b> that this method will
+     * perform an automatic {@link String#trim()} if the wrapped value is a String. Use {@link #getRawString()}
+     * to suppress this behaviour. However, be aware that this method will not replace <tt>null</tt> with an empty
+     * string.
      *
      * @param defaultValue the value to use if the wrapped object was <tt>null</tt>
      * @return a string representation of the wrapped object
      * or <tt>defaultValue</tt> if the wrapped value is <tt>null</tt>
+     * @see #getString()
+     * @see #getRawString()
      */
     @Nonnull
     public String asString(@Nonnull String defaultValue) {
@@ -651,18 +662,76 @@ public class Value {
     /**
      * Returns the wrapped data converted to a string or <tt>""</tt> if the wrapped value is <tt>null</tt>
      * <p>
-     * The conversion method used is {@link NLS#toMachineString(Object)}
+     * This is a convenience method for {@code asString("")}. <b>Note</b> that this method will
+     * * perform an automatic {@link String#trim()} if the wrapped value is a String.
      *
      * @return a string representation of the wrapped object or <tt>""</tt> if the wrapped value is <tt>null</tt>
+     * @see #getString()
+     * @see #getRawString()
      */
     @Nonnull
     public String asString() {
         return NLS.toMachineString(data);
     }
 
+    /**
+     * Returns a string representation of the wrapped value by using {@link #asString()}.
+     *
+     * @return a string representation of the wrapped value
+     */
     @Override
     public String toString() {
         return asString();
+    }
+
+    /**
+     * Returns the unprocessed string representation of the wrapped value.
+     * <p>
+     * In contrast to {@link #getString()} this method <b>will not</b> trim the wrapped string value.
+     *
+     * @return either the raw and untrimmed string value if one is wrapped, otherwise the same as {@link #getString()}
+     */
+    @Nullable
+    public String getRawString() {
+        if (data instanceof String) {
+            return (String) data;
+        }
+
+        return getString();
+    }
+
+    /**
+     * Replaces "" with <tt>null</tt> and returns the newly wrapped value.
+     * <p>
+     * Note that this will only check for an empty string. If whitespaces like "   " should also be
+     * replaced with <tt>null</tt> {@code this.trimmed().replaceEmptyWithNull()} has to be called.
+     *
+     * @return {@link Value#EMPTY} if an empty string is wrapped otherwise <tt>this</tt> will be returned
+     */
+    @Nonnull
+    public Value replaceEmptyWithNull() {
+        if (isEmptyString()) {
+            return Value.EMPTY;
+        } else {
+            return this;
+        }
+    }
+
+    /**
+     * Boilerplate method which will replace empty strings and "only whitespace" strings by <tt>null</tt>.
+     * <p>
+     * Note that if a string is present, it will remain unprocessed (untrimmed) within the value.
+     *
+     * @return {@link Value#EMPTY} if an empty string or one that only consists of whitespaced is wrapped,
+     * otherwise <tt>this</tt> will be returned
+     */
+    @Nonnull
+    public Value replaceWhitespaceWithNull() {
+        if (trimmed().isEmptyString()) {
+            return Value.EMPTY;
+        } else {
+            return this;
+        }
     }
 
     /**
@@ -1349,12 +1418,32 @@ public class Value {
      * Returns a trimmed version of the string representation of the wrapped value.
      * <p>
      * The conversion method used is {@link #asString()}, therefore an empty value will yield {@code ""}.
+     * <p>
+     * Note that calling this method is almost always pointless as {@link #asString()} does an automatic trim.
+     * Therefore this will only provide an effect if a non-string value is wrapped which yields a string representation
+     * with leading or trailing whitespaces.
      *
      * @return a string representing the wrapped value without leading or trailing spaces.
+     * @see String#trim()
+     * @see #trimmed()
      */
     @Nonnull
     public String trim() {
         return asString().trim();
+    }
+
+    /**
+     * Trims the internal contents and returns the resulting value.
+     *
+     * @return a value which wraps the trimmed contents of this value.
+     * @see String#trim()
+     */
+    public Value trimmed() {
+        if (isNull()) {
+            return this;
+        }
+
+        return Value.of(asString().trim());
     }
 
     /**
@@ -1578,6 +1667,15 @@ public class Value {
     }
 
     /**
+     * Returns a wrapped string which represents the {@link #toUpperCase() upper-case} representation of this value.
+     *
+     * @return a value which wraps the upper-cased version of this value
+     */
+    public Value upperCase() {
+        return isNull() ? this : Value.of(asString().toUpperCase());
+    }
+
+    /**
      * Returns an lowercase version of the string representation of the wrapped value.
      *
      * @return an lowercase version of the string representation of the wrapped value or {@code ""} if the
@@ -1589,6 +1687,15 @@ public class Value {
             return "";
         }
         return asString().toLowerCase();
+    }
+
+    /**
+     * Returns a wrapped string which represents the {@link #toLowerCase() lower-case} representation of this value.
+     *
+     * @return a value which wraps the lower-cased version of this value
+     */
+    public Value lowerCase() {
+        return isNull() ? this : Value.of(asString().toLowerCase());
     }
 
     /**
