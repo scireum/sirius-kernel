@@ -273,6 +273,7 @@ public class StructuredNode {
      * @throws IllegalArgumentException if an invalid xpath was given
      * @see #queryRawString(String)
      */
+    @Nullable
     public String queryString(String path) {
         // The internal call to Value.asString will perform a trim but still yield null if the original
         // value is null
