@@ -21,7 +21,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -162,7 +162,7 @@ public class Strings {
      *                 correctly
      * @return <tt>true</tt> if both values are empty or if both strings are equal - <tt>false</tt> otherwise
      */
-    public static boolean areEqual(@Nullable Object left, @Nullable Object right, Function<Object, Object> modifier) {
+    public static boolean areEqual(@Nullable Object left, @Nullable Object right, UnaryOperator<Object> modifier) {
         Object effectiveLeft = modifier.apply(left);
         Object effectiveRight = modifier.apply(right);
         if (isEmpty(effectiveLeft)) {
@@ -180,7 +180,7 @@ public class Strings {
      * @return <tt>true</tt> if both values are empty or if both strings are equal - <tt>false</tt> otherwise
      */
     public static boolean areEqual(@Nullable Object left, @Nullable Object right) {
-        return areEqual(left, right, Function.identity());
+        return areEqual(left, right, UnaryOperator.identity());
     }
 
     /**
@@ -570,7 +570,7 @@ public class Strings {
      * @return the input string where are occurrences of the given regular expression have been replaced by the result
      * of the replacement function.
      */
-    public static String replaceAll(Pattern regEx, String input, Function<String, String> replacement) {
+    public static String replaceAll(Pattern regEx, String input, UnaryOperator<String> replacement) {
         if (isEmpty(input)) {
             return input;
         }
