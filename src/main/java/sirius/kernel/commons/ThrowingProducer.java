@@ -9,20 +9,24 @@
 package sirius.kernel.commons;
 
 /**
- * Implements the {@link java.util.function.Supplier} pattern but permits the factory method to throw an exception.
+ * Implements the {@link java.util.function.Supplier} pattern but permits the factory method to throw a specific exception.
  * <p>
  * This sometimes might simplify exception handling. If this feature is not required use a plain
  * {@link java.util.function.Supplier} instead.
- * <p>
- * If the lambda is only permitted to throw a specific exception and should handle everything
- * else internally, use a {@link ThrowingProducer}.
  *
  * @param <T> the type of results supplied by this producer
+ * @param <E> the type of exceptions being thrown by the inner lambda
  * @see Callback
  * @see Processor
- * @see ThrowingProducer
  */
 @FunctionalInterface
-public interface Producer<T> extends ThrowingProducer<T, Exception> {
+public interface ThrowingProducer<T, E extends Exception> {
 
+    /**
+     * Gets a result.
+     *
+     * @return a result
+     * @throws E might be thrown and should be handled by the outside code
+     */
+    T create() throws E;
 }

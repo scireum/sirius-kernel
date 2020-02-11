@@ -13,19 +13,16 @@ package sirius.kernel.commons;
  * <p>
  * This sometimes might simplify exception handling. If this feature is not required use a plain
  * {@link java.util.function.Consumer} instead.
+ * <p>
+ * If the lambda is only permitted to throw a specific exception and should handle everything
+ * else internally, use a {@link ThrowingCallback}.
  *
  * @param <T> the type of the object passed to the callback
  * @see Processor
  * @see Producer
+ * @see ThrowingCallback
  */
 @FunctionalInterface
-public interface Callback<T> {
-    /**
-     * Invokes the callback with <tt>value</tt>
-     *
-     * @param value the value to supply to the callback.
-     * @throws Exception the callee may throw any exception during the computation. Therefore the caller should
-     *                   implement proper error handling without relying on specific exception types.
-     */
-    void invoke(T value) throws Exception;
+public interface Callback<T> extends ThrowingCallback<T, Exception> {
+
 }
