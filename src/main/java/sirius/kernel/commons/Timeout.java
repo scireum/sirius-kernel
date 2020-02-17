@@ -43,6 +43,6 @@ public class Timeout {
      * <tt>false</tt> otherwise
      */
     public boolean notReached() {
-        return System.currentTimeMillis() < timestamp;
+        return !isReached();
     }
 }
