@@ -18,7 +18,7 @@ public class Timeout {
     private final long timestamp;
 
     /**
-     * Creates a new timeout which is toggled after to given amount of time.
+     * Creates a new timeout which is toggled after the given amount of time.
      *
      * @param timeoutDuration the amount of time after which the timeout is reached
      */
