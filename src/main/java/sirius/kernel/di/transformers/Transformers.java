@@ -67,7 +67,6 @@ public class Transformers {
      * @param <T>    the generic type of the target
      * @return a transformed object matching the given type or <tt>null</tt> to indicate that no conversion was possible
      */
-    @SuppressWarnings("unchecked")
     public <T> T make(Object source, Class<T> target) {
         Class<?> classToTransform = source.getClass();
 
