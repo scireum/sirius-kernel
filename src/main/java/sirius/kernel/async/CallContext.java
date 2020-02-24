@@ -16,6 +16,7 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.health.Counter;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
@@ -360,13 +361,30 @@ public class CallContext {
      */
     public String getLang() {
         if (lang == null) {
-            lang = NLS.getDefaultLanguage();
-            if (lazyLanguageInstaller != null) {
-                lazyLanguageInstaller.accept(this);
+            invokeLazyLanguageInstaller();
+            if (lang == null) {
+                lang = NLS.getDefaultLanguage();
             }
         }
 
         return lang;
+    }
+
+    private void invokeLazyLanguageInstaller() {
+        // We obtain a local copy and set the field to null, to avoid a circular
+        // execution in case the language installer itself accesses getLang...
+        Consumer<CallContext> localCopy = this.lazyLanguageInstaller;
+        if (localCopy != null) {
+            this.lazyLanguageInstaller = null;
+            try {
+                localCopy.accept(this);
+            } catch (Exception e) {
+                Exceptions.handle()
+                          .to(Log.SYSTEM)
+                          .withSystemErrorMessage("An error occurred while computing the current language: %s (%s)")
+                          .handle();
+            }
+        }
     }
 
     /**
