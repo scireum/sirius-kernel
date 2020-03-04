@@ -10,11 +10,12 @@ package sirius.kernel.cache
 
 import sirius.kernel.BaseSpecification
 import sirius.kernel.Scope
+import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Wait
 
-@Scope(Scope.SCOPE_NIGHTLY)
 class ManagedCacheSpec extends BaseSpecification {
 
+    @Scope(Scope.SCOPE_NIGHTLY)
     def "test run eviction removes old entries"() {
         given:
         def cache = new ManagedCache("test-cache", null, null)
@@ -30,5 +31,24 @@ class ManagedCacheSpec extends BaseSpecification {
         cache.getSize() == 2
         cache.get("key3") == "value3"
         cache.get("key4") == "value4"
+    }
+
+    def "optional value computer works"() {
+        given:
+        def valueComputer = { key ->
+            if (Strings.isEmpty(key)) {
+                return Optional.empty()
+            }
+            if (key.startsWith("empty")) {
+                return Optional.empty()
+            } else {
+                return Optional.of(key.toUpperCase())
+            }
+        }
+        def cache = new ManagedCache("test-cache", OptionalValueComputer.of(valueComputer), null)
+        expect:
+        cache.get("") == null
+        cache.getOptional("key") == Optional.of("KEY")
+        cache.getOptional("empty_key") == Optional.empty()
     }
 }

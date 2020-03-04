@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -181,6 +182,17 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     @Override
     public V get(K key) {
         return get(key, this.computer);
+    }
+
+    /**
+     * Returns the value associated with the given key wrapped in an {@link Optional}.
+     *
+     * @param key the key used to retrieve the value in the cache
+     * @return the cached value or {@link Optional#empty()} if neither a valid value was found, nor one could be
+     * computed.
+     */
+    public Optional<V> getOptional(K key) {
+        return Optional.ofNullable(get(key, this.computer));
     }
 
     @Override
