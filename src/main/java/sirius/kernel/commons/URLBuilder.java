@@ -126,4 +126,13 @@ public class URLBuilder {
     public String toString() {
         return url.toString();
     }
+
+    /**
+     * Builds the url and returns it as a string.
+     *
+     * @return the url that was built as string
+     */
+    public String build() {
+        return url.toString();
+    }
 }
