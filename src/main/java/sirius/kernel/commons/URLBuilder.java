@@ -10,6 +10,8 @@ package sirius.kernel.commons;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Used to succesively build URLs.
@@ -134,5 +136,17 @@ public class URLBuilder {
      */
     public String build() {
         return url.toString();
+    }
+
+    /**
+     * Creates a {@link URL URL object} from the resulting string of this builder.
+     * <p>
+     * Only works if the url contains a valid protocol.
+     *
+     * @return the url that was built as a {@link URL URL object}
+     * @throws MalformedURLException should only happen if no protocol or an invalid protocol has been given
+     */
+    public URL asURL() throws MalformedURLException {
+        return new URL(url.toString());
     }
 }
