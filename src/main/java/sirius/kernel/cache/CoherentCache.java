@@ -59,6 +59,16 @@ class CoherentCache<V> extends ManagedCache<String, V> {
     }
 
     @Override
+    public void removeAll(String discriminator, String testInput) {
+        CacheManager.removeAll(this, discriminator, testInput);
+    }
+
+    protected void removeAllLocal(String discriminator, String testInput) {
+        super.removeAll(discriminator, testInput);
+    }
+
+    @Override
+    @Deprecated
     public void removeIf(@Nonnull Predicate<CacheEntry<String, V>> predicate) {
         if (data == null) {
             return;
@@ -66,6 +76,8 @@ class CoherentCache<V> extends ManagedCache<String, V> {
 
         data.asMap().values().stream().filter(predicate).map(CacheEntry::getKey).forEach(this::remove);
     }
+
+
 
     @Override
     public void put(String key, V value) {
