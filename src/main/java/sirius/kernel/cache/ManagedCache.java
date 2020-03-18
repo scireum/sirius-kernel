@@ -347,12 +347,12 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
 
     @Override
     public List<Long> getUseHistory() {
-        return usesHistory;
+        return Collections.unmodifiableList(usesHistory);
     }
 
     @Override
     public List<Long> getHitRateHistory() {
-        return hitRateHistory;
+        return Collections.unmodifiableList(hitRateHistory);
     }
 
     @Override
