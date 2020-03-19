@@ -28,9 +28,10 @@ public class MemoryBasedHealthMonitor implements ExceptionHandler, LogTap {
     protected final List<Incident> incidents = Collections.synchronizedList(new ArrayList<Incident>());
     protected final List<LogMessage> messages = Collections.synchronizedList(new ArrayList<LogMessage>());
 
-    @ConfigValue("health.memory.max-errors")
+    @ConfigValue("health.memory.maxErrors")
     private int maxErrors;
-    @ConfigValue("health.memory.max-logs")
+
+    @ConfigValue("health.memory.maxLogs")
     private int maxMsg;
 
     private final Counter numIncidents = new Counter();
