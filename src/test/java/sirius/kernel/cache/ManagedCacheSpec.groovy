@@ -66,10 +66,10 @@ class ManagedCacheSpec extends BaseSpecification {
         cache.put("B", Tuple.create("1", "2"))
         cache.put("C", Tuple.create("2", "1"))
         cache.put("D", Tuple.create("3", "3"))
-        and: "Remove all entries where the frist is a '1' and then all where the second is a '1'"
+        and: "Remove all entries where the first is a '1' and then all where the second is a '1'"
         cache.removeAll("FIRST", "1")
         cache.removeAll("SECOND", "1")
-        then: "Ensore that the correct entries were removed and others remained in cache"
+        then: "Ensure that the correct entries were removed and others remained in cache"
         cache.get("A") != null
         cache.get("B") == null
         cache.get("C") == null

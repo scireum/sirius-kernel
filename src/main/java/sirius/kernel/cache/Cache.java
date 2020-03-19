@@ -143,7 +143,7 @@ public interface Cache<K, V> {
     void remove(@Nonnull K key);
 
     /**
-     * Adds a remove handler identified with the given <tt>disciminator</tt>.
+     * Adds a remove handler identified with the given <tt>discriminator</tt>.
      * <p>
      * Such handlers can be invoked via {@link #removeAll(String, String)} and use the given <tt>testInput</tt>
      * to filter an remove all matching entries from the cache. This can be used to remove a bunch of entries at
@@ -151,11 +151,11 @@ public interface Cache<K, V> {
      * <p>
      * Being all string based, this also works for coherent caches by simply broadcasting two short string values.
      *
-     * @param disciminator the name of the remover
+     * @param discriminator the name of the remover
      * @param test         the predicate which determines if a given entry matches a given test input
      * @return the cache itself for fluent method calls
      */
-    Cache<K, V> addRemover(@Nonnull String disciminator, @Nonnull BiPredicate<String, CacheEntry<K, V>> test);
+    Cache<K, V> addRemover(@Nonnull String discriminator, @Nonnull BiPredicate<String, CacheEntry<K, V>> test);
 
     /**
      * Invokes the given remover with the given test input.
