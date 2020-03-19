@@ -45,7 +45,7 @@ public interface CacheCoherence {
      * @param discriminator the discriminator used to select the appropriate delete handler
      * @param testInput     the input used by the predicate in order to determine which entities to remove
      */
-    void removeAll(CoherentCache<?> cache, String discriminator, String testInput);
+    void removeAll(Cache<String, ?> cache, String discriminator, String testInput);
 
     /**
      * Notifies the other nodes about a put on this node.
