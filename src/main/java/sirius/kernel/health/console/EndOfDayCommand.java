@@ -48,7 +48,7 @@ public class EndOfDayCommand implements Command {
             output.apply("%30s %20s: %-30s",
                          info.getTask().getName(),
                          NLS.toUserString(info.getLastExecution()),
-                         info.getFormattedLastDurartion());
+                         info.getFormattedLastDuration());
             output.line(info.getLastErrorMessage());
             output.blankLine();
         }
@@ -61,7 +61,7 @@ public class EndOfDayCommand implements Command {
         if (taskInfo.isPresent()) {
             output.apply("Executed %s - Took: %s, Success: %s, Last Error: %s",
                          taskInfo.get().getTask().getName(),
-                         taskInfo.get().getFormattedLastDurartion(),
+                         taskInfo.get().getFormattedLastDuration(),
                          taskInfo.get().isLastExecutionWasSuccessful(),
                          taskInfo.get().getLastErrorMessage());
         } else {

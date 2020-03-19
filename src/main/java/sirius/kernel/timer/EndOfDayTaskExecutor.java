@@ -83,7 +83,7 @@ public class EndOfDayTaskExecutor implements EveryDay {
             EndOfDayTaskInfo info = executeTask(task);
             Log.BACKGROUND.INFO("Executed %s - Took: %s, Success: %s, Last Error: %s",
                                 task.getName(),
-                                info.getFormattedLastDurartion(),
+                                info.getFormattedLastDuration(),
                                 info.isLastExecutionWasSuccessful(),
                                 info.getLastErrorMessage());
         }
@@ -125,7 +125,7 @@ public class EndOfDayTaskExecutor implements EveryDay {
                                               task.getClass())
                       .handle();
         } finally {
-            info.lastDurartion = w.elapsedMillis();
+            info.lastDuration = w.elapsedMillis();
         }
 
         return info;

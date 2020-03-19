@@ -8,6 +8,7 @@
 
 package sirius.kernel.timer;
 
+import sirius.kernel.commons.Timeout;
 import sirius.kernel.di.std.Register;
 
 /**
@@ -16,13 +17,17 @@ import sirius.kernel.di.std.Register;
  * Most systems need to perform cleanup tasks on a daily basis, which are executed during idle periods in the night.
  * However, implementing them a {@link EveryDay} requires the admin to pick an appropriate execution hour for each task.
  * <p>
- * All classes implementing this interface and wearing the {@link Register} annotation,
- * will be discovered and executed by the {@link EndOfDayTaskExecutor}. Processing will start at a defined time (10pm)
- * by default and will continue until 5am (including). This way all tasks are executed (one after another) so that
- * the system isn't overloaded and execution is automatically stopped once the daily workload rises.
+ * All classes implementing this interface and wearing the {@link Register} annotation, will be discovered and executed
+ * by the {@link EndOfDayTaskExecutor}. Processing will start at a defined time (10pm) by default and will continue
+ * until 5am (including). This way all tasks are executed (one after another) so that the system isn't overloaded and
+ * execution is automatically stopped once the daily workload rises.
  * <p>
  * Note that the list of tasks is shuffled before each execution so that no single task can jam up the execution
  * permanently.
+ * <p>
+ * Note that the {@link EndOfDayTaskExecutor} only checks if processing should continue before beginning with
+ * the next task. If a single task has the possibility of running for a long period (e.g. greater than one hour),
+ * the task itself should protect the system (e.g. by limiting its runtime via {@link Timeout}.
  */
 public interface EndOfDayTask {
 

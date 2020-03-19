@@ -46,8 +46,8 @@ public class EndOfDayTaskInfo {
      *
      * @return the execution duration in millis
      */
-    public long getLastDurartion() {
-        return lastDurartion;
+    public long getLastDuration() {
+        return lastDuration;
     }
 
     /**
@@ -55,8 +55,8 @@ public class EndOfDayTaskInfo {
      *
      * @return a user readable string representing the last execution duration
      */
-    public String getFormattedLastDurartion() {
-        return NLS.convertDuration(lastDurartion, true, true);
+    public String getFormattedLastDuration() {
+        return NLS.convertDuration(lastDuration, true, true);
     }
 
     /**
