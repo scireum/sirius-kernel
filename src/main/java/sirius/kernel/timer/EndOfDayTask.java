@@ -16,9 +16,9 @@ import sirius.kernel.di.std.Register;
  * Most systems need to perform cleanup tasks on a daily basis, which are executed during idle periods in the night.
  * However, implementing them a {@link EveryDay} requires the admin to pick an appropriate execution hour for each task.
  * <p>
- * Therefore this interface is created, and all classes which implement it an wear the {@link Register} annotation,
+ * All classes implementing this interface and wearing the {@link Register} annotation,
  * will be discovered and executed by the {@link EndOfDayTaskExecutor}. Processing will start at a defined time (10pm)
- * be default and will continue up until 5am (including). This way all tasks are executed (one after another) so that
+ * by default and will continue until 5am (including). This way all tasks are executed (one after another) so that
  * the system isn't overloaded and execution is automatically stopped once the daily workload rises.
  * <p>
  * Note that the list of tasks is shuffled before each execution so that no single task can jam up the execution

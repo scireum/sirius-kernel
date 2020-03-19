@@ -139,7 +139,7 @@ public class EndOfDayTaskExecutor implements EveryDay {
     }
 
     /**
-     * Lists the recored execution infos for all end of day tasks.
+     * Lists the recorded execution infos for all end of day tasks.
      *
      * @return a list of execution infos for all end of day tasks
      */

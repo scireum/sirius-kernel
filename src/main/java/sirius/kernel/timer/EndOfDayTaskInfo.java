@@ -19,7 +19,7 @@ public class EndOfDayTaskInfo {
 
     protected EndOfDayTask task;
     protected LocalDateTime lastExecution;
-    protected long lastDurartion;
+    protected long lastDuration;
     protected boolean lastExecutionWasSuccessful;
     protected String lastErrorMessage;
 
