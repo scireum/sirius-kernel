@@ -15,6 +15,7 @@ import sirius.kernel.Stoppable;
 import sirius.kernel.async.Orchestration;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.TimeProvider;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Part;
@@ -29,7 +30,6 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -65,6 +65,9 @@ public class Timers implements Startable, Stoppable {
 
     @Part
     private Tasks tasks;
+
+    @Part
+    private TimeProvider timeProvider;
 
     @Part
     private Orchestration orchestration;
@@ -123,18 +126,18 @@ public class Timers implements Startable, Stoppable {
         public void run() {
             try {
                 runTenSecondTimers();
-                if (TimeUnit.MINUTES.convert(System.currentTimeMillis() - lastOneMinuteExecution, TimeUnit.MILLISECONDS)
-                    >= 1) {
+                if (TimeUnit.MINUTES.convert(timeProvider.currentTimeMillis() - lastOneMinuteExecution,
+                                             TimeUnit.MILLISECONDS) >= 1) {
                     runOneMinuteTimers();
                 }
-                if (TimeUnit.MINUTES.convert(System.currentTimeMillis() - lastTenMinutesExecution,
+                if (TimeUnit.MINUTES.convert(timeProvider.currentTimeMillis() - lastTenMinutesExecution,
                                              TimeUnit.MILLISECONDS) >= 10) {
                     runTenMinuteTimers();
                 }
-                if (TimeUnit.MINUTES.convert(System.currentTimeMillis() - lastHourExecution, TimeUnit.MILLISECONDS)
-                    >= 60) {
+                if (TimeUnit.MINUTES.convert(timeProvider.currentTimeMillis() - lastHourExecution,
+                                             TimeUnit.MILLISECONDS) >= 60) {
                     runOneHourTimers();
-                    runEveryDayTimers(LocalDateTime.now().getHour());
+                    runEveryDayTimers(timeProvider.localTimeNow().getHour());
                 }
             } catch (Exception t) {
                 Exceptions.handle(LOG, t);
@@ -248,12 +251,10 @@ public class Timers implements Startable, Stoppable {
         try {
             timerLock.lock();
             try {
-                if (timer == null) {
-                    timer = new Timer(true);
-                } else {
+                if (timer != null) {
                     timer.cancel();
-                    timer = new Timer(true);
                 }
+                timer = new Timer(true);
                 timer.schedule(new InnerTimerTask(), TEN_SECONDS_IN_MILLIS, TEN_SECONDS_IN_MILLIS);
             } finally {
                 timerLock.unlock();
@@ -314,7 +315,7 @@ public class Timers implements Startable, Stoppable {
         for (final TimedTask task : everyTenSeconds.getParts()) {
             executeTask(task);
         }
-        lastTenSecondsExecution = System.currentTimeMillis();
+        lastTenSecondsExecution = timeProvider.currentTimeMillis();
     }
 
     /**
@@ -324,7 +325,7 @@ public class Timers implements Startable, Stoppable {
         for (final TimedTask task : everyMinute.getParts()) {
             executeTask(task);
         }
-        lastOneMinuteExecution = System.currentTimeMillis();
+        lastOneMinuteExecution = timeProvider.currentTimeMillis();
     }
 
     private void executeTask(final TimedTask task) {
@@ -357,7 +358,7 @@ public class Timers implements Startable, Stoppable {
         for (final TimedTask task : everyTenMinutes.getParts()) {
             executeTask(task);
         }
-        lastTenMinutesExecution = System.currentTimeMillis();
+        lastTenMinutesExecution = timeProvider.currentTimeMillis();
     }
 
     /**
@@ -367,7 +368,7 @@ public class Timers implements Startable, Stoppable {
         for (final TimedTask task : everyHour.getParts()) {
             executeTask(task);
         }
-        lastHourExecution = System.currentTimeMillis();
+        lastHourExecution = timeProvider.currentTimeMillis();
     }
 
     /**
@@ -391,13 +392,7 @@ public class Timers implements Startable, Stoppable {
         return Collections.unmodifiableCollection(everyDay.getParts());
     }
 
-    /**
-     * Executes the given task if it is scheduled for the given hour.
-     *
-     * @param currentHour the hour to pretend
-     * @param task        the task to execute
-     */
-    public void runDailyTimer(int currentHour, EveryDay task) {
+    private void runDailyTimer(int currentHour, EveryDay task) {
         Optional<Integer> executionHour = getExecutionHour(task);
         if (!executionHour.isPresent()) {
             LOG.WARN("Skipping daily timer %s as config key '%s' is missing!",
