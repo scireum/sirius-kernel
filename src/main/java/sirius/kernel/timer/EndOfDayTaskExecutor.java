@@ -71,10 +71,10 @@ public class EndOfDayTaskExecutor implements EveryDay {
         List<EndOfDayTask> tasksToExecute = new ArrayList<>(endOfDayTasks.getParts());
         Collections.shuffle(tasksToExecute);
 
-        IntPredicate endCondition = determineEndCondition();
+        IntPredicate continueCondition = determineValidationCondition();
         for (EndOfDayTask task : tasksToExecute) {
             int currentHour = timeProvider.localTimeNow().getHour();
-            if (endCondition.test(currentHour)) {
+            if (!continueCondition.test(currentHour)) {
                 Log.BACKGROUND.INFO("Aborting end of day tasks, as the time limit has been hit...");
                 return;
             }
@@ -91,18 +91,16 @@ public class EndOfDayTaskExecutor implements EveryDay {
 
     /**
      * Determines if processing should keep running.
-     * <p>
-     * If the <tt>endHour</tt> is greater than the start hour, we stop processing as soon as the current hour is past
-     * the end hour. Otherwise (which is probably the most common case) we stop processing if the current hour is past
-     * the end hour but less thant the original start hour.
      *
      * @return a condition which yields <tt>true</tt> as soon as processing should be aborted
      */
-    private IntPredicate determineEndCondition() {
+    private IntPredicate determineValidationCondition() {
         if (startHour < endHour) {
-            return currentHour -> currentHour > endHour;
+            // If the start hour is before the end hour, we can simply check for the exact time slice...
+            return currentHour -> currentHour >= startHour && currentHour <= endHour;
         } else {
-            return currentHour -> currentHour > endHour && currentHour < startHour;
+            // otherwise we check from start to midnight and from midnight to end...
+            return currentHour -> currentHour >= startHour || currentHour <= endHour;
         }
     }
 
