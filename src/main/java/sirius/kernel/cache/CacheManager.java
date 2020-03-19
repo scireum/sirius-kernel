@@ -289,7 +289,7 @@ public class CacheManager {
      * @param discriminator the name of the delete handler to invoke
      * @param testInput     the input for the predicate to identify entries to delete
      */
-    public static void removeAllLocally(String cacheName, String discriminator, String testInput) {
+    public static void coherentCacheRemoveAllLocally(String cacheName, String discriminator, String testInput) {
         ManagedCache<?, ?> cache = caches.get(cacheName);
         if (cache instanceof CoherentCache) {
             ((CoherentCache<?>) cache).removeAllLocal(discriminator, testInput);
