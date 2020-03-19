@@ -41,7 +41,7 @@ public class EndOfDayTaskExecutor implements EveryDay {
     @ConfigValue("timer.daily.end-of-day")
     private int startHour;
 
-    @ConfigValue("health.endOfDayTasksLimit")
+    @ConfigValue("health.end-of-day-limit")
     private int endHour;
 
     @Part
