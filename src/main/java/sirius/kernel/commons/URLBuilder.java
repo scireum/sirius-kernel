@@ -144,9 +144,15 @@ public class URLBuilder {
      * Only works if the url contains a valid protocol.
      *
      * @return the url that was built as a {@link URL URL object}
-     * @throws MalformedURLException should only happen if no protocol or an invalid protocol has been given
+     * @throws IllegalStateException should only happen if no protocol or an invalid protocol has been given
      */
-    public URL asURL() throws MalformedURLException {
-        return new URL(url.toString());
+    public URL asURL() {
+        try {
+            return new URL(url.toString());
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException(Strings.apply(
+                    "Could not create URL: %s", e.getMessage()
+            ));
+        }
     }
 }
