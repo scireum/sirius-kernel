@@ -186,7 +186,7 @@ public class Exceptions {
          * already been taken care of.
          */
         @SuppressWarnings("squid:S1148")
-        @Explain("This log statement is our last restor when we're in deep trouble.")
+        @Explain("This log statement is our last resort when we're in deep trouble.")
         public HandledException handle() {
             if (ex instanceof HandledException) {
                 return (HandledException) ex;

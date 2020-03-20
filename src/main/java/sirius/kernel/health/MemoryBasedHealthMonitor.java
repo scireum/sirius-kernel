@@ -30,6 +30,7 @@ public class MemoryBasedHealthMonitor implements ExceptionHandler, LogTap {
 
     @ConfigValue("health.memory.max-errors")
     private int maxErrors;
+
     @ConfigValue("health.memory.max-logs")
     private int maxMsg;
 
