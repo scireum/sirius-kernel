@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
 /**
@@ -260,6 +261,38 @@ public class CacheManager {
     public static void signalPut(CoherentCache<?> cache, String key) {
         if (cacheCoherence != null) {
             cacheCoherence.signalPut(cache, key);
+        }
+    }
+
+    /**
+     * Notifies the other nodes about the delete handler to invoke.
+     * <p>
+     * This will invoke the delete handler previously registered via {@link Cache#addRemover(String, BiPredicate)}
+     * which will then remove all matching cache entries.
+     *
+     * @param cache         the cache to cleanup
+     * @param discriminator the name of the delete handler
+     * @param testInput     the input into the predicate to determine which entries to delete
+     */
+    public static void removeAll(CoherentCache<?> cache, String discriminator, String testInput) {
+        if (cacheCoherence != null) {
+            cacheCoherence.removeAll(cache, discriminator, testInput);
+        } else {
+            cache.removeAllLocal(discriminator, testInput);
+        }
+    }
+
+    /**
+     * Executes the delete handler locally.
+     *
+     * @param cacheName     the name of the cache to remove the entries from
+     * @param discriminator the name of the delete handler to invoke
+     * @param testInput     the input for the predicate to identify entries to delete
+     */
+    public static void coherentCacheRemoveAllLocally(String cacheName, String discriminator, String testInput) {
+        ManagedCache<?, ?> cache = caches.get(cacheName);
+        if (cache instanceof CoherentCache) {
+            ((CoherentCache<?>) cache).removeAllLocal(discriminator, testInput);
         }
     }
 

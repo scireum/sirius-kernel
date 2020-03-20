@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -26,9 +27,9 @@ import java.util.function.Predicate;
  * time so that only values which are really used remain in the cache. Therefore system resources (most essentially
  * heap storage) is released if no longer required.
  * <p>
- * A new Cache is created by invoking {@link CacheManager#createCache(String)}. The maximal size as well as the
+ * A new Cache is created by invoking {@link CacheManager#createLocalCache(String)}. The maximal size as well as the
  * time to live value for each entry is set via the <tt>cache.[cacheName]</tt> extension. Additionally
- * {@link CacheManager#createCache(String, ValueComputer, ValueVerifier)} can be used to supply a
+ * {@link CacheManager#createLocalCache(String, ValueComputer, ValueVerifier)} can be used to supply a
  * <tt>ValueComputer</tt> as well as a <tt>ValueVerifier</tt>. Those classes are responsible for creating non-
  * existent cache values or to verify that cached values are still up to date, before they are returned to a
  * user of the cache.
@@ -142,10 +143,41 @@ public interface Cache<K, V> {
     void remove(@Nonnull K key);
 
     /**
+     * Adds a remove handler identified with the given <tt>discriminator</tt>.
+     * <p>
+     * Such handlers can be invoked via {@link #removeAll(String, String)} and use the given <tt>testInput</tt>
+     * to filter an remove all matching entries from the cache. This can be used to remove a bunch of entries at
+     * once, which can all be identified via a single property.
+     * <p>
+     * Being all string based, this also works for coherent caches by simply broadcasting two short string values.
+     *
+     * @param discriminator the name of the remover
+     * @param test         the predicate which determines if a given entry matches a given test input
+     * @return the cache itself for fluent method calls
+     */
+    Cache<K, V> addRemover(@Nonnull String discriminator, @Nonnull BiPredicate<String, CacheEntry<K, V>> test);
+
+    /**
+     * Invokes the given remover with the given test input.
+     * <p>
+     * Invokes a remover which has previously been registered via {@link #addRemover(String, BiPredicate)} and
+     * removes all entries for which the predicate returns <tt>true</tt> for the given <tt>testInput</tt>.
+     *
+     * @param discriminator the remover to invoke
+     * @param testInput     the input to pass into the predicate
+     */
+    void removeAll(@Nonnull String discriminator, String testInput);
+
+    /**
      * Removes all cached values for which the predicate returns true.
      *
      * @param predicate the predicate used to determine if a value should be removed from the cache.
+     * @deprecated Because in coherenct cache environments this can lead to stale cache entries if a cache on
+     * one nodes has a different set of keys than another, as the scan always runs locally.
+     * Use {@link #addRemover(String, BiPredicate)} and {@link #removeAll(String, String)} which scans each node
+     * individually.
      */
+    @Deprecated
     void removeIf(@Nonnull Predicate<CacheEntry<K, V>> predicate);
 
     /**
