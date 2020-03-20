@@ -342,7 +342,9 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
                                                              name));
         }
 
-        data.asMap().values().removeIf(entry -> predicate.test(testInput, entry));
+        if (data != null) {
+            data.asMap().values().removeIf(entry -> predicate.test(testInput, entry));
+        }
     }
 
     @Override
