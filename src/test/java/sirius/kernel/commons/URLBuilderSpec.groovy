@@ -8,7 +8,7 @@ class URLBuilderSpec extends BaseSpecification {
         when:
         def urlBuilder = new URLBuilder(baseUrl)
         then:
-        urlBuilder.toString() == expectedUrl
+        urlBuilder.build() == expectedUrl
 
         where:
         baseUrl                       | expectedUrl
@@ -32,7 +32,7 @@ class URLBuilderSpec extends BaseSpecification {
         when:
         def urlBuilder = new URLBuilder(protocol, host)
         then:
-        urlBuilder.toString() == expectedUrl
+        urlBuilder.build() == expectedUrl
 
         where:
         protocol                  | host                         | expectedUrl
@@ -53,7 +53,7 @@ class URLBuilderSpec extends BaseSpecification {
         def urlBuilder = new URLBuilder(URLBuilder.PROTOCOL_HTTP, "sirius-lib.net")
         urlBuilder.addPart(part)
         then:
-        urlBuilder.toString() == expectedUrl
+        urlBuilder.build() == expectedUrl
 
         where:
         part                      | expectedUrl
@@ -68,7 +68,7 @@ class URLBuilderSpec extends BaseSpecification {
         def urlBuilder = new URLBuilder(URLBuilder.PROTOCOL_HTTP, "sirius-lib.net")
         urlBuilder.addPart(*part)
         then:
-        urlBuilder.toString() == expectedUrl
+        urlBuilder.build() == expectedUrl
 
         where:
         part                                                 | expectedUrl
@@ -83,7 +83,7 @@ class URLBuilderSpec extends BaseSpecification {
         def urlBuilder = new URLBuilder(URLBuilder.PROTOCOL_HTTP, "sirius-lib.net")
         urlBuilder.addParameter("test", "test value")
         then:
-        urlBuilder.toString() == "http://sirius-lib.net?test=test+value"
+        urlBuilder.build() == "http://sirius-lib.net?test=test+value"
 
     }
 
@@ -92,7 +92,7 @@ class URLBuilderSpec extends BaseSpecification {
         def urlBuilder = new URLBuilder(URLBuilder.PROTOCOL_HTTP, "sirius-lib.net")
         urlBuilder.addParameter(key, value, urlencode)
         then:
-        urlBuilder.toString() == expectedUrl
+        urlBuilder.build() == expectedUrl
 
         where:
         key    | value        | urlencode | expectedUrl
@@ -113,7 +113,7 @@ class URLBuilderSpec extends BaseSpecification {
         urlBuilder.addParameter("test2", "value2")
         urlBuilder.addParameter("test3", "value3")
         then:
-        urlBuilder.toString() == "http://sirius-lib.net?test1=value1&test2=value2&test3=value3"
+        urlBuilder.build() == "http://sirius-lib.net?test1=value1&test2=value2&test3=value3"
     }
 
     def "can't add parts after a parameter has been added"() {
