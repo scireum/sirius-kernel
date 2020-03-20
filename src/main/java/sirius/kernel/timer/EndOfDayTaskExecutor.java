@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.IntPredicate;
 
 /**
  * Executes all {@link EndOfDayTask end of day tasks} in the given timeframe.
@@ -71,10 +70,8 @@ public class EndOfDayTaskExecutor implements EveryDay {
         List<EndOfDayTask> tasksToExecute = new ArrayList<>(endOfDayTasks.getParts());
         Collections.shuffle(tasksToExecute);
 
-        IntPredicate continueCondition = determineValidationCondition();
         for (EndOfDayTask task : tasksToExecute) {
-            int currentHour = timeProvider.localTimeNow().getHour();
-            if (!continueCondition.test(currentHour)) {
+            if (!inValidTimeWindow()) {
                 Log.BACKGROUND.INFO("Aborting end of day tasks, as the time limit has been hit...");
                 return;
             }
@@ -94,13 +91,15 @@ public class EndOfDayTaskExecutor implements EveryDay {
      *
      * @return a condition which yields <tt>true</tt> as soon as processing should be aborted
      */
-    private IntPredicate determineValidationCondition() {
+    private boolean inValidTimeWindow() {
+        int currentHour = timeProvider.localTimeNow().getHour();
+
         if (startHour < endHour) {
             // If the start hour is before the end hour, we can simply check for the exact time slice...
-            return currentHour -> currentHour >= startHour && currentHour <= endHour;
+            return currentHour >= startHour && currentHour <= endHour;
         } else {
             // otherwise we check from start to midnight and from midnight to end...
-            return currentHour -> currentHour >= startHour || currentHour <= endHour;
+            return currentHour >= startHour || currentHour <= endHour;
         }
     }
 
