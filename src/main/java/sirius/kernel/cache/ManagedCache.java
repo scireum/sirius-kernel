@@ -337,12 +337,14 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         BiPredicate<String, CacheEntry<K, V>> predicate = removers.get(discriminator);
 
         if (predicate == null) {
-            throw new IllegalArgumentException(Strings.apply("Unknwon discriminator '%s' for cache '%s'",
+            throw new IllegalArgumentException(Strings.apply("Unknown discriminator '%s' for cache '%s'",
                                                              discriminator,
                                                              name));
         }
 
-        data.asMap().values().removeIf(entry -> predicate.test(testInput, entry));
+        if (data != null) {
+            data.asMap().values().removeIf(entry -> predicate.test(testInput, entry));
+        }
     }
 
     @Override
