@@ -75,7 +75,7 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public Outcall postData(Context params, Charset charset) throws IOException {
-        connection.setRequestMethod(REQUEST_METHOD_POST);
+        markAsPostRequest();
         connection.setRequestProperty(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED);
         this.charset = charset;
 
@@ -101,9 +101,9 @@ public class Outcall {
      * Marks the request as POST request.
      *
      * @return the outcall itself for fluent method calls
-     * @throws ProtocolException if the method cannot be reset or if the requested method isn't valid for HTTP.
+     * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
-    public Outcall markAsPostRequest() throws ProtocolException {
+    public Outcall markAsPostRequest() throws IOException {
         connection.setRequestMethod(REQUEST_METHOD_POST);
         return this;
     }
