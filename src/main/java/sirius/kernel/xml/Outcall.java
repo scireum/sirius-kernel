@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -74,7 +75,7 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public Outcall postData(Context params, Charset charset) throws IOException {
-        connection.setRequestMethod(REQUEST_METHOD_POST);
+        markAsPostRequest();
         connection.setRequestProperty(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED);
         this.charset = charset;
 
@@ -93,6 +94,17 @@ public class Outcall {
         writer.write(sb.toString());
         writer.flush();
 
+        return this;
+    }
+
+    /**
+     * Marks the request as POST request.
+     *
+     * @return the outcall itself for fluent method calls
+     * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
+     */
+    public Outcall markAsPostRequest() throws IOException {
+        connection.setRequestMethod(REQUEST_METHOD_POST);
         return this;
     }
 
