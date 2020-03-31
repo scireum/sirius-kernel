@@ -148,6 +148,40 @@ public class Formatter {
         return this;
     }
 
+
+    /**
+     * Directly sets the given string value for the given property.
+     * <p>
+     * Sets the given string as replacement value for the named parameter. The value will not be sent through
+     * {@link NLS#toUserString(Object)} and therefore not trimmed etc.
+     *
+     * @param property the parameter in the template string which should be replaced
+     * @param value    the value which should be used as replacement
+     * @return <tt>this</tt> to permit fluent method chains
+     */
+    public Formatter setDirect(String property, String value) {
+        replacement.put(property, urlEncode ? Strings.urlEncode(value) : value);
+        return this;
+    }
+
+    /**
+     * Directly sets the given string value for the given property without performing any URL encoding.
+     * <p>
+     * Sets the given string as replacement value for the named parameter. The value will not be sent through
+     * {@link NLS#toUserString(Object)} and therefore not trimmed etc.
+     * <p>
+     * Note that this will not perform any URL encoding, even if {@link #createURLFormatter(String)} was used to
+     * create this formatter.
+     *
+     * @param property the parameter in the template string which should be replaced
+     * @param value    the value which should be used as replacement
+     * @return <tt>this</tt> to permit fluent method chains
+     */
+    public Formatter setDirectUnencoded(String property, String value) {
+        replacement.put(property, value);
+        return this;
+    }
+
     /**
      * Directly sets the given string value for the given property.
      * <p>
@@ -160,7 +194,9 @@ public class Formatter {
      *                  this method won't perform any url encoding, even if the formatter was created
      *                  using <tt>#createURLFormatter</tt>
      * @return <tt>this</tt> to permit fluent method chains
+     * @deprecated Use either {@link #setDirect(String, String)} or {@link #setDirectUnencoded(String, String)}
      */
+    @Deprecated
     public Formatter setDirect(String property, String value, boolean urlEncode) {
         replacement.put(property, urlEncode ? Strings.urlEncode(value) : value);
         return this;
