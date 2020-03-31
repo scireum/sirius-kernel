@@ -174,6 +174,29 @@ public class Formatter {
         return this;
     }
 
+    /**
+     * Sets the whole context as parameters in this formatter.
+     * <p>
+     * Calls <tt>#setDirect</tt> for each entry in the given map. Note that only
+     * <tt>toString</tt> is invoked on the value, therefore all strings remain untrimmend.
+     *
+     * @param ctx a <tt>Map</tt> which provides a set of entries to replace.
+     * @return <tt>this</tt> to permit fluent method chains
+     */
+    public Formatter setDirect(Map<String, Object> ctx) {
+        if (ctx != null) {
+            for (Map.Entry<String, Object> e : ctx.entrySet()) {
+                Object value = e.getValue();
+                if (value == null) {
+                    setDirect(e.getKey(), "");
+                } else {
+                    setDirect(e.getKey(), e.getValue().toString());
+                }
+            }
+        }
+
+        return this;
+    }
 
     /**
      * Directly sets the given string value for the given property.
