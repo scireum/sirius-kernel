@@ -18,6 +18,7 @@ import sirius.kernel.health.Log;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Responsible for processing {@link AutoTransform} annotations.
@@ -32,13 +33,15 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         private int priority;
         private Class<S> sourceType;
         private Class<T> targetType;
+        private Class<?> transformerClass;
 
         @SuppressWarnings("unchecked")
-        AutoTransformer(Class<T> transformerClass) {
+        AutoTransformer(Class<?> transformerClass) {
             AutoTransform autoTransform = transformerClass.getAnnotation(AutoTransform.class);
-            this.sourceType = (Class<S>) autoTransform.value();
+            this.sourceType = (Class<S>) autoTransform.source();
+            this.targetType = (Class<T>) autoTransform.target();
+            this.transformerClass = transformerClass;
             this.priority = autoTransform.priority();
-            this.targetType = transformerClass;
         }
 
         @Override
@@ -56,11 +59,26 @@ public class AutoTransformLoadAction implements ClassLoadAction {
             return priority;
         }
 
+        @SuppressWarnings("unchecked")
         @Nullable
         @Override
         public T make(@Nonnull Object source) {
             try {
-                return targetType.getDeclaredConstructor(sourceType).newInstance(source);
+                return (T) transformerClass.getDeclaredConstructor(sourceType).newInstance(source);
+            } catch (InvocationTargetException e) {
+                if (e.getCause() instanceof IllegalArgumentException) {
+                    return null;
+                }
+
+                throw Exceptions.handle()
+                                .to(Log.SYSTEM)
+                                .error(e.getCause())
+                                .withSystemErrorMessage(
+                                        "Failed to transform %s (%s) to %s - An error occured when invoking the constructor: %s (%s)",
+                                        source,
+                                        sourceType,
+                                        targetType)
+                                .handle();
             } catch (Exception e) {
                 throw Exceptions.handle()
                                 .to(Log.SYSTEM)
@@ -81,7 +99,6 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         return AutoTransform.class;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void handle(@Nonnull MutableGlobalContext ctx, @Nonnull Class<?> clazz) throws Exception {
         if (clazz.isAnnotationPresent(Framework.class)
@@ -89,7 +106,6 @@ public class AutoTransformLoadAction implements ClassLoadAction {
             return;
         }
 
-        AutoTransformer<Object, Object> transformer = new AutoTransformer<>((Class<Object>) clazz);
-        ctx.registerPart(transformer, Transformer.class);
+        ctx.registerPart(new AutoTransformer<>(clazz), Transformer.class);
     }
 }

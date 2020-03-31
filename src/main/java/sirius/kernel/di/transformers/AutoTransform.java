@@ -26,7 +26,8 @@ import java.lang.annotation.Target;
  * a priority (if another transformer is to be overwritten / bypassed).
  * <p>
  * Note that the annotated class has to provide a public single argument constructor which takes the source instance
- * as parameter.
+ * as parameter. This constructor can throw a {@link IllegalArgumentException} to signal that the transformer should
+ * simply return <tt>null</tt> so that other transformers (if available) can try their luck.
  * <p>
  * If the transformer should depend on a {@link Sirius#isFrameworkEnabled(String) framework} to be enabled,
  * the {@link sirius.kernel.di.std.Framework} annotation can be used to express this.
@@ -44,7 +45,14 @@ public @interface AutoTransform {
      *
      * @return the source class of the synthesized transformer
      */
-    Class<?> value();
+    Class<?> source();
+
+    /**
+     * Specifies the target class / interface to transform to.
+     *
+     * @return the target class of the synthesized transformer
+     */
+    Class<?> target();
 
     /**
      * Permits to specify a priority.
