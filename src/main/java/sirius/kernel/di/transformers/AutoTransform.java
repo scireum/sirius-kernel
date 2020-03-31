@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
  * If a {@link Transformer} simply invokes the constructor of the target class and passes in the source instance,
  * this annotation can be used to synthesize such a transformer.
  * <p>
- * To achive this, the target class must wear this annotation and specify the source class as well as optionally
+ * To achieve this, the target class must wear this annotation and specify the source class as well as optionally
  * a priority (if another transformer is to be overwritten / bypassed).
  * <p>
  * Note that the annotated class has to provide a public single argument constructor which takes the source instance
@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
 public @interface AutoTransform {
 
     /**
-     * Specifies the source class to transform from int othe annotated class.
+     * Specifies the source class to transform from into the annotated class.
      *
      * @return the source class of the synthesized transformer
      */
