@@ -9,6 +9,7 @@
 package sirius.kernel.nls
 
 import sirius.kernel.BaseSpecification
+import sirius.kernel.commons.Context
 
 class FormatterSpec extends BaseSpecification {
 
@@ -21,13 +22,26 @@ class FormatterSpec extends BaseSpecification {
         result == "Test bar"
     }
 
-    def "format accepts null parameters"() {
+    def "set trims and calls toUserString on parameters"() {
         given:
-        def pattern = "Test \${foo}"
+        def pattern = "Test \${foo} \${bar}"
         when:
-        def result = Formatter.create(pattern).set("foo", null).format()
+        def result = Formatter.create(pattern).set("foo", true).set("bar", " test ").format()
         then:
-        result == "Test "
+        result == "Test Ja test"
+    }
+
+    def "setDirect neither trims nor calls toUserString on parameters"() {
+        given:
+        def pattern = "Test \${foo} \${bar}"
+        when:
+        def result = Formatter.
+                create(pattern).
+                setDirect(Context.create().set("foo", true)).
+                setDirect("bar", " test ").
+                format()
+        then:
+        result == "Test true  test "
     }
 
     def "smartFormat skips empty block"() {
