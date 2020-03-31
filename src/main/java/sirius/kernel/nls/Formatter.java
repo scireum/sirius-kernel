@@ -46,7 +46,6 @@ import java.util.function.Function;
  */
 public class Formatter {
     private boolean urlEncode = false;
-    private boolean smartFormat = false;
     private Map<String, String> replacement = Maps.newTreeMap();
     private Function<String, Optional<String>> parameterProvider;
     private boolean ignoreMissingPrameters;
