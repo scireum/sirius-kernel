@@ -86,7 +86,6 @@ public class Formatter {
     public static Formatter create(String pattern) {
         Formatter result = new Formatter();
         result.pattern = pattern;
-        result.lang = NLS.getCurrentLang();
         return result;
     }
 
@@ -113,8 +112,25 @@ public class Formatter {
      * @return <tt>this</tt> to permit fluent method chains
      */
     public Formatter set(String property, Object value) {
-        setDirect(property, NLS.toUserString(value, lang), urlEncode);
+        if (value == null) {
+            setDirect(property, "");
+        } else if (value instanceof String) {
+            // We have to trim here to emulate the call to NLS.toUserString, but we can do this
+            // here without having to resolve the current language...
+            setDirect(property, ((String) value).trim());
+        } else {
+            setDirect(property, NLS.toUserString(value, fetchLang()));
+        }
+
         return this;
+    }
+
+    private String fetchLang() {
+        if (lang == null) {
+            this.lang = NLS.getCurrentLang();
+        }
+
+        return lang;
     }
 
     /**
@@ -128,7 +144,17 @@ public class Formatter {
      * @return <tt>this</tt> to permit fluent method chains
      */
     public Formatter setUnencoded(String property, Object value) {
-        return setDirect(property, NLS.toUserString(value, lang), false);
+        if (value == null) {
+            setDirectUnencoded(property, "");
+        } else if (value instanceof String) {
+            // We have to trim here to emulate the call to NLS.toUserString, but we can do this
+            // here without having to resolve the current language...
+            setDirectUnencoded(property, ((String) value).trim());
+        } else {
+            setDirectUnencoded(property, NLS.toUserString(value, fetchLang()));
+        }
+
+        return this;
     }
 
     /**
