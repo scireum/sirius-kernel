@@ -184,14 +184,16 @@ public class Formatter {
      * @return <tt>this</tt> to permit fluent method chains
      */
     public Formatter setDirect(Map<String, Object> ctx) {
-        if (ctx != null) {
-            for (Map.Entry<String, Object> e : ctx.entrySet()) {
-                Object value = e.getValue();
-                if (value == null) {
-                    setDirect(e.getKey(), "");
-                } else {
-                    setDirect(e.getKey(), e.getValue().toString());
-                }
+        if (ctx == null) {
+            return this;
+        }
+
+        for (Map.Entry<String, Object> e : ctx.entrySet()) {
+            Object value = e.getValue();
+            if (value == null) {
+                setDirect(e.getKey(), "");
+            } else {
+                setDirect(e.getKey(), e.getValue().toString());
             }
         }
 
