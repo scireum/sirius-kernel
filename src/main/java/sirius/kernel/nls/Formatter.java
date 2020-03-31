@@ -190,7 +190,7 @@ public class Formatter {
                 if (value == null) {
                     setDirect(e.getKey(), "");
                 } else {
-                    setDirect(e.getKey(), e.getValue().toString());
+                    setDirect(e.getKey(), value.toString());
                 }
             }
         }
