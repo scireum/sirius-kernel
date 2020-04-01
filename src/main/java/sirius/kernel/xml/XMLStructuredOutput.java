@@ -8,7 +8,6 @@
 
 package sirius.kernel.xml;
 
-import com.google.common.base.Charsets;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import sirius.kernel.health.Exceptions;
@@ -25,6 +24,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Represents a {@link StructuredOutput} emitting XML data.
@@ -53,7 +53,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      * @param doctype the doc type used in the XML header
      */
     public XMLStructuredOutput(@Nonnull OutputStream output, @Nullable String doctype) {
-        this(output, Charsets.UTF_8, doctype);
+        this(output, StandardCharsets.UTF_8, doctype);
     }
 
     /**

@@ -8,11 +8,11 @@
 
 package sirius.kernel.info;
 
-import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -71,7 +71,7 @@ public class Module {
      */
     public String getUniqueVersionString() {
         return Hashing.md5()
-                      .hashString(fix(vcs, RANDOM_REPLACEMENT) + fix(build, RANDOM_REPLACEMENT), Charsets.UTF_8)
+                      .hashString(fix(vcs, RANDOM_REPLACEMENT) + fix(build, RANDOM_REPLACEMENT), StandardCharsets.UTF_8)
                       .toString();
     }
 

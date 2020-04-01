@@ -8,7 +8,6 @@
 
 package sirius.kernel.commons;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
@@ -17,6 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Map;
@@ -267,7 +267,7 @@ public class Strings {
     public static String urlEncode(@Nullable String value) {
         if (isFilled(value)) {
             try {
-                return URLEncoder.encode(value, Charsets.UTF_8.name());
+                return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
             } catch (UnsupportedEncodingException e) {
                 // Cannot happen if Java-Version is > 1.4....
                 Exceptions.ignore(e);

@@ -8,8 +8,6 @@
 
 package sirius.kernel.xml;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.BaseEncoding;
 import com.google.common.io.CharStreams;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
@@ -25,10 +23,11 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -50,7 +49,7 @@ public class Outcall {
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
 
     private HttpURLConnection connection;
-    private Charset charset = Charsets.UTF_8;
+    private Charset charset = StandardCharsets.UTF_8;
 
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
@@ -153,7 +152,7 @@ public class Outcall {
         }
         try {
             String userAndPassword = user + ":" + password;
-            String encodedAuthorization = BaseEncoding.base64().encode(userAndPassword.getBytes(charset.name()));
+            String encodedAuthorization = Base64.getEncoder().encodeToString(userAndPassword.getBytes(charset.name()));
             setRequestProperty("Authorization", "Basic " + encodedAuthorization);
         } catch (UnsupportedEncodingException e) {
             throw new IOException(e);
@@ -233,7 +232,7 @@ public class Outcall {
             }
         } catch (Exception e) {
             Exceptions.ignore(e);
-            return Charsets.UTF_8;
+            return StandardCharsets.UTF_8;
         }
     }
 

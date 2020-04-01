@@ -8,7 +8,6 @@
 
 package sirius.kernel.xml;
 
-import com.google.common.base.Charsets;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -28,6 +27,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -352,7 +352,7 @@ public class StructuredNode {
     private String serializeNodeAsXML(Node result, boolean includeOuter) {
         try {
             StringWriter writer = new StringWriter();
-            XMLGenerator.writeXML(result, writer, Charsets.UTF_8.name(), true, includeOuter);
+            XMLGenerator.writeXML(result, writer, StandardCharsets.UTF_8.name(), true, includeOuter);
             return writer.toString();
         } catch (Exception e) {
             Exceptions.handle(e);
@@ -425,7 +425,7 @@ public class StructuredNode {
     public String toString() {
         try {
             StringWriter writer = new StringWriter();
-            XMLGenerator.writeXML(node, writer, Charsets.UTF_8.name(), true);
+            XMLGenerator.writeXML(node, writer, StandardCharsets.UTF_8.name(), true);
             return writer.toString();
         } catch (Exception e) {
             Exceptions.handle(e);

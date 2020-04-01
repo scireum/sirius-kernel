@@ -8,7 +8,6 @@
 
 package sirius.kernel;
 
-import com.google.common.base.Charsets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.log4j.ConsoleAppender;
@@ -29,6 +28,7 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -184,10 +184,10 @@ public class Setup {
      * Sets UTF-8 as default encoding
      */
     protected void setupEncoding() {
-        Sirius.LOG.FINE("Setting " + Charsets.UTF_8.name() + " as default encoding (file.encoding)");
-        System.setProperty("file.encoding", Charsets.UTF_8.name());
-        Sirius.LOG.FINE("Setting " + Charsets.UTF_8.name() + " as default mime encoding (mail.mime.charset)");
-        System.setProperty("mail.mime.charset", Charsets.UTF_8.name());
+        Sirius.LOG.FINE("Setting " + StandardCharsets.UTF_8.name() + " as default encoding (file.encoding)");
+        System.setProperty("file.encoding", StandardCharsets.UTF_8.name());
+        Sirius.LOG.FINE("Setting " + StandardCharsets.UTF_8.name() + " as default mime encoding (mail.mime.charset)");
+        System.setProperty("mail.mime.charset", StandardCharsets.UTF_8.name());
     }
 
     /**
