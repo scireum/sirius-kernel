@@ -157,6 +157,8 @@ public interface Cache<K, V> {
      */
     Cache<K, V> addRemover(@Nonnull String discriminator, @Nonnull BiPredicate<String, CacheEntry<K, V>> test);
 
+    <T> CacheRemoverBuilder<K, V, CacheEntry<K, V>> addRemover(@Nonnull String discriminator);
+
     /**
      * Invokes the given remover with the given test input.
      * <p>
