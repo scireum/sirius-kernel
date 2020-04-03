@@ -5,7 +5,7 @@ import sirius.kernel.commons.Tuple;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
-public class ManagedCacheRemoverBuilder<K, V, T> implements CacheRemoverBuilder<K, V, T> {
+class ManagedCacheRemoverBuilder<K, V, T> implements CacheRemoverBuilder<K, V, T> {
     private final Cache<K, V> cache;
     private final String discriminator;
 

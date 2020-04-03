@@ -170,6 +170,18 @@ public interface Cache<K, V> {
     CacheRemoverBuilder<K, V, CacheEntry<K, V>> addRemover(@Nonnull String discriminator);
 
     /**
+     * Convenience function for {@code addRemover(discriminator).map(CacheEntry::getValue)}.
+     *
+     * @param discriminator the name of the remover
+     * @return a {@link CacheRemoverBuilder} to build the remover
+     * @see #addRemover(String)
+     * @see #addRemover(String, BiPredicate)
+     */
+    default CacheRemoverBuilder<K, V, V> addValueBasedRemover(@Nonnull String discriminator) {
+        return addRemover(discriminator).map(CacheEntry::getValue);
+    }
+
+    /**
      * Invokes the given remover with the given test input.
      * <p>
      * Invokes a remover which has previously been registered via {@link #addRemover(String, BiPredicate)} and
