@@ -152,12 +152,22 @@ public interface Cache<K, V> {
      * Being all string based, this also works for coherent caches by simply broadcasting two short string values.
      *
      * @param discriminator the name of the remover
-     * @param test         the predicate which determines if a given entry matches a given test input
+     * @param test          the predicate which determines if a given entry matches a given test input
      * @return the cache itself for fluent method calls
      */
     Cache<K, V> addRemover(@Nonnull String discriminator, @Nonnull BiPredicate<String, CacheEntry<K, V>> test);
 
-    <T> CacheRemoverBuilder<K, V, CacheEntry<K, V>> addRemover(@Nonnull String discriminator);
+    /**
+     * Starts building a remove handler identified with the given <tt>discriminator</tt>.
+     * <p>
+     * Contrary to {@link #addRemover(String, BiPredicate)}, this method returns a {@link CacheRemoverBuilder}
+     * that allows to build the remover with a fluent API.
+     *
+     * @param discriminator the name of the remover
+     * @return a {@link CacheRemoverBuilder} to build the remover
+     * @see #addRemover(String, BiPredicate) addRemover
+     */
+    CacheRemoverBuilder<K, V, CacheEntry<K, V>> addRemover(@Nonnull String discriminator);
 
     /**
      * Invokes the given remover with the given test input.

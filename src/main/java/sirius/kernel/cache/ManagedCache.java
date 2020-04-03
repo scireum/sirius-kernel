@@ -344,7 +344,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
 
     @Override
     public CacheRemoverBuilder<K, V, CacheEntry<K, V>> addRemover(@Nonnull String discriminator) {
-        return new ManagedCacheRemoverBuilder<>(this, discriminator, (ignored, entry) -> entry);
+        return ManagedCacheRemoverBuilder.create(this, discriminator);
     }
 
     @Override
