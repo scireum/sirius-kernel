@@ -17,7 +17,7 @@ import java.util.function.Predicate;
  *
  * <h3>Usage example</h3>
  * The cache remover is an intuitive, stream-like API that maps the cache entries, and marks them for removal if
- * the fulfill the given conditions:
+ * they fulfill the given conditions:
  * <pre>{@code
  * CacheManager.<Tuple<String, Object>>createCoherentCache("my-cache")
  *             .addRemover("my-remover")
@@ -33,10 +33,13 @@ import java.util.function.Predicate;
  *             .addRemover("my-remover", (test, entry) -> {
  *                 Tuple<String, Object> tuple = entry.getValue();
  *                 if (tuple.getFirst() == null) {
- *                     return false;
+ *                     return true;
  *                 }
  *                 Object object = tuple.getSecond();
- *                 return object != null && Strings.equals(object, test);
+ *                 if (object == null) {
+ *                     return false;
+ *                 }
+ *                 return Strings.equals(object, test);
  *             });
  * }</pre>
  * All methods are described in detail in their respective documentation.
@@ -116,8 +119,9 @@ public interface CacheRemoverBuilder<K, V, T> {
     /**
      * Removes all cache entries matching the given predicate and terminates the builder.
      * <p>
-     * This method terminates the builder. All objects that are not yet ignored via {@link #filter} or removed via {@link #removeAlways} are
-     * evaluated with the given predicate. If they match the predicate, they will be removed from the cache.
+     * This method terminates the builder. All objects that are not yet ignored via {@link #filter} or removed
+     * via {@link #removeAlways} are evaluated with the given predicate. If they match the predicate, they will
+     * be removed from the cache.
      *
      * @param predicate The predicate to test the objects
      * @return The cache this {@link CacheRemoverBuilder} operates on

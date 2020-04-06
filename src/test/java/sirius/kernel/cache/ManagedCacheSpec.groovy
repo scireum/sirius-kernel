@@ -84,7 +84,6 @@ class ManagedCacheSpec extends BaseSpecification {
     def "remover builder works as expected"() {
         given:
         ManagedCache<String, Tuple<String, String>> cache = new ManagedCache("test-cache", null, null)
-        // lambdas in groovy seem kind of ... awkward
         cache.addRemover("FILTER").
                 filter({ selector, entry -> (entry.getKey() != selector) } as BiPredicate).
                 map({ entry -> entry.getValue() } as Function).
