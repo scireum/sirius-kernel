@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -339,6 +340,11 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
 
         removers.put(discriminator, test);
         return this;
+    }
+
+    @Override
+    public CacheRemoverBuilder<K, V, CacheEntry<K, V>> addRemover(@Nonnull String discriminator) {
+        return ManagedCacheRemoverBuilder.create(this, discriminator);
     }
 
     @Override
