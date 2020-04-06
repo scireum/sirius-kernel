@@ -10,8 +10,11 @@ package sirius.kernel.di.transformers;
 
 import sirius.kernel.Sirius;
 import sirius.kernel.di.ClassLoadAction;
+import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.Injector;
 import sirius.kernel.di.MutableGlobalContext;
 import sirius.kernel.di.std.Framework;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
@@ -34,6 +37,9 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         private Class<S> sourceType;
         private Class<T> targetType;
         private Class<?> transformerClass;
+
+        @Part
+        private static GlobalContext globalContext;
 
         @SuppressWarnings("unchecked")
         AutoTransformer(Class<?> transformerClass) {
@@ -64,7 +70,9 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         @Override
         public T make(@Nonnull Object source) {
             try {
-                return (T) transformerClass.getDeclaredConstructor(sourceType).newInstance(source);
+                T result = (T) transformerClass.getDeclaredConstructor(sourceType).newInstance(source);
+                globalContext.wire(result);
+                return result;
             } catch (InvocationTargetException e) {
                 if (e.getCause() instanceof IllegalArgumentException) {
                     return null;
