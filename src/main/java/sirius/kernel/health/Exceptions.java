@@ -48,6 +48,9 @@ public class Exceptions {
      */
     protected static final Log DEPRECATION_LOG = Log.get("deprecated");
 
+    private static final String PARAM_RAW_MESSAGE = "message";
+    private static final String MESSAGE_MODE_RAW = "_raw";
+
     /*
      * Filled by the Injector - contains all handles which participate in the exception handling process
      */
@@ -145,6 +148,18 @@ public class Exceptions {
         }
 
         /**
+         * Directly specifies the message for the exception.
+         * <p>
+         * This will neither perform any NLS lookups nor append or prepend any text to the given message.
+         *
+         * @param message the message to use for the generated exception
+         * @return <tt>this</tt> in order to fluently call more methods on this handler
+         */
+        public ErrorHandler withDirectMessage(String message) {
+            return withNLSKey(MESSAGE_MODE_RAW).set(PARAM_RAW_MESSAGE, message);
+        }
+
+        /**
          * Sets an untranslated error message, used by rare system errors.
          * <p>
          * Still a translated message will be created, which notifies the user about the system error and provides
@@ -158,7 +173,7 @@ public class Exceptions {
          */
         public ErrorHandler withSystemErrorMessage(String englishMessagePattern, Object... params) {
             this.systemErrorMessage = englishMessagePattern;
-            this.systemErrorMessageParams = params;
+            this.systemErrorMessageParams = params == null ? null : params.clone();
             return this;
         }
 
@@ -185,7 +200,7 @@ public class Exceptions {
          * @return a <tt>HandledException</tt> which notifies surrounding calls that an error occurred, which has
          * already been taken care of.
          */
-        @SuppressWarnings("squid:S1148")
+        @SuppressWarnings({"squid:S1148", "CallToPrintStackTrace"})
         @Explain("This log statement is our last resort when we're in deep trouble.")
         public HandledException handle() {
             if (ex instanceof HandledException) {
@@ -226,6 +241,8 @@ public class Exceptions {
                 return NLS.fmtr("HandledException.systemError")
                           .set("error", Strings.apply(systemErrorMessage, extendParams(ex, systemErrorMessageParams)))
                           .format();
+            } else if (MESSAGE_MODE_RAW.equals(key) && params.containsKey(PARAM_RAW_MESSAGE)){
+                return String.valueOf(params.get(PARAM_RAW_MESSAGE));
             } else {
                 // Add exception infos
                 set("errorMessage", ex == null ? NLS.get("HandledException.unknownError") : ex.getMessage());
