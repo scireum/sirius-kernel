@@ -29,6 +29,9 @@ import java.lang.annotation.Target;
  * as parameter. This constructor can throw a {@link IllegalArgumentException} to signal that the transformer should
  * simply return <tt>null</tt> so that other transformers (if available) can try their luck.
  * <p>
+ * If no such constructor is found, the standard constructor (without any argument) is invoked. However, this will
+ * not permit any access on the source object being transformed.
+ * <p>
  * If the transformer should depend on a {@link Sirius#isFrameworkEnabled(String) framework} to be enabled,
  * the {@link sirius.kernel.di.std.Framework} annotation can be used to express this.
  * <p>

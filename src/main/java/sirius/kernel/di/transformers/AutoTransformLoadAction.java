@@ -11,7 +11,6 @@ package sirius.kernel.di.transformers;
 import sirius.kernel.Sirius;
 import sirius.kernel.di.ClassLoadAction;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.Injector;
 import sirius.kernel.di.MutableGlobalContext;
 import sirius.kernel.di.std.Framework;
 import sirius.kernel.di.std.Part;
@@ -65,12 +64,11 @@ public class AutoTransformLoadAction implements ClassLoadAction {
             return priority;
         }
 
-        @SuppressWarnings("unchecked")
         @Nullable
         @Override
         public T make(@Nonnull Object source) {
             try {
-                T result = (T) transformerClass.getDeclaredConstructor(sourceType).newInstance(source);
+                T result = createInstance(source);
                 globalContext.wire(result);
                 return result;
             } catch (InvocationTargetException e) {
@@ -97,6 +95,17 @@ public class AutoTransformLoadAction implements ClassLoadAction {
                                         sourceType,
                                         targetType)
                                 .handle();
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private T createInstance(@Nonnull Object source)
+                throws InstantiationException, IllegalAccessException, InvocationTargetException,
+                       NoSuchMethodException {
+            try {
+                return (T) transformerClass.getDeclaredConstructor(sourceType).newInstance(source);
+            } catch (NoSuchMethodException e) {
+                return (T) transformerClass.getDeclaredConstructor().newInstance();
             }
         }
     }
