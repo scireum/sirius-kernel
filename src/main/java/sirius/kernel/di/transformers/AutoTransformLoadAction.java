@@ -20,6 +20,7 @@ import sirius.kernel.health.Log;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -102,11 +103,17 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         private T createInstance(@Nonnull Object source)
                 throws InstantiationException, IllegalAccessException, InvocationTargetException,
                        NoSuchMethodException {
-            try {
-                return (T) transformerClass.getDeclaredConstructor(sourceType).newInstance(source);
-            } catch (NoSuchMethodException e) {
-                return (T) transformerClass.getDeclaredConstructor().newInstance();
+
+            // Look for a single argument constructor with a matching parameter...
+            for (Constructor<T> constructor : (Constructor<T>[]) transformerClass.getDeclaredConstructors()) {
+                if (constructor.getParameterCount() == 1 && constructor.getParameterTypes()[0].isAssignableFrom(
+                        sourceType)) {
+                    return constructor.newInstance(source);
+                }
             }
+
+            // ...otherwise resort to the no args constructor...
+            return (T) transformerClass.getDeclaredConstructor().newInstance();
         }
     }
 
