@@ -64,14 +64,14 @@ public interface CacheRemoverBuilder<K, V, T> {
      * @param <R>    The new underlying type that replaces T
      * @return a new {@link CacheRemoverBuilder} with the mapped underlying type
      */
-    default <R> CacheRemoverBuilder<K, V, R> map(Function<T, R> mapper) {
-        return map((string, value) -> mapper.apply(value));
-    }
+    <R> CacheRemoverBuilder<K, V, R> map(Function<T, R> mapper);
 
     /**
      * Similar to {@link java.util.stream.Stream#filter Stream.filter}, this method filters the objects this
-     * {@link CacheRemoverBuilder} operates on. All objects that do not match the predicate are ignored, and
-     * will not be removed from the cache. This allows to discard those objects early.
+     * {@link CacheRemoverBuilder} operates on.
+     * <p>
+     * All objects that do not match the predicate are ignored, and will not be removed from the cache. This
+     * allows to discard those objects early.
      *
      * @param predicate The predicate to test the objects
      * @return A new {@link CacheRemoverBuilder} operating on the remaining objects
@@ -84,13 +84,14 @@ public interface CacheRemoverBuilder<K, V, T> {
      * @param predicate The predicate to test the objects
      * @return A new {@link CacheRemoverBuilder} operating on the remaining objects
      */
-    default CacheRemoverBuilder<K, V, T> filter(Predicate<T> predicate) {
-        return filter((string, value) -> predicate.test(value));
-    }
+    CacheRemoverBuilder<K, V, T> filter(Predicate<T> predicate);
 
     /**
+     * Removes all cache entries matching the given predicate.
+     * <p>
      * This method serves as a counterpart for {@link #filter}. The objects that match the predicate will be
-     * removed from the cache without further processing.
+     * removed from the cache without further processing, but contrary to {@link #removeIf}, it does not terminate
+     * the builder.
      *
      * @param predicate The predicate to test the objects
      * @return A new {@link CacheRemoverBuilder} operating on the remaining objects
@@ -103,21 +104,24 @@ public interface CacheRemoverBuilder<K, V, T> {
      * @param predicate The predicate to test the objects
      * @return A new {@link CacheRemoverBuilder} operating on the remaining objects
      */
-    default CacheRemoverBuilder<K, V, T> removeAlways(Predicate<T> predicate) {
-        return removeAlways((string, value) -> predicate.test(value));
-    }
+    CacheRemoverBuilder<K, V, T> removeAlways(Predicate<T> predicate);
 
     /**
-     * This method terminates the builder. All objects that are not yet ignored via {@link #filter} or
-     * removed via {@link #removeAlways} are evaluated with the given predicate. If they match the predicate,
-     * they will be removed from the cache.
+     * Removes all cache entries matching the given predicate and terminates the builder.
+     * <p>
+     * This method terminates the builder. All objects that are not yet ignored via {@link #filter} or removed via {@link #removeAlways} are
+     * evaluated with the given predicate. If they match the predicate, they will be removed from the cache.
      *
      * @param predicate The predicate to test the objects
      * @return The cache this {@link CacheRemoverBuilder} operates on
      */
     Cache<K, V> removeIf(BiPredicate<String, T> predicate);
 
-    default Cache<K, V> removeIf(Predicate<T> predicate) {
-        return removeIf((string, value) -> predicate.test(value));
-    }
+    /**
+     * Convenience method for {@link #removeIf(BiPredicate)} ignoring the test parameter.
+     *
+     * @param predicate The predicate to test the objects
+     * @return The cache this {@link CacheRemoverBuilder} operates on
+     */
+    Cache<K, V> removeIf(Predicate<T> predicate);
 }

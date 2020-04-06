@@ -4,6 +4,8 @@ import sirius.kernel.commons.Tuple;
 
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 class ManagedCacheRemoverBuilder<K, V, T> implements CacheRemoverBuilder<K, V, T> {
     private final Cache<K, V> cache;
@@ -11,6 +13,7 @@ class ManagedCacheRemoverBuilder<K, V, T> implements CacheRemoverBuilder<K, V, T
 
     /**
      * The combined mapping/filter function up to now.
+     * <p>
      * The {@link State} defines whether the object was already marked for removal via {@link #removeAlways} or
      * marked as filtered via {@link #filter}. If it is marked as undecided, it should be processed further.
      */
@@ -82,5 +85,25 @@ class ManagedCacheRemoverBuilder<K, V, T> implements CacheRemoverBuilder<K, V, T
                     return predicate.test(selector, t.getFirst());
             }
         });
+    }
+
+    @Override
+    public <R> CacheRemoverBuilder<K, V, R> map(Function<T, R> mapper) {
+        return map((string, value) -> mapper.apply(value));
+    }
+
+    @Override
+    public CacheRemoverBuilder<K, V, T> filter(Predicate<T> predicate) {
+        return filter((string, value) -> predicate.test(value));
+    }
+
+    @Override
+    public CacheRemoverBuilder<K, V, T> removeAlways(Predicate<T> predicate) {
+        return removeAlways((string, value) -> predicate.test(value));
+    }
+
+    @Override
+    public Cache<K, V> removeIf(Predicate<T> predicate) {
+        return removeIf((string, value) -> predicate.test(value));
     }
 }
