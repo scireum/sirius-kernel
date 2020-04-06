@@ -11,6 +11,7 @@ package sirius.kernel.cache;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Tuple;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Date;
@@ -167,6 +168,7 @@ public interface Cache<K, V> {
      * @return a {@link CacheRemoverBuilder} to build the remover
      * @see #addRemover(String, BiPredicate) addRemover
      */
+    @CheckReturnValue
     CacheRemoverBuilder<K, V, CacheEntry<K, V>> addRemover(@Nonnull String discriminator);
 
     /**

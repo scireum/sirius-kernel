@@ -1,5 +1,6 @@
 package sirius.kernel.cache;
 
+import javax.annotation.CheckReturnValue;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -55,6 +56,7 @@ public interface CacheRemoverBuilder<K, V, T> {
      * @param <R>    The new underlying type that replaces T
      * @return a new {@link CacheRemoverBuilder} with the mapped underlying type
      */
+    @CheckReturnValue
     <R> CacheRemoverBuilder<K, V, R> map(BiFunction<String, T, R> mapper);
 
     /**
@@ -64,6 +66,7 @@ public interface CacheRemoverBuilder<K, V, T> {
      * @param <R>    The new underlying type that replaces T
      * @return a new {@link CacheRemoverBuilder} with the mapped underlying type
      */
+    @CheckReturnValue
     <R> CacheRemoverBuilder<K, V, R> map(Function<T, R> mapper);
 
     /**
@@ -76,6 +79,7 @@ public interface CacheRemoverBuilder<K, V, T> {
      * @param predicate The predicate to test the objects
      * @return A new {@link CacheRemoverBuilder} operating on the remaining objects
      */
+    @CheckReturnValue
     CacheRemoverBuilder<K, V, T> filter(BiPredicate<String, T> predicate);
 
     /**
@@ -84,6 +88,7 @@ public interface CacheRemoverBuilder<K, V, T> {
      * @param predicate The predicate to test the objects
      * @return A new {@link CacheRemoverBuilder} operating on the remaining objects
      */
+    @CheckReturnValue
     CacheRemoverBuilder<K, V, T> filter(Predicate<T> predicate);
 
     /**
@@ -96,6 +101,7 @@ public interface CacheRemoverBuilder<K, V, T> {
      * @param predicate The predicate to test the objects
      * @return A new {@link CacheRemoverBuilder} operating on the remaining objects
      */
+    @CheckReturnValue
     CacheRemoverBuilder<K, V, T> removeAlways(BiPredicate<String, T> predicate);
 
     /**
@@ -104,6 +110,7 @@ public interface CacheRemoverBuilder<K, V, T> {
      * @param predicate The predicate to test the objects
      * @return A new {@link CacheRemoverBuilder} operating on the remaining objects
      */
+    @CheckReturnValue
     CacheRemoverBuilder<K, V, T> removeAlways(Predicate<T> predicate);
 
     /**
