@@ -46,7 +46,6 @@ import java.util.TreeSet;
 public class AdvancedDateParser {
 
     private static final String[] EMPTY_STRING_ARRAY = {};
-    private String lang;
 
     private static final String NEGATIVE_DELTA = "-";
     private static final String POSITIVE_DELTA = "+";
@@ -59,6 +58,7 @@ public class AdvancedDateParser {
     private static final String GERMAN_DATE_SEPARATOR = ".";
     private static final String DUTCH_DATE_SEPARATOR = "-";
 
+    private final String lang;
     private Tokenizer tokenizer;
     private boolean startOfDay = false;
     private boolean startOfWeek = false;
