@@ -8,6 +8,7 @@
 
 package sirius.kernel.di.std;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -19,6 +20,7 @@ import java.lang.annotation.Target;
  * Note that the {@link Register} annotation itself as ({@link Register#framework()} to specify
  * the framework required. So this annotation is intended for custom class load actions.
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Framework {

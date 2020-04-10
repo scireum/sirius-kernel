@@ -10,6 +10,7 @@ package sirius.kernel.di.std;
 
 import sirius.kernel.Sirius;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -22,6 +23,7 @@ import java.lang.annotation.Target;
  * appropriate conversion to the target type of the given field. A default value should be placed in the
  * component config (which then can be overridden in the application.conf or instance.conf).
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface ConfigValue {
