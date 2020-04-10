@@ -7,8 +7,7 @@
  */
 package sirius.kernel.commons
 
-import com.google.common.collect.Lists
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
@@ -23,7 +22,7 @@ class ValuesTest {
     fun excelStyleColumns() {
         assertEquals("A", Values.of(arrayOf("A", "B", "C")).at("A").asString())
         assertEquals("C", Values.of(arrayOf("A", "B", "C")).at("C").asString())
-        val test: MutableList<String?> = Lists.newArrayList()
+        val test: MutableList<String?> = mutableListOf()
         for (i in 1..99) {
             test.add(i.toString())
         }
