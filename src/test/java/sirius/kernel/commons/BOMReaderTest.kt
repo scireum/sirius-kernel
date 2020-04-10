@@ -5,77 +5,79 @@
  * Copyright by scireum GmbH
  * http://www.scireum.de - info@scireum.de
  */
+package sirius.kernel.commons
 
-package sirius.kernel.commons;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
+import org.junit.Test
+import java.io.ByteArrayInputStream
+import java.io.IOException
+import java.io.InputStreamReader
+import kotlin.test.assertEquals
 
 class BOMReaderTest {
 
-    private static final byte[] WITH_UTF8_BOM = {(byte) 239, (byte) 187, (byte) 191, 'H', 'E', 'L', 'L', 'O'};
-    private static final byte[] WITHOUT_BOM = {'H', 'E', 'L', 'L', 'O'};
-
-    @Test
-    void readBOM() throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
-        writer.write(Streams.UNICODE_BOM_CHARACTER);
-        writer.write("HELLO");
-        writer.flush();
-        BOMReader in = new BOMReader(new InputStreamReader(new ByteArrayInputStream(outputStream.toByteArray())));
-        Assertions.assertEquals('H', in.read());
-        Assertions.assertEquals('E', in.read());
+    companion object {
+        private val WITH_UTF8_BOM = byteArrayOf(
+            239.toByte(),
+            187.toByte(),
+            191.toByte(),
+            'H'.toByte(),
+            'E'.toByte(),
+            'L'.toByte(),
+            'L'.toByte(),
+            'O'.toByte()
+        )
+        private val WITHOUT_BOM = byteArrayOf('H'.toByte(), 'E'.toByte(), 'L'.toByte(), 'L'.toByte(), 'O'.toByte())
     }
 
     @Test
-    void readWithoutBOM() throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
-        writer.write("HELLO");
-        writer.flush();
-        BOMReader in = new BOMReader(new InputStreamReader(new ByteArrayInputStream(outputStream.toByteArray())));
-        Assertions.assertEquals('H', in.read());
-        Assertions.assertEquals('E', in.read());
+    @Throws(IOException::class)
+    fun readBOM() {
+        val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITH_UTF8_BOM)))
+        assertEquals('H'.toLong(), reader.read().toLong())
+        assertEquals('E'.toLong(), reader.read().toLong())
     }
 
     @Test
-    void readArray1BOM() throws IOException {
-        BOMReader in = new BOMReader(new InputStreamReader(new ByteArrayInputStream(WITH_UTF8_BOM)));
-        char[] buf = new char[1];
-        Assertions.assertEquals(1, in.read(buf));
-        Assertions.assertEquals('H', buf[0]);
+    @Throws(IOException::class)
+    fun readWithoutBOM() {
+        val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITHOUT_BOM)))
+        assertEquals('H'.toLong(), reader.read().toLong())
+        assertEquals('E'.toLong(), reader.read().toLong())
     }
 
     @Test
-    void readArray2BOM() throws IOException {
-        BOMReader in = new BOMReader(new InputStreamReader(new ByteArrayInputStream(WITH_UTF8_BOM)));
-        char[] buf = new char[2];
-        Assertions.assertEquals(2, in.read(buf));
-        Assertions.assertEquals('H', buf[0]);
+    @Throws(IOException::class)
+    fun readArray1BOM() {
+        val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITH_UTF8_BOM)))
+        val buffer = CharArray(1)
+        assertEquals(1, reader.read(buffer).toLong())
+        assertEquals('H'.toLong(), buffer[0].toLong())
     }
 
     @Test
-    void readArray10BOM() throws IOException {
-        BOMReader in = new BOMReader(new InputStreamReader(new ByteArrayInputStream(WITH_UTF8_BOM)));
-        char[] buf = new char[10];
-        Assertions.assertEquals(5, in.read(buf));
-        Assertions.assertEquals('H', buf[0]);
+    @Throws(IOException::class)
+    fun readArray2BOM() {
+        val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITH_UTF8_BOM)))
+        val buffer = CharArray(2)
+        assertEquals(2, reader.read(buffer).toLong())
+        assertEquals('H'.toLong(), buffer[0].toLong())
     }
 
     @Test
-    void readArrayWithoutBOM() throws IOException {
-        BOMReader in = new BOMReader(new InputStreamReader(new ByteArrayInputStream(WITH_UTF8_BOM)));
-        char[] buf = new char[2];
-        Assertions.assertEquals(2, in.read(buf));
-        Assertions.assertEquals('H', buf[0]);
+    @Throws(IOException::class)
+    fun readArray10BOM() {
+        val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITH_UTF8_BOM)))
+        val buffer = CharArray(10)
+        assertEquals(5, reader.read(buffer).toLong())
+        assertEquals('H'.toLong(), buffer[0].toLong())
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun readArrayWithoutBOM() {
+        val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITH_UTF8_BOM)))
+        val buffer = CharArray(2)
+        assertEquals(2, reader.read(buffer).toLong())
+        assertEquals('H'.toLong(), buffer[0].toLong())
     }
 }
