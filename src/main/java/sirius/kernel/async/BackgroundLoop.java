@@ -48,6 +48,7 @@ public abstract class BackgroundLoop {
     private Tasks tasks;
 
     @Part
+    @Nullable
     private Orchestration orchestration;
 
     @Part

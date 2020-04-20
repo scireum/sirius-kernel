@@ -14,6 +14,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class CacheManager {
     private static final Duration INLINE_CACHE_DEFAULT_TTL = Duration.ofSeconds(10);
 
     @Part
+    @Nullable
     private static CacheCoherence cacheCoherence;
 
     /**
