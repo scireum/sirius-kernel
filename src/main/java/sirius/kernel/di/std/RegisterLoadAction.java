@@ -15,6 +15,8 @@ import sirius.kernel.di.ClassLoadAction;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.MutableGlobalContext;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -38,21 +40,51 @@ public class RegisterLoadAction implements ClassLoadAction {
 
     @Override
     public void handle(MutableGlobalContext ctx, Class<?> clazz) throws Exception {
-        Register r = clazz.getAnnotation(Register.class);
-        if (!Sirius.isFrameworkEnabled(r.framework())) {
+        Register registerAnnotation = clazz.getAnnotation(Register.class);
+        if (!Sirius.isFrameworkEnabled(registerAnnotation.framework())) {
             return;
         }
 
-        Set<Class<?>> registeredClasses = Sets.newHashSet(r.classes());
-        Set<Class<?>> detectedClasses = findAutoRegisterClasses(clazz);
-
-        if (detectedClasses.isEmpty()) {
-            detectedClasses = new HashSet<>(Arrays.asList(clazz.getInterfaces()));
-            if (!detectedClasses.isEmpty()) {
-                Injector.LOG.FINE("Using the fallback method to determine which %s will be registered for: %s", clazz.getName());
+        // Warn (but still handle) if an additional @Framework annotation is present...
+        if (clazz.isAnnotationPresent(Framework.class)) {
+            Injector.LOG.WARN(
+                    "%s uses @Register and @Framework. Delete the @Framework annotation and use the 'framework'"
+                    + " parameter of the @Register annotation.",
+                    clazz.getName());
+            if (!Sirius.isFrameworkEnabled(clazz.getAnnotation(Framework.class).value())) {
+                return;
             }
         }
 
+        Set<Class<?>> registeredClasses = computeEffectiveClasses(clazz, registerAnnotation);
+        if (registeredClasses == null) {
+            return;
+        }
+
+        Object part = clazz.getDeclaredConstructor().newInstance();
+
+        String name = computeEffectiveName(clazz, registerAnnotation, part);
+        if (Strings.isFilled(name)) {
+            ctx.registerPart(name, part, registeredClasses.toArray(EMPTY_CLASS_ARRAY));
+        } else {
+            ctx.registerPart(part, registeredClasses.toArray(EMPTY_CLASS_ARRAY));
+        }
+    }
+
+    private Set<Class<?>> computeEffectiveClasses(Class<?> clazz, Register registerAnnotation) {
+        Set<Class<?>> registeredClasses = Sets.newHashSet(registerAnnotation.classes());
+        Set<Class<?>> detectedClasses = findAutoRegisterClasses(clazz);
+
+        // Provide support for the legacy mechanism, which was "all available interfaces"...
+        if (detectedClasses.isEmpty()) {
+            detectedClasses = new HashSet<>(Arrays.asList(clazz.getInterfaces()));
+            if (!detectedClasses.isEmpty()) {
+                Injector.LOG.FINE("Using the fallback method to determine which %s will be registered for: %s",
+                                  clazz.getName());
+            }
+        }
+
+        // Warn if the classes list can (and should) be omitted...
         if (registeredClasses.equals(detectedClasses)) {
             Injector.LOG.WARN(
                     "%s wears a @Register with a list of classes which is also auto-redected. Consider removing the classes list...",
@@ -67,39 +99,20 @@ public class RegisterLoadAction implements ClassLoadAction {
             }
         }
 
+        // Uses the detected classes instead of the registered one, if none were given (this is the common case)...
         if (registeredClasses.isEmpty()) {
             registeredClasses = detectedClasses;
         }
 
+        // If none of the methods above yield any class or interface to register for, emit a warning...
         if (registeredClasses.isEmpty()) {
             Injector.LOG.WARN(
                     "%s wears a @Register annotation but neither implements an interface nor lists which classes to "
                     + "register for...",
                     clazz.getName());
-            return;
         }
 
-        Object part = clazz.getDeclaredConstructor().newInstance();
-        String name = r.name();
-        if (part instanceof Named) {
-            registeredClasses.remove(Named.class);
-            if (Strings.isFilled(name)) {
-                Injector.LOG.WARN(
-                        "%s implements Named and still provides a name in the @Register annotation. Using value "
-                        + "provided by Named.getName()...",
-                        clazz.getName());
-            }
-            name = ((Named) part).getName();
-            if (Strings.isEmpty(name)) {
-                Injector.LOG.WARN("%s implements Named but Named.getName() returned an empty string...",
-                                  clazz.getName());
-            }
-        }
-        if (Strings.isFilled(name)) {
-            ctx.registerPart(name, part, registeredClasses.toArray(EMPTY_CLASS_ARRAY));
-        } else {
-            ctx.registerPart(part, registeredClasses.toArray(EMPTY_CLASS_ARRAY));
-        }
+        return registeredClasses;
     }
 
     private Set<Class<?>> findAutoRegisterClasses(Class<?> clazz) {
@@ -123,4 +136,26 @@ public class RegisterLoadAction implements ClassLoadAction {
     private boolean isAutoRegistered(Class<?> clazz) {
         return clazz.isAnnotationPresent(AutoRegister.class);
     }
+
+    private String computeEffectiveName(Class<?> clazz,
+                                        Register registerAnnotation,
+                                        Object part) {
+        String name = registerAnnotation.name();
+        if (part instanceof Named) {
+            if (Strings.isFilled(name)) {
+                Injector.LOG.WARN(
+                        "%s implements Named and still provides a name in the @Register annotation. Using value "
+                        + "provided by Named.getName()...",
+                        clazz.getName());
+            }
+            name = ((Named) part).getName();
+            if (Strings.isEmpty(name)) {
+                Injector.LOG.WARN("%s implements Named but Named.getName() returned an empty string...",
+                                  clazz.getName());
+            }
+        }
+
+        return name;
+    }
+
 }
