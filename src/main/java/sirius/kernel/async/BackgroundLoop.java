@@ -12,6 +12,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -37,6 +38,7 @@ import java.time.LocalDateTime;
  * Note that subclasses must wear an {@link sirius.kernel.di.std.Register} annotation like this:
  * {@code @Register(classes = BackgroundLoop.class)} to be visible to the framework.
  */
+@AutoRegister
 public abstract class BackgroundLoop {
 
     private static final double EVERY_SECOND = 1;
