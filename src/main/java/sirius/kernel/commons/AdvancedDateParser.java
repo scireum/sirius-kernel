@@ -761,8 +761,19 @@ public class AdvancedDateParser {
          * Returns the effective date as <tt>Temporal</tt>
          *
          * @return the effective date. This might be <tt>null</tt> if parsing the expression failed.
+         * @deprecated use {@link #asDateTime()} which returns the proper type (<tt>LocalDateTime</tt>).
          */
+        @Deprecated
         public Temporal getTemporal() {
+            return date;
+        }
+
+        /**
+         * Returns the effective date as <tt>Temporal</tt>
+         *
+         * @return the effective date. This might be <tt>null</tt> if parsing the expression failed.
+         */
+        public LocalDateTime asDateTime() {
             return date;
         }
 
