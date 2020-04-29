@@ -810,7 +810,7 @@ public class AdvancedDateParser {
         }
 
         /**
-         * Returns the effective date as <tt>Temporal</tt>
+         * Returns the effective date as <tt>LocalDateTime</tt>
          *
          * @return the effective date. This might be <tt>null</tt> if parsing the expression failed.
          */
