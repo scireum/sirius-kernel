@@ -1257,7 +1257,7 @@ public class NLS {
         if (LocalDate.class.equals(clazz)) {
             try {
                 AdvancedDateParser parser = new AdvancedDateParser(lang);
-                return (V) LocalDate.from(parser.parse(value).getTemporal());
+                return (V) parser.parse(value).asDateTime().toLocalDate();
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
             }
@@ -1265,7 +1265,7 @@ public class NLS {
         if (LocalDateTime.class.equals(clazz)) {
             try {
                 AdvancedDateParser parser = new AdvancedDateParser(lang);
-                return (V) LocalDateTime.from(parser.parse(value).getTemporal());
+                return (V) parser.parse(value).asDateTime();
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
             }
@@ -1273,7 +1273,7 @@ public class NLS {
         if (ZonedDateTime.class.equals(clazz)) {
             try {
                 AdvancedDateParser parser = new AdvancedDateParser(lang);
-                return (V) ZonedDateTime.from(parser.parse(value).getTemporal());
+                return (V) ZonedDateTime.from(parser.parse(value).asDateTime());
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
             }
