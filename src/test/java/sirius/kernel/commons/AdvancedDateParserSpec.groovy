@@ -110,4 +110,14 @@ class AdvancedDateParserSpec extends BaseSpecification {
     }
 
 
+    def "The parser can re-digest its output"() {
+        given:
+        AdvancedDateParser parser = new AdvancedDateParser("de")
+        when: "A date is parsed into a DateSelection"
+        def dateSelection = parser.parse("07.07.2017 12:34:56");
+        then: "its result can be re-parsed by the date parser..."
+        parser.parse(dateSelection.toString()).asDateTime() == dateSelection.asDateTime()
+    }
+
+
 }
