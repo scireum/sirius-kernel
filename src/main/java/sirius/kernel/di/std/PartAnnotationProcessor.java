@@ -11,8 +11,10 @@ package sirius.kernel.di.std;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.FieldAnnotationProcessor;
+import sirius.kernel.di.Injector;
 import sirius.kernel.di.MutableGlobalContext;
 
+import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
@@ -24,6 +26,7 @@ import java.lang.reflect.Field;
  */
 @Register
 public class PartAnnotationProcessor implements FieldAnnotationProcessor {
+
     @Override
     public Class<? extends Annotation> getTrigger() {
         return Part.class;
@@ -42,6 +45,13 @@ public class PartAnnotationProcessor implements FieldAnnotationProcessor {
             Object part = ctx.getPart(field.getType());
             if (part != null) {
                 field.set(object, part);
+            } else if (field.get(object) == null && !field.isAnnotationPresent(Nullable.class)) {
+                Injector.LOG.WARN(
+                        "Cannot fill %s of %s with %s!"
+                        + " Add a Nullable annotation if this is expected, in order to suppress this warning.",
+                        field.getName(),
+                        field.getDeclaringClass().getName(),
+                        field.getType());
             }
         }
     }

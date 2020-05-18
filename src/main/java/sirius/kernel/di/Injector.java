@@ -11,6 +11,7 @@ package sirius.kernel.di;
 import com.google.common.collect.Lists;
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
+import sirius.kernel.di.std.RegisterLoadAction;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
@@ -30,7 +31,7 @@ import java.util.regex.Pattern;
  * Parts are commonly added via subclasses of {@link ClassLoadAction}. These scan each class in the classpath
  * and instantiate and insert them into the {@link MutableGlobalContext} if required. Most of these
  * <tt>ClassLoadAction</tt> implementations trigger on annotations. A prominent example is the
- * {@link sirius.kernel.di.std.AutoRegisterAction} which loads all classes wearing the {@link sirius.kernel.di.std
+ * {@link RegisterLoadAction} which loads all classes wearing the {@link sirius.kernel.di.std
  * .Register}
  * annotation. Subclasses of <tt>ClassLoadAction</tt> are discovered automatically.
  * <p>

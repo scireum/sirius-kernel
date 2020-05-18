@@ -8,12 +8,15 @@
 
 package sirius.kernel.health.metrics;
 
+import sirius.kernel.di.std.AutoRegister;
+
 /**
  * Provides metrics to the metrics system.
  * <p>
  * Instances of this class can be registered using the {@link sirius.kernel.di.std.Register} annotation which then
  * can provide metrics for various areas of the system.
  */
+@AutoRegister
 public interface MetricProvider {
 
     /**

@@ -26,6 +26,7 @@ import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -70,6 +71,7 @@ public class Timers implements Startable, Stoppable {
     private TimeProvider timeProvider;
 
     @Part
+    @Nullable
     private Orchestration orchestration;
 
     @Parts(EveryTenSeconds.class)

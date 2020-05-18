@@ -15,6 +15,7 @@ import sirius.kernel.di.MutableGlobalContext;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 
+import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
@@ -37,11 +38,14 @@ public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor 
         ConfigValue val = field.getAnnotation(ConfigValue.class);
         String key = val.value();
 
-        if (!Sirius.getSettings().injectValueFromConfig(object, field, key) && val.required()) {
-            Injector.LOG.WARN("Missing config value: %s in (%s.%s)!",
-                              key,
-                              field.getDeclaringClass().getName(),
-                              field.getName());
+        if (!Sirius.getSettings().injectValueFromConfig(object, field, key)) {
+            if (field.get(object) == null && !field.isAnnotationPresent(Nullable.class)) {
+                Injector.LOG.WARN("Cannot fill %s of %s with the config value '%s'."
+                                  + " Add a Nullable annotation if this is expected, in order to suppress this warning.",
+                                  key,
+                                  field.getDeclaringClass().getName(),
+                                  field.getName());
+            }
         }
     }
 }

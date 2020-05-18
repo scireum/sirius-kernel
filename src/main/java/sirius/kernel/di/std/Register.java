@@ -19,17 +19,22 @@ import java.lang.annotation.Target;
  * <p>
  * If a non empty name is given, the part is registered with the given name and
  * for the given classes. Otherwise, the part is directly registered without any
- * unique name.
+ * unique name. Note that extending {@link Named} is the preferred way of providing
+ * a name. This name can be later used to pick a distinct part via
+ * {@link sirius.kernel.di.GlobalContext#getPart(String, Class)}.
  * <p>
- * If no <tt>classes</tt> are given, the class is registered for its own class, and all implemented interfaces. This
- * is probably the right choice in many situations, therefore this annotation can be used without any parameters in
- * most cases.
+ * If no <tt>classes</tt> are given, the class is registered for all classes and interfaces declared or inherited
+ * by the annotated class, as long as these are marked with {@link AutoRegister}. This is probably the right choice in
+ * many situations, therefore this annotation can and should be used without any parameters in most cases.
+ * <p>
+ * Additionally the <tt>framework</tt> can be used to only process this annotation if the given framework
+ * is enabled - just like {@link Framework} does.
  * <p>
  * Classes wearing this annotations must have a zero args constructor.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target(ElementType.TYPE)
 public @interface Register {
 
     /**
@@ -51,7 +56,8 @@ public @interface Register {
      * Classes for which the part is registered.
      *
      * @return the classes for which the part is registered. If this list is empty,
-     * all implemented interfaces are used.
+     * (which should be the common case), all classes and interfaces marked with {@link AutoRegister}
+     * will be used.
      */
     Class<?>[] classes() default {};
 }

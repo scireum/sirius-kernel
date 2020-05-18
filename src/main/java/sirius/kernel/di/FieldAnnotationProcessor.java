@@ -8,6 +8,8 @@
 
 package sirius.kernel.di;
 
+import sirius.kernel.di.std.AutoRegister;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
@@ -17,6 +19,7 @@ import java.lang.reflect.Field;
  * Implementations of this class will be automatically detected and used to wire objects
  * (to handle annotations placed on fields).
  */
+@AutoRegister
 public interface FieldAnnotationProcessor {
     /**
      * Returns the trigger-annotation which is used to identify fields of
