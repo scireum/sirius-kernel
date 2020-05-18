@@ -11,10 +11,7 @@ package sirius.kernel.xml;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import sirius.kernel.cache.Cache;
-import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 
@@ -41,46 +38,19 @@ import java.util.function.Consumer;
  */
 public class StructuredNode {
 
-    /**
-     * Cache to improve speed of xpath...
-     */
-    private static Cache<Tuple<Thread, String>, XPathExpression> cache = CacheManager.createLocalCache("xpath");
     private static final XPathFactory XPATH = XPathFactory.newInstance();
 
     private Node node;
-
-    /**
-     * Handles any namespace logic within the xml.
-     * <p>
-     * We need to add a namespace context to query nodes which belong to a namespace.
-     * <p>
-     * E.g. <a:tag></a:tag> would belong to the namespace a and we need to add it to query it.
-     */
-    private static NamespaceContext namespaceContext = new ConfigBasedNamespaceContext();
+    private NamespaceContext namespaceContext;
 
     /**
      * Wraps the given node
      *
      * @param root the node to wrap
      */
-    protected StructuredNode(Node root) {
-        node = root;
-    }
-
-    /*
-     * Compiles the given xpath by utilizing the internal cache
-     */
-    private static XPathExpression compile(String xpath) throws XPathExpressionException {
-        Tuple<Thread, String> key = Tuple.create(Thread.currentThread(), xpath);
-        XPathExpression result = cache.get(key);
-        if (result == null) {
-            XPath xPathInstance = XPATH.newXPath();
-            xPathInstance.setNamespaceContext(namespaceContext);
-            result = xPathInstance.compile(xpath);
-
-            cache.put(key, result);
-        }
-        return result;
+    protected StructuredNode(@Nonnull Node root, NamespaceContext namespaceContext) {
+        this.node = root;
+        this.namespaceContext = namespaceContext;
     }
 
     /**
@@ -91,7 +61,19 @@ public class StructuredNode {
      */
     @Nonnull
     public static StructuredNode of(@Nonnull Node node) {
-        return new StructuredNode(node);
+        return new StructuredNode(node, null);
+    }
+
+    /**
+     * Wraps the given W3C node into a structured node.
+     *
+     * @param node             the node to wrap
+     * @param namespaceContext the context to use in order to resolve namespace prefixes
+     * @return a wrapped instance of the given node
+     */
+    @Nonnull
+    public static StructuredNode of(@Nonnull Node node, @Nullable NamespaceContext namespaceContext) {
+        return new StructuredNode(node, namespaceContext);
     }
 
     /**
@@ -151,7 +133,7 @@ public class StructuredNode {
         NodeList result = node.getChildNodes();
         List<StructuredNode> resultList = new ArrayList<>(result.getLength());
         for (int i = 0; i < result.getLength(); i++) {
-            resultList.add(new StructuredNode(result.item(i)));
+            resultList.add(new StructuredNode(result.item(i), namespaceContext));
         }
         return resultList;
     }
@@ -207,10 +189,19 @@ public class StructuredNode {
                 return null;
             }
 
-            return new StructuredNode(result);
+            return new StructuredNode(result, namespaceContext);
         } catch (XPathExpressionException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    private XPathExpression compile(String xpath) throws XPathExpressionException {
+        XPath xPathInstance = XPATH.newXPath();
+        if (namespaceContext != null) {
+            xPathInstance.setNamespaceContext(namespaceContext);
+        }
+
+        return xPathInstance.compile(xpath);
     }
 
     /**
@@ -226,7 +217,7 @@ public class StructuredNode {
             NodeList result = (NodeList) compile(xpath).evaluate(node, XPathConstants.NODESET);
             List<StructuredNode> resultList = new ArrayList<>(result.getLength());
             for (int i = 0; i < result.getLength(); i++) {
-                resultList.add(new StructuredNode(result.item(i)));
+                resultList.add(new StructuredNode(result.item(i), namespaceContext));
             }
             return resultList;
         } catch (XPathExpressionException e) {
