@@ -116,7 +116,16 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public InputStream getInput() throws IOException {
-        return connection.getInputStream();
+        try {
+            return connection.getInputStream();
+        } catch (IOException e) {
+            int statusCode = connection.getResponseCode();
+            if (statusCode != 200) {
+                return connection.getErrorStream();
+            } else {
+                throw e;
+            }
+        }
     }
 
     /**
