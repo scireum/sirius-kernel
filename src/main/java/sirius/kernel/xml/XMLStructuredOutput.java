@@ -33,7 +33,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class XMLStructuredOutput extends AbstractStructuredOutput {
 
-    private TransformerHandler hd;
+    private TransformerHandler transformerHandler;
     protected OutputStream out;
     private int opensCalled = 0;
 
@@ -68,16 +68,16 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             this.out = output;
             StreamResult streamResult = new StreamResult(out);
             SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
-            hd = tf.newTransformerHandler();
-            Transformer serializer = hd.getTransformer();
+            transformerHandler = tf.newTransformerHandler();
+            Transformer serializer = transformerHandler.getTransformer();
             if (doctype != null) {
                 serializer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctype);
             }
             serializer.setOutputProperty(OutputKeys.ENCODING, encoding.name());
             serializer.setOutputProperty(OutputKeys.INDENT, "yes");
             serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            hd.setResult(streamResult);
-            hd.startDocument();
+            transformerHandler.setResult(streamResult);
+            transformerHandler.startDocument();
         } catch (Exception e) {
             throw Exceptions.handle(e);
         }
@@ -86,7 +86,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     @Override
     protected void endArray(String name) {
         try {
-            hd.endElement("", "", name);
+            transformerHandler.endElement("", "", name);
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
@@ -95,7 +95,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     @Override
     protected void endObject(String name) {
         try {
-            hd.endElement("", "", name);
+            transformerHandler.endElement("", "", name);
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
@@ -120,7 +120,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     public StructuredOutput beginOutput(@Nonnull String rootElement) {
         if (opensCalled == 0) {
             try {
-                hd.startDocument();
+                transformerHandler.startDocument();
             } catch (SAXException e) {
                 throw Exceptions.handle(e);
             }
@@ -141,7 +141,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     public StructuredOutput beginOutput(@Nonnull String rootElement, Attribute... attr) {
         if (opensCalled == 0) {
             try {
-                hd.startDocument();
+                transformerHandler.startDocument();
             } catch (SAXException e) {
                 throw Exceptions.handle(e);
             }
@@ -162,7 +162,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     public TagBuilder buildBegin(@Nonnull String rootElement) {
         if (opensCalled == 0) {
             try {
-                hd.startDocument();
+                transformerHandler.startDocument();
             } catch (SAXException e) {
                 throw Exceptions.handle(e);
             }
@@ -179,7 +179,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         if (opensCalled-- == 1) {
             super.endResult();
             try {
-                hd.endDocument();
+                transformerHandler.endDocument();
                 out.close();
             } catch (SAXException | IOException e) {
                 throw Exceptions.handle(e);
@@ -195,7 +195,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     @Override
     protected void startArray(String name) {
         try {
-            hd.startElement("", "", name, null);
+            transformerHandler.startElement("", "", name, null);
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
@@ -211,7 +211,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
                     attrs.addAttribute("", "", attr.getName(), "CDATA", String.valueOf(attr.getValue()));
                 }
             }
-            hd.startElement("", "", name, attrs);
+            transformerHandler.startElement("", "", name, attrs);
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
@@ -220,12 +220,12 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     @Override
     protected void writeProperty(String name, Object value) {
         try {
-            hd.startElement("", "", name, null);
+            transformerHandler.startElement("", "", name, null);
             if (value != null) {
                 String val = value.toString();
-                hd.characters(val.toCharArray(), 0, val.length());
+                transformerHandler.characters(val.toCharArray(), 0, val.length());
             }
-            hd.endElement("", "", name);
+            transformerHandler.endElement("", "", name);
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
@@ -258,7 +258,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         try {
             if (text != null) {
                 String val = text.toString();
-                hd.characters(val.toCharArray(), 0, val.length());
+                transformerHandler.characters(val.toCharArray(), 0, val.length());
             }
         } catch (SAXException e) {
             throw Exceptions.handle(e);
