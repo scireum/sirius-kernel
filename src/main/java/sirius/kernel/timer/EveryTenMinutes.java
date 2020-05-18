@@ -8,6 +8,8 @@
 
 package sirius.kernel.timer;
 
+import sirius.kernel.di.std.AutoRegister;
+
 /**
  * Parts registered for this interface will be invoked every ten minutes.
  * <p>
@@ -16,6 +18,7 @@ package sirius.kernel.timer;
  * {@link sirius.kernel.timer.TimedTask#runTimer()} is invoked once every ten minutes (however no assumptions about the
  * exact length of the interval should be made - it will be "about" a ten minutes, not exactly ten).
  */
+@AutoRegister
 public interface EveryTenMinutes extends TimedTask {
 
 }

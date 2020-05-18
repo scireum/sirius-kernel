@@ -8,10 +8,13 @@
 
 package sirius.kernel.di;
 
+import sirius.kernel.di.std.AutoRegister;
+
 /**
  * Classes implementing this interface will be invoked, once the {@link Injector} is fully initialized (all annotations
  * are processed).
  */
+@AutoRegister
 public interface Initializable {
     /**
      * Invoked by the injector once the system is completely initialized.

@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
  * Also it provides a {@link PortMapper} to map the desired production ports to the
  * ones provided by the docker containers.
  */
-@Register(classes = {Initializable.class, Killable.class})
+@Register
 public class DockerHelper extends PortMapper implements Initializable, Killable {
 
     private static final int MAX_WAIT_SECONDS = 10;
