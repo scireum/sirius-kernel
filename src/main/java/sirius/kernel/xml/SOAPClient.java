@@ -18,8 +18,6 @@ import sirius.kernel.health.Log;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
@@ -81,6 +79,16 @@ public class SOAPClient {
     private static final String TAG_SOAP_HEADER = "soapenv:Header";
     private static final String TAG_SOAP_BODY = "soapenv:Body";
     private static final String PREFIX_XMLNS = "xmlns:";
+
+    /**
+     * Contains the node name which contains the code of a SOAP fault.
+     */
+    public static final String NODE_FAULTCODE = "faultcode";
+
+    /**
+     * Contains the node name which contains the message of a SOAP fault.
+     */
+    public static final String NODE_FAULTSTRING = "faultstring";
 
     private URL endpoint;
     private BasicNamespaceContext namespaceContext = new BasicNamespaceContext();
@@ -250,10 +258,11 @@ public class SOAPClient {
     public StructuredNode call(@Nonnull String action,
                                @Nullable Consumer<XMLStructuredOutput> headBuilder,
                                @Nonnull Consumer<XMLStructuredOutput> bodyBuilder) {
+        Watch watch = Watch.start();
         URL effectiveEndpoint = customEndpoints.getOrDefault(action, endpoint);
+
         try (Operation op = new Operation(() -> Strings.apply("SOAP %s -> %s", action, effectiveEndpoint),
                                           Duration.ofSeconds(15))) {
-            Watch watch = Watch.start();
             XMLCall call = XMLCall.to(effectiveEndpoint);
             call.withNamespaceContext(namespaceContext);
             call.getOutcall().markAsPostRequest();
@@ -274,15 +283,10 @@ public class SOAPClient {
             }
 
             return handleResult(watch, action, effectiveEndpoint, result);
-        } catch (IOException | XPathExpressionException e) {
-            throw exceptionFilter.apply(Exceptions.handle()
-                                                  .to(LOG)
-                                                  .error(e)
-                                                  .withSystemErrorMessage(
-                                                          "An error occured when executing '%s' against '%s': %s (%s)",
-                                                          action,
-                                                          effectiveEndpoint)
-                                                  .handle());
+        } catch (SOAPFaultException | HandledException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            return handleGeneralFault(watch, action, effectiveEndpoint, exception);
         }
     }
 
@@ -338,8 +342,8 @@ public class SOAPClient {
                                              StructuredNode fault) {
         SOAPFaultException soapFaultException = new SOAPFaultException(action,
                                                                        effectiveEndpoint,
-                                                                       fault.queryString("faultcode"),
-                                                                       fault.queryString("faultstring"));
+                                                                       fault.queryString(NODE_FAULTCODE),
+                                                                       fault.queryString(NODE_FAULTSTRING));
 
         if (throwSOAPFaults) {
             throw soapFaultException;
@@ -370,6 +374,33 @@ public class SOAPClient {
      */
     protected StructuredNode handleResult(Watch watch, String action, URL effectiveEndpoint, StructuredNode result) {
         return resultTransformer.apply(result);
+    }
+
+    /**
+     * Handles the given exception which occured when performing a SOAP call.
+     * <p>
+     * This method can be overwritten by sublasses to provide additional logging / tracing.
+     *
+     * @param watch             the watch which record the total duration of the SOAP call
+     * @param action            the action which was invoked
+     * @param effectiveEndpoint the endpoint which has been addressed
+     * @param exception         the error that occured
+     * @return an alternative response to return in case that no exception is thrown
+     * @throws HandledException the default approach is to create an appropriate exception and pass it to the
+     *                          {@link #exceptionFilter}.
+     */
+    protected StructuredNode handleGeneralFault(Watch watch,
+                                                String action,
+                                                URL effectiveEndpoint,
+                                                Exception exception) {
+        throw exceptionFilter.apply(Exceptions.handle()
+                                              .to(LOG)
+                                              .error(exception)
+                                              .withSystemErrorMessage(
+                                                      "An error occured when executing '%s' against '%s': %s (%s)",
+                                                      action,
+                                                      effectiveEndpoint)
+                                              .handle());
     }
 
     /**
