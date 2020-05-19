@@ -36,7 +36,7 @@ public class XMLStructuredInput implements StructuredInput {
      * @param namespaceContext the namespace context to use when applying XPATH queries
      * @throws IOException if an io error occurs while parsing the input xml
      */
-    public XMLStructuredInput(InputStream inputStream,@Nullable NamespaceContext namespaceContext) throws IOException {
+    public XMLStructuredInput(InputStream inputStream, @Nullable NamespaceContext namespaceContext) throws IOException {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             if (namespaceContext != null) {
