@@ -39,7 +39,7 @@ public class BasicNamespaceContext implements NamespaceContext {
     /**
      * Returns all registered prefixes along with their namespace URIs.
      *
-     * @return a stream of entries mapping prefixes to their namespcae URIs
+     * @return a stream of entries mapping prefixes to their namespace URIs
      */
     public Stream<Map.Entry<String, String>> getPrefixAndUris() {
         return prefixToUri.entrySet().stream();
