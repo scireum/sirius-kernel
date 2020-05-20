@@ -8,6 +8,7 @@
 
 package sirius.kernel.xml;
 
+import javax.xml.namespace.NamespaceContext;
 import java.io.IOException;
 import java.net.URL;
 
@@ -17,6 +18,7 @@ import java.net.URL;
 public class XMLCall {
 
     private Outcall outcall;
+    private NamespaceContext namespaceContext;
 
     /**
      * Creates a new XMLCall for the given url with Content-Type 'text/xml'.
@@ -57,6 +59,19 @@ public class XMLCall {
     }
 
     /**
+     * Specifies the <tt>NamespaceContext</tt> to use for the result of this call.
+     * <p>
+     * This is required to properly execute XPATH expressions on namespaced XMLs.
+     *
+     * @param namespaceContext the namespace context to use
+     * @return the call itself for fluent method calls
+     */
+    public XMLCall withNamespaceContext(NamespaceContext namespaceContext) {
+        this.namespaceContext = namespaceContext;
+        return this;
+    }
+
+    /**
      * Returns the underlying <tt>Outcall</tt>.
      *
      * @return the underlying outcall
@@ -82,6 +97,6 @@ public class XMLCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public XMLStructuredInput getInput() throws IOException {
-        return new XMLStructuredInput(outcall.getInput(), true);
+        return new XMLStructuredInput(outcall.getInput(), namespaceContext);
     }
 }

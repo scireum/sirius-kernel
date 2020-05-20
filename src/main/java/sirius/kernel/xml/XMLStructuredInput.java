@@ -13,6 +13,8 @@ import org.xml.sax.SAXException;
 import sirius.kernel.commons.Explain;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,22 +32,31 @@ public class XMLStructuredInput implements StructuredInput {
     /**
      * Creates a new XMLStructuredInput for the given stream.
      *
-     * @param in    the InputStream containing the xml data.
-     * @param close determines whether the stream should be closed after parsing or not
+     * @param inputStream      the InputStream containing the xml data
+     * @param namespaceContext the namespace context to use when applying XPATH queries
      * @throws IOException if an io error occurs while parsing the input xml
      */
-    public XMLStructuredInput(InputStream in, boolean close) throws IOException {
+    public XMLStructuredInput(InputStream inputStream, @Nullable NamespaceContext namespaceContext) throws IOException {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(in);
-            node = StructuredNode.of(doc.getDocumentElement());
-            if (close) {
-                in.close();
+            if (namespaceContext != null) {
+                dbf.setNamespaceAware(true);
             }
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(inputStream);
+            this.node = StructuredNode.of(doc.getDocumentElement(), namespaceContext);
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException(e);
         }
+    }
+
+    /**
+     * Returns the document root.
+     *
+     * @return the root element wrapped as {@link StructuredNode}
+     */
+    public StructuredNode root() {
+        return node;
     }
 
     @Override
