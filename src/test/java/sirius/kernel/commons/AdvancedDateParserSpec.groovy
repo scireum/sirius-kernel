@@ -44,7 +44,7 @@ class AdvancedDateParserSpec extends BaseSpecification {
         parser.parse("2017-07-07T12:34:56").asDateTime() == LocalDateTime.parse("2017-07-07T12:34:56")
     }
 
-    def "British date format can be parsed"() {
+    def "American date format can be parsed"() {
         when:
         AdvancedDateParser parser = new AdvancedDateParser("en")
         timeProvider.setClock(Clock.fixed(Instant.parse("2017-07-07T12:34:55.00Z"), ZoneOffset.UTC))
@@ -54,7 +54,19 @@ class AdvancedDateParserSpec extends BaseSpecification {
         parser.parse("07/07/17").asDateTime() == LocalDateTime.parse("2017-07-07T00:00")
         parser.parse("today").asDateTime() == LocalDateTime.parse("2017-07-07T12:34:55")
         parser.parse("07/07/17 11:00 am").asDateTime() == LocalDateTime.parse("2017-07-07T11:00:00")
+        parser.parse("07/27/17 11:00 am").asDateTime() == LocalDateTime.parse("2017-07-27T11:00:00")
         parser.parse("today 11:00 pm").asDateTime() == LocalDateTime.parse("2017-07-07T23:00:00")
+    }
+
+    def "British date format can be parsed"() {
+        when:
+        AdvancedDateParser parser = new AdvancedDateParser("en", true)
+        then:
+        parser.parse("27/07/17 11:00 am").asDateTime() == LocalDateTime.parse("2017-07-27T11:00:00")
+        when:
+        parser.parse("07/27/17 11:00 am").asDateTime()
+        then:
+        thrown(ParseException)
     }
 
     def "Relative dates can be parsed"() {

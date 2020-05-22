@@ -27,7 +27,7 @@ import java.util.TreeSet;
 /**
  * A flexible parser for dates in various formats.
  * <p>
- * It can parse formats like DD.MM.YYYY, DD-MM-YYYY, DD/MM/YYYY or ISO dates like YYYY-MM-DDTHH:MM:SS along with some
+ * It can parse formats like DD.MM.YYYY, DD-MM-YYYY, MM/DD/YYYY or ISO dates like YYYY-MM-DDTHH:MM:SS along with some
  * modifiers as decribed below.
  * <p>
  * A valid expression is defined by the following grammar:
@@ -68,6 +68,7 @@ public class AdvancedDateParser {
     private static final String DASH_DATE_SEPARATOR = "-";
 
     private final String lang;
+    private boolean parseBritishDate = false;
     private Tokenizer tokenizer;
     private boolean startOfDay = false;
     private boolean startOfWeek = false;
@@ -88,6 +89,19 @@ public class AdvancedDateParser {
      */
     public AdvancedDateParser(String lang) {
         this.lang = lang;
+    }
+
+    /**
+     * Creates a new parser for the given language to use.
+     *
+     * @param lang             contains the two letter language code to obtain the translations for the available
+     *                         modifiers etc.
+     * @param parseBritishDate determines if british dates (DD/MM/YYYY) instead of american (MM/DD/YYYY) dates should
+     *                         be parsed.
+     */
+    public AdvancedDateParser(String lang, boolean parseBritishDate) {
+        this.lang = lang;
+        this.parseBritishDate = parseBritishDate;
     }
 
     /**
@@ -661,10 +675,12 @@ public class AdvancedDateParser {
         return LocalDate.of(year, month, 1).atStartOfDay();
     }
 
-    private LocalDateTime parseEnglishDate(int day) throws ParseException {
+    @SuppressWarnings("java:S2234")
+    @Explain("We intentionally flip the parameters here, as the british and the american format differ this way...")
+    private LocalDateTime parseEnglishDate(int month) throws ParseException {
         tokenizer.nextToken();
         expectNumber();
-        int month = Integer.parseInt(tokenizer.getToken());
+        int day = Integer.parseInt(tokenizer.getToken());
         tokenizer.nextToken();
         int year = now().getYear();
         if (in(ENGLISH_DATE_SEPARATOR)) {
@@ -676,7 +692,13 @@ public class AdvancedDateParser {
             }
         }
 
-        return buildDateAndParseTime(day, month, year);
+        if (parseBritishDate) {
+            // The empire uses a format DD/MM/YYYY instead of the yankee version (MM/DD/YYYY), therefore
+            // we have to flip month and day here...
+            return buildDateAndParseTime(month, day, year);
+        } else {
+            return buildDateAndParseTime(day, month, year);
+        }
     }
 
     private LocalDateTime buildDateAndParseTime(int day, int month, int year) throws ParseException {
