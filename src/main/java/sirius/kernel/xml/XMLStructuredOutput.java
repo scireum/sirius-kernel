@@ -249,6 +249,54 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
+     * Adds a property containing attributes to the current object.
+     *
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes for the element
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput property(String name, Object data, Attribute... attributes) {
+        startObject(name, attributes);
+        text(data);
+        endObject(name);
+        return this;
+    }
+
+    /**
+     * Adds a property containing attributes to the current object.
+     * <p>
+     * This will create a property only if the specified data object is not null.
+     * Else no property is created.
+     *
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes for the element
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput propertyIfFilled(String name, Object data, Attribute... attributes) {
+        if (data != null) {
+            property(name, data, attributes);
+        }
+        return this;
+    }
+
+    /**
+     * Adds a property containing attributes to the current object.
+     * <p>
+     * This will create a property with the specified data as value or empty string if the value is null.
+     *
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes for the element
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput nullsafeProperty(String name, Object data, Attribute... attributes) {
+        property(name, data != null ? data : "", attributes);
+        return this;
+    }
+
+    /**
      * Creates a text node for the current node.
      *
      * @param text the text to be added to the current node
