@@ -8,7 +8,6 @@
 
 package sirius.kernel.di;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
 import sirius.kernel.di.std.RegisterLoadAction;
@@ -16,6 +15,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -75,8 +75,8 @@ public class Injector {
         // Make the context itself visible for GlobalContext...
         ctx.registerPart(ctx, GlobalContext.class);
         cp = classpath;
-        loadedClasses = Lists.newArrayList();
-        actions = Lists.newArrayList();
+        loadedClasses = new ArrayList<>();
+        actions = new ArrayList<>();
         packageFilter = Sirius.getSettings().getStringList("di.packageFilter");
 
         LOG.INFO("Initializing the MicroKernel....");

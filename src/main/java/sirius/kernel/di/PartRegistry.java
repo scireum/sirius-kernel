@@ -8,7 +8,6 @@
 
 package sirius.kernel.di;
 
-import com.google.common.collect.Maps;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Explain;
@@ -23,6 +22,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -49,14 +50,14 @@ class PartRegistry implements MutableGlobalContext {
      *
      * Content: ClassToReplace -> Replacement
      */
-    private final Map<Class<?>, Object> shadowMap = Maps.newHashMap();
+    private final Map<Class<?>, Object> shadowMap = new HashMap<>();
 
     /*
      * Contains all registered parts with a unique name. These parts will also
      * be contained in parts. This is just a lookup map if searched by unique
      * name.
      */
-    private final Map<Class<?>, Map<String, Object>> namedParts = Maps.newConcurrentMap();
+    private final Map<Class<?>, Map<String, Object>> namedParts = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
     @Override

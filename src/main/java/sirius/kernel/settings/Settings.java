@@ -8,7 +8,6 @@
 
 package sirius.kernel.settings;
 
-import com.google.common.collect.Lists;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
@@ -29,6 +28,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Field;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -182,7 +182,7 @@ public class Settings {
      */
     @Nonnull
     public List<? extends Config> getConfigs(String key) {
-        List<Config> result = Lists.newArrayList();
+        List<Config> result = new ArrayList<>();
         Config cfg = getConfig(key);
         if (cfg != null) {
             for (Map.Entry<String, ConfigValue> e : cfg.root().entrySet()) {

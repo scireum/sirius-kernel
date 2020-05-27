@@ -8,7 +8,6 @@
 
 package sirius.kernel.health;
 
-import com.google.common.collect.Maps;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
@@ -20,6 +19,7 @@ import sirius.kernel.nls.NLS;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Central point for handling all system errors and exceptions.
@@ -95,7 +95,7 @@ public class Exceptions {
         private Object[] systemErrorMessageParams;
         private boolean processError = true;
         private String key = "HandledException.exception";
-        private Map<String, Object> params = Maps.newTreeMap();
+        private Map<String, Object> params = new TreeMap<>();
 
         /**
          * Use {@link Exceptions#handle()} to create an <tt>ErrorHandler</tt>

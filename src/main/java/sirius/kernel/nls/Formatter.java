@@ -8,13 +8,13 @@
 
 package sirius.kernel.nls;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import sirius.kernel.commons.Strings;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 /**
@@ -46,7 +46,7 @@ import java.util.function.Function;
  */
 public class Formatter {
     private boolean urlEncode = false;
-    private Map<String, String> replacement = Maps.newTreeMap();
+    private Map<String, String> replacement = new TreeMap<>();
     private Function<String, Optional<String>> parameterProvider;
     private boolean ignoreMissingPrameters;
     private String pattern;
@@ -324,7 +324,7 @@ public class Formatter {
      * result in one stack level.
      */
     private String format(boolean smart) {
-        List<Block> blocks = Lists.newArrayList();
+        List<Block> blocks = new ArrayList<>();
         Block currentBlock = new Block();
         blocks.add(currentBlock);
         int index = 0;

@@ -8,7 +8,6 @@
 
 package sirius.kernel.settings;
 
-import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
@@ -18,6 +17,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -161,8 +161,8 @@ public class ExtendedSettings extends Settings {
         }
 
         Collections.sort(list);
-        result = Maps.newLinkedHashMap();
         for (Extension ex : list) {
+        Map<String, Extension> result = new LinkedHashMap<>();
             result.put(ex.getId(), ex);
         }
         cache.put(type, result);

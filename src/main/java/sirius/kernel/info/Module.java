@@ -8,7 +8,7 @@
 
 package sirius.kernel.info;
 
-import com.google.common.hash.Hashing;
+import sirius.kernel.commons.Hasher;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
 
@@ -70,9 +70,9 @@ public class Module {
      * @return a unique version string per release or instance
      */
     public String getUniqueVersionString() {
-        return Hashing.md5()
-                      .hashString(fix(vcs, RANDOM_REPLACEMENT) + fix(build, RANDOM_REPLACEMENT), StandardCharsets.UTF_8)
-                      .toString();
+        return Hasher.md5()
+                     .hash(fix(vcs, RANDOM_REPLACEMENT) + fix(build, RANDOM_REPLACEMENT))
+                     .toHexString();
     }
 
     /**

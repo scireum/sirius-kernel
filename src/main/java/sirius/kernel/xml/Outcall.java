@@ -8,8 +8,8 @@
 
 package sirius.kernel.xml;
 
-import com.google.common.io.CharStreams;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
@@ -203,12 +203,7 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public String getData() throws IOException {
-        StringWriter writer = new StringWriter();
-        InputStreamReader reader = new InputStreamReader(getInput(), getContentEncoding());
-        CharStreams.copy(reader, writer);
-        reader.close();
-
-        return writer.toString();
+        return Streams.readToString(new InputStreamReader(getInput(), getContentEncoding()));
     }
 
     /**

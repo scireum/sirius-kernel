@@ -8,8 +8,6 @@
 
 package sirius.kernel.nls;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
@@ -48,10 +46,12 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Native Language Support used by the framework.
@@ -94,13 +94,13 @@ public class NLS {
             DateTimeFormatter.ofPattern("H:mm[:ss]", Locale.ENGLISH);
     private static final DateTimeFormatter MACHINE_FORMAT_TIME_FORMAT =
             DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ENGLISH);
-    private static final Map<String, DateTimeFormatter> fullDateTimeFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> dateTimeFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> dateFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> shortDateFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> timeFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> parseTimeFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> fullTimeFormatters = Maps.newTreeMap();
+    private static final Map<String, DateTimeFormatter> fullDateTimeFormatters = new TreeMap<>();
+    private static final Map<String, DateTimeFormatter> dateTimeFormatters = new TreeMap<>();
+    private static final Map<String, DateTimeFormatter> dateFormatters = new TreeMap<>();
+    private static final Map<String, DateTimeFormatter> shortDateFormatters = new TreeMap<>();
+    private static final Map<String, DateTimeFormatter> timeFormatters = new TreeMap<>();
+    private static final Map<String, DateTimeFormatter> parseTimeFormatters = new TreeMap<>();
+    private static final Map<String, DateTimeFormatter> fullTimeFormatters = new TreeMap<>();
 
     private static final long SECOND = 1000;
     private static final long MINUTE = 60 * SECOND;
@@ -208,7 +208,7 @@ public class NLS {
                                            .getStringList("nls.languages")
                                            .stream()
                                            .map(String::toLowerCase)
-                                           .collect(Lambdas.into(Sets.newLinkedHashSet()));
+                                           .collect(Lambdas.into(new LinkedHashSet<>()));
             } catch (Exception e) {
                 Exceptions.handle(e);
             }
@@ -397,7 +397,7 @@ public class NLS {
      */
     @SuppressWarnings("squid:S2637")
     @Explain("Strings.isEmpty checks for null on lang")
-    public static Optional<String> getIfExists(@Nonnull String property, @Nullable String lang) {
+    public static Optional<String> getIfExists(String property, @Nullable String lang) {
         if (Strings.isEmpty(property)) {
             return Optional.empty();
         }

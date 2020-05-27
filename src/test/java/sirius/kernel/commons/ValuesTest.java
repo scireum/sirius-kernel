@@ -8,9 +8,9 @@
 
 package sirius.kernel.commons;
 
-import com.google.common.collect.Lists;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -27,7 +27,7 @@ public class ValuesTest {
     public void excelStyleColumns() {
         assertEquals("A", Values.of(new String[]{"A", "B", "C"}).at("A").asString());
         assertEquals("C", Values.of(new String[]{"A", "B", "C"}).at("C").asString());
-        List<String> test = Lists.newArrayList();
+        List<String> test = new ArrayList<>();
         for (int i = 1; i < 100; i++) {
             test.add(String.valueOf(i));
         }

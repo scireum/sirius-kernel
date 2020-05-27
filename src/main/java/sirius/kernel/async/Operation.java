@@ -8,7 +8,6 @@
 
 package sirius.kernel.async;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.metrics.MetricProvider;
@@ -16,6 +15,7 @@ import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.nls.NLS;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -97,7 +97,7 @@ public class Operation implements AutoCloseable {
      * @return a list of all known operations
      */
     public static List<Operation> getActiveOperations() {
-        return Lists.newArrayList(ops);
+        return new ArrayList<>(ops);
     }
 
     /**
