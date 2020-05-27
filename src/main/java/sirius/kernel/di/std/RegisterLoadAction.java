@@ -54,10 +54,6 @@ public class RegisterLoadAction implements ClassLoadAction {
         }
 
         Set<Class<?>> registeredClasses = computeEffectiveClasses(clazz, registerAnnotation);
-        if (registeredClasses == null) {
-            return;
-        }
-
         Object part = clazz.getDeclaredConstructor().newInstance();
 
         String name = computeEffectiveName(clazz, registerAnnotation, part);
