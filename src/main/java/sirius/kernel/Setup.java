@@ -10,17 +10,12 @@ package sirius.kernel;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.spi.LoggerRepository;
 import sirius.kernel.commons.Producer;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.Log;
+import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,10 +24,15 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -49,8 +49,7 @@ import java.util.regex.Pattern;
  * <ul>
  * <li>Sets the encoding to UTF-8</li>
  * <li>Sets the DNS cache to 10 seconds - by default this would be 'infinite'</li>
- * <li>Redirects all Java Logging to Log4J</li>
- * <li>Creates either a console or file appender for Log4J (PROD = file, DEV = console)</li>
+ * <li>Redirects all Java Logging to stdout</li>
  * </ul>
  */
 public class Setup {
@@ -64,8 +63,8 @@ public class Setup {
 
     protected ClassLoader loader;
     protected Mode mode;
-    protected Level defaultLevel = Level.INFO;
-    protected String consoleLogFormat = "[%d{yyyy-MM-dd'T'HH:mm:ss,SSS}] %-5p [%t%X{flow}] %c - %m%n";
+    protected DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    protected String consoleLogFormat = "[%1$s] %4$-7s [%3$s - %2$s] %5$s%6$s%n";
 
     /**
      * Creates a new setup for the given mode and class loader.
@@ -79,29 +78,36 @@ public class Setup {
     }
 
     /**
-     * Used to set the default log level used by the root logger.
-     * <p>
-     * Note that each logger can be configured by specifying <tt>logging.[NAME]</tt> in the
-     * system configuration
-     *
-     * @param level the level to use
-     * @return the setup itself for fluent method calls
-     */
-    public Setup withDefaultLogLevel(Level level) {
-        this.defaultLevel = level;
-        return this;
-    }
-
-    /**
      * Specifies the pattern used to format log messages in the console.
      * <p>
-     * Refer to {@link org.apache.log4j.PatternLayout} for available options.
+     * We expect a pattern as understood by {@link String#format(String, Object...)}.
+     * <p>
+     * The parameters are:
+     * <ol>
+     *     <li>timestamp</li>
+     *     <li>source location</li>
+     *     <li>logger name</li>
+     *     <li>log level</li>
+     *     <li>log message</li>
+     *     <li>thrown exception</li>
+     * </ol>
      *
      * @param format the template string to use
      * @return the setup itself for fluent method calls
      */
     public Setup withConsoleLogFormat(String format) {
         this.consoleLogFormat = format;
+        return this;
+    }
+
+    /**
+     * Sepcifies the pattern used to format the timestamp of log messages in the console.
+     *
+     * @param formatter the formatter to use
+     * @return the setup itself for fluent method calls
+     */
+    public Setup withConsoleLogDateFormat(DateTimeFormatter formatter) {
+        this.dateTimeFormatter = formatter;
         return this;
     }
 
@@ -226,55 +232,39 @@ public class Setup {
      * log into the logs directory.
      */
     protected void setupLogging() {
-        final LoggerRepository repository = Logger.getRootLogger().getLoggerRepository();
-        repository.resetConfiguration();
-        Logger.getRootLogger().setLevel(defaultLevel);
-
-        ConsoleAppender console = new ConsoleAppender();
-        console.setLayout(new PatternLayout(consoleLogFormat));
-        console.setThreshold(Level.DEBUG);
-        console.activateOptions();
-        Logger.getRootLogger().addAppender(console);
-
-        redirectJavaLoggerToLog4j();
-    }
-
-    /**
-     * Redirects all java.logging output to Log4j
-     */
-    protected void redirectJavaLoggerToLog4j() {
-        final LoggerRepository repository = Logger.getRootLogger().getLoggerRepository();
-        java.util.logging.Logger rootLogger = java.util.logging.LogManager.getLogManager().getLogger("");
+        Logger rootLogger = LogManager.getLogManager().getLogger("");
         // remove old handlers
         for (Handler handler : rootLogger.getHandlers()) {
             rootLogger.removeHandler(handler);
         }
-        // add our own
-        Handler handler = new Handler() {
 
-            private Formatter formatter = new SimpleFormatter();
+        StdOutHandler consoleHandler = new StdOutHandler();
+        consoleHandler.setFormatter(new SaneFormatter());
+        consoleHandler.setLevel(Level.ALL);
 
-            @Override
-            public void publish(LogRecord record) {
-                repository.getLogger(record.getLoggerName() == null ? "unknown" : record.getLoggerName())
-                          .log(Log.convertJuliLevel(record.getLevel()),
-                               formatter.formatMessage(record),
-                               record.getThrown());
-            }
+        rootLogger.addHandler(consoleHandler);
+        rootLogger.setLevel(Level.INFO);
+    }
 
-            @Override
-            public void flush() {
-                // Not required
-            }
+    private static class StdOutHandler extends ConsoleHandler {
+        @SuppressWarnings({"UseOfSystemOutOrSystemErr", "java:S106"})
+        StdOutHandler() {
+            setOutputStream(System.out);
+        }
+    }
 
-            @Override
-            public void close() {
-                // Not required
-            }
-        };
-        handler.setLevel(java.util.logging.Level.ALL);
-        rootLogger.addHandler(handler);
-        rootLogger.setLevel(java.util.logging.Level.INFO);
+    private class SaneFormatter extends Formatter {
+
+        @Override
+        public String format(LogRecord record) {
+            return String.format(consoleLogFormat,
+                                 dateTimeFormatter.format(LocalDateTime.now()),
+                                 record.getSourceClassName(),
+                                 record.getLoggerName(),
+                                 record.getLevel(),
+                                 formatMessage(record),
+                                 NLS.toUserString(record.getThrown()));
+        }
     }
 
     @Nullable

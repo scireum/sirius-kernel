@@ -8,11 +8,11 @@
 
 package sirius.kernel.health.console;
 
-import org.apache.log4j.Level;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
+import java.util.logging.Level;
 
 /**
  * Permits to change the level of a logger at runtime.
@@ -23,7 +23,7 @@ public class LoggerCommand implements Command {
     @Override
     public void execute(Output output, String... params) {
         if (params.length == 2) {
-            Level level = Level.toLevel(params[1]);
+            Level level = Level.parse(params[1]);
             output.apply("Setting %s to: %s", params[0], level);
             Log.setLevel(params[0], level);
             output.blankLine();

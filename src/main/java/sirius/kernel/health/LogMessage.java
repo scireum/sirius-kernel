@@ -8,10 +8,10 @@
 
 package sirius.kernel.health;
 
-import org.apache.log4j.Level;
 import sirius.kernel.nls.NLS;
 
 import java.time.Instant;
+import java.util.logging.Level;
 
 /**
  * Contains a log message passed from {@link Log} to {@link LogTap}.
@@ -21,6 +21,7 @@ public class LogMessage {
     private long timestamp;
     private Level logLevel;
     private Log receiver;
+    private StackTraceElement caller;
     private String thread;
 
     /**
@@ -29,9 +30,11 @@ public class LogMessage {
      * @param message  the message to log
      * @param logLevel the level of the message
      * @param receiver the original receiver
+     * @param caller   the stack frame where the log message was issued
      * @param thread   the thread in which the message was logged
      */
-    public LogMessage(String message, Level logLevel, Log receiver, String thread) {
+    public LogMessage(String message, Level logLevel, Log receiver, StackTraceElement caller, String thread) {
+        this.caller = caller;
         this.thread = thread;
         this.timestamp = System.currentTimeMillis();
         this.message = message;
@@ -91,5 +94,14 @@ public class LogMessage {
      */
     public String getThread() {
         return thread;
+    }
+
+    /**
+     * Returns the stack frame of the method which issued the log message
+     *
+     * @return the stack frame which issued the log message
+     */
+    public StackTraceElement getCaller() {
+        return caller;
     }
 }

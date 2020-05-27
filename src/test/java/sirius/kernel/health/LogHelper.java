@@ -8,9 +8,9 @@
 
 package sirius.kernel.health;
 
-import org.apache.log4j.Level;
 import sirius.kernel.di.std.Part;
 
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**

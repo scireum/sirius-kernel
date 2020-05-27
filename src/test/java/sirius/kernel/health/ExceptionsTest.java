@@ -8,11 +8,12 @@
 
 package sirius.kernel.health;
 
-import org.apache.log4j.Level;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import sirius.kernel.TestHelper;
+
+import java.util.logging.Level;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -36,7 +37,7 @@ public class ExceptionsTest {
     public void testDeprecatedMethodCallWarner() {
         LogHelper.clearMessages();
         caller();
-        assertTrue(LogHelper.hasMessage(Level.WARN,
+        assertTrue(LogHelper.hasMessage(Level.WARNING,
                                         Exceptions.DEPRECATION_LOG,
                                         "^The deprecated method 'sirius.kernel.health.ExceptionsTest.deprecatedMethod'"
                                         + " was called by 'sirius.kernel.health.ExceptionsTest.caller'"));
