@@ -10,7 +10,6 @@ package sirius.kernel;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.log4j.Level;
 import sirius.kernel.async.Future;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
@@ -34,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**
@@ -135,7 +135,7 @@ public class Sirius {
      */
     private static void setupLogLevels() {
         if (Sirius.isDev()) {
-            Log.setLevel(DEBUG_LOGGER_NAME, Level.ALL);
+            Log.setLevel(DEBUG_LOGGER_NAME, Level.FINEST);
         } else {
             Log.setLevel(DEBUG_LOGGER_NAME, Level.OFF);
         }
@@ -159,7 +159,7 @@ public class Sirius {
         Config logging = config.getConfig("logging");
         for (Map.Entry<String, com.typesafe.config.ConfigValue> entry : logging.entrySet()) {
             LOG.INFO("* Setting %s to: %s", entry.getKey(), logging.getString(entry.getKey()));
-            Log.setLevel(entry.getKey(), Level.toLevel(logging.getString(entry.getKey())));
+            Log.setLevel(entry.getKey(), Level.parse(logging.getString(entry.getKey())));
         }
     }
 
