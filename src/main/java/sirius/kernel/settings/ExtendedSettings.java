@@ -171,8 +171,8 @@ public class ExtendedSettings extends Settings {
         Collections.sort(extensions);
 
         Map<String, Extension> result = new LinkedHashMap<>();
-        for (Extension ex : extensions) {
-            result.put(ex.getId(), ex);
+        for (Extension extension : extensions) {
+            result.put(extension.getId(), extension);
         }
 
         return result;
