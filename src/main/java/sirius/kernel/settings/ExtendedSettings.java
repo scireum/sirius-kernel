@@ -134,24 +134,32 @@ public class ExtendedSettings extends Settings {
 
     private Map<String, Extension> getExtensionMap(String type) {
         Map<String, Extension> result = cache.get(type);
-        if (result != null) {
-            return result;
+        if (result == null) {
+            result = computeExtensionMap(type);
+            cache.put(type, result);
         }
 
+        return result;
+    }
+
+    private Map<String, Extension> computeExtensionMap(String type) {
         if (!getConfig().hasPath(type)) {
+            if (strict) {
+                Extension.LOG.WARN("Unknown extension type requested: %s", type);
+            }
+
             return Collections.emptyMap();
         }
+
         ConfigObject cfg = getConfig().getConfig(type).root();
-        List<Extension> list = new ArrayList<>();
-        ConfigObject defaultObject = null;
-        if (cfg.containsKey(Extension.DEFAULT)) {
-            defaultObject = (ConfigObject) cfg.get(Extension.DEFAULT);
-        }
+        List<Extension> extensions = new ArrayList<>();
+        ConfigObject defaultObject = cfg.containsKey(Extension.DEFAULT) ? (ConfigObject) cfg.get(Extension.DEFAULT) : null;
+
         for (Map.Entry<String, ConfigValue> entry : cfg.entrySet()) {
             String key = entry.getKey();
             if (!Extension.DEFAULT.equals(key) && !key.contains(".")) {
                 if (entry.getValue() instanceof ConfigObject) {
-                    list.add(new Extension(type, key, (ConfigObject) entry.getValue(), defaultObject));
+                    extensions.add(new Extension(type, key, (ConfigObject) entry.getValue(), defaultObject));
                 } else {
                     Extension.LOG.WARN("Malformed extension within '%s'. Expected a config object but found: %s",
                                        type,
@@ -160,12 +168,13 @@ public class ExtendedSettings extends Settings {
             }
         }
 
-        Collections.sort(list);
-        for (Extension ex : list) {
+        Collections.sort(extensions);
+
         Map<String, Extension> result = new LinkedHashMap<>();
+        for (Extension ex : extensions) {
             result.put(ex.getId(), ex);
         }
-        cache.put(type, result);
+
         return result;
     }
 }

@@ -54,7 +54,7 @@ public class Settings {
     private static final String ID = "id";
 
     private final Config config;
-    private final boolean strict;
+    protected final boolean strict;
 
     /**
      * Creates a new wrapper for the given config.
