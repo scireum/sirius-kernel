@@ -8,11 +8,8 @@
 
 package sirius.kernel;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.log4j.Level;
 import sirius.kernel.async.Future;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
@@ -31,9 +28,12 @@ import javax.annotation.Nullable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**
@@ -57,8 +57,8 @@ public class Sirius {
     private static Setup setup;
     private static Config config;
     private static ExtendedSettings settings;
-    private static Map<String, Boolean> frameworks = Maps.newHashMap();
-    private static List<String> customizations = Lists.newArrayList();
+    private static Map<String, Boolean> frameworks = new HashMap<>();
+    private static List<String> customizations = new ArrayList<>();
     private static Classpath classpath;
     private static volatile boolean started = false;
     private static volatile boolean initialized = false;
@@ -135,7 +135,7 @@ public class Sirius {
      */
     private static void setupLogLevels() {
         if (Sirius.isDev()) {
-            Log.setLevel(DEBUG_LOGGER_NAME, Level.ALL);
+            Log.setLevel(DEBUG_LOGGER_NAME, Level.FINEST);
         } else {
             Log.setLevel(DEBUG_LOGGER_NAME, Level.OFF);
         }
@@ -159,7 +159,7 @@ public class Sirius {
         Config logging = config.getConfig("logging");
         for (Map.Entry<String, com.typesafe.config.ConfigValue> entry : logging.entrySet()) {
             LOG.INFO("* Setting %s to: %s", entry.getKey(), logging.getString(entry.getKey()));
-            Log.setLevel(entry.getKey(), Level.toLevel(logging.getString(entry.getKey())));
+            Log.setLevel(entry.getKey(), Level.parse(logging.getString(entry.getKey())));
         }
     }
 
@@ -169,7 +169,7 @@ public class Sirius {
      */
     private static void setupFrameworks() {
         Config frameworkConfig = config.getConfig("sirius.frameworks");
-        Map<String, Boolean> frameworkStatus = Maps.newHashMap();
+        Map<String, Boolean> frameworkStatus = new HashMap<>();
         int total = 0;
         int numEnabled = 0;
         LOG.DEBUG_INFO("Scanning framework status (sirius.frameworks):");

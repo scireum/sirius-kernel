@@ -8,11 +8,10 @@
 
 package sirius.kernel.nls;
 
-import com.google.common.collect.Maps;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Describes a translated property.
@@ -22,7 +21,7 @@ import java.util.Map;
 public class Translation {
     private boolean autocreated;
     private String key;
-    private Map<String, String> translationTable = Maps.newTreeMap();
+    private Map<String, String> translationTable = new TreeMap<>();
 
     /**
      * Creates a new translation, containing all native language values for the given key.

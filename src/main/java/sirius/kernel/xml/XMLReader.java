@@ -8,8 +8,6 @@
 
 package sirius.kernel.xml;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -30,8 +28,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 /**
@@ -46,8 +46,8 @@ public class XMLReader extends DefaultHandler {
 
     private TaskContext taskContext;
 
-    private Map<String, NodeHandler> handlers = Maps.newTreeMap();
-    private List<SAX2DOMHandler> activeHandlers = Lists.newArrayList();
+    private Map<String, NodeHandler> handlers = new TreeMap<>();
+    private List<SAX2DOMHandler> activeHandlers = new ArrayList<>();
     private DocumentBuilder documentBuilder;
 
     /**

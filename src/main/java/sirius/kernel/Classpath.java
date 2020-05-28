@@ -8,7 +8,6 @@
 
 package sirius.kernel;
 
-import com.google.common.base.Objects;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Log;
 
@@ -22,6 +21,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
@@ -155,7 +155,7 @@ public class Classpath {
     private String buildRelativePath(File reference, File child) {
         List<String> path = new ArrayList<>();
         File iter = child;
-        while (iter != null && !Objects.equal(iter, reference)) {
+        while (iter != null && !Objects.equals(iter, reference)) {
             path.add(0, iter.getName());
             iter = iter.getParentFile();
         }

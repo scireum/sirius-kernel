@@ -8,15 +8,12 @@
 
 package sirius.kernel.di.std;
 
-import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.ClassLoadAction;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.MutableGlobalContext;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -57,10 +54,6 @@ public class RegisterLoadAction implements ClassLoadAction {
         }
 
         Set<Class<?>> registeredClasses = computeEffectiveClasses(clazz, registerAnnotation);
-        if (registeredClasses == null) {
-            return;
-        }
-
         Object part = clazz.getDeclaredConstructor().newInstance();
 
         String name = computeEffectiveName(clazz, registerAnnotation, part);
@@ -72,7 +65,7 @@ public class RegisterLoadAction implements ClassLoadAction {
     }
 
     private Set<Class<?>> computeEffectiveClasses(Class<?> clazz, Register registerAnnotation) {
-        Set<Class<?>> registeredClasses = Sets.newHashSet(registerAnnotation.classes());
+        Set<Class<?>> registeredClasses = new HashSet<>(Arrays.asList(registerAnnotation.classes()));
         Set<Class<?>> detectedClasses = findAutoRegisterClasses(clazz);
 
         // Provide support for the legacy mechanism, which was "all available interfaces"...

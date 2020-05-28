@@ -32,14 +32,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>21.0</version>
-        </dependency>
-
-        <!-- The logging framework we use -->
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <version>28.2-jre</version>
         </dependency>
 
         <!-- JSR305 annotations like @Nonnull etc. -->
@@ -49,11 +42,11 @@
             <version>3.0.2</version>
         </dependency>
 
-        <!-- Required logging bridge to make slf4j log to log4j -->
+        <!-- Required logging bridge to make slf4j log to our logging system -->
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.28</version>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.30</version>
         </dependency>
 
         <!-- Used to auto-start Docker environments -->

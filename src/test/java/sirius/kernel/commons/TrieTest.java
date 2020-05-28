@@ -1,8 +1,11 @@
 package sirius.kernel.commons;
 
-import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 
 import static org.junit.Assert.*;
 
@@ -49,11 +52,11 @@ public class TrieTest {
     @Test
     public void keySet() {
         assertEquals(7, trie.size());
-        assertEquals(Sets.newHashSet("one", "on", "one1", "two", "three", "thrae", "th"), trie.keySet());
-        assertEquals(Sets.newHashSet("one", "on", "one1", "two", "three", "thrae", "th"),
+        assertEquals(new HashSet<>(Arrays.asList("one", "on", "one1", "two", "three", "thrae", "th")), trie.keySet());
+        assertEquals(new HashSet<>(Arrays.asList("one", "on", "one1", "two", "three", "thrae", "th")),
                      trie.getAllKeysBeginningWith(""));
-        assertEquals(Sets.newHashSet("one", "on", "one1"), trie.getAllKeysBeginningWith("on"));
-        assertEquals(Sets.newHashSet("three"), trie.getAllKeysBeginningWith("three"));
+        assertEquals(new HashSet<>(Arrays.asList("one", "on", "one1")), trie.getAllKeysBeginningWith("on"));
+        assertEquals(Collections.singleton("three"), trie.getAllKeysBeginningWith("three"));
         assertEquals(0, trie.getAllKeysBeginningWith("threee").size());
     }
 }

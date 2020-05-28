@@ -8,7 +8,6 @@
 
 package sirius.kernel.timer;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.Sirius;
 import sirius.kernel.Startable;
 import sirius.kernel.Stoppable;
@@ -37,6 +36,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -99,7 +99,7 @@ public class Timers implements Startable, Stoppable {
     /*
      * Contains the relative paths of all loaded files
      */
-    private List<WatchedResource> loadedFiles = Lists.newCopyOnWriteArrayList();
+    private List<WatchedResource> loadedFiles = new CopyOnWriteArrayList<>();
 
     /*
      * Used to frequently check loaded properties when running in DEVELOP mode.

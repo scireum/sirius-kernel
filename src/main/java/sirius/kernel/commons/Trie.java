@@ -8,14 +8,13 @@
 
 package sirius.kernel.commons;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * A map like data structure which associates strings (char sequences) to values.
@@ -167,12 +166,12 @@ public class Trie<V> {
         /**
          * Contains a sorted list of keys
          */
-        private List<Character> keys = Lists.newArrayList();
+        private List<Character> keys = new ArrayList<>();
 
         /**
          * Contains the list of continuations matching the keys list
          */
-        private List<Node> continuations = Lists.newArrayList();
+        private List<Node> continuations = new ArrayList<>();
 
         /**
          * Contains the value associated with the path to this node
@@ -248,7 +247,7 @@ public class Trie<V> {
 
         @Override
         public Set<Character> getPossibilities() {
-            return Sets.newTreeSet(current.keys);
+            return new TreeSet<>(current.keys);
         }
 
         @Override
@@ -372,7 +371,7 @@ public class Trie<V> {
     private Set<String> getAllKeysBeginningWith(String prefix, ContainmentIterator<V> iter) {
         if (iter.getPossibilities().isEmpty()) {
             if (iter.getValue() != null) {
-                return Sets.newHashSet(prefix);
+                return Collections.singleton(prefix);
             } else {
                 return Collections.emptySet();
             }

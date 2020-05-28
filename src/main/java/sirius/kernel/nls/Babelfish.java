@@ -8,8 +8,6 @@
 
 package sirius.kernel.nls;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
@@ -19,6 +17,7 @@ import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,7 @@ public class Babelfish {
     /**
      * Contains all known translations
      */
-    private Map<String, Translation> translationMap = Maps.newTreeMap();
+    private Map<String, Translation> translationMap = new TreeMap<>();
 
     /**
      * Describes the pattern for .properties files of interest.
@@ -67,7 +66,7 @@ public class Babelfish {
      * Contains a list of all loaded resource bundles. Once the framework is booted, this is passed to
      * the TimerService.addWatchedResource to reload changes from the development environment.
      */
-    private List<String> loadedResourceBundles = Lists.newArrayList();
+    private List<String> loadedResourceBundles = new ArrayList<>();
 
     private static final ResourceBundle.Control CONTROL = new NonCachingUTF8Control();
 
@@ -174,8 +173,8 @@ public class Babelfish {
         // 2. Load the "product"-prefix files.
         // 3. Load the customizations files.
 
-        List<Matcher> customizations = Lists.newArrayList();
-        List<Matcher> productFiles = Lists.newArrayList();
+        List<Matcher> customizations = new ArrayList<>();
+        List<Matcher> productFiles = new ArrayList<>();
         classpath.find(PROPERTIES_FILE).forEach(value -> {
             if (Sirius.isCustomizationResource(value.group())) {
                 customizations.add(value);

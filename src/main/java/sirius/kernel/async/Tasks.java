@@ -8,8 +8,6 @@
 
 package sirius.kernel.async;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import sirius.kernel.Killable;
 import sirius.kernel.Sirius;
 import sirius.kernel.Startable;
@@ -30,6 +28,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -72,7 +71,7 @@ public class Tasks implements Startable, Stoppable, Killable {
     public static final int LIFECYCLE_PRIORITY = 25;
 
     protected static final Log LOG = Log.get("tasks");
-    protected final Map<String, AsyncExecutor> executors = Maps.newConcurrentMap();
+    protected final Map<String, AsyncExecutor> executors = new ConcurrentHashMap<>();
 
     // If sirius is not started yet, we still consider it running already as the intention of this flag
     // is to detect a system halt and not to check if the startup sequence has finished.
@@ -82,7 +81,7 @@ public class Tasks implements Startable, Stoppable, Killable {
     private static PartCollection<BackgroundLoop> backgroundLoops;
 
     private final Map<Object, Long> scheduleTable = new ConcurrentHashMap<>();
-    private final List<ExecutionBuilder.TaskWrapper> schedulerQueue = Lists.newArrayList();
+    private final List<ExecutionBuilder.TaskWrapper> schedulerQueue = new ArrayList<>();
     private final Lock schedulerLock = new ReentrantLock();
     private final Condition workAvailable = schedulerLock.newCondition();
 
@@ -359,7 +358,7 @@ public class Tasks implements Startable, Stoppable, Killable {
      */
     public List<Tuple<String, LocalDateTime>> getScheduledTasks() {
         synchronized (schedulerQueue) {
-            List<Tuple<String, LocalDateTime>> result = Lists.newArrayList();
+            List<Tuple<String, LocalDateTime>> result = new ArrayList<>();
             for (ExecutionBuilder.TaskWrapper wrapper : schedulerQueue) {
                 result.add(Tuple.create(wrapper.category + " / " + wrapper.synchronizer.getClass().getName(),
                                         LocalDateTime.ofInstant(Instant.ofEpochMilli(wrapper.waitUntil),

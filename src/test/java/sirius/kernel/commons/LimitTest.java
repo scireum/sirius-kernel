@@ -8,9 +8,9 @@
 
 package sirius.kernel.commons;
 
-import com.google.common.collect.Lists;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -27,7 +27,7 @@ public class LimitTest {
     }
 
     private void executeLimit(Limit limit, int expectedIterations, int... expected) {
-        List<Integer> result = Lists.newArrayList();
+        List<Integer> result = new ArrayList<>();
         int iterations = 0;
         for (int i = 1; i <= 10; i++) {
             iterations++;
