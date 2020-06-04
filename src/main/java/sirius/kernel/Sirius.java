@@ -159,7 +159,7 @@ public class Sirius {
         Config logging = config.getConfig("logging");
         for (Map.Entry<String, com.typesafe.config.ConfigValue> entry : logging.entrySet()) {
             LOG.INFO("* Setting %s to: %s", entry.getKey(), logging.getString(entry.getKey()));
-            Log.setLevel(entry.getKey(), Level.parse(logging.getString(entry.getKey())));
+            Log.setLevel(entry.getKey(), Log.parseLevel(logging.getString(entry.getKey())));
         }
     }
 
