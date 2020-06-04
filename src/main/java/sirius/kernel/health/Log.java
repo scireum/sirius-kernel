@@ -142,6 +142,45 @@ public class Log {
         loggerHardReferences.computeIfAbsent(logger, Logger::getLogger).setLevel(level);
     }
 
+    /**
+     * Provides a robust and fail-safe way of parsing a log-level.
+     * <p>
+     * This normally parses the levels as named by {@link Level}. However, we also support other level names
+     * (e.g. those used by log4j). If everything else fails, we return <tt>Level.INFO</tt>. As logging during
+     * the setup of the logging system is kind of dangerous, we prefer this fail-safe approach with a sane
+     * default over elaborate error reporting.
+     *
+     * @param levelName the name of the level to parse.
+     * @return a log level which matches the given level name
+     */
+    public static Level parseLevel(String levelName) {
+        if (Strings.isEmpty(levelName)) {
+            return Level.INFO;
+        }
+
+        switch (levelName.toUpperCase()) {
+            case "FINE":
+            case "DEBUG":
+            case "TRACE":
+                return Level.FINE;
+
+            case "WARNING":
+            case "WARN":
+                return Level.WARNING;
+            case "SEVERE":
+            case "ERROR":
+            case "PROBLEM":
+                return Level.SEVERE;
+            case "OFF":
+            case "DISABLED":
+                return Level.OFF;
+            case "ALL":
+                return Level.ALL;
+            default:
+                return Level.INFO;
+        }
+    }
+
     private void log(Level level, Object msg) {
         StackTraceElement caller = new Throwable().getStackTrace()[2];
 

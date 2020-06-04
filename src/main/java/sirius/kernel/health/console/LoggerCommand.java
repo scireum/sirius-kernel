@@ -23,7 +23,7 @@ public class LoggerCommand implements Command {
     @Override
     public void execute(Output output, String... params) {
         if (params.length == 2) {
-            Level level = Level.parse(params[1]);
+            Level level = Log.parseLevel(params[1]);
             output.apply("Setting %s to: %s", params[0], level);
             Log.setLevel(params[0], level);
             output.blankLine();
