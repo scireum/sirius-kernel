@@ -8,8 +8,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 class ManagedCacheRemoverBuilder<K, V, T> implements CacheRemoverBuilder<K, V, T> {
-    private final Cache<K, V> cache;
-    private final String discriminator;
+
+    private enum State {
+        FILTERED, REMOVED, UNDECIDED
+    }
 
     /**
      * The combined mapping/filter function up to now.
@@ -18,17 +20,9 @@ class ManagedCacheRemoverBuilder<K, V, T> implements CacheRemoverBuilder<K, V, T
      * marked as filtered via {@link #filter}. If it is marked as undecided, it should be processed further.
      */
     private final BiFunction<String, CacheEntry<K, V>, Tuple<T, State>> mapper;
+    private final Cache<K, V> cache;
+    private final String discriminator;
 
-    private enum State {
-        FILTERED, REMOVED, UNDECIDED
-    }
-
-    protected static <K, V> ManagedCacheRemoverBuilder<K, V, CacheEntry<K, V>> create(Cache<K, V> cache,
-                                                                                      String discriminator) {
-        return new ManagedCacheRemoverBuilder<>(cache,
-                                                discriminator,
-                                                (ignored, value) -> Tuple.create(value, State.UNDECIDED));
-    }
 
     private ManagedCacheRemoverBuilder(Cache<K, V> cache,
                                        String discriminator,
@@ -36,6 +30,13 @@ class ManagedCacheRemoverBuilder<K, V, T> implements CacheRemoverBuilder<K, V, T
         this.cache = cache;
         this.discriminator = discriminator;
         this.mapper = mapper;
+    }
+
+    protected static <K, V> ManagedCacheRemoverBuilder<K, V, CacheEntry<K, V>> create(Cache<K, V> cache,
+                                                                                      String discriminator) {
+        return new ManagedCacheRemoverBuilder<>(cache,
+                                                discriminator,
+                                                (ignored, value) -> Tuple.create(value, State.UNDECIDED));
     }
 
     @Override

@@ -8,6 +8,7 @@
 
 package sirius.kernel.commons;
 
+import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class Streams {
      * @return the total number of transferred bytes
      * @throws IOException in case of an IO error thrown by either the source or the destination
      */
-    public static long transfer(InputStream source, OutputStream destination) throws IOException {
+    public static long transfer(@Nonnull InputStream source, @Nonnull OutputStream destination) throws IOException {
         byte[] buffer = new byte[8192];
         long transferredBytes = 0;
         int readBytes = 0;
@@ -55,7 +56,7 @@ public class Streams {
      * @return the number of bytes read
      * @throws IOException in case of an IO error while reading from the source
      */
-    public static long exhaust(InputStream source) throws IOException {
+    public static long exhaust(@Nonnull InputStream source) throws IOException {
         byte[] buffer = new byte[8192];
         long totalBytes = 0;
         int readBytes = 0;
@@ -66,7 +67,16 @@ public class Streams {
         return totalBytes;
     }
 
-    public static byte[] toByteArray(InputStream source) throws IOException {
+    /**
+     * Converts the given input stream into a <tt>byte[]</tt>.
+     * <p>
+     * Please be aware that this will load the entire contents of the given stream into heap memory.
+     *
+     * @param source the source to read from
+     * @return all contents which have been read from the stream
+     * @throws IOException in case of an IO error while reading
+     */
+    public static byte[] toByteArray(@Nonnull InputStream source) throws IOException {
         ByteArrayOutputStream destination = new ByteArrayOutputStream();
         transfer(source, destination);
         return destination.toByteArray();
@@ -80,7 +90,7 @@ public class Streams {
      * @return the total number of transferred bytes
      * @throws IOException in case of an IO error thrown by either the source or the destination
      */
-    public static long transfer(Reader source, Writer destination) throws IOException {
+    public static long transfer(@Nonnull Reader source, @Nonnull Writer destination) throws IOException {
         char[] buffer = new char[4096];
         long transferredBytes = 0;
         int readBytes = 0;
@@ -92,13 +102,27 @@ public class Streams {
         return transferredBytes;
     }
 
-    public static String readToString(Reader reader) throws IOException {
+    /**
+     * Reads the whole contents of the given reader into a <tt>String</tt>.
+     *
+     * @param reader the source to read from
+     * @return all contents which have been read from the given source
+     * @throws IOException in case of an IO error while reading
+     */
+    public static String readToString(@Nonnull Reader reader) throws IOException {
         StringWriter destination = new StringWriter();
         transfer(reader, destination);
         return destination.toString();
     }
 
-    public static List<String> readLines(Reader reader) throws IOException {
+    /**
+     * Reads the contents of the given reader and returns a list of lines.
+     *
+     * @param reader the reader to read from
+     * @return a list of lines which have been read (as determined by {@link BufferedReader#readLine()}.
+     * @throws IOException in case of an IO error while reading
+     */
+    public static List<String> readLines(@Nonnull Reader reader) throws IOException {
         List<String> result = new ArrayList<>();
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;

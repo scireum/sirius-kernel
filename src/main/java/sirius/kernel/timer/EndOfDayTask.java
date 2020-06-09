@@ -9,6 +9,7 @@
 package sirius.kernel.timer;
 
 import sirius.kernel.commons.Timeout;
+import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Register;
 
 /**
@@ -29,6 +30,7 @@ import sirius.kernel.di.std.Register;
  * the next task. If a single task has the possibility of running for a long period (e.g. greater than one hour),
  * the task itself should protect the system (e.g. by limiting its runtime via {@link Timeout}.
  */
+@AutoRegister
 public interface EndOfDayTask {
 
     /**
