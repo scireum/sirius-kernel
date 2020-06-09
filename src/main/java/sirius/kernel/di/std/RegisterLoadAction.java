@@ -78,7 +78,7 @@ public class RegisterLoadAction implements ClassLoadAction {
         }
 
         // Warn if the classes list can (and should) be omitted...
-        if (registeredClasses.equals(detectedClasses)) {
+        if (!registeredClasses.isEmpty() && registeredClasses.equals(detectedClasses)) {
             Injector.LOG.WARN(
                     "%s wears a @Register with a list of classes which are already auto-detected. Consider removing the classes list...",
                     clazz.getName());
