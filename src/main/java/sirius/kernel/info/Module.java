@@ -12,7 +12,6 @@ import sirius.kernel.commons.Hasher;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -70,9 +69,7 @@ public class Module {
      * @return a unique version string per release or instance
      */
     public String getUniqueVersionString() {
-        return Hasher.md5()
-                     .hash(fix(vcs, RANDOM_REPLACEMENT) + fix(build, RANDOM_REPLACEMENT))
-                     .toHexString();
+        return Hasher.md5().hash(fix(vcs, RANDOM_REPLACEMENT) + fix(build, RANDOM_REPLACEMENT)).toHexString();
     }
 
     /**

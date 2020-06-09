@@ -18,5 +18,6 @@ import sirius.kernel.di.std.AutoRegister;
  * {@link sirius.kernel.timer.TimedTask#runTimer()} is invoked once every minute (however no assumptions about the
  * exact length of the interval should be made - it will be "about" a minute, not exactly one minute).
  */
+@AutoRegister
 public interface EveryMinute extends TimedTask {
 }

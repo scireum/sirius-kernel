@@ -15,7 +15,6 @@ import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.AdvancedDateParser;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -52,6 +51,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * Native Language Support used by the framework.
@@ -208,7 +208,7 @@ public class NLS {
                                            .getStringList("nls.languages")
                                            .stream()
                                            .map(String::toLowerCase)
-                                           .collect(Lambdas.into(new LinkedHashSet<>()));
+                                           .collect(Collectors.toCollection(LinkedHashSet::new));
             } catch (Exception e) {
                 Exceptions.handle(e);
             }
