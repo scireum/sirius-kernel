@@ -21,7 +21,7 @@ package sirius.kernel.commons;
 public interface UnitOfWork {
 
     /**
-     * Starts or re-starts the block of code.
+     * Executes the wrapped block of code.
      *
      * @throws Exception the callee may throw any exception during the computation. Therefore the caller should
      *                   implement proper error handling without relying on specific exception types.
