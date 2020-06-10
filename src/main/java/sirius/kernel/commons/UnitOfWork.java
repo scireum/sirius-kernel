@@ -9,14 +9,14 @@
 package sirius.kernel.commons;
 
 /**
- * Contains a unit of work which can be restarted.
- */
-
-/**
  * Implements the {@link Runnable} pattern but permits the function to throw an exception.
  * <p>
  * This sometimes might simplify exception handling. If this feature is not required use a plain
  * {@link Runnable} instead.
+ *
+ * @see Producer
+ * @see Callback
+ * @see Processor
  */
 public interface UnitOfWork {
 
