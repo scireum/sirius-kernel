@@ -21,18 +21,23 @@ import com.palantir.docker.compose.execution.DockerCompose;
 import com.palantir.docker.compose.execution.DockerComposeExecutable;
 import com.palantir.docker.compose.execution.DockerExecutable;
 import com.palantir.docker.compose.execution.RetryingDockerCompose;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Wait;
 import sirius.kernel.di.Initializable;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.settings.PortMapper;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -55,8 +60,10 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
     @ConfigValue("docker.hostIp")
     private String hostIp;
 
+    @SuppressWarnings("FieldMayBeFinal")
+    @Explain("This is only the default, the field is filled with a config later")
     @ConfigValue("docker.file")
-    private String dockerfile;
+    private List<String> dockerfiles = Collections.emptyList();
 
     @ConfigValue("docker.retryAttempts")
     private int retryAttempts;
@@ -123,7 +130,7 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
 
     private DockerComposeExecutable dockerComposeExecutable() {
         return DockerComposeExecutable.builder()
-                                      .dockerComposeFiles(DockerComposeFiles.from(dockerfile))
+                                      .dockerComposeFiles(getDockerComposeFiles())
                                       .dockerConfiguration(this.machine())
                                       .projectName(projectName())
                                       .build();
@@ -137,9 +144,8 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
 
     @Override
     public void initialize() throws Exception {
-        determineEffectiveDockerFile();
-        if (Strings.isFilled(dockerfile)) {
-            LOG.INFO("Starting docker compose using: %s", dockerfile);
+        if (!dockerfiles.isEmpty()) {
+            LOG.INFO("Starting docker compose using: %s", dockerfiles);
             this.dockerCompose = new RetryingDockerCompose(retryAttempts,
                                                            new DefaultDockerCompose(dockerComposeExecutable(),
                                                                                     machine()));
@@ -166,19 +172,35 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
         }
     }
 
-    private void determineEffectiveDockerFile() throws URISyntaxException {
+    private DockerComposeFiles getDockerComposeFiles() {
+        final String[] dockerfilesArray = dockerfiles.stream()
+                                                     .map(this::resolveDockerComposeFile)
+                                                     .filter(Objects::nonNull)
+                                                     .toArray(i -> new String[i]);
+        return DockerComposeFiles.from(dockerfilesArray);
+    }
+
+    private String resolveDockerComposeFile(String dockerfile) {
         if (Strings.isEmpty(dockerfile)) {
-            return;
+            return null;
         }
         if (new File(dockerfile).exists()) {
-            return;
+            return dockerfile;
         }
-        URL dockerResource = getClass().getResource(dockerfile.startsWith("/") ? dockerfile : "/" + dockerfile);
-        if (dockerResource != null && dockerResource.toURI() != null && new File(dockerResource.toURI()).exists()) {
-            dockerfile = new File(dockerResource.toURI()).getAbsolutePath();
-        } else {
-            dockerfile = null;
-        }
+        return Optional.of(dockerfile)
+                       .map(file -> file.startsWith("/") ? file : "/" + file)
+                       .map(file -> getClass().getResource(file))
+                       .map(resource -> {
+                           try {
+                               return resource.toURI();
+                           } catch (URISyntaxException e) {
+                               throw Exceptions.handle(e);
+                           }
+                       })
+                       .map(File::new)
+                       .filter(File::exists)
+                       .map(File::getAbsolutePath)
+                       .orElse(null);
     }
 
     private void awaitClusterHealth() {
@@ -213,7 +235,7 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
 
     @Override
     public void awaitTermination() {
-        if (Strings.isEmpty(dockerfile)) {
+        if (dockerfiles.isEmpty()) {
             return;
         }
 
