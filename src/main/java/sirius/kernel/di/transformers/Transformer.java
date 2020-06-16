@@ -8,6 +8,7 @@
 
 package sirius.kernel.di.transformers;
 
+import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Priorized;
 
 import javax.annotation.Nonnull;
@@ -26,6 +27,7 @@ import javax.annotation.Nullable;
  * @param <S> the source type which is supported as input of the transformation
  * @param <T> the target type which is supported as output of the transformation
  */
+@AutoRegister
 public interface Transformer<S, T> extends Priorized {
 
     /**
