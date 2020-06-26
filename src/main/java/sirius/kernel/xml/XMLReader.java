@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -49,6 +50,7 @@ public class XMLReader extends DefaultHandler {
     private Map<String, NodeHandler> handlers = new TreeMap<>();
     private List<SAX2DOMHandler> activeHandlers = new ArrayList<>();
     private DocumentBuilder documentBuilder;
+    private List<String> currentPath = new ArrayList<>();
 
     /**
      * Creates a new XMLReader.
@@ -87,6 +89,8 @@ public class XMLReader extends DefaultHandler {
     public void endElement(String uri, String localName, String name) throws SAXException {
         // Delegate to active handlers and deletes them if they are finished...
         activeHandlers.removeIf(handler -> handler.endElement(name));
+
+        currentPath.remove(currentPath.size() - 1);
     }
 
     @Override
@@ -103,13 +107,19 @@ public class XMLReader extends DefaultHandler {
         for (SAX2DOMHandler handler : activeHandlers) {
             handler.createElement(name, attributes);
         }
+
         // Start a new handler is necessary
-        NodeHandler handler = handlers.get(name);
+        currentPath.add(name);
+        NodeHandler handler = handlers.get(Strings.join(currentPath, "/"));
+        if (handler == null) {
+            handler = handlers.get(name);
+        }
         if (handler != null) {
             SAX2DOMHandler saxHandler = new SAX2DOMHandler(handler, documentBuilder.newDocument());
             saxHandler.createElement(name, attributes);
             activeHandlers.add(saxHandler);
         }
+
         // Check if the user tried to interrupt parsing....
         if (!taskContext.isActive()) {
             throw new UserInterruptException();
@@ -118,6 +128,10 @@ public class XMLReader extends DefaultHandler {
 
     /**
      * Registers a new handler for a qualified name of a node.
+     * <p>
+     * Note that this can be either the node name itself or it can be the path to the node separated by
+     * "/". Therefore &lt;foo&gt;&lt;bar&gt; would be matched by <tt>bar</tt> and by <tt>foo/bar</tt>, where
+     * the path always has precedence over the single node name.
      * <p>
      * Handlers are invoked after the complete node was read. Namespaces are ignored for now which eases
      * the processing a lot (especially for xpath related tasks). Namespaces however

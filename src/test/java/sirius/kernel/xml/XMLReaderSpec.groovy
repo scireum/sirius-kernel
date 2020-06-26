@@ -40,6 +40,22 @@ class XMLReaderSpec extends BaseSpecification {
         nodes.getCount() == 3
     }
 
+    def "XMLReader supports paths"() {
+        when:
+        def shouldToggle = ValueHolder.of(false)
+        def shouldNotToggle = ValueHolder.of(false)
+        and:
+        def r = new XMLReader()
+        r.addHandler("value", { n -> shouldNotToggle.set(true) } as NodeHandler)
+        r.addHandler("doc/test/value", { n -> shouldToggle.set(true) } as NodeHandler)
+        r.parse(new ByteArrayInputStream(
+                "<doc><test><value>1</value></test><test><value>2</value></test><test><value>5</value></test></doc>".getBytes()))
+        then:
+        shouldToggle.get()
+        and:
+        !shouldNotToggle.get()
+    }
+
     def "XMLReader reads attributes"() {
         given:
         def check = ValueHolder.of(null)
