@@ -86,10 +86,4 @@ class CoherentCache<V> extends ManagedCache<String, V> {
 
         data.asMap().values().stream().filter(predicate).map(CacheEntry::getKey).forEach(this::remove);
     }
-
-    @Override
-    public void put(String key, V value) {
-        CacheManager.signalPut(this, key);
-        super.put(key, value);
-    }
 }

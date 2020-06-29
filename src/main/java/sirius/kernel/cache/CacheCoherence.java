@@ -46,14 +46,4 @@ public interface CacheCoherence {
      * @param testInput     the input used by the predicate in order to determine which entities to remove
      */
     void removeAll(Cache<String, ?> cache, String discriminator, String testInput);
-
-    /**
-     * Notifies the other nodes about a put on this node.
-     * <p>
-     * The other nodes will remove the key from their cache.
-     *
-     * @param cache the cache into which a value was put
-     * @param key   the key for which put was called
-     */
-    void signalPut(Cache<String, ?> cache, String key);
 }
