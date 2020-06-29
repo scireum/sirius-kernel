@@ -253,20 +253,6 @@ public class CacheManager {
     }
 
     /**
-     * Notifies the other nodes about a put on this node.
-     * <p>
-     * The other nodes will remove the key from their cache.
-     *
-     * @param cache the cache into which a value was put
-     * @param key   the key for which put was called
-     */
-    public static void signalPut(CoherentCache<?> cache, String key) {
-        if (cacheCoherence != null) {
-            cacheCoherence.signalPut(cache, key);
-        }
-    }
-
-    /**
      * Notifies the other nodes about the delete handler to invoke.
      * <p>
      * This will invoke the delete handler previously registered via {@link Cache#addRemover(String, BiPredicate)}
