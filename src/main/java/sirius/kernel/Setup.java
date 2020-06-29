@@ -135,7 +135,7 @@ public class Setup {
         try {
             Sirius.start(new Setup(Mode.DEV, Setup.class.getClassLoader()));
         } catch (Exception e) {
-            Sirius.LOG.SEVERE("Unknown starup error: " + e.getLocalizedMessage());
+            Sirius.LOG.SEVERE("Unknown startup error: " + e.getLocalizedMessage());
             throw e;
         }
     }
