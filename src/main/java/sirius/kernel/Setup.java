@@ -132,7 +132,12 @@ public class Setup {
      * @param args the command line arguments (currently ignored)
      */
     public static void main(String[] args) {
-        Sirius.start(new Setup(Mode.DEV, Setup.class.getClassLoader()));
+        try {
+            Sirius.start(new Setup(Mode.DEV, Setup.class.getClassLoader()));
+        } catch (Exception e) {
+            Sirius.LOG.SEVERE("Unknown startup error: " + e.getLocalizedMessage());
+            throw e;
+        }
     }
 
     /**
