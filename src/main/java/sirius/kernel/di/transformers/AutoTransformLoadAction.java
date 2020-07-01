@@ -48,6 +48,14 @@ public class AutoTransformLoadAction implements ClassLoadAction {
             this.targetType = (Class<T>) autoTransform.target();
             this.transformerClass = transformerClass;
             this.priority = autoTransform.priority();
+
+            try {
+                findConstructor();
+            } catch (NoSuchMethodException e) {
+                Log.SYSTEM.WARN("The class %s which is marked with @AutoTransform doesn't neither provide a"
+                                + " suitable single arg constructor nor a no-arg constructor! This will most probably"
+                                + " fail at runtime!", getClass().getName());
+            }
         }
 
         @Override
@@ -80,40 +88,49 @@ public class AutoTransformLoadAction implements ClassLoadAction {
                 throw Exceptions.handle()
                                 .to(Log.SYSTEM)
                                 .error(e.getCause())
-                                .withSystemErrorMessage(
-                                        "Failed to transform %s (%s) to %s - An error occured when invoking the constructor: %s (%s)",
-                                        source,
-                                        sourceType,
-                                        targetType)
+                                .withSystemErrorMessage("Failed to transform %s (%s) to %s - An error occured when"
+                                                        + " invoking the constructor: %s (%s)",
+                                                        source,
+                                                        sourceType,
+                                                        targetType)
                                 .handle();
             } catch (Exception e) {
                 throw Exceptions.handle()
                                 .to(Log.SYSTEM)
                                 .error(e)
-                                .withSystemErrorMessage(
-                                        "Failed to transform %s (%s) to %s - An error occured when invoking the constructor: %s (%s)",
-                                        source,
-                                        sourceType,
-                                        targetType)
+                                .withSystemErrorMessage("Failed to transform %s (%s) to %s - An error occured when"
+                                                        + " invoking the constructor: %s (%s)",
+                                                        source,
+                                                        sourceType,
+                                                        targetType)
                                 .handle();
             }
         }
 
         @SuppressWarnings("unchecked")
-        private T createInstance(@Nonnull Object source)
-                throws InstantiationException, IllegalAccessException, InvocationTargetException,
-                       NoSuchMethodException {
-
+        private Constructor<T> findConstructor() throws NoSuchMethodException {
             // Look for a single argument constructor with a matching parameter...
             for (Constructor<T> constructor : (Constructor<T>[]) transformerClass.getDeclaredConstructors()) {
                 if (constructor.getParameterCount() == 1 && constructor.getParameterTypes()[0].isAssignableFrom(
                         sourceType)) {
-                    return constructor.newInstance(source);
+                    return constructor;
                 }
             }
 
             // ...otherwise resort to the no args constructor...
-            return (T) transformerClass.getDeclaredConstructor().newInstance();
+            return (Constructor<T>) transformerClass.getDeclaredConstructor();
+        }
+
+        private T createInstance(Object source)
+                throws InstantiationException, IllegalAccessException, InvocationTargetException,
+                       NoSuchMethodException {
+
+            Constructor<T> constructor = findConstructor();
+            if (constructor.getParameterCount() == 1) {
+                return constructor.newInstance(source);
+            } else {
+                return constructor.newInstance();
+            }
         }
     }
 
