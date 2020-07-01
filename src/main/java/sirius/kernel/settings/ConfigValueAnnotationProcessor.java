@@ -39,7 +39,6 @@ public class ConfigValueAnnotationProcessor implements FieldAnnotationProcessor 
         String key = val.value();
 
         if (!Sirius.getSettings().injectValueFromConfig(object, field, key)
-            && field.get(object) == null
             && !field.isAnnotationPresent(Nullable.class)) {
             Injector.LOG.WARN("Cannot fill %s of %s with the config value '%s'."
                               + " Add a Nullable annotation if this is expected, in order to suppress this warning.",
