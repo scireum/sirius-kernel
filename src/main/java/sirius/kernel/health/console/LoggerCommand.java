@@ -33,7 +33,8 @@ public class LoggerCommand implements Command {
             output.line("Known loggers:");
             output.separator();
             for (Log l : Log.getAllLoggers()) {
-                output.apply("%-30s %-10s", l.getName(), l.getLevel());
+                Level logLevel = l.getLevel() != null ? l.getLevel() : Level.INFO;
+                output.apply("%-30s %-10s", l.getName(), logLevel);
             }
             output.separator();
         }
