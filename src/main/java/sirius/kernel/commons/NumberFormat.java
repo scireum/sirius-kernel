@@ -58,6 +58,22 @@ public class NumberFormat {
             new NumberFormat(2, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
 
     /**
+     * Describes a format which rounds to up to five decimal places.
+     * <p>
+     * It specifies {@link RoundingMode#HALF_UP} as rounding mode and uses
+     * the decimal format symbols for machine formats, provided by
+     * {@link sirius.kernel.nls.NLS}.
+     * <p>
+     * This method is intended to return a machine representation without loosing any data while formatting. As most
+     * probably five decimal places are too much to output, this should be used in conjuction with
+     * {@link Amount#toSmartRoundedString(NumberFormat)}.
+     *
+     * @see sirius.kernel.nls.NLS#getMachineFormatSymbols()
+     */
+    public static final NumberFormat MACHINE_FIVE_DECIMAL_PLACES =
+            new NumberFormat(5, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
+
+    /**
      * Describes a format which rounds to integer numbers (no decimal places).
      * <p>
      * It specifies {@link RoundingMode#HALF_UP} as rounding mode and uses
