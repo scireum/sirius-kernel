@@ -32,8 +32,8 @@ public class LoggerCommand implements Command {
             output.blankLine();
             output.line("Known loggers:");
             output.separator();
-            for (Log l : Log.getAllLoggers()) {
-                output.apply("%-30s %-10s", l.getName(), l.getLevel());
+            for (Log logger : Log.getAllLoggers()) {
+                output.apply("%-30s %-10s", logger.getName(), logger.getLevel());
             }
             output.separator();
         }

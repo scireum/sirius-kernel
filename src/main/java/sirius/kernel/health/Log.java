@@ -378,6 +378,6 @@ public class Log {
      * @return the effective log level
      */
     public Level getLevel() {
-        return logger.getLevel();
+        return logger.getLevel() != null ? logger.getLevel() : Level.INFO;
     }
 }
