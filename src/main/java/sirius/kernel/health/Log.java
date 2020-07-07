@@ -18,6 +18,7 @@ import sirius.kernel.nls.NLS;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -112,7 +113,13 @@ public class Log {
     @SuppressWarnings("squid:S2250")
     @Explain("Loggers are only created once, so there is no performance hotspot")
     public static synchronized Log get(String name) {
+        Optional<Log> existingInstance = all.stream().filter(logger -> Strings.areEqual(logger.getName(), name)).findFirst();
+        if (existingInstance.isPresent()) {
+            return existingInstance.get();
+        }
+
         Log result = new Log(Logger.getLogger(name));
+
         all.add(result);
         if (!name.matches("[a-z0-9\\-]+")) {
             result.WARN("Invalid logger name: %s. Only numbers, lowercase letters and - are allowed!%n", name);
