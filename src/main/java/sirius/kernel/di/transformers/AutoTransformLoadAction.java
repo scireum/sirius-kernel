@@ -31,7 +31,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class AutoTransformLoadAction implements ClassLoadAction {
 
-    private static class AutoTransformer<S, T> implements Transformer<S, T> {
+    protected static class AutoTransformer<S, T> implements Transformer<S, T> {
 
         private int priority;
         private Class<S> sourceType;
@@ -42,8 +42,7 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         private static GlobalContext globalContext;
 
         @SuppressWarnings("unchecked")
-        AutoTransformer(Class<?> transformerClass) {
-            AutoTransform autoTransform = transformerClass.getAnnotation(AutoTransform.class);
+        AutoTransformer(Class<?> transformerClass, AutoTransform autoTransform) {
             this.sourceType = (Class<S>) autoTransform.source();
             this.targetType = (Class<T>) autoTransform.target();
             this.transformerClass = transformerClass;
@@ -146,7 +145,8 @@ public class AutoTransformLoadAction implements ClassLoadAction {
             && !Sirius.isFrameworkEnabled(clazz.getAnnotation(Framework.class).value())) {
             return;
         }
-
-        ctx.registerPart(new AutoTransformer<>(clazz), Transformer.class);
+        
+        AutoTransform autoTransform = clazz.getAnnotation(AutoTransform.class);
+        ctx.registerPart(new AutoTransformer<>(clazz, autoTransform), Transformer.class);
     }
 }
