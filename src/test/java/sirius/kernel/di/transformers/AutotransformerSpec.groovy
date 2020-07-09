@@ -12,12 +12,22 @@ import sirius.kernel.BaseSpecification
 
 class AutotransformerSpec extends BaseSpecification {
 
-    def "Autotransforming into a subclass of TargetClassAutotransform"() {
+    def "Autotransforming into a subclass of TargetClassAutotransform works directly"() {
         given:
         def parent = new ParentClass()
         expect:
         parent.tryAs(TargetClassAutotransformChild.class).isPresent()
         parent.as(TargetClassAutotransformChild.class) instanceof TargetClassAutotransformChild
+    }
+
+    def "Autotransforming into a subclass of TargetClassAutotransform must not instantiate twice"() {
+        given:
+        def parent = new ParentClass()
+        expect:
+        parent.tryAs(TargetClassAutotransformChild.class).isPresent()
+        parent.as(TargetClassAutotransformChild.class) instanceof TargetClassAutotransformChild
+        parent.tryAs(TargetClassAutotransform.class).isPresent()
+        parent.as(TargetClassAutotransform.class) instanceof TargetClassAutotransform
     }
 
 }

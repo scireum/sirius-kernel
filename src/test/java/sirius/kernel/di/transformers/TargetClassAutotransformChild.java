@@ -11,5 +11,9 @@ package sirius.kernel.di.transformers;
 @AutoTransform(source = ParentClass.class, target = TargetClassAutotransform.class)
 @AutoTransform(source = ParentClass.class, target = TargetClassAutotransformChild.class)
 public class TargetClassAutotransformChild extends TargetClassAutotransform {
-    // Note: No attach in constructor needed.
+
+    public TargetClassAutotransformChild(ParentClass parent) {
+        parent.attach(TargetClassAutotransform.class, this);
+        parent.attach(TargetClassAutotransformChild.class, this);
+    }
 }
