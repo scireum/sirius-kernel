@@ -30,4 +30,14 @@ class AutotransformerSpec extends BaseSpecification {
         parent.as(TargetClassAutotransform.class) instanceof TargetClassAutotransform
     }
 
+    def "Autotransforming mixture of targets and target"() {
+        given:
+        def parent = new ParentClass()
+        expect:
+        parent.tryAs(TargetClassAutotransformChildWeird.class).isPresent()
+        parent.as(TargetClassAutotransformChildWeird.class) instanceof TargetClassAutotransformChildWeird
+        parent.tryAs(TargetClassAutotransform.class).isPresent()
+        parent.as(TargetClassAutotransform.class) instanceof TargetClassAutotransform
+    }
+
 }

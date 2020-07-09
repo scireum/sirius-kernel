@@ -8,8 +8,8 @@
 
 package sirius.kernel.di.transformers;
 
-@AutoTransform(source = ParentClass.class, target = TargetClassAutotransform.class)
-@AutoTransform(source = ParentClass.class, target = TargetClassAutotransformChild.class)
+@AutoTransform(source = ParentClass.class,
+        targets = {TargetClassAutotransform.class, TargetClassAutotransformChild.class})
 public class TargetClassAutotransformChild extends TargetClassAutotransform {
 
     public TargetClassAutotransformChild(ParentClass parent) {

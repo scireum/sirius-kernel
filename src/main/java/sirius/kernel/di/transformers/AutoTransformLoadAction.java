@@ -42,9 +42,9 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         private static GlobalContext globalContext;
 
         @SuppressWarnings("unchecked")
-        AutoTransformer(Class<?> transformerClass, AutoTransform autoTransform) {
+        AutoTransformer(Class<?> transformerClass, AutoTransform autoTransform, Class<T> targetType) {
             this.sourceType = (Class<S>) autoTransform.source();
-            this.targetType = (Class<T>) autoTransform.target();
+            this.targetType = targetType;
             this.transformerClass = transformerClass;
             this.priority = autoTransform.priority();
 
@@ -145,8 +145,15 @@ public class AutoTransformLoadAction implements ClassLoadAction {
             && !Sirius.isFrameworkEnabled(clazz.getAnnotation(Framework.class).value())) {
             return;
         }
-        
+
         AutoTransform autoTransform = clazz.getAnnotation(AutoTransform.class);
-        ctx.registerPart(new AutoTransformer<>(clazz, autoTransform), Transformer.class);
+        Class<?>[] targets = autoTransform.targets();
+        for (Class<?> target : targets) {
+            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target), Transformer.class);
+        }
+        Class<?> target = autoTransform.target();
+        if (!target.equals(Object.class)) {
+            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target), Transformer.class);
+        }
     }
 }
