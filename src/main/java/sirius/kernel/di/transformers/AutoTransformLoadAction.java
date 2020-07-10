@@ -31,7 +31,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class AutoTransformLoadAction implements ClassLoadAction {
 
-    private static class AutoTransformer<S, T> implements Transformer<S, T> {
+    protected static class AutoTransformer<S, T> implements Transformer<S, T> {
 
         private int priority;
         private Class<S> sourceType;
@@ -42,10 +42,9 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         private static GlobalContext globalContext;
 
         @SuppressWarnings("unchecked")
-        AutoTransformer(Class<?> transformerClass) {
-            AutoTransform autoTransform = transformerClass.getAnnotation(AutoTransform.class);
+        AutoTransformer(Class<?> transformerClass, AutoTransform autoTransform, Class<T> targetType) {
             this.sourceType = (Class<S>) autoTransform.source();
-            this.targetType = (Class<T>) autoTransform.target();
+            this.targetType = targetType;
             this.transformerClass = transformerClass;
             this.priority = autoTransform.priority();
 
@@ -147,6 +146,14 @@ public class AutoTransformLoadAction implements ClassLoadAction {
             return;
         }
 
-        ctx.registerPart(new AutoTransformer<>(clazz), Transformer.class);
+        AutoTransform autoTransform = clazz.getAnnotation(AutoTransform.class);
+        Class<?>[] targets = autoTransform.targets();
+        for (Class<?> target : targets) {
+            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target), Transformer.class);
+        }
+        Class<?> target = autoTransform.target();
+        if (!target.equals(Object.class)) {
+            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target), Transformer.class);
+        }
     }
 }

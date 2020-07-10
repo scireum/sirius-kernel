@@ -55,11 +55,25 @@ public @interface AutoTransform {
     Class<?> source();
 
     /**
+     * Specifies the target classes / interfaces to transform to. Be sure to attach all target types to the source when
+     * the first instance is created to avoid multiple instantiations.
+     * <p>
+     * Either {@link #target()} or {@link #targets()} should be set to create a useful transformation. If both are set,
+     * both are used.
+     *
+     * @return the target classes of the synthesized transformer
+     */
+    Class<?>[] targets() default {};
+
+    /**
      * Specifies the target class / interface to transform to.
+     * <p>
+     * Either {@link #target()} or {@link #targets()} should be set to create a useful transformation. If both are set,
+     * both are used.
      *
      * @return the target class of the synthesized transformer
      */
-    Class<?> target();
+    Class<?> target() default Object.class;
 
     /**
      * Permits to specify a priority.
