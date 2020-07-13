@@ -1282,7 +1282,9 @@ public class NLS {
             try {
                 return (V) LocalTime.from(NLS.getTimeParseFormat(lang).parse(value.toUpperCase()));
             } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidTime").set("value", value).format(), e);
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidTime").set("format", get("NLS.patternParseTime"))
+                                                                             .set("value", value)
+                                                                             .format(), e);
             }
         }
         if (AdvancedDateParser.DateSelection.class.equals(clazz)) {
