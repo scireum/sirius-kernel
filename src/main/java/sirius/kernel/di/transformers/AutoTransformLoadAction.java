@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 
 /**
  * Responsible for processing {@link AutoTransform} annotations.
@@ -36,15 +37,20 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         private int priority;
         private Class<S> sourceType;
         private Class<T> targetType;
+        private Class<?>[] additionalTargetTypes;
         private Class<?> transformerClass;
 
         @Part
         private static GlobalContext globalContext;
 
         @SuppressWarnings("unchecked")
-        AutoTransformer(Class<?> transformerClass, AutoTransform autoTransform, Class<T> targetType) {
+        AutoTransformer(Class<?> transformerClass,
+                        AutoTransform autoTransform,
+                        Class<T> targetType,
+                        Class<?>[] additionalTargetTypes) {
             this.sourceType = (Class<S>) autoTransform.source();
             this.targetType = targetType;
+            this.additionalTargetTypes = additionalTargetTypes;
             this.transformerClass = transformerClass;
             this.priority = autoTransform.priority();
 
@@ -77,6 +83,13 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         public T make(@Nonnull Object source) {
             try {
                 T result = createInstance(source);
+
+                if (source instanceof Composable && additionalTargetTypes != null) {
+                    for (Class<?> additionalTarget : additionalTargetTypes) {
+                        ((Composable) source).attach(additionalTarget, result);
+                    }
+                }
+
                 globalContext.wire(result);
                 return result;
             } catch (InvocationTargetException e) {
@@ -147,13 +160,25 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         }
 
         AutoTransform autoTransform = clazz.getAnnotation(AutoTransform.class);
+        Class<?>[] allTargets = mergeAllTargets(autoTransform);
         Class<?>[] targets = autoTransform.targets();
         for (Class<?> target : targets) {
-            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target), Transformer.class);
+            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target, allTargets), Transformer.class);
         }
         Class<?> target = autoTransform.target();
         if (!target.equals(Object.class)) {
-            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target), Transformer.class);
+            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target, allTargets), Transformer.class);
         }
+    }
+
+    private Class<?>[] mergeAllTargets(AutoTransform autoTransform) {
+        Class<?> target = autoTransform.target();
+        if (!target.equals(Object.class)) {
+            Class<?>[] targets = autoTransform.targets();
+            Class<?>[] mergedTargets = Arrays.copyOf(targets, targets.length + 1);
+            mergedTargets[targets.length] = target;
+            return mergedTargets;
+        }
+        return autoTransform.targets();
     }
 }
