@@ -161,12 +161,7 @@ public class AutoTransformLoadAction implements ClassLoadAction {
 
         AutoTransform autoTransform = clazz.getAnnotation(AutoTransform.class);
         Class<?>[] allTargets = mergeAllTargets(autoTransform);
-        Class<?>[] targets = autoTransform.targets();
-        for (Class<?> target : targets) {
-            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target, allTargets), Transformer.class);
-        }
-        Class<?> target = autoTransform.target();
-        if (!target.equals(Object.class)) {
+        for (Class<?> target : allTargets) {
             ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target, allTargets), Transformer.class);
         }
     }
