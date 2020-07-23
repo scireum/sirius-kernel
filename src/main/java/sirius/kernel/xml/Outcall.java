@@ -120,10 +120,13 @@ public class Outcall {
         } catch (IOException e) {
             int statusCode = connection.getResponseCode();
             if (statusCode != 200) {
-                return connection.getErrorStream();
-            } else {
-                throw e;
+                InputStream errorStream = connection.getErrorStream();
+                if (errorStream != null) {
+                    return errorStream;
+                }
             }
+
+            throw e;
         }
     }
 
