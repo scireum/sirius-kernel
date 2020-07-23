@@ -329,7 +329,7 @@ public class Value {
      */
     @Nonnull
     public Optional<Integer> asOptionalInt() {
-        return isFilled() ? Optional.of(getInteger()) : Optional.empty();
+        return Optional.ofNullable(getInteger());
     }
 
     /**
