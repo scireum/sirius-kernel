@@ -177,7 +177,7 @@ public class Hasher {
         do {
             readBytes = inputStream.read(buffer);
             if (readBytes > 0) {
-                this.digest.update(buffer);
+                this.digest.update(buffer, 0, readBytes);
             }
         } while (readBytes != -1);
         inputStream.close();
