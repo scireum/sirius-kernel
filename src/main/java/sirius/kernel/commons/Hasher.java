@@ -164,6 +164,8 @@ public class Hasher {
 
     /**
      * Reads the given inputStream and appends its bytes to the data to be hashed.
+     * <p>
+     * The given stream is read until the end but not closed.
      *
      * @param inputStream the stream to be read and put into the hash function
      * @return the hasher itself for fluent method calls
@@ -180,7 +182,6 @@ public class Hasher {
                 this.digest.update(buffer, 0, readBytes);
             }
         } while (readBytes != -1);
-        inputStream.close();
         return this;
     }
 
