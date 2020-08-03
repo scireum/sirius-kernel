@@ -190,10 +190,14 @@ public class Hasher {
      *
      * @param file the file to be read and put into the hash function
      * @return the hasher itself for fluent method calls
-     * @throws IOException in case of an IO error while reading the file
+     * @throws sirius.kernel.health.HandledException in case of an IO error while reading the file
      */
-    public Hasher hashFile(File file) throws IOException {
-        hashStream(new FileInputStream(file));
+    public Hasher hashFile(File file) {
+        try (FileInputStream input = new FileInputStream(file)) {
+            hashStream(input);
+        } catch (IOException e) {
+            throw Exceptions.handle(Log.SYSTEM, e);
+        }
         return this;
     }
 
