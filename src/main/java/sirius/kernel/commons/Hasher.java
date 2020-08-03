@@ -11,6 +11,10 @@ package sirius.kernel.commons;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -133,8 +137,9 @@ public class Hasher {
 
     /**
      * Appends the bytes of the given long value to the data to be hashed.
+     *
      * @param data the long value to be hashed
-     *  @return the hasher itself for fluent method calls
+     * @return the hasher itself for fluent method calls
      */
     public Hasher hashLong(long data) {
         ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
@@ -154,6 +159,45 @@ public class Hasher {
         checkState();
 
         this.digest.update(data, offset, length);
+        return this;
+    }
+
+    /**
+     * Reads the given inputStream and appends its bytes to the data to be hashed.
+     * <p>
+     * The given stream is read until the end but not closed.
+     *
+     * @param inputStream the stream to be read and put into the hash function
+     * @return the hasher itself for fluent method calls
+     * @throws IOException in case of an IO error while reading the stream
+     */
+    public Hasher hashStream(InputStream inputStream) throws IOException {
+        checkState();
+        byte[] buffer = new byte[8192];
+
+        int readBytes;
+        do {
+            readBytes = inputStream.read(buffer);
+            if (readBytes > 0) {
+                this.digest.update(buffer, 0, readBytes);
+            }
+        } while (readBytes != -1);
+        return this;
+    }
+
+    /**
+     * Reads the given file and appends its bytes to the data to be hashed.
+     *
+     * @param file the file to be read and put into the hash function
+     * @return the hasher itself for fluent method calls
+     * @throws sirius.kernel.health.HandledException in case of an IO error while reading the file
+     */
+    public Hasher hashFile(File file) {
+        try (FileInputStream input = new FileInputStream(file)) {
+            hashStream(input);
+        } catch (IOException e) {
+            throw Exceptions.handle(Log.SYSTEM, e);
+        }
         return this;
     }
 

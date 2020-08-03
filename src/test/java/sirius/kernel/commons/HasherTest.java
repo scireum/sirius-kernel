@@ -10,14 +10,22 @@ package sirius.kernel.commons;
 
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import static org.junit.Assert.assertEquals;
 
 public class HasherTest {
 
     @Test
-    public void testMD5() {
+    public void testMD5() throws URISyntaxException, IOException {
         assertEquals("b10a8db164e0754105b7a99be72e3fe5", Hasher.md5().hash("Hello World").toHexString());
         assertEquals("sQqNsWTgdUEFt6mb5y4/5Q==", Hasher.md5().hash("Hello World").toBase64String());
+        assertEquals("e59ff97941044f85df5297e1c302d260",
+                     Hasher.md5()
+                           .hashFile(new File(getClass().getResource("/hash_test_file.txt").toURI()))
+                           .toHexString());
     }
 
     @Test
