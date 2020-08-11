@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -257,6 +258,41 @@ public class Amount implements Comparable<Amount> {
     public Amount computeIfNull(Supplier<Amount> supplier) {
         if (isEmpty()) {
             return supplier.get();
+        }
+        return this;
+    }
+
+    /**
+     * Invokes the given consumer with the internal value is not empty.
+     *
+     * @param consumer the consumer to execute
+     */
+    public void ifPresent(Consumer<Amount> consumer) {
+        if (isFilled()) {
+            consumer.accept(Amount.of(getAmount()));
+        }
+    }
+
+    /**
+     * Executes the given runnable if the internal value is empty.
+     *
+     * @param runnable the runnable to execute
+     */
+    public void ifEmpty(Runnable runnable) {
+        if (isEmpty()) {
+            runnable.run();
+        }
+    }
+
+    /**
+     * Returns the provided alternative {@link Amount} if the internal value is empty.
+     *
+     * @param amount the alternative Amount to return
+     * @return the original or alternative amount
+     */
+    public Amount orElseGet(Amount amount) {
+        if (isEmpty()) {
+            return amount;
         }
         return this;
     }
