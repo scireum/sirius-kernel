@@ -290,7 +290,7 @@ public class Amount implements Comparable<Amount> {
      * @param amount the alternative Amount to return
      * @return the original or alternative amount
      */
-    public Amount orElseGet(Amount amount) {
+    public Amount orElse(Amount amount) {
         if (isEmpty()) {
             return amount;
         }
