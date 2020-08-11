@@ -345,7 +345,7 @@ public class Value {
         if (Amount.NOTHING.equals(result)) {
             return Optional.empty();
         }
-        return Optional.ofNullable(getAmount());
+        return Optional.ofNullable(result);
     }
 
     /**
