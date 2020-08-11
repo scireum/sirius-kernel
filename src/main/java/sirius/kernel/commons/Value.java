@@ -341,6 +341,10 @@ public class Value {
      */
     @Nonnull
     public Optional<Amount> asOptionalAmount() {
+        Amount result = getAmount();
+        if (Amount.NOTHING.equals(result)) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(getAmount());
     }
 
