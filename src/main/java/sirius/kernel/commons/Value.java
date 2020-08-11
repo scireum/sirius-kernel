@@ -333,6 +333,18 @@ public class Value {
     }
 
     /**
+     * Returns the internal value wrapped as Optional while expecting it to be an {@link Amount}.
+     * <p>
+     * If the value is empty or not an Amount/BigDecimal, an empty Optional will be returned.
+     *
+     * @return the internal value wrapped as Optional or an empty Optional if the value is not filled or not Amount
+     */
+    @Nonnull
+    public Optional<Amount> asOptionalAmount() {
+        return Optional.ofNullable(getAmount());
+    }
+
+    /**
      * Returns the internal value wrapped as Optional.
      * <p>
      * If the value is empty, an empty Optional will be returned.
