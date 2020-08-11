@@ -269,7 +269,7 @@ public class Amount implements Comparable<Amount> {
      */
     public void ifPresent(Consumer<Amount> consumer) {
         if (isFilled()) {
-            consumer.accept(Amount.of(getAmount()));
+            consumer.accept(this);
         }
     }
 
