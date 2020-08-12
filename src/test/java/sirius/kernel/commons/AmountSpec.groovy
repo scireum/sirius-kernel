@@ -65,11 +65,11 @@ class AmountSpec extends BaseSpecification {
         Amount.of(19) == Amount.TEN.multiplyPercent(Amount.TEN)
     }
 
-    def "fill and computeIfNull are only evaluated if no value is present"() {
+    def "fill and orElseGet are only evaluated if no value is present"() {
         expect:
         Amount.TEN == Amount.NOTHING.fill(Amount.TEN)
         Amount.TEN == Amount.TEN.fill(Amount.ONE)
-        Amount.NOTHING.computeIfNull(new Supplier<Amount>() {
+        Amount.NOTHING.orElseGet(new Supplier<Amount>() {
             @Override
             Amount get() {
                 return Amount.TEN
