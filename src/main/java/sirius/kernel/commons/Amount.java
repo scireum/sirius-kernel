@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -252,9 +253,57 @@ public class Amount implements Comparable<Amount> {
      *
      * @param supplier the supplier which is used to compute a value if there is no internal value
      * @return <tt>this</tt> if there is an internal value, the computed value of <tt>supplier</tt> otherwise
+     * @deprecated This method has been deprecated. Use <tt>orElseGet()</tt> instead.
      */
     @Nonnull
+    @Deprecated
     public Amount computeIfNull(Supplier<Amount> supplier) {
+        return orElseGet(supplier);
+    }
+
+    /**
+     * Invokes the given consumer if the internal value is not empty.
+     *
+     * @param consumer the consumer to execute
+     */
+    public void ifPresent(Consumer<Amount> consumer) {
+        if (isFilled()) {
+            consumer.accept(this);
+        }
+    }
+
+    /**
+     * Executes the given runnable if the internal value is empty.
+     *
+     * @param runnable the runnable to execute
+     */
+    public void ifEmpty(Runnable runnable) {
+        if (isEmpty()) {
+            runnable.run();
+        }
+    }
+
+    /**
+     * Returns the provided alternative {@link Amount} if the internal value is empty.
+     *
+     * @param amount the alternative Amount to return
+     * @return the original or alternative amount
+     */
+    public Amount orElse(Amount amount) {
+        if (isEmpty()) {
+            return amount;
+        }
+        return this;
+    }
+
+    /**
+     * Computes a value using the provided supplier if the internal value is empty.
+     *
+     * @param supplier the supplier which is used to compute a value if there is no internal value
+     * @return <tt>this</tt> if there is an internal value, the computed value of <tt>supplier</tt> otherwise
+     */
+    @Nonnull
+    public Amount orElseGet(Supplier<Amount> supplier) {
         if (isEmpty()) {
             return supplier.get();
         }
