@@ -99,7 +99,8 @@ public class SOAPClient {
     private Consumer<BiConsumer<String, Object>> defaultParameterProvider;
     private boolean throwSOAPFaults = false;
     private Function<HandledException, HandledException> exceptionFilter = Function.identity();
-    private Function<StructuredNode, StructuredNode> resultTransformer = Function.identity();
+    private Function<XMLStructuredInput, StructuredNode> resultTransformer =
+            input -> input.getNode(TAG_SOAP_ENVELOPE + "/" + TAG_SOAP_BODY);
     private boolean trustSelfSignedCertificates;
 
     /**
@@ -203,11 +204,13 @@ public class SOAPClient {
      * Installs a transformer which is applied to all successful results being received.
      * <p>
      * Ths can be used e.g. to install a custom error handler in case something else than SOAP faults are used.
+     * <p>
+     * By default, the SOAP envelope is extracted and only the body is returned.
      *
      * @param resultTransfomer the transformer which can either return a different XML response or throw an exception.
      * @return the client itself for fluent method calls
      */
-    public SOAPClient withResultTransfomer(UnaryOperator<StructuredNode> resultTransfomer) {
+    public SOAPClient withResultTransfomer(Function<XMLStructuredInput, StructuredNode> resultTransfomer) {
         this.resultTransformer = resultTransfomer;
         return this;
     }
@@ -289,11 +292,10 @@ public class SOAPClient {
 
             createEnvelope(call.getOutput(), headBuilder, bodyBuilder);
 
-            StructuredNode result = call.getInput();
+            XMLStructuredInput result = call.getInput();
             watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
 
-            StructuredNode fault =
-                    result.queryNode("/*[local-name() = 'Envelope']/*[local-name() = 'Body']/*[local-name() = 'Fault']");
+            StructuredNode fault = result.getNode("soapenv:Envelope/soapenv:Body/soapenv:Fault");
             if (fault != null) {
                 return handleSOAPFault(watch, action, effectiveEndpoint, fault);
             }
@@ -388,7 +390,10 @@ public class SOAPClient {
      * @param result            the result SOAP envelope which was received
      * @return the SOAP envelope to process
      */
-    protected StructuredNode handleResult(Watch watch, String action, URL effectiveEndpoint, StructuredNode result) {
+    protected StructuredNode handleResult(Watch watch,
+                                          String action,
+                                          URL effectiveEndpoint,
+                                          XMLStructuredInput result) {
         return resultTransformer.apply(result);
     }
 

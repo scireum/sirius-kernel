@@ -60,7 +60,7 @@ public class XMLStructuredInput implements StructuredInput {
     }
 
     @Override
-    public StructuredNode getNode(String xpath) throws XPathExpressionException {
+    public StructuredNode getNode(String xpath) {
         return node.queryNode(xpath);
     }
 
