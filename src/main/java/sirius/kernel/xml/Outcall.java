@@ -17,7 +17,6 @@ import sirius.kernel.nls.NLS;
 import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
@@ -75,7 +74,7 @@ public class Outcall {
         }
     };
 
-    private HttpURLConnection connection;
+    private final HttpURLConnection connection;
     private Charset charset = StandardCharsets.UTF_8;
 
     /**
@@ -173,9 +172,11 @@ public class Outcall {
      *
      * @param name  name of the header to set
      * @param value value of the header to set
+     * @return the outcall itself for fluent method calls
      */
-    public void setRequestProperty(String name, String value) {
+    public Outcall setRequestProperty(String name, String value) {
         connection.setRequestProperty(name, value);
+        return this;
     }
 
     /**
@@ -183,11 +184,12 @@ public class Outcall {
      *
      * @param user     the username to use
      * @param password the password to use
+     * @return the outcall itself for fluent method calls
      * @throws IOException in case of any IO error
      */
-    public void setAuthParams(String user, String password) throws IOException {
+    public Outcall setAuthParams(String user, String password) throws IOException {
         if (Strings.isEmpty(user)) {
-            return;
+            return this;
         }
         try {
             String userAndPassword = user + ":" + password;
@@ -196,14 +198,17 @@ public class Outcall {
         } catch (UnsupportedEncodingException e) {
             throw new IOException(e);
         }
+        return this;
     }
 
     /**
      * Makes the underlying connection trust self-signed certs.
-     *
+     * <p>
      * This will make the connection trust <strong>only</strong> self-signed certificates!
+     *
+     * @return the outcall itself for fluent method calls
      */
-    public void trustSelfSignedCertificates() {
+    public Outcall trustSelfSignedCertificates() {
         if (connection instanceof HttpsURLConnection) {
             try {
                 SSLContext sc = SSLContext.getInstance("TLS");
@@ -213,6 +218,7 @@ public class Outcall {
                 throw Exceptions.handle(e);
             }
         }
+        return this;
     }
 
     /**
