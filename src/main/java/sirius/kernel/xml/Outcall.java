@@ -15,6 +15,10 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,6 +30,11 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -46,8 +55,26 @@ public class Outcall {
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
+    private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new X509TrustManager() {
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            throw new CertificateException("This trust manager cannot be used in a server");
+        }
 
-    private HttpURLConnection connection;
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            if (chain.length != 1) {
+                throw new CertificateException("The certificate is not self-signed");
+            }
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    };
+
+    private final HttpURLConnection connection;
     private Charset charset = StandardCharsets.UTF_8;
 
     /**
@@ -145,9 +172,11 @@ public class Outcall {
      *
      * @param name  name of the header to set
      * @param value value of the header to set
+     * @return the outcall itself for fluent method calls
      */
-    public void setRequestProperty(String name, String value) {
+    public Outcall setRequestProperty(String name, String value) {
         connection.setRequestProperty(name, value);
+        return this;
     }
 
     /**
@@ -155,11 +184,12 @@ public class Outcall {
      *
      * @param user     the username to use
      * @param password the password to use
+     * @return the outcall itself for fluent method calls
      * @throws IOException in case of any IO error
      */
-    public void setAuthParams(String user, String password) throws IOException {
+    public Outcall setAuthParams(String user, String password) throws IOException {
         if (Strings.isEmpty(user)) {
-            return;
+            return this;
         }
         try {
             String userAndPassword = user + ":" + password;
@@ -168,6 +198,27 @@ public class Outcall {
         } catch (UnsupportedEncodingException e) {
             throw new IOException(e);
         }
+        return this;
+    }
+
+    /**
+     * Makes the underlying connection trust self-signed certs.
+     * <p>
+     * This will make the connection trust <strong>only</strong> self-signed certificates!
+     *
+     * @return the outcall itself for fluent method calls
+     */
+    public Outcall trustSelfSignedCertificates() {
+        if (connection instanceof HttpsURLConnection) {
+            try {
+                SSLContext sc = SSLContext.getInstance("TLS");
+                sc.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
+                ((HttpsURLConnection) connection).setSSLSocketFactory(sc.getSocketFactory());
+            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                throw Exceptions.handle(e);
+            }
+        }
+        return this;
     }
 
     /**

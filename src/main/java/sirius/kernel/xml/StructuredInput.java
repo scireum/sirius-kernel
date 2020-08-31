@@ -19,7 +19,6 @@ public interface StructuredInput {
      *
      * @param xpath the xpath used to query the node
      * @return the node returned by the given xpath expression
-     * @throws XPathExpressionException if an invalid xpath was given
      */
-    StructuredNode getNode(String xpath) throws XPathExpressionException;
+    StructuredNode getNode(String xpath);
 }

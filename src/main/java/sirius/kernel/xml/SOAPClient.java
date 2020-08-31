@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -75,9 +76,9 @@ public class SOAPClient {
     public static final Log LOG = Log.get("soap");
 
     private static final String HEADER_SOAP_ACTION = "SOAPAction";
-    private static final String TAG_SOAP_ENVELOPE = "soapenv:Envelope";
-    private static final String TAG_SOAP_HEADER = "soapenv:Header";
-    private static final String TAG_SOAP_BODY = "soapenv:Body";
+    private static final String TAG_SOAP_ENVELOPE = SOAP_NAMESPACE_PREFIX + ":Envelope";
+    private static final String TAG_SOAP_HEADER = SOAP_NAMESPACE_PREFIX + ":Header";
+    private static final String TAG_SOAP_BODY = SOAP_NAMESPACE_PREFIX + ":Body";
     private static final String PREFIX_XMLNS = "xmlns:";
 
     /**
@@ -90,16 +91,18 @@ public class SOAPClient {
      */
     public static final String NODE_FAULTSTRING = "faultstring";
 
-    private URL endpoint;
-    private BasicNamespaceContext namespaceContext = new BasicNamespaceContext();
+    private final URL endpoint;
+    private final BasicNamespaceContext namespaceContext = new BasicNamespaceContext();
     private List<Attribute> namespaceDefinitions;
     private String actionPrefix = "";
     private Consumer<XMLCall> callEnhancer;
-    private Map<String, URL> customEndpoints = new HashMap<>();
+    private final Map<String, URL> customEndpoints = new HashMap<>();
     private Consumer<BiConsumer<String, Object>> defaultParameterProvider;
-    private boolean throwSOAPFaults = true;
+    private boolean throwSOAPFaults = false;
     private Function<HandledException, HandledException> exceptionFilter = Function.identity();
-    private Function<StructuredNode, StructuredNode> resultTransformer = Function.identity();
+    private BiFunction<StructuredNode, String, StructuredNode> resultTransformer =
+            (input, ignored) -> input.queryNode(TAG_SOAP_BODY);
+    private boolean trustSelfSignedCertificates;
 
     /**
      * Creates a new client which talks to the given endpoint.
@@ -174,6 +177,16 @@ public class SOAPClient {
     }
 
     /**
+     * Permits to trust self-signed certificates.
+     *
+     * @return the client itself for fluent method calls
+     */
+    public SOAPClient withTrustSelfSignedCertificates() {
+        this.trustSelfSignedCertificates = true;
+        return this;
+    }
+
+    /**
      * Permits to supply a set of default parameters.
      * <p>
      * When building a simple parameter object via {@link #call(String, String)}, this can be use to supply one or
@@ -191,12 +204,15 @@ public class SOAPClient {
     /**
      * Installs a transformer which is applied to all successful results being received.
      * <p>
-     * Ths can be used e.g. to install a custom error handler in case something else than SOAP faults are used.
+     * The transformer receives the response along with the action performed.
+     * It can be used e.g. to install a custom error handler in case something else than SOAP faults are used.
+     * <p>
+     * By default, the SOAP envelope is extracted and only the body is returned.
      *
      * @param resultTransfomer the transformer which can either return a different XML response or throw an exception.
      * @return the client itself for fluent method calls
      */
-    public SOAPClient withResultTransfomer(UnaryOperator<StructuredNode> resultTransfomer) {
+    public SOAPClient withResultTransfomer(BiFunction<StructuredNode, String, StructuredNode> resultTransfomer) {
         this.resultTransformer = resultTransfomer;
         return this;
     }
@@ -270,6 +286,10 @@ public class SOAPClient {
                 callEnhancer.accept(call);
             }
 
+            if (trustSelfSignedCertificates) {
+                call.getOutcall().trustSelfSignedCertificates();
+            }
+
             call.addHeader(HEADER_SOAP_ACTION, actionPrefix + action);
 
             createEnvelope(call.getOutput(), headBuilder, bodyBuilder);
@@ -277,7 +297,7 @@ public class SOAPClient {
             StructuredNode result = call.getInput().getNode(".");
             watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
 
-            StructuredNode fault = result.queryNode("soapenv:Envelope/soapenv:Body/soapenv:Fault");
+            StructuredNode fault = result.queryNode("soapenv:Body/soapenv:Fault");
             if (fault != null) {
                 return handleSOAPFault(watch, action, effectiveEndpoint, fault);
             }
@@ -373,7 +393,7 @@ public class SOAPClient {
      * @return the SOAP envelope to process
      */
     protected StructuredNode handleResult(Watch watch, String action, URL effectiveEndpoint, StructuredNode result) {
-        return resultTransformer.apply(result);
+        return resultTransformer.apply(result, action);
     }
 
     /**
@@ -427,9 +447,9 @@ public class SOAPClient {
 
     private class CallBuilder {
 
-        private String action;
-        private String method;
-        private Map<String, Object> parameters = new LinkedHashMap<>();
+        private final String action;
+        private final String method;
+        private final Map<String, Object> parameters = new LinkedHashMap<>();
 
         CallBuilder(String action, String method) {
             this.action = action;
