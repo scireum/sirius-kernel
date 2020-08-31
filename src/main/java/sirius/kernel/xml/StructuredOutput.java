@@ -34,6 +34,17 @@ public interface StructuredOutput {
     StructuredOutput beginResult(@Nonnull String name);
 
     /**
+     * Convenience method for {@link #beginResult(String)} prepending a namespace.
+     *
+     * @param namespace the namespace
+     * @param name      the unqualified name
+     * @return the output itself for fluent method calls
+     */
+    default StructuredOutput beginResult(@Nonnull String namespace, @Nonnull String name) {
+        return beginResult(namespace + ":" + name);
+    }
+
+    /**
      * Finishes (closes) the result
      */
     void endResult();
@@ -46,6 +57,18 @@ public interface StructuredOutput {
      * @return the output itself for fluent method calls
      */
     StructuredOutput beginObject(@Nonnull String name, Attribute... attributes);
+
+    /**
+     * Convenience method for {@link #beginObject(String, Attribute...)} prepending a namespace.
+     *
+     * @param namespace  the namespace
+     * @param name       the name of the object to create
+     * @param attributes the attributes to add to the object
+     * @return the output itself for fluent method calls
+     */
+    default StructuredOutput beginObject(@Nonnull String namespace, @Nonnull String name, Attribute... attributes) {
+        return beginObject(namespace + ":" + name, attributes);
+    }
 
     /**
      * Ends the currently open object.
@@ -64,6 +87,18 @@ public interface StructuredOutput {
     StructuredOutput property(@Nonnull String name, @Nullable Object data);
 
     /**
+     * Convenience method for {@link #property(String, Object)} prepending a namespace.
+     *
+     * @param namespace the namespace
+     * @param name      the name of the property
+     * @param data      the value of the property
+     * @return the output itself for fluent method calls
+     */
+    default StructuredOutput property(@Nonnull String namespace, @Nonnull String name, @Nullable Object data) {
+        return property(namespace + ":" + name, data);
+    }
+
+    /**
      * Adds a property to the current object.
      * <p>
      * This will create a property with the specified data as value or empty string if the value is null.
@@ -75,12 +110,35 @@ public interface StructuredOutput {
     StructuredOutput nullsafeProperty(@Nonnull String name, @Nullable Object data);
 
     /**
+     * Convenience method for {@link #nullsafeProperty(String, Object)} prepending a namespace.
+     *
+     * @param namespace the namespace
+     * @param name      the name of the property
+     * @param data      the value of the property
+     * @return the output itself for fluent method calls
+     */
+    default StructuredOutput nullsafeProperty(@Nonnull String namespace, @Nonnull String name, @Nullable Object data) {
+        return nullsafeProperty(namespace + ":" + name, data);
+    }
+
+    /**
      * Starts an array with is added to the current object as "name".
      *
      * @param name the name of the array
      * @return the output itself for fluent method calls
      */
     StructuredOutput beginArray(@Nonnull String name);
+
+    /**
+     * Convenience method for {@link #beginArray(String)} prepending a namespace.
+     *
+     * @param namespace the namespace
+     * @param name      the name of the array
+     * @return the output itself for fluent method calls
+     */
+    default StructuredOutput beginArray(@Nonnull String namespace, @Nonnull String name) {
+        return beginArray(namespace + ":" + name);
+    }
 
     /**
      * Ends the currently open array.

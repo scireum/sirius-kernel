@@ -68,4 +68,16 @@ public class Attribute {
     public static Attribute set(String name, Object value) {
         return new Attribute(name, value);
     }
+
+    /**
+     * Creates a new attribute with the given namespace, name and value.
+     *
+     * @param namespace the namespace of the attribute
+     * @param name      the name of the attribute
+     * @param value     the value of the attribute
+     * @return a new attribute with the given name and value
+     */
+    public static Attribute set(String namespace, String name, Object value) {
+        return new Attribute(namespace + ":" + name, value);
+    }
 }

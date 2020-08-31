@@ -195,6 +195,19 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         }
 
         /**
+         * Adds an attribute to the tag
+         *
+         * @param namespace the namespace of the attribute to add
+         * @param name      the name of the attribute to add
+         * @param value     the value of the attribute to add
+         * @return <tt>this</tt> to fluently add more attributes
+         */
+        public TagBuilder addAttribute(@Nonnull String namespace, @Nonnull String name, @Nullable String value) {
+            attributes.add(Attribute.set(namespace, name, value));
+            return this;
+        }
+
+        /**
          * Finally creates the tag or object with the given name and attributes.
          */
         public void build() {

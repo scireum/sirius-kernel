@@ -153,6 +153,18 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
+     * Convenience method for {@link #beginOutput(String, Attribute...)} prepending a namespace.
+     *
+     * @param namespace   the namespace
+     * @param rootElement the name of the root element of the generated document
+     * @param attr        the attributes for the root element
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput beginOutput(@Nonnull String namespace, @Nonnull String rootElement, Attribute... attr) {
+        return beginOutput(namespace + ":" + rootElement, attr);
+    }
+
+    /**
      * Creates a {@link AbstractStructuredOutput.TagBuilder} used to fluently create the root element.
      *
      * @param rootElement name of the root element
