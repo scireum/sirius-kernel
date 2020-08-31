@@ -39,14 +39,6 @@ public interface StructuredOutput {
     void endResult();
 
     /**
-     * Starts a new object with the given name.
-     *
-     * @param name the name of the element to start
-     * @return the output itself for fluent method calls
-     */
-    StructuredOutput beginObject(@Nonnull String name);
-
-    /**
      * Starts a new object with the given name and attributes
      *
      * @param name       the name of the object to create

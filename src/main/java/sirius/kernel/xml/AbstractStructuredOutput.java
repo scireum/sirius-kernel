@@ -157,16 +157,6 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     protected abstract void writeProperty(String name, Object value);
 
     @Override
-    public StructuredOutput beginObject(String name) {
-        startObject(name, (Attribute[]) null);
-        if (!nesting.isEmpty()) {
-            nesting.get(0).setEmpty(false);
-        }
-        nesting.add(0, new Element(ElementType.OBJECT, name));
-        return this;
-    }
-
-    @Override
     public StructuredOutput beginObject(String name, Attribute... attributes) {
         startObject(name, attributes);
         if (!nesting.isEmpty()) {
