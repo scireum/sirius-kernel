@@ -66,7 +66,7 @@ public class SOAPClient {
     /**
      * Contains the prefix used for SOAP envelopes.
      */
-    public static final String SOAP_NAMESPACE_PREFIX = "soapenv";
+    public static final String SOAP_NAMESPACE = "soapenv";
 
     /**
      * Contains the namespace URI used for SOAP envelopes.
@@ -76,10 +76,10 @@ public class SOAPClient {
     public static final Log LOG = Log.get("soap");
 
     private static final String HEADER_SOAP_ACTION = "SOAPAction";
-    private static final String TAG_SOAP_ENVELOPE = SOAP_NAMESPACE_PREFIX + ":Envelope";
-    private static final String TAG_SOAP_HEADER = SOAP_NAMESPACE_PREFIX + ":Header";
-    private static final String TAG_SOAP_BODY = SOAP_NAMESPACE_PREFIX + ":Body";
-    private static final String PREFIX_XMLNS = "xmlns:";
+    private static final String TAG_SOAP_ENVELOPE = "Envelope";
+    private static final String TAG_SOAP_HEADER = "Header";
+    private static final String TAG_SOAP_BODY = "Body";
+    private static final String PREFIX_XMLNS = "xmlns";
 
     /**
      * Contains the node name which contains the code of a SOAP fault.
@@ -101,7 +101,7 @@ public class SOAPClient {
     private boolean throwSOAPFaults = false;
     private Function<HandledException, HandledException> exceptionFilter = Function.identity();
     private BiFunction<StructuredNode, String, StructuredNode> resultTransformer =
-            (input, ignored) -> input.queryNode(TAG_SOAP_BODY);
+            (input, ignored) -> input.queryNode(SOAP_NAMESPACE + ":" + TAG_SOAP_BODY);
     private boolean trustSelfSignedCertificates;
 
     /**
@@ -114,7 +114,7 @@ public class SOAPClient {
      */
     public SOAPClient(@Nonnull URL endpoint) {
         this.endpoint = endpoint;
-        this.withNamespace(SOAP_NAMESPACE_PREFIX, SOAP_NAMESPACE_URI);
+        this.withNamespace(SOAP_NAMESPACE, SOAP_NAMESPACE_URI);
     }
 
     /**
@@ -313,16 +313,16 @@ public class SOAPClient {
     protected void createEnvelope(XMLStructuredOutput output,
                                   Consumer<XMLStructuredOutput> headBuilder,
                                   Consumer<XMLStructuredOutput> bodyBuilder) {
-        output.beginOutput(TAG_SOAP_ENVELOPE, getNamespaceDefinitions().toArray(ATTRIBUTE_ARRAY));
+        output.beginOutput(SOAP_NAMESPACE, TAG_SOAP_ENVELOPE, getNamespaceDefinitions().toArray(ATTRIBUTE_ARRAY));
         {
-            output.beginObject(TAG_SOAP_HEADER);
+            output.beginObject(SOAP_NAMESPACE, TAG_SOAP_HEADER);
             {
                 if (headBuilder != null) {
                     headBuilder.accept(output);
                 }
             }
             output.endObject();
-            output.beginObject(TAG_SOAP_BODY);
+            output.beginObject(SOAP_NAMESPACE, TAG_SOAP_BODY);
             {
                 bodyBuilder.accept(output);
             }
@@ -334,7 +334,8 @@ public class SOAPClient {
     private List<Attribute> getNamespaceDefinitions() {
         if (namespaceDefinitions == null) {
             namespaceDefinitions = namespaceContext.getPrefixAndUris()
-                                                   .map(entry -> Attribute.set(PREFIX_XMLNS + entry.getKey(),
+                                                   .map(entry -> Attribute.set(PREFIX_XMLNS,
+                                                                               entry.getKey(),
                                                                                entry.getValue()))
                                                    .collect(Collectors.toList());
         }

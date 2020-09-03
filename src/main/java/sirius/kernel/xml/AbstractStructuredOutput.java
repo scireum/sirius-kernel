@@ -157,16 +157,6 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     protected abstract void writeProperty(String name, Object value);
 
     @Override
-    public StructuredOutput beginObject(String name) {
-        startObject(name, (Attribute[]) null);
-        if (!nesting.isEmpty()) {
-            nesting.get(0).setEmpty(false);
-        }
-        nesting.add(0, new Element(ElementType.OBJECT, name));
-        return this;
-    }
-
-    @Override
     public StructuredOutput beginObject(String name, Attribute... attributes) {
         startObject(name, attributes);
         if (!nesting.isEmpty()) {
@@ -201,6 +191,19 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
          */
         public TagBuilder addAttribute(@Nonnull String name, @Nullable String value) {
             attributes.add(Attribute.set(name, value));
+            return this;
+        }
+
+        /**
+         * Adds an attribute to the tag
+         *
+         * @param namespace the namespace of the attribute to add
+         * @param name      the name of the attribute to add
+         * @param value     the value of the attribute to add
+         * @return <tt>this</tt> to fluently add more attributes
+         */
+        public TagBuilder addAttribute(@Nonnull String namespace, @Nonnull String name, @Nullable String value) {
+            attributes.add(Attribute.set(namespace, name, value));
             return this;
         }
 
