@@ -313,16 +313,16 @@ public class SOAPClient {
     protected void createEnvelope(XMLStructuredOutput output,
                                   Consumer<XMLStructuredOutput> headBuilder,
                                   Consumer<XMLStructuredOutput> bodyBuilder) {
-        output.beginOutput(SOAP_NAMESPACE, TAG_SOAP_ENVELOPE, getNamespaceDefinitions().toArray(ATTRIBUTE_ARRAY));
+        output.beginNamespacedOutput(SOAP_NAMESPACE, TAG_SOAP_ENVELOPE, getNamespaceDefinitions().toArray(ATTRIBUTE_ARRAY));
         {
-            output.beginObject(SOAP_NAMESPACE, TAG_SOAP_HEADER);
+            output.beginNamespacedObject(SOAP_NAMESPACE, TAG_SOAP_HEADER);
             {
                 if (headBuilder != null) {
                     headBuilder.accept(output);
                 }
             }
             output.endObject();
-            output.beginObject(SOAP_NAMESPACE, TAG_SOAP_BODY);
+            output.beginNamespacedObject(SOAP_NAMESPACE, TAG_SOAP_BODY);
             {
                 bodyBuilder.accept(output);
             }
