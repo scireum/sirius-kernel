@@ -90,7 +90,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      * @param name      the name of the array
      * @return the output itself for fluent method calls
      */
-    public StructuredOutput beginArray(@Nonnull String namespace, @Nonnull String name) {
+    public StructuredOutput beginNamespacedArray(@Nonnull String namespace, @Nonnull String name) {
         return beginArray(namespace + ":" + name);
     }
 
@@ -111,7 +111,9 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      * @param attributes the attributes to add to the object
      * @return the output itself for fluent method calls
      */
-    public StructuredOutput beginObject(@Nonnull String namespace, @Nonnull String name, Attribute... attributes) {
+    public StructuredOutput beginNamespacedObject(@Nonnull String namespace,
+                                                  @Nonnull String name,
+                                                  Attribute... attributes) {
         return beginObject(namespace + ":" + name, attributes);
     }
 
@@ -141,7 +143,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      * @param name      the unqualified name
      * @return the output itself for fluent method calls
      */
-    public StructuredOutput beginResult(@Nonnull String namespace, @Nonnull String name) {
+    public StructuredOutput beginNamespacedResult(@Nonnull String namespace, @Nonnull String name) {
         return beginResult(namespace + ":" + name);
     }
 
@@ -194,7 +196,9 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      * @param attr        the attributes for the root element
      * @return the output itself for fluent method calls
      */
-    public StructuredOutput beginOutput(@Nonnull String namespace, @Nonnull String rootElement, Attribute... attr) {
+    public StructuredOutput beginNamespacedOutput(@Nonnull String namespace,
+                                                  @Nonnull String rootElement,
+                                                  Attribute... attr) {
         return beginOutput(namespace + ":" + rootElement, attr);
     }
 
@@ -278,15 +282,19 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
-     * Convenience method for {@link #property(String, Object)} prepending a namespace.
+     * Convenience method for {@link #property(String, Object, Attribute...)} prepending a namespace.
      *
-     * @param namespace the namespace
-     * @param name      the name of the property
-     * @param data      the value of the property
+     * @param namespace  the namespace
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes
      * @return the output itself for fluent method calls
      */
-    public StructuredOutput property(@Nonnull String namespace, @Nonnull String name, @Nullable Object data) {
-        return property(namespace + ":" + name, data);
+    public StructuredOutput namespacedProperty(@Nonnull String namespace,
+                                               @Nonnull String name,
+                                               @Nullable Object data,
+                                               Attribute... attributes) {
+        return property(namespace + ":" + name, data, attributes);
     }
 
     /**
