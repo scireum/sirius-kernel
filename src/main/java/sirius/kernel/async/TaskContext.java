@@ -164,7 +164,23 @@ public class TaskContext implements SubContext {
      * @param millis  the current duration for the block being counted
      */
     public void addTiming(String counter, long millis) {
-        adapter.addTiming(counter, millis);
+        adapter.addTiming(counter, millis, false);
+    }
+
+    /**
+     * Increments the given performance counter by one and supplies a loop duration in milliseconds.
+     * <p>
+     * The avarage value will be computed for the given counter and gives the user a rough estimate what the current
+     * task is doing.
+     * <p>
+     * Note that the default implementation will simply ignore the provided timings.
+     *
+     * @param counter   the counter to increment
+     * @param millis    the current duration for the block being counted
+     * @param adminOnly whether to show the timing only to administrators instead of all users
+     */
+    public void addTiming(String counter, long millis, boolean adminOnly) {
+        adapter.addTiming(counter, millis, adminOnly);
     }
 
     /**
