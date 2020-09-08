@@ -54,6 +54,14 @@ public interface TaskContextAdapter {
     void smartLogLimited(Supplier<Object> messageSupplier);
 
     /**
+     * Invoked if {@link sirius.kernel.async.TaskContext#addTiming(String, long)} is called in the attached context.
+     *
+     * @param counter the counter to increment
+     * @param millis  the current duration for the block being counted
+     */
+    void addTiming(String counter, long millis);
+
+    /**
      * Invoked if {@link sirius.kernel.async.TaskContext#addTiming(String, long, boolean)} is called in the attached context.
      *
      * @param counter   the counter to increment
