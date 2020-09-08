@@ -164,7 +164,7 @@ public class TaskContext implements SubContext {
      * @param millis  the current duration for the block being counted
      */
     public void addTiming(String counter, long millis) {
-        adapter.addTiming(counter, millis);
+        adapter.addTiming(counter, millis, false);
     }
 
     /**

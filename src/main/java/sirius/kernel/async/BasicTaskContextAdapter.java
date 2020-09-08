@@ -57,11 +57,6 @@ public class BasicTaskContextAdapter implements TaskContextAdapter {
     }
 
     @Override
-    public void addTiming(String counter, long millis) {
-        // Ignored by the default implementation.
-    }
-
-    @Override
     public void addTiming(String counter, long millis, boolean adminOnly) {
         // Ignored by the default implementation.
     }
