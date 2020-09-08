@@ -62,6 +62,15 @@ public interface TaskContextAdapter {
     void addTiming(String counter, long millis);
 
     /**
+     * Invoked if {@link sirius.kernel.async.TaskContext#addTiming(String, long, boolean)} is called in the attached context.
+     *
+     * @param counter   the counter to increment
+     * @param millis    the current duration for the block being counted
+     * @param adminOnly whether to show the timing only to administrators instead of all users
+     */
+    void addTiming(String counter, long millis, boolean adminOnly);
+
+    /**
      * Invoked if {@link TaskContext#markErroneous()} is called in the attached context.
      */
     void markErroneous();
