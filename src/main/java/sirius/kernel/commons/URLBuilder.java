@@ -39,10 +39,6 @@ public class URLBuilder {
      * @param baseURL the base url to stat with in a form like <tt>http://somehost.com</tt>
      */
     public URLBuilder(@Nonnull String baseURL) {
-        if (baseURL.contains("?")) {
-            questionMark.toggle();
-        }
-
         url = new StringBuilder();
         if (baseURL.endsWith("/")) {
             url.append(baseURL, 0, baseURL.length() - 1);
@@ -58,10 +54,6 @@ public class URLBuilder {
      * @param host     the host to target.
      */
     public URLBuilder(@Nonnull String protocol, @Nonnull String host) {
-        if (host.contains("?")) {
-            questionMark.toggle();
-        }
-
         url = new StringBuilder();
         url.append(protocol);
         url.append("://");
@@ -87,6 +79,8 @@ public class URLBuilder {
                             "Cannot add '%s'! Parameters where already added to: '%s'.",
                             uriPart,
                             url));
+                } else if (uriPart.contains("?")) {
+                    questionMark.toggle();
                 }
                 url.append(uriPart);
             }
