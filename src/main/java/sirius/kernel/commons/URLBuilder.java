@@ -63,7 +63,8 @@ public class URLBuilder {
     /**
      * Adds a path part to the url.
      * <p>
-     * Once the first parameter has been added, the path can no longer be modified.
+     * Once the first parameter has been added, the path can no longer be modified. If the path itself contains
+     * parameters the questionMark {@link Monoflop} will be toggled.
      *
      * @param uriPartsToAdd the uri part to add. This should not contain a leading '/' as it is added automatically. If
      *                      an array (vararg) is given, all components are appended to the internal {@link
