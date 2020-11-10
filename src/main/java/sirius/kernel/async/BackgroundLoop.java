@@ -200,9 +200,9 @@ public abstract class BackgroundLoop {
     }
 
     /**
-     * whether the background loop is currently running
+     * Determines whether the background loop is currently running.
      *
-     * @return true if the background loop is running
+     * @return <tt>true</tt> if the background loop is running, <tt>false</tt> otherwise
      */
     public boolean isExecuting() {
         return executing;
