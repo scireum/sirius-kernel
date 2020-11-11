@@ -58,6 +58,7 @@ public abstract class BackgroundLoop {
     private volatile boolean enabled = true;
     private long lastExecutionAttempt;
     private String executionInfo = "-";
+    private boolean executing = false;
 
     /**
      * Returns the name of the loop.
@@ -138,6 +139,7 @@ public abstract class BackgroundLoop {
     private void executeWork() throws Exception {
         Future executionFuture = loopExecuted;
         loopExecuted = new Future();
+        executing = true;
         try {
             Watch w = Watch.start();
             LocalDateTime now = LocalDateTime.now();
@@ -147,6 +149,7 @@ public abstract class BackgroundLoop {
             if (orchestration != null) {
                 orchestration.backgroundLoopCompleted(getName(), executionInfo);
             }
+            executing = false;
             executionFuture.success();
         }
     }
@@ -194,6 +197,15 @@ public abstract class BackgroundLoop {
      */
     public String getExecutionInfo() {
         return executionInfo;
+    }
+
+    /**
+     * Determines whether the background loop is currently running.
+     *
+     * @return <tt>true</tt> if the background loop is running, <tt>false</tt> otherwise
+     */
+    public boolean isExecuting() {
+        return executing;
     }
 
     /**

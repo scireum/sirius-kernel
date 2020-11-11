@@ -75,7 +75,7 @@ public class SystemMetricProvider implements MetricProvider {
         Instant now = Instant.now();
         for (BackgroundLoop loop : loops) {
             long observedRuntimeSeconds = Duration.between(loop.getLastExecutionAttempt(), now).getSeconds();
-            if (observedRuntimeSeconds > loop.maxRuntimeInSeconds()) {
+            if (loop.isExecuting() && observedRuntimeSeconds > loop.maxRuntimeInSeconds()) {
                 blockingLoops++;
                 Log.BACKGROUND.WARN("BackgroundLoop %s has exceeded its runtime! Expected runtime %ss."
                                     + " Observed runtime: %ss."
