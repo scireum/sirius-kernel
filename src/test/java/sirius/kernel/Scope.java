@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * annotated with a scope and then might be only executed once every night.
  * <p>
  * If a scope value is present, the test class or spec is only executed if the system property <tt>test.SCOPE</tt>
- * is <tt>true</tt>. So to run nightly tests, one has to pass <tt>-Dtests.nightly=true</tt>.
+ * is <tt>true</tt>. So to run nightly tests, one has to pass <tt>-Dtest.nightly=true</tt>.
  * <p>
  * Note that the scope isn't checked if the test class is run manually in the IDE which is also quite useful.
  */
