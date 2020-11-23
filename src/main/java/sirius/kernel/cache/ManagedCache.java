@@ -21,15 +21,8 @@ import sirius.kernel.settings.Extension;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -39,7 +32,7 @@ import java.util.function.Predicate;
  * @param <K> the type of the keys used by this cache
  * @param <V> the type of the values supported by this cache
  */
-class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object> {
+class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>, Comparable<Cache<K, V>> {
 
     protected static final int MAX_HISTORY = 25;
     private static final double ONE_HUNDERT_PERCENT = 100d;
@@ -388,5 +381,10 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
                 Exceptions.handle(e);
             }
         }
+    }
+
+    @Override
+    public int compareTo(Cache cache) {
+        return this.name.compareTo(cache.getName());
     }
 }
