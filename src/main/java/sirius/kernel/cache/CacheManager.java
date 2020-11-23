@@ -16,7 +16,6 @@ import sirius.kernel.health.Log;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
