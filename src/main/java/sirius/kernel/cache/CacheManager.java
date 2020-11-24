@@ -16,12 +16,13 @@ import sirius.kernel.health.Log;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Provides access to all managed caches
@@ -57,12 +58,12 @@ public class CacheManager {
     }
 
     /**
-     * Returns a list of all known caches
+     * Returns a sorted list of all known caches
      *
-     * @return a list of all caches created so far
+     * @return a sorted list of all caches created so far
      */
     public static List<ManagedCache<?, ?>> getCaches() {
-        return new ArrayList<>(caches.values());
+        return caches.values().stream().sorted(Comparator.comparing(Cache::getName)).collect(Collectors.toList());
     }
 
     /**
