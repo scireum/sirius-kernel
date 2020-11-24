@@ -39,7 +39,7 @@ import java.util.function.Predicate;
  * @param <K> the type of the keys used by this cache
  * @param <V> the type of the values supported by this cache
  */
-class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>, Comparable<Cache<K, V>> {
+class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object> {
 
     protected static final int MAX_HISTORY = 25;
     private static final double ONE_HUNDERT_PERCENT = 100d;
@@ -388,10 +388,5 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
                 Exceptions.handle(e);
             }
         }
-    }
-
-    @Override
-    public int compareTo(Cache cache) {
-        return this.name.compareTo(cache.getName());
     }
 }

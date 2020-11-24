@@ -16,6 +16,7 @@ import sirius.kernel.health.Log;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,7 +63,7 @@ public class CacheManager {
      * @return a sorted list of all caches created so far
      */
     public static List<ManagedCache<?, ?>> getCaches() {
-        return caches.values().stream().sorted().collect(Collectors.toList());
+        return caches.values().stream().sorted(Comparator.comparing(Cache::getName)).collect(Collectors.toList());
     }
 
     /**
