@@ -244,7 +244,6 @@ public class Setup {
         }
 
         StreamHandler consoleHandler = new StdOutHandler();
-        consoleHandler.setFormatter(new SaneFormatter());
         consoleHandler.setLevel(Level.ALL);
 
         rootLogger.addHandler(consoleHandler);
