@@ -26,13 +26,13 @@ import java.lang.management.RuntimeMXBean;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 import java.util.regex.Pattern;
 
 /**
@@ -243,7 +243,7 @@ public class Setup {
             rootLogger.removeHandler(handler);
         }
 
-        StdOutHandler consoleHandler = new StdOutHandler();
+        StreamHandler consoleHandler = new StdOutHandler();
         consoleHandler.setFormatter(new SaneFormatter());
         consoleHandler.setLevel(Level.ALL);
 
@@ -251,10 +251,16 @@ public class Setup {
         rootLogger.setLevel(Level.INFO);
     }
 
-    private static class StdOutHandler extends ConsoleHandler {
+    private class StdOutHandler extends StreamHandler {
         @SuppressWarnings({"UseOfSystemOutOrSystemErr", "java:S106"})
-        StdOutHandler() {
-            setOutputStream(System.out);
+        private StdOutHandler() {
+            super(System.out, new SaneFormatter());
+        }
+
+        @Override
+        public synchronized void publish(LogRecord record) {
+            super.publish(record);
+            flush();
         }
     }
 
