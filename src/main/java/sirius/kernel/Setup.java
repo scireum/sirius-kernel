@@ -360,45 +360,24 @@ public class Setup {
     }
 
     /**
-     * Applies the developer configuration to the given config object.
+     * Applies the instance, develop or staging configuration to the given config object.
      * <p>
-     * By default this loads and applies "develop.conf" from the file system.
+     * By default this loads and applies the given "instance.conf", "develop.conf" or "staging.conf" from the file system.
      *
-     * @param config the config to enhance
-     * @return the enhanced config
+     * @param config     the config to amend
+     * @param configType the configType to look for
+     * @return the amended config
      */
     @Nonnull
-    public Config applyDeveloperConfig(@Nonnull Config config) {
-        String developConfFile = getProperty("sirius_develop_conf",
-                                             "develop.conf",
-                                             "Determines the filename of the developer config.").asString();
-        if (new File(developConfFile).exists()) {
-            return loadConfig(developConfFile, () -> ConfigFactory.parseFile(new File(developConfFile)), config);
+    public Config applyConfig(@Nonnull Config config, @Nonnull String configType) {
+        String configFile = getProperty("sirius_" + configType + "_conf",
+                                        configType + ".conf",
+                                        "Determines the filename of the develop or staging config.").asString();
+        if (new File(configFile).exists()) {
+            return loadConfig(configFile, () -> ConfigFactory.parseFile(new File(configFile)), config);
         } else {
-            Sirius.LOG.INFO("%s not present work in directory", developConfFile);
+            Sirius.LOG.INFO("%s not present work in directory", configFile);
             return config;
-        }
-    }
-
-    /**
-     * Loads the instance configuration which configures the app for the machine it is running on.
-     * <p>
-     * By default this loads "instance.conf" from the file system
-     * <p>
-     * This will later be applied to the overall system configuration and will override all other settings.
-     *
-     * @return the instance configuration or <tt>null</tt> if no config was found.
-     */
-    @Nullable
-    public Config loadInstanceConfig() {
-        String instanceConfFile = getProperty("sirius_instance_conf",
-                                              "instance.conf",
-                                              "Determines the filename of the instance config.").asString();
-        if (new File(instanceConfFile).exists()) {
-            return loadConfig(instanceConfFile, () -> ConfigFactory.parseFile(new File(instanceConfFile)), null);
-        } else {
-            Sirius.LOG.INFO("%s not present work in directory", instanceConfFile);
-            return null;
         }
     }
 

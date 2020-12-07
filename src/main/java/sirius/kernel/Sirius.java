@@ -67,6 +67,9 @@ public class Sirius {
     protected static final Log LOG = Log.get("sirius");
 
     private static final String DEBUG_LOGGER_NAME = "debug";
+    private static final String CONFIG_DEVELOP = "develop";
+    private static final String CONFIG_STAGING = "staging";
+    private static final String CONFIG_INSTANCE = "instance";
 
     /**
      * This debug logger will be logging all messages when {@link sirius.kernel.Sirius#isDev()} is true. Otherwise,
@@ -287,10 +290,12 @@ public class Sirius {
             // instance.conf and develop.conf are not used to tests to permit uniform behaviour on local
             // machines and build servers...
             if (Sirius.isDev()) {
-                config = setup.applyDeveloperConfig(config);
+                config = setup.applyConfig(config, CONFIG_DEVELOP);
+            } else if (Sirius.isStaging()) {
+                config = setup.applyConfig(config, CONFIG_STAGING);
             }
 
-            instanceConfig = setup.loadInstanceConfig();
+            instanceConfig = setup.applyConfig(config, CONFIG_INSTANCE);
         }
 
         // Setup customer customizations...
