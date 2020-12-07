@@ -93,12 +93,21 @@ public class Sirius {
     }
 
     /**
-     * Determines if the framework is running in development or in production mode.
+     * Determines if the framework is running in development mode.
      *
-     * @return {@code true} is the framework runs in development mode, false otherwise.
+     * @return {@code true} if the framework runs in development mode, {@code false} otherwise.
      */
     public static boolean isDev() {
         return setup.getMode() == Setup.Mode.DEV;
+    }
+
+    /**
+     * Determines if the framework is running in staging mode.
+     *
+     * @return {@code true} if the framework runs in staging mode, {@code false} otherwise
+     */
+    public static boolean isStaging() {
+        return setup.getMode() == Setup.Mode.STAGING;
     }
 
     /**
@@ -111,12 +120,12 @@ public class Sirius {
     }
 
     /**
-     * Determines if the framework is running in development or in production mode.
+     * Determines if the framework is running in production mode.
      *
-     * @return {@code true} is the framework runs in production mode, false otherwise.
+     * @return {@code true} if the framework runs in production mode, {@code false} otherwise.
      */
     public static boolean isProd() {
-        return !isDev();
+        return setup.getMode() == Setup.Mode.PROD;
     }
 
     /**
@@ -137,7 +146,7 @@ public class Sirius {
      * loggers
      */
     private static void setupLogLevels() {
-        if (Sirius.isDev()) {
+        if (!Sirius.isProd()) {
             Log.setLevel(DEBUG_LOGGER_NAME, Level.FINEST);
         } else {
             Log.setLevel(DEBUG_LOGGER_NAME, Level.OFF);

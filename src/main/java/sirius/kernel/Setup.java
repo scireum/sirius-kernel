@@ -58,7 +58,26 @@ public class Setup {
      * Determines the mode in which the framework should run. This mainly effects logging and the configuration.
      */
     public enum Mode {
-        DEV, TEST, PROD
+
+        /**
+         * Defines the IDE development {@link Mode}
+         */
+        DEV,
+
+        /**
+         * Defines the test {@link Mode}, commonly used by JUnit.
+         */
+        TEST,
+
+        /**
+         * Defines the staging {@link Mode}
+         */
+        STAGING,
+
+        /**
+         * Defines the productive {@link Mode}
+         */
+        PROD
     }
 
     protected ClassLoader loader;
@@ -120,10 +139,10 @@ public class Setup {
      * @param loader the class loader to use
      */
     public static void createAndStartEnvironment(ClassLoader loader) {
-        Sirius.start(new Setup(getProperty("debug",
-                                           false,
-                                           "Determines if debug logs and some safety checks are enabled.").asBoolean(
-                false) ? Mode.DEV : Mode.PROD, loader));
+        Sirius.start(new Setup(getProperty("sirius_mode",
+                                           Mode.PROD,
+                                           "Determines if debug logs and some safety checks are enabled.").asEnum(Mode.class),
+                               loader));
     }
 
     /**
