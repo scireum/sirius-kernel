@@ -393,6 +393,11 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return out.toString();
+    }
+
     /**
      * Closes the underlying stream
      *

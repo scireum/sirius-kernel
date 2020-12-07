@@ -294,8 +294,20 @@ public class SOAPClient {
 
             createEnvelope(call.getOutput(), headBuilder, bodyBuilder);
 
+            String request = "";
+            if (LOG.isFINE()) {
+                request =
+                        Strings.apply("Calling %s %s\n%s", effectiveEndpoint, actionPrefix + action, call.getOutput());
+            }
+
             StructuredNode result = call.getInput().getNode(".");
             watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
+
+            if (LOG.isFINE()) {
+                LOG.FINE("---------- call ----------\n%s\n---------- response ----------\n%s---------- end ----------",
+                         request,
+                         result.toString());
+            }
 
             StructuredNode fault = result.queryNode("soapenv:Body/soapenv:Fault");
             if (fault != null) {
@@ -313,7 +325,9 @@ public class SOAPClient {
     protected void createEnvelope(XMLStructuredOutput output,
                                   Consumer<XMLStructuredOutput> headBuilder,
                                   Consumer<XMLStructuredOutput> bodyBuilder) {
-        output.beginNamespacedOutput(SOAP_NAMESPACE, TAG_SOAP_ENVELOPE, getNamespaceDefinitions().toArray(ATTRIBUTE_ARRAY));
+        output.beginNamespacedOutput(SOAP_NAMESPACE,
+                                     TAG_SOAP_ENVELOPE,
+                                     getNamespaceDefinitions().toArray(ATTRIBUTE_ARRAY));
         {
             output.beginNamespacedObject(SOAP_NAMESPACE, TAG_SOAP_HEADER);
             {
