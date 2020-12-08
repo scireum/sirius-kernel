@@ -69,6 +69,7 @@ public class Sirius {
     private static final String DEBUG_LOGGER_NAME = "debug";
     private static final String CONFIG_DEVELOP = "develop";
     private static final String CONFIG_STAGING = "staging";
+    private static final String CONFIG_PRODUCTIVE = "productive";
     private static final String CONFIG_INSTANCE = "instance";
 
     /**
@@ -302,6 +303,8 @@ public class Sirius {
                 config = setup.applyConfig(config, CONFIG_DEVELOP);
             } else if (Sirius.isStaging()) {
                 config = setup.applyConfig(config, CONFIG_STAGING);
+            } else if (Sirius.isProd()) {
+                config = setup.applyConfig(config, CONFIG_PRODUCTIVE);
             }
 
             instanceConfig = setup.applyConfig(config, CONFIG_INSTANCE);
