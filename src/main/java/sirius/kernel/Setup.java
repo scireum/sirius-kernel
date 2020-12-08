@@ -60,22 +60,22 @@ public class Setup {
     public enum Mode {
 
         /**
-         * Defines the IDE development {@link Mode}
+         * Defines the IDE development mode
          */
         DEV,
 
         /**
-         * Defines the test {@link Mode}, commonly used by JUnit.
+         * Defines the test mode, commonly used by JUnit.
          */
         TEST,
 
         /**
-         * Defines the staging {@link Mode}
+         * Defines the staging mode
          */
         STAGING,
 
         /**
-         * Defines the productive {@link Mode}
+         * Defines the productive mode
          */
         PROD
     }
@@ -379,9 +379,10 @@ public class Setup {
     }
 
     /**
-     * Applies the instance, develop or staging configuration to the given config object.
+     * Applies the corresponding configuration to the given config object.
      * <p>
-     * By default this loads and applies the given "instance.conf", "develop.conf" or "staging.conf" from the file system.
+     * By default this loads and applies the given "instance.conf", "develop.conf", "staging.conf" or "productive.cong"
+     * from the file system.
      *
      * @param config     the config to amend
      * @param configType the configType to look for
