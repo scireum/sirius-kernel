@@ -103,6 +103,15 @@ public class Sirius {
     }
 
     /**
+     * Determines if the framework is running in test mode.
+     *
+     * @return {@code true} if the framework runs in test mode, {@code false} otherwise.
+     */
+    public static boolean isTest() {
+        return setup.getMode() == Setup.Mode.TEST;
+    }
+
+    /**
      * Determines if the framework is running in staging mode.
      *
      * @return {@code true} if the framework runs in staging mode, {@code false} otherwise
