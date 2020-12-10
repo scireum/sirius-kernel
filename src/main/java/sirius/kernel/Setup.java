@@ -62,7 +62,7 @@ public class Setup {
         /**
          * Defines the IDE development mode
          */
-        DEV,
+        DEVELOP,
 
         /**
          * Defines the test mode, commonly used by JUnit.
@@ -152,7 +152,7 @@ public class Setup {
      */
     public static void main(String[] args) {
         try {
-            Sirius.start(new Setup(Mode.DEV, Setup.class.getClassLoader()));
+            Sirius.start(new Setup(Mode.DEVELOP, Setup.class.getClassLoader()));
         } catch (Exception e) {
             Sirius.LOG.SEVERE("Unknown startup error: " + e.getLocalizedMessage());
             throw e;

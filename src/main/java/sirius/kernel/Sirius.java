@@ -67,13 +67,10 @@ public class Sirius {
     protected static final Log LOG = Log.get("sirius");
 
     private static final String DEBUG_LOGGER_NAME = "debug";
-    private static final String CONFIG_DEVELOP = "develop";
-    private static final String CONFIG_STAGING = "staging";
-    private static final String CONFIG_PRODUCTIVE = "productive";
     private static final String CONFIG_INSTANCE = "instance";
 
     /**
-     * This debug logger will be logging all messages when {@link sirius.kernel.Sirius#isDev()} is true. Otherwise,
+     * This debug logger will be logging all messages when {@link Sirius#isProd()} is false. Otherwise,
      * this logger is set to "OFF".
      */
     public static final Log DEBUG = Log.get(DEBUG_LOGGER_NAME);
@@ -99,7 +96,7 @@ public class Sirius {
      * @return {@code true} if the framework runs in development mode, {@code false} otherwise.
      */
     public static boolean isDev() {
-        return setup.getMode() == Setup.Mode.DEV;
+        return setup.getMode() == Setup.Mode.DEVELOP;
     }
 
     /**
@@ -308,14 +305,7 @@ public class Sirius {
         } else {
             // instance.conf and develop.conf are not used to tests to permit uniform behaviour on local
             // machines and build servers...
-            if (Sirius.isDev()) {
-                config = setup.applyConfig(config, CONFIG_DEVELOP);
-            } else if (Sirius.isStaging()) {
-                config = setup.applyConfig(config, CONFIG_STAGING);
-            } else if (Sirius.isProd()) {
-                config = setup.applyConfig(config, CONFIG_PRODUCTIVE);
-            }
-
+            config = setup.applyConfig(config, setup.getMode().toString().toLowerCase());
             instanceConfig = setup.applyConfig(config, CONFIG_INSTANCE);
         }
 
