@@ -381,7 +381,7 @@ public class Setup {
     /**
      * Applies the corresponding configuration to the given config object.
      * <p>
-     * By default this loads and applies the given "instance.conf", "develop.conf", "staging.conf" or "productive.cong"
+     * By default this loads and applies the given "instance.conf", "develop.conf", "staging.conf" or "productive.conf"
      * from the file system.
      *
      * @param config     the config to amend
