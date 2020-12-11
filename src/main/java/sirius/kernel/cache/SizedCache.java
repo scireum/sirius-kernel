@@ -28,7 +28,7 @@ import java.util.function.Function;
  * <p>
  * Note that a {@link ManagedCache} is the preferred solution for most cases, but certain situations might
  * require a pure local cache, such as a temporary big data load where cache polution is not desired.
- * In such a case, this class will give the comfort and easy of use Map-like implementation eliminating
+ * In such cases, this class will give the comfort and ease of use of a Map-like implementation eliminating
  * the risk of an out-of-memory.
  *
  * @param <T> the type of object to be stored in the cache
@@ -45,6 +45,9 @@ public class SizedCache<T> {
      * @param defaultValueComputer the default function called to compute the value of a missing entry
      */
     public SizedCache(long maximumSize, Function<String, T> defaultValueComputer) {
+        if (maximumSize <= 0) {
+            throw new IllegalArgumentException("The cache maximum size must be higher than zero.");
+        }
         this.cache = CacheBuilder.newBuilder().maximumSize(maximumSize).build(new CacheLoader<String, T>() {
             @Override
             public T load(String key) throws Exception {
@@ -54,7 +57,7 @@ public class SizedCache<T> {
                 return defaultValueComputer.apply(key);
             }
         });
-        this.hasDefaultLoader = (defaultValueComputer != null);
+        this.hasDefaultLoader = defaultValueComputer != null;
     }
 
     /**
@@ -86,14 +89,13 @@ public class SizedCache<T> {
     }
 
     private static long obtainSizeFromConfig(String configKey) {
-        long maximumSize = Sirius.getSettings().getInt(configKey);
-        if (maximumSize == 0) {
+        if (!Sirius.getSettings().has(configKey)) {
             throw Exceptions.createHandled()
                             .withSystemErrorMessage("Cannot initialize a sized cache from configuration key '%s'.",
                                                     configKey)
                             .handle();
         }
-        return maximumSize;
+        return Sirius.getSettings().getInt(configKey);
     }
 
     /**

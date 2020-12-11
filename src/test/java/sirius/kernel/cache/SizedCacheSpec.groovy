@@ -17,6 +17,14 @@ class SizedCacheSpec extends BaseSpecification {
         return key.replace("key", "value")
     }
 
+    def "minimum cache size works"() {
+        when:
+        def cache = new SizedCache(-1)
+
+        then:
+        thrown IllegalArgumentException
+    }
+
     def "contains key works"() {
         given:
         def cache = new SizedCache(2)
