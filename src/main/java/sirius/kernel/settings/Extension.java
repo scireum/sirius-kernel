@@ -8,8 +8,6 @@
 
 package sirius.kernel.settings;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigObject;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.PriorityCollector;
@@ -21,7 +19,6 @@ import sirius.kernel.health.Log;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Represents an extension loaded via the {@link Settings} framework.
@@ -40,15 +37,23 @@ public class Extension extends Settings implements Comparable<Extension> {
     protected final String type;
     protected final String id;
     private final ConfigObject configObject;
-    private final ConfigObject defaultConfig;
 
     protected Extension(String type, String id, ConfigObject configObject, ConfigObject defaultConfig) {
-        super(configObject.toConfig(), false);
+        super(withFallback(configObject, defaultConfig).toConfig(), false);
+        this.configObject = withFallback(configObject, defaultConfig);
         this.type = type;
         this.id = id;
-        this.configObject = configObject;
-        this.defaultConfig = defaultConfig;
         this.priority = get(PRIORITY).asInt(PriorityCollector.DEFAULT_PRIORITY);
+    }
+
+    private static ConfigObject withFallback(@Nullable ConfigObject config, @Nullable ConfigObject fallback) {
+        if (config == null || config.isEmpty()) {
+            return fallback;
+        } else if (fallback == null || fallback.isEmpty()) {
+            return config;
+        } else {
+            return config.withFallback(fallback);
+        }
     }
 
     /**
@@ -64,10 +69,7 @@ public class Extension extends Settings implements Comparable<Extension> {
     @Nonnull
     public Value getRaw(String path) {
         if (configObject.containsKey(path)) {
-            return Value.of(configObject.get(path).unwrapped());
-        }
-        if (defaultConfig != null && defaultConfig.containsKey(path)) {
-            return Value.of(defaultConfig.get(path).unwrapped());
+            return Value.of(getConfig().getValue(path).unwrapped());
         }
         return Value.of(null);
     }
@@ -78,29 +80,10 @@ public class Extension extends Settings implements Comparable<Extension> {
         return getRaw(path).translate();
     }
 
-    @Nullable
-    @Override
-    public Config getConfig(String key) {
-        if (configObject.containsKey(key)) {
-            return configObject.toConfig().getConfig(key);
-        }
-
-        if (defaultConfig != null && defaultConfig.containsKey(key)) {
-            return defaultConfig.toConfig().getConfig(key);
-        }
-
-        return null;
-    }
-
     @Override
     @Nonnull
     public Context getContext() {
         Context ctx = Context.create();
-        if (defaultConfig != null) {
-            for (String key : defaultConfig.keySet()) {
-                ctx.put(key, get(key).get());
-            }
-        }
         for (String key : configObject.keySet()) {
             ctx.put(key, get(key).get());
         }
@@ -108,18 +91,6 @@ public class Extension extends Settings implements Comparable<Extension> {
         ctx.put("id", id);
 
         return ctx;
-    }
-
-    @Override
-    public long getMilliseconds(String path) {
-        try {
-            return configObject.toConfig().getDuration(path, TimeUnit.MILLISECONDS);
-        } catch (ConfigException.Missing e) {
-            Exceptions.ignore(e);
-            return defaultConfig.toConfig().getDuration(path, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            throw Exceptions.handle(LOG, e);
-        }
     }
 
     /**
