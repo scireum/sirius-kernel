@@ -60,7 +60,7 @@ public class Setup {
     public enum Mode {
 
         /**
-         * Defines the IDE development mode
+         * Defines the IDE development mode.
          */
         DEVELOP,
 
@@ -70,12 +70,12 @@ public class Setup {
         TEST,
 
         /**
-         * Defines the staging mode
+         * Defines the staging mode.
          */
         STAGING,
 
         /**
-         * Defines the productive mode
+         * Defines the productive mode.
          */
         PROD
     }
