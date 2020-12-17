@@ -11,7 +11,6 @@ package sirius.kernel.cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import sirius.kernel.Sirius;
 import sirius.kernel.health.Exceptions;
 
 import java.util.concurrent.ExecutionException;
@@ -23,8 +22,7 @@ import java.util.function.Function;
  * Items can be put in the cache by direct method or calculated from a value computer, either a default
  * one provided when initializing the class and/or a custom one when getting an item.
  * <p>
- * The maximum size of the cache is given during initialization, either with a fixed value or by providing
- * a configuration key where the value should be retrieved from.
+ * The maximum size of the cache is given during initialization.
  * <p>
  * Note that a {@link ManagedCache} is the preferred solution for most cases, but certain situations might
  * require a pure local cache, such as a temporary big data load where cache polution is not desired.
@@ -61,41 +59,12 @@ public class SizedCache<T> {
     }
 
     /**
-     * Creates a sized cache with a maximum size and default value computer.
-     *
-     * @param configKey            the name of a configuration key containing the maximum size of the cache
-     * @param defaultValueComputer the default function called to compute the value of a missing entry
-     */
-    public SizedCache(String configKey, Function<String, T> defaultValueComputer) {
-        this(obtainSizeFromConfig(configKey), defaultValueComputer);
-    }
-
-    /**
      * Creates a sized cache with a maximum size.
      *
      * @param maximumSize the maximum size of the cache
      */
     public SizedCache(long maximumSize) {
         this(maximumSize, null);
-    }
-
-    /**
-     * Creates a sized cache with a maximum size.
-     *
-     * @param configKey the name of a configuration key containing the maximum size of the cache
-     */
-    public SizedCache(String configKey) {
-        this(obtainSizeFromConfig(configKey), null);
-    }
-
-    private static long obtainSizeFromConfig(String configKey) {
-        if (!Sirius.getSettings().has(configKey)) {
-            throw Exceptions.createHandled()
-                            .withSystemErrorMessage("Cannot initialize a sized cache from configuration key '%s'.",
-                                                    configKey)
-                            .handle();
-        }
-        return Sirius.getSettings().getInt(configKey);
     }
 
     /**

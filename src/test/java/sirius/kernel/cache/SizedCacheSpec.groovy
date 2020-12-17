@@ -75,23 +75,6 @@ class SizedCacheSpec extends BaseSpecification {
         cache.containsKey("key1") == false
     }
 
-    def "init cache size from config works"() {
-        when:
-        def cache = new SizedCache("cache.invalid-cache-key")
-
-        then:
-        thrown HandledException
-
-        when:
-        cache = new SizedCache("cache.test-sized-cache", valuecomputer)
-
-        then:
-        cache.get("key1") == "value1"
-        cache.get("key2") == "value2"
-        cache.get("key3") == "value3"
-        cache.containsKey("key1") == false
-    }
-
     def "cache cleanup works"() {
         when:
         def cache = new SizedCache(2)
