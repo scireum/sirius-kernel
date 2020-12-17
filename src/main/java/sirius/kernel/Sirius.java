@@ -67,9 +67,10 @@ public class Sirius {
     protected static final Log LOG = Log.get("sirius");
 
     private static final String DEBUG_LOGGER_NAME = "debug";
+    private static final String CONFIG_INSTANCE = "instance";
 
     /**
-     * This debug logger will be logging all messages when {@link sirius.kernel.Sirius#isDev()} is true. Otherwise,
+     * This debug logger will be logging all messages when {@link Sirius#isProd()} is false. Otherwise,
      * this logger is set to "OFF".
      */
     public static final Log DEBUG = Log.get(DEBUG_LOGGER_NAME);
@@ -90,12 +91,30 @@ public class Sirius {
     }
 
     /**
-     * Determines if the framework is running in development or in production mode.
+     * Determines if the framework is running in development mode.
      *
-     * @return {@code true} is the framework runs in development mode, false otherwise.
+     * @return {@code true} if the framework runs in development mode, {@code false} otherwise.
      */
     public static boolean isDev() {
-        return setup.getMode() == Setup.Mode.DEV;
+        return setup.getMode() == Setup.Mode.DEVELOP;
+    }
+
+    /**
+     * Determines if the framework is running in test mode.
+     *
+     * @return {@code true} if the framework runs in test mode, {@code false} otherwise.
+     */
+    public static boolean isTest() {
+        return setup.getMode() == Setup.Mode.TEST;
+    }
+
+    /**
+     * Determines if the framework is running in staging mode.
+     *
+     * @return {@code true} if the framework runs in staging mode, {@code false} otherwise
+     */
+    public static boolean isStaging() {
+        return setup.getMode() == Setup.Mode.STAGING;
     }
 
     /**
@@ -108,12 +127,12 @@ public class Sirius {
     }
 
     /**
-     * Determines if the framework is running in development or in production mode.
+     * Determines if the framework is running in production mode.
      *
-     * @return {@code true} is the framework runs in production mode, false otherwise.
+     * @return {@code true} if the framework runs in production mode, {@code false} otherwise.
      */
     public static boolean isProd() {
-        return !isDev();
+        return setup.getMode() == Setup.Mode.PROD;
     }
 
     /**
@@ -134,7 +153,7 @@ public class Sirius {
      * loggers
      */
     private static void setupLogLevels() {
-        if (Sirius.isDev()) {
+        if (!Sirius.isProd()) {
             Log.setLevel(DEBUG_LOGGER_NAME, Level.FINEST);
         } else {
             Log.setLevel(DEBUG_LOGGER_NAME, Level.OFF);
@@ -286,11 +305,8 @@ public class Sirius {
         } else {
             // instance.conf and develop.conf are not used to tests to permit uniform behaviour on local
             // machines and build servers...
-            if (Sirius.isDev()) {
-                config = setup.applyDeveloperConfig(config);
-            }
-
-            instanceConfig = setup.loadInstanceConfig();
+            config = setup.applyConfig(config, setup.getMode().toString().toLowerCase());
+            instanceConfig = setup.applyConfig(config, CONFIG_INSTANCE);
         }
 
         // Setup customer customizations...

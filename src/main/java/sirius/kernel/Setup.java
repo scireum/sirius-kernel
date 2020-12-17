@@ -58,7 +58,26 @@ public class Setup {
      * Determines the mode in which the framework should run. This mainly effects logging and the configuration.
      */
     public enum Mode {
-        DEV, TEST, PROD
+
+        /**
+         * Defines the IDE development mode.
+         */
+        DEVELOP,
+
+        /**
+         * Defines the test mode, commonly used by JUnit.
+         */
+        TEST,
+
+        /**
+         * Defines the staging mode.
+         */
+        STAGING,
+
+        /**
+         * Defines the productive mode.
+         */
+        PROD
     }
 
     protected ClassLoader loader;
@@ -120,10 +139,10 @@ public class Setup {
      * @param loader the class loader to use
      */
     public static void createAndStartEnvironment(ClassLoader loader) {
-        Sirius.start(new Setup(getProperty("debug",
-                                           false,
-                                           "Determines if debug logs and some safety checks are enabled.").asBoolean(
-                false) ? Mode.DEV : Mode.PROD, loader));
+        Sirius.start(new Setup(getProperty("sirius_mode",
+                                           Mode.PROD,
+                                           "Determines if debug logs and some safety checks are enabled.").asEnum(Mode.class),
+                               loader));
     }
 
     /**
@@ -133,7 +152,7 @@ public class Setup {
      */
     public static void main(String[] args) {
         try {
-            Sirius.start(new Setup(Mode.DEV, Setup.class.getClassLoader()));
+            Sirius.start(new Setup(Mode.DEVELOP, Setup.class.getClassLoader()));
         } catch (Exception e) {
             Sirius.LOG.SEVERE("Unknown startup error: " + e.getLocalizedMessage());
             throw e;
@@ -360,45 +379,25 @@ public class Setup {
     }
 
     /**
-     * Applies the developer configuration to the given config object.
+     * Applies the corresponding configuration to the given config object.
      * <p>
-     * By default this loads and applies "develop.conf" from the file system.
+     * By default this loads and applies the given "instance.conf", "develop.conf", "staging.conf" or "productive.conf"
+     * from the file system.
      *
-     * @param config the config to enhance
-     * @return the enhanced config
+     * @param config     the config to amend
+     * @param configType the configType to look for
+     * @return the amended config
      */
     @Nonnull
-    public Config applyDeveloperConfig(@Nonnull Config config) {
-        String developConfFile = getProperty("sirius_develop_conf",
-                                             "develop.conf",
-                                             "Determines the filename of the developer config.").asString();
-        if (new File(developConfFile).exists()) {
-            return loadConfig(developConfFile, () -> ConfigFactory.parseFile(new File(developConfFile)), config);
+    public Config applyConfig(@Nonnull Config config, @Nonnull String configType) {
+        String configFile = getProperty("sirius_" + configType + "_conf",
+                                        configType + ".conf",
+                                        "Determines the filename of the develop or staging config.").asString();
+        if (new File(configFile).exists()) {
+            return loadConfig(configFile, () -> ConfigFactory.parseFile(new File(configFile)), config);
         } else {
-            Sirius.LOG.INFO("%s not present work in directory", developConfFile);
+            Sirius.LOG.INFO("%s not present work in directory", configFile);
             return config;
-        }
-    }
-
-    /**
-     * Loads the instance configuration which configures the app for the machine it is running on.
-     * <p>
-     * By default this loads "instance.conf" from the file system
-     * <p>
-     * This will later be applied to the overall system configuration and will override all other settings.
-     *
-     * @return the instance configuration or <tt>null</tt> if no config was found.
-     */
-    @Nullable
-    public Config loadInstanceConfig() {
-        String instanceConfFile = getProperty("sirius_instance_conf",
-                                              "instance.conf",
-                                              "Determines the filename of the instance config.").asString();
-        if (new File(instanceConfFile).exists()) {
-            return loadConfig(instanceConfFile, () -> ConfigFactory.parseFile(new File(instanceConfFile)), null);
-        } else {
-            Sirius.LOG.INFO("%s not present work in directory", instanceConfFile);
-            return null;
         }
     }
 
