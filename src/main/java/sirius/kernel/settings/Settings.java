@@ -217,13 +217,25 @@ public class Settings {
      * @return the duration as milliseconds
      */
     public long getMilliseconds(String path) {
+        return getDuration(path).toMillis();
+    }
+
+    /**
+     * Returns the duration defined for the given key.
+     * <p>
+     * If no config is present at the given path, or it can not be converted to a duration, {@link Duration#ZERO} is returned.
+     *
+     * @param path the access path to retrieve the value
+     * @return the duration
+     */
+    public Duration getDuration(String path) {
         try {
-            return config.getDuration(path, TimeUnit.MILLISECONDS);
+            return config.getDuration(path);
         } catch (Exception e) {
             if (strict) {
                 Exceptions.handle(e);
             }
-            return 0;
+            return Duration.ZERO;
         }
     }
 
