@@ -372,9 +372,7 @@ public class Sirius {
     private static void setupClasspath() {
         classpath = new Classpath(setup.getLoader(), "component.marker", customizations);
 
-        classpath.getComponentRoots().forEach(url -> {
-            LOG.INFO("Classpath: %s", url);
-        });
+        classpath.getComponentRoots().forEach(url -> LOG.INFO("Classpath: %s", url));
     }
 
     private static void handleConfigError(String file, Exception e) {
