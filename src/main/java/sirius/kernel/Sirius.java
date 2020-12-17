@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**
@@ -66,14 +65,7 @@ public class Sirius {
 
     protected static final Log LOG = Log.get("sirius");
 
-    private static final String DEBUG_LOGGER_NAME = "debug";
     private static final String CONFIG_INSTANCE = "instance";
-
-    /**
-     * This debug logger will be logging all messages when {@link Sirius#isProd()} is false. Otherwise,
-     * this logger is set to "OFF".
-     */
-    public static final Log DEBUG = Log.get(DEBUG_LOGGER_NAME);
 
     @PriorityParts(Startable.class)
     private static List<Startable> lifecycleStartParticipants;
@@ -153,12 +145,6 @@ public class Sirius {
      * loggers
      */
     private static void setupLogLevels() {
-        if (!Sirius.isProd()) {
-            Log.setLevel(DEBUG_LOGGER_NAME, Level.FINEST);
-        } else {
-            Log.setLevel(DEBUG_LOGGER_NAME, Level.OFF);
-        }
-
         if (config.hasPath("log")) {
             LOG.WARN("Found 'log' in the system configuration - use 'logging' to configure loggers!");
         }
