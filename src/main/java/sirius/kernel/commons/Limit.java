@@ -36,8 +36,9 @@ import java.util.function.Predicate;
  * </pre>
  */
 public class Limit {
-    private int itemsToSkip;
     private int maxItems;
+
+    private int itemsToSkip;
     private Integer itemsToOutput;
 
     /**
@@ -56,7 +57,7 @@ public class Limit {
      *                    is active.
      */
     public Limit(int itemsToSkip, Integer maxItems) {
-        this.itemsToSkip = itemsToSkip > 0 ? itemsToSkip : 0;
+        this.itemsToSkip = Math.max(itemsToSkip, 0);
         if (maxItems != null && maxItems > 0) {
             this.itemsToOutput = maxItems;
             this.maxItems = maxItems;
