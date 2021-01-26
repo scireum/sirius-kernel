@@ -127,6 +127,17 @@ public class Limit {
     }
 
     /**
+     * Returns the number of items to skip.
+     * <p>
+     * Note that once the limit is used, this value will change and "saturate" at 0.
+     *
+     * @return the number of items to skip
+     */
+    public int getItemsToSkip() {
+        return itemsToSkip;
+    }
+
+    /**
      * Returns the total number of items to be processed. This is the number of items to be skipped plus the
      * number of items to be accepted. Returns 0 to indicate that there is no upper limit.
      *
