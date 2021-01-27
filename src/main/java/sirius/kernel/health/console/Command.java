@@ -8,6 +8,7 @@
 
 package sirius.kernel.health.console;
 
+import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Named;
 
 import java.io.PrintWriter;
@@ -15,6 +16,7 @@ import java.io.PrintWriter;
 /**
  * Describes a command which is callable via the system console (http://localhost:9000/system/console).
  */
+@AutoRegister
 public interface Command extends Named {
 
     /**
