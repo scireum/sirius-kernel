@@ -14,9 +14,9 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 
 /**
- * Provides a base implementation for {@link Spliterator spliterators} which internally pull lists of data.
+ * Provides a base implementation for {@link Spliterator spliterators} which internally pulls lists of data.
  * <p>
- * This can be used if data ob unknown size is loaded "page by page" and is to be processed as a
+ * This can be used if data of unknown size is loaded "page by page" and is to be processed as a
  * {@link java.util.stream.Stream}.
  * <p>
  * Converting this into a stream is as simple as: {@code StreamSupport.stream(new MyPullBasedSpliterator(..), false)}.
@@ -52,7 +52,7 @@ public abstract class PullBasedSpliterator<T> implements Spliterator<T> {
      * Pulls the next block or page of data to process.
      *
      * @return an iterator to the next page or block of items to process. May return <tt>null</tt> or
-     * and "empty iterator" (where {@link Iterator#hasNext()} is <tt>false</tt>) to signal that the end of
+     * an "empty iterator" (where {@link Iterator#hasNext()} is <tt>false</tt>) to signal that the end of
      * the input is reached.
      */
     @Nullable
