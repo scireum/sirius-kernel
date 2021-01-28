@@ -66,7 +66,7 @@ public class Babelfish {
      * Contains a list of all loaded resource bundles. Once the framework is booted, this is passed to
      * the TimerService.addWatchedResource to reload changes from the development environment.
      */
-    private List<String> loadedResourceBundles = new ArrayList<>();
+    private final List<String> loadedResourceBundles = new ArrayList<>();
 
     private static final ResourceBundle.Control CONTROL = new NonCachingUTF8Control();
 
@@ -187,7 +187,7 @@ public class Babelfish {
         // Load core translations.
         // Files loaded later in the process will overwrite translations added by earlier files.
         // The order is as follows:
-        // 1. Load the regualar files.
+        // 1. Load the regular files.
         // 2. Load the "product"-prefix files.
         // 3. Load the customizations files.
 
