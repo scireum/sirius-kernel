@@ -90,6 +90,15 @@ public class Babelfish {
     }
 
     /**
+     * Enumerates all translations which have been autocreated (for which a proper translation value was missing).
+     *
+     * @return a list of all translations which miss an actual value
+     */
+    public Stream<Translation> getAutocreatedTranslations() {
+        return translationMap.values().stream().filter(e -> e.isAutocreated());
+    }
+
+    /**
      * Retrieves the <tt>Translation</tt> for the given property.
      * <p>
      * If no matching entry is found, the given <tt>fallback</tt> is used. If still no match was found, either
