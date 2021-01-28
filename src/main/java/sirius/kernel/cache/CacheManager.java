@@ -43,8 +43,11 @@ public class CacheManager {
     /**
      * Lists all known caches.
      */
-    private static Map<String, ManagedCache<?, ?>> caches = new ConcurrentHashMap<>();
+    protected static final Map<String, ManagedCache<?, ?>> caches = new ConcurrentHashMap<>();
 
+    /**
+     * Defines the default TTL used for inline caches.
+     */
     private static final Duration INLINE_CACHE_DEFAULT_TTL = Duration.ofSeconds(10);
 
     @Part
@@ -62,7 +65,7 @@ public class CacheManager {
      *
      * @return a sorted list of all caches created so far
      */
-    public static List<ManagedCache<?, ?>> getCaches() {
+    public static List<Cache<?, ?>> getCaches() {
         return caches.values().stream().sorted(Comparator.comparing(Cache::getName)).collect(Collectors.toList());
     }
 
