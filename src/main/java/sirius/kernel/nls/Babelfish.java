@@ -66,7 +66,7 @@ public class Babelfish {
      * Contains a list of all loaded resource bundles. Once the framework is booted, this is passed to
      * the TimerService.addWatchedResource to reload changes from the development environment.
      */
-    private List<String> loadedResourceBundles = new ArrayList<>();
+    private final List<String> loadedResourceBundles = new ArrayList<>();
 
     private static final ResourceBundle.Control CONTROL = new NonCachingUTF8Control();
 
@@ -78,6 +78,24 @@ public class Babelfish {
      */
     public Stream<Translation> getEntriesStartingWith(@Nonnull String key) {
         return translationMap.values().stream().filter(e -> e.getKey().startsWith(key));
+    }
+
+    /**
+     * Enumerates all translations which have not been accessed yet.
+     *
+     * @return a list of all unused translations.
+     */
+    public Stream<Translation> getUnusedTranslations() {
+        return translationMap.values().stream().filter(e -> !e.isUsed());
+    }
+
+    /**
+     * Enumerates all translations which have been autocreated (for which a proper translation value was missing).
+     *
+     * @return a list of all translations which miss an actual value
+     */
+    public Stream<Translation> getAutocreatedTranslations() {
+        return translationMap.values().stream().filter(e -> e.isAutocreated());
     }
 
     /**
@@ -169,7 +187,7 @@ public class Babelfish {
         // Load core translations.
         // Files loaded later in the process will overwrite translations added by earlier files.
         // The order is as follows:
-        // 1. Load the regualar files.
+        // 1. Load the regular files.
         // 2. Load the "product"-prefix files.
         // 3. Load the customizations files.
 

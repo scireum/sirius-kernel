@@ -32,8 +32,10 @@ import java.util.List;
 @Register
 public class SystemMetricProvider implements MetricProvider {
 
-    private List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
-    private List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+    private final List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
+    private final List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+    private volatile long lastGCMeasurement = 0;
+    private volatile long lastGCTime = 0;
 
     @Part
     private MemoryBasedHealthMonitor monitor;
@@ -95,13 +97,32 @@ public class SystemMetricProvider implements MetricProvider {
     }
 
     private void gatherGCMetrics(MetricsCollector collector) {
+        long collectionTimeMillis = 0;
+        long collectionRuns = 0;
         for (GarbageCollectorMXBean gc : gcs) {
-            collector.differentialMetric("jvm_gc_" + gc.getName().toLowerCase(),
-                                         "jvm-gc",
-                                         "GC - " + gc.getName(),
-                                         gc.getCollectionCount(),
-                                         "/min");
+            collectionTimeMillis += gc.getCollectionTime();
+            collectionRuns += gc.getCollectionCount();
         }
+
+        collector.differentialMetric("jvm_gc_runs",
+                                     "jvm-gc-runs",
+                                     "GCs ",
+                                     collectionRuns,
+                                     "/min");
+
+        if (lastGCMeasurement > 0) {
+            long wallClockTimeMillis = System.currentTimeMillis() - lastGCMeasurement;
+            long gcUtilization = 100 * (collectionTimeMillis - lastGCTime) / wallClockTimeMillis;
+
+            collector.differentialMetric("jvm_gc_utilization",
+                                         "jvm-gc-utilization",
+                                         "GC Utilization",
+                                         gcUtilization,
+                                         "%");
+        }
+
+        lastGCTime = collectionTimeMillis;
+        lastGCMeasurement = System.currentTimeMillis();
     }
 
     private void gatherMemoryMetrics(MetricsCollector collector) {

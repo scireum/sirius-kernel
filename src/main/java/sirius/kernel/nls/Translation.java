@@ -20,8 +20,9 @@ import java.util.TreeMap;
  */
 public class Translation {
     private boolean autocreated;
-    private String key;
-    private Map<String, String> translationTable = new TreeMap<>();
+    private boolean used;
+    private final String key;
+    private final Map<String, String> translationTable = new TreeMap<>();
 
     /**
      * Creates a new translation, containing all native language values for the given key.
@@ -39,6 +40,15 @@ public class Translation {
      */
     public boolean isAutocreated() {
         return autocreated;
+    }
+
+    /**
+     * Determines if this translation has been used at least once.
+     *
+     * @return <tt>true</tt> if the translation was used, <tt>false</tt> otherwise
+     */
+    public boolean isUsed() {
+        return used;
     }
 
     /**
@@ -78,6 +88,7 @@ public class Translation {
      * @return a translation in the requested language or the key if no translation was found
      */
     public String translate(@Nonnull String lang, @Nullable String fallback) {
+        this.used = true;
         String result = translationTable.get(lang);
         if (result == null && fallback != null) {
             result = translationTable.get(fallback);
@@ -95,6 +106,7 @@ public class Translation {
      * @return a translation in the requested language or <tt>null</tt> if no translation was found
      */
     public String translateWithoutFallback(String lang) {
+        this.used = true;
         return translationTable.get(lang);
     }
 
@@ -105,6 +117,7 @@ public class Translation {
      * @return <tt>true</tt> if a translation for the given language exists, <tt>false</tt> otherwise
      */
     public boolean hasTranslation(String lang) {
+        this.used = true;
         return translationTable.containsKey(lang);
     }
 }
