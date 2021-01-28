@@ -81,6 +81,15 @@ public class Babelfish {
     }
 
     /**
+     * Enumerates all translations which have not been accessed yet.
+     *
+     * @return a list of all unused translations.
+     */
+    public Stream<Translation> getUnusedTranslations() {
+        return translationMap.values().stream().filter(e -> !e.isUsed());
+    }
+
+    /**
      * Retrieves the <tt>Translation</tt> for the given property.
      * <p>
      * If no matching entry is found, the given <tt>fallback</tt> is used. If still no match was found, either
