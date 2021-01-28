@@ -24,7 +24,7 @@ import java.util.List;
  * {@link sirius.kernel.health.metrics.SystemMetricProvider}. This monitor however can be used trying to identify
  * if lags in the application can be correlated with longer GC pauses.
  * <p>
- * To enable this monitor, the <b>gc</b> logger must be set to <tt>FINE</tt>. The threshold which which pauses to log
+ * To enable this monitor, the <b>gc</b> logger must be set to <tt>FINE</tt>. The threshold which pauses to log
  * can be set in the system config via <tt>health.gcPauseLoggingThreshold</tt>.
  */
 @Register
