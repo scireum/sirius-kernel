@@ -24,7 +24,7 @@ public interface NodeHandler {
     void process(StructuredNode node);
 
     /**
-     * Determines if the content of an node shall be handled. It can be used for root nodes of large files. There we do
+     * Determines if the content of a node shall be handled. It can be used for root nodes of large files. There we do
      * not want to access the root node with all child nodes loaded into one node which would have a negative
      * performance impact.
      * <p>
