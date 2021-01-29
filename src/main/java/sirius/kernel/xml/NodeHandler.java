@@ -31,6 +31,7 @@ public interface NodeHandler {
      * When set to true, this handler will receive: "&lt;root someAttribute="abc"&gt;" without the child content from:
      * <pre>
      * &lt;root someAttribute="abc"&gt;
+     *      someTextValue
      *      &lt;child>1&lt;/child&gt;
      *      ...
      *      &lt;child>10000000000&lt;/child&gt;
