@@ -13,7 +13,9 @@ import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
@@ -52,8 +54,9 @@ import java.util.regex.Pattern;
  */
 public class Outcall {
 
-    private static final int DEFAULT_CONNECT_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
+    private static final int DEFAULT_CONNECT_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
     private static final int DEFAULT_READ_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
+
     private static final String REQUEST_METHOD_POST = "POST";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
