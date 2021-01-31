@@ -81,6 +81,8 @@ public class Outcall {
     private final HttpURLConnection connection;
     private Charset charset = StandardCharsets.UTF_8;
 
+    private static final Average timeToFirstByte = new Average();
+
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
      *
@@ -173,6 +175,7 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public InputStream getInput() throws IOException {
+        Watch watch = Watch.start();
         try {
             return connection.getInputStream();
         } catch (SocketTimeoutException e) {
@@ -188,6 +191,14 @@ public class Outcall {
             }
 
             throw e;
+        } finally {
+            timeToFirstByte.addValue(watch.elapsedMillis());
+            if (Microtiming.isEnabled()) {
+                watch.submitMicroTiming("OUTCALL", connection.getURL().getHost() + connection.getURL().getPath());
+            }
+        }
+    }
+
     private void addToTimeoutBlacklist() {
         if (conntectTimeoutBlacklistDuration.isZero()) {
             return;

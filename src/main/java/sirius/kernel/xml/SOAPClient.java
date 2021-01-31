@@ -11,6 +11,7 @@ package sirius.kernel.xml;
 import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
+import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
@@ -104,6 +105,8 @@ public class SOAPClient {
             (input, ignored) -> input.queryNode(SOAP_NAMESPACE + ":" + TAG_SOAP_BODY);
     private boolean trustSelfSignedCertificates;
 
+    private static final Average responseTime = new Average();
+
     /**
      * Creates a new client which talks to the given endpoint.
      * <p>
@@ -115,6 +118,15 @@ public class SOAPClient {
     public SOAPClient(@Nonnull URL endpoint) {
         this.endpoint = endpoint;
         this.withNamespace(SOAP_NAMESPACE, SOAP_NAMESPACE_URI);
+    }
+
+    /**
+     * Returns the average response time across all SOAP calls.
+     *
+     * @return the average response time across all calls
+     */
+    public static Average getResponseTime() {
+        return responseTime;
     }
 
     /**
