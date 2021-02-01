@@ -62,6 +62,10 @@ class SAX2DOMHandler {
             document.appendChild(element);
         }
         currentNode = element;
+
+        if (nodeHandler.ignoreContent()) {
+            nodeHandler.process(StructuredNode.of(currentNode));
+        }
     }
 
     public Node getRoot() {
