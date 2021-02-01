@@ -66,7 +66,7 @@ public class Outcall {
     /**
      * Keeps track of hosts for which we ran into a connect timeout.
      * <p>
-     * These hosts are blacklisted for a short amout of time ({@link #conntectTimeoutBlacklistDuration}) to prevent
+     * These hosts are blacklisted for a short amout of time ({@link #connectTimeoutBlacklistDuration}) to prevent
      * cascading failures.
      */
     private static final Map<String, Long> timeoutBlacklist = new ConcurrentHashMap<>();
@@ -78,8 +78,8 @@ public class Outcall {
      */
     private static final int TIMEOUT_BLACKLIST_HIGHT_WATERMARK = 100;
 
-    @ConfigValue("http.outcall.conntectTimeoutBlacklistDuration")
-    private static Duration conntectTimeoutBlacklistDuration;
+    @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
+    private static Duration connectTimeoutBlacklistDuration;
 
     private final HttpURLConnection connection;
     private Charset charset = StandardCharsets.UTF_8;
@@ -103,7 +103,7 @@ public class Outcall {
     }
 
     private void checkTimeoutBlacklist(URL url) throws IOException {
-        if (conntectTimeoutBlacklistDuration.isZero()) {
+        if (connectTimeoutBlacklistDuration.isZero()) {
             return;
         }
 
@@ -203,12 +203,12 @@ public class Outcall {
     }
 
     private void addToTimeoutBlacklist() {
-        if (conntectTimeoutBlacklistDuration.isZero()) {
+        if (connectTimeoutBlacklistDuration.isZero()) {
             return;
         }
 
         long now = System.currentTimeMillis();
-        timeoutBlacklist.put(connection.getURL().getHost(), now + conntectTimeoutBlacklistDuration.toMillis());
+        timeoutBlacklist.put(connection.getURL().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
         if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGHT_WATERMARK) {
             // We collected bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
             timeoutBlacklist.forEach((host, timeout) -> {
