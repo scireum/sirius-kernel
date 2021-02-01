@@ -49,7 +49,7 @@ public class SystemMetricProvider implements MetricProvider {
     public void gather(MetricsCollector collector) {
         gatherMemoryMetrics(collector);
         gatherGCMetrics(collector);
-        gartherFrameworkMetrics(collector);
+        gatherFrameworkMetrics(collector);
         gatherBlockingLoops(collector);
         gatherOutcallMetrics(collector);
     }
@@ -113,7 +113,7 @@ public class SystemMetricProvider implements MetricProvider {
         lastGCMeasurement = System.currentTimeMillis();
     }
 
-    private void gartherFrameworkMetrics(MetricsCollector collector) {
+    private void gatherFrameworkMetrics(MetricsCollector collector) {
         collector.differentialMetric("kernel_interactions",
                                      "sys-interactions",
                                      "Interactions",
