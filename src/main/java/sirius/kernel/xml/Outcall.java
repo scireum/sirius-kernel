@@ -72,8 +72,8 @@ public class Outcall {
     private static final Map<String, Long> timeoutBlacklist = new ConcurrentHashMap<>();
 
     /**
-     * If the {@link #timeoutBlacklist} contains more than the given number of entries, we remove all expired once
-     * manually. These might be hosts which are only connected spuriously and had a hickup. Everything else will be
+     * If the {@link #timeoutBlacklist} contains more than the given number of entries, we remove all expired ones
+     * manually. These might be hosts which are only connected sporadiccaly and had a hickup. Everything else will be
      * kept clean in {@link #checkTimeoutBlacklist(URL)}.
      */
     private static final int TIMEOUT_BLACKLIST_HIGHT_WATERMARK = 100;
