@@ -8,8 +8,6 @@
 
 package sirius.kernel.xml;
 
-import javax.xml.xpath.XPathExpressionException;
-
 /**
  * Represents structured data like XML or JSON which was read from a web service or other source.
  */

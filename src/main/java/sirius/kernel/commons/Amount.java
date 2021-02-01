@@ -14,6 +14,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -38,7 +39,9 @@ import java.util.function.Supplier;
  * @see BigDecimal
  */
 @Immutable
-public class Amount implements Comparable<Amount> {
+public class Amount implements Comparable<Amount>, Serializable {
+
+    private static final long serialVersionUID = 2187873067365153302L;
 
     /**
      * Represents an missing number. This is also the result of division by 0 and other forbidden operations.

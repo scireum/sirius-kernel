@@ -11,7 +11,11 @@ package sirius.kernel.xml;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Watch;
+import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
@@ -26,6 +30,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -33,10 +38,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,33 +54,37 @@ import java.util.regex.Pattern;
  */
 public class Outcall {
 
-    private static final int DEFAULT_CONNECT_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
+    private static final int DEFAULT_CONNECT_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
     private static final int DEFAULT_READ_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
+
     private static final String REQUEST_METHOD_POST = "POST";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
-    private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new X509TrustManager() {
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-            throw new CertificateException("This trust manager cannot be used in a server");
-        }
+    private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
 
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-            if (chain.length != 1) {
-                throw new CertificateException("The certificate is not self-signed");
-            }
-        }
+    /**
+     * Keeps track of hosts for which we ran into a connect timeout.
+     * <p>
+     * These hosts are blacklisted for a short amout of time ({@link #connectTimeoutBlacklistDuration}) to prevent
+     * cascading failures.
+     */
+    private static final Map<String, Long> timeoutBlacklist = new ConcurrentHashMap<>();
 
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-        }
-    };
+    /**
+     * If the {@link #timeoutBlacklist} contains more than the given number of entries, we remove all expired ones
+     * manually. These might be hosts which are only connected sporadiccaly and had a hickup. Everything else will be
+     * kept clean in {@link #checkTimeoutBlacklist(URL)}.
+     */
+    private static final int TIMEOUT_BLACKLIST_HIGHT_WATERMARK = 100;
+
+    @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
+    private static Duration connectTimeoutBlacklistDuration;
 
     private final HttpURLConnection connection;
     private Charset charset = StandardCharsets.UTF_8;
+
+    private static final Average timeToFirstByte = new Average();
 
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
@@ -84,11 +93,38 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public Outcall(URL url) throws IOException {
+        checkTimeoutBlacklist(url);
+
         connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
         connection.setDoOutput(true);
         connection.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
         connection.setReadTimeout(DEFAULT_READ_TIMEOUT);
+    }
+
+    private void checkTimeoutBlacklist(URL url) throws IOException {
+        if (connectTimeoutBlacklistDuration.isZero()) {
+            return;
+        }
+
+        Long timeout = timeoutBlacklist.get(url.getHost());
+        if (timeout != null) {
+            if (timeout > System.currentTimeMillis()) {
+                throw new IOException(Strings.apply(
+                        "Connecting to host %s is currently rejected due to connectivity issues.",
+                        url.getHost()));
+            } else {
+                timeoutBlacklist.remove(url.getHost());
+            }
+        }
+    }
+
+    /**
+     * Returns the average time to first byte across all outcalls.
+     * @return the average TTFB across all outcalls
+     */
+    public static Average getTimeToFirstByte() {
+        return timeToFirstByte;
     }
 
     /**
@@ -142,8 +178,12 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public InputStream getInput() throws IOException {
+        Watch watch = Watch.start();
         try {
             return connection.getInputStream();
+        } catch (SocketTimeoutException e) {
+            addToTimeoutBlacklist();
+            throw e;
         } catch (IOException e) {
             int statusCode = connection.getResponseCode();
             if (statusCode != 200) {
@@ -154,6 +194,28 @@ public class Outcall {
             }
 
             throw e;
+        } finally {
+            timeToFirstByte.addValue(watch.elapsedMillis());
+            if (Microtiming.isEnabled()) {
+                watch.submitMicroTiming("OUTCALL", connection.getURL().getHost() + connection.getURL().getPath());
+            }
+        }
+    }
+
+    private void addToTimeoutBlacklist() {
+        if (connectTimeoutBlacklistDuration.isZero()) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        timeoutBlacklist.put(connection.getURL().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
+        if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGHT_WATERMARK) {
+            // We collected bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
+            timeoutBlacklist.forEach((host, timeout) -> {
+                if (timeout < now) {
+                    timeoutBlacklist.remove(host);
+                }
+            });
         }
     }
 
@@ -164,7 +226,12 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public OutputStream getOutput() throws IOException {
-        return connection.getOutputStream();
+        try {
+            return connection.getOutputStream();
+        } catch (SocketTimeoutException e) {
+            addToTimeoutBlacklist();
+            throw e;
+        }
     }
 
     /**
