@@ -66,7 +66,7 @@ public class Outcall {
     /**
      * Keeps track of hosts for which we ran into a connect timeout.
      * <p>
-     * These hosts are blacklistet for a short amout of time ({@link #conntectTimeoutBlacklistDuration}) to prevent
+     * These hosts are blacklisted for a short amout of time ({@link #conntectTimeoutBlacklistDuration}) to prevent
      * cascading failures.
      */
     private static final Map<String, Long> timeoutBlacklist = new ConcurrentHashMap<>();
