@@ -50,7 +50,7 @@ public class PullBasedSpliteratorTest {
 
     @Test
     public void streamWorksProperly() {
-        Assert.assertEquals(StreamSupport.stream(new TestSpliterator(), false).count(), 10);
+        Assert.assertEquals(10, StreamSupport.stream( new TestSpliterator(), false).count());
         Assert.assertEquals(StreamSupport.stream(new TestSpliterator(), false).collect(Collectors.toList()),
                             Stream.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).collect(Collectors.toList()));
     }
