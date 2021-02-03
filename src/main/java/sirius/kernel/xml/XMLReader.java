@@ -117,7 +117,9 @@ public class XMLReader extends DefaultHandler {
         if (handler != null) {
             SAX2DOMHandler saxHandler = new SAX2DOMHandler(handler, documentBuilder.newDocument());
             saxHandler.createElement(name, attributes);
-            activeHandlers.add(saxHandler);
+            if (!handler.ignoreContent()) {
+                activeHandlers.add(saxHandler);
+            }
         }
 
         // Check if the user tried to interrupt parsing....
