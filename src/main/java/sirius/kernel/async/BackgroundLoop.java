@@ -56,9 +56,9 @@ public abstract class BackgroundLoop {
 
     private Future loopExecuted = new Future();
     private volatile boolean enabled = true;
-    private long lastExecutionAttempt;
+    private volatile long lastExecutionAttempt;
     private String executionInfo = "-";
-    private boolean executing = false;
+    private volatile boolean executing = false;
 
     /**
      * Returns the name of the loop.
