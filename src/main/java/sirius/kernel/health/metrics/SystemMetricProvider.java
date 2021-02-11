@@ -161,22 +161,22 @@ public class SystemMetricProvider implements MetricProvider {
     }
 
     private void gatherOutcallMetrics(MetricsCollector collector) {
-        collector.differentialMetric("outcall_count",
-                                     "sys-outcall-count",
-                                     "Outcall: Number of requests",
-                                     Outcall.getTimeToFirstByte().getCount(),
-                                     "/min");
+        collector.metric("outcall_count",
+                         "sys-outcall-count",
+                         "Outcall: Number of requests",
+                         Outcall.getTimeToFirstByte().getCount(),
+                         "/min");
         collector.metric("outcall_avg_ttfb",
                          "sys-outcall-avg-ttfb",
                          "Outcall: Avg. time to first byte",
                          Outcall.getTimeToFirstByte().getAndClear(),
                          "ms");
 
-        collector.differentialMetric("soap_call_count",
-                                     "sys-soapcall-count",
-                                     "SOAP: Number of calls",
-                                     SOAPClient.getResponseTime().getCount(),
-                                     "/min");
+        collector.metric("soap_call_count",
+                         "sys-soapcall-count",
+                         "SOAP: Number of calls",
+                         SOAPClient.getResponseTime().getCount(),
+                         "/min");
         collector.metric("soap_avg_response_time",
                          "sys-soap-avg-response-time",
                          "SOAP: Avg. response time",
