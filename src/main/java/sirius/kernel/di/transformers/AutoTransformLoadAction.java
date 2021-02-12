@@ -34,25 +34,25 @@ public class AutoTransformLoadAction implements ClassLoadAction {
 
     protected static class AutoTransformer<S, T> implements Transformer<S, T> {
 
-        private int priority;
-        private Class<S> sourceType;
-        private Class<T> targetType;
-        private Class<?>[] additionalTargetTypes;
-        private Class<?> transformerClass;
+        private final int priority;
+        private final Class<S> sourceType;
+        private final Class<T> targetType;
+        private final Class<?>[] additionalTargetTypes;
+        private final Class<?> transformerClass;
 
         @Part
         private static GlobalContext globalContext;
 
-        @SuppressWarnings("unchecked")
-        AutoTransformer(Class<?> transformerClass,
-                        AutoTransform autoTransform,
+        public AutoTransformer(Class<?> transformerClass,
+                        Class<S> sourceType,
                         Class<T> targetType,
-                        Class<?>[] additionalTargetTypes) {
-            this.sourceType = (Class<S>) autoTransform.source();
+                        Class<?>[] additionalTargetTypes,
+                        int priority) {
+            this.sourceType = sourceType;
             this.targetType = targetType;
             this.additionalTargetTypes = additionalTargetTypes;
             this.transformerClass = transformerClass;
-            this.priority = autoTransform.priority();
+            this.priority = priority;
 
             try {
                 findConstructor();
@@ -160,20 +160,25 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         }
 
         AutoTransform autoTransform = clazz.getAnnotation(AutoTransform.class);
-        Class<?>[] allTargets = mergeAllTargets(autoTransform);
+        Class<?>[] allTargets = mergeAllTargets(autoTransform.target(), autoTransform.targets());
         for (Class<?> target : allTargets) {
-            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target, allTargets), Transformer.class);
+            ctx.registerPart(new AutoTransformer<>(clazz,
+                                                   autoTransform.source(),
+                                                   target,
+                                                   allTargets,
+                                                   autoTransform.priority()), Transformer.class);
         }
     }
 
-    private Class<?>[] mergeAllTargets(AutoTransform autoTransform) {
-        Class<?> target = autoTransform.target();
-        if (!target.equals(Object.class)) {
-            Class<?>[] targets = autoTransform.targets();
-            Class<?>[] mergedTargets = Arrays.copyOf(targets, targets.length + 1);
-            mergedTargets[targets.length] = target;
-            return mergedTargets;
+    protected Class<?>[] mergeAllTargets(Class<?> target, Class<?>[] targets) {
+        if (targets.length == 0) {
+            return new Class<?>[]{target};
         }
-        return autoTransform.targets();
+        if (target.equals(Object.class)) {
+            return targets;
+        }
+        Class<?>[] mergedTargets = Arrays.copyOf(targets, targets.length + 1);
+        mergedTargets[targets.length] = target;
+        return mergedTargets;
     }
 }
