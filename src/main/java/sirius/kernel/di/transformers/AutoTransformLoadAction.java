@@ -44,10 +44,10 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         private static GlobalContext globalContext;
 
         public AutoTransformer(Class<?> transformerClass,
-                        Class<S> sourceType,
-                        Class<T> targetType,
-                        Class<?>[] additionalTargetTypes,
-                        int priority) {
+                               Class<S> sourceType,
+                               Class<T> targetType,
+                               Class<?>[] additionalTargetTypes,
+                               int priority) {
             this.sourceType = sourceType;
             this.targetType = targetType;
             this.additionalTargetTypes = additionalTargetTypes;
@@ -153,7 +153,7 @@ public class AutoTransformLoadAction implements ClassLoadAction {
     }
 
     @Override
-    public void handle(@Nonnull MutableGlobalContext ctx, @Nonnull Class<?> clazz) throws Exception {
+    public void handle(@Nonnull MutableGlobalContext mutableContext, @Nonnull Class<?> clazz) throws Exception {
         if (clazz.isAnnotationPresent(Framework.class)
             && !Sirius.isFrameworkEnabled(clazz.getAnnotation(Framework.class).value())) {
             return;
@@ -162,11 +162,11 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         AutoTransform autoTransform = clazz.getAnnotation(AutoTransform.class);
         Class<?>[] allTargets = mergeAllTargets(autoTransform.target(), autoTransform.targets());
         for (Class<?> target : allTargets) {
-            ctx.registerPart(new AutoTransformer<>(clazz,
-                                                   autoTransform.source(),
-                                                   target,
-                                                   allTargets,
-                                                   autoTransform.priority()), Transformer.class);
+            mutableContext.registerPart(new AutoTransformer<>(clazz,
+                                                              autoTransform.source(),
+                                                              target,
+                                                              allTargets,
+                                                              autoTransform.priority()), Transformer.class);
         }
     }
 
