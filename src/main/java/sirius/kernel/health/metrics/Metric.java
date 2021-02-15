@@ -113,7 +113,7 @@ public class Metric implements Comparable<Metric> {
         if (o.state != state) {
             return o.state.ordinal() - state.ordinal();
         }
-        if (Strings.areEqual(label, o.label)) {
+        if (!Strings.areEqual(label, o.label)) {
             return label.compareTo(o.label);
         }
         return code.compareTo(o.code);
