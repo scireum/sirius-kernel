@@ -23,11 +23,11 @@ import java.util.Objects;
  */
 public class Metric implements Comparable<Metric> {
 
-    private String code;
+    private final String code;
     private final String unit;
-    private String label;
-    private double value;
-    private MetricState state;
+    private final String label;
+    private final double value;
+    private final MetricState state;
 
     /**
      * Creates a new metric using the given values
@@ -48,6 +48,7 @@ public class Metric implements Comparable<Metric> {
 
     /**
      * Returns the unique code of the metric.
+     *
      * @return the ocde of this metric.
      */
     public String getCode() {
