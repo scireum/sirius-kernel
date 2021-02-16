@@ -170,11 +170,17 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         }
     }
 
+    /**
+     * Merge the @AutoTransform `target` with the `targets`, so both can be used.
+     *
+     * See also {@link AutoTransform#target()} and {@link AutoTransform#targets()}.
+     * @param target the target class, or {@link Object Object.class} if none
+     * @param targets the list of target classes, potentially empty
+     * @return an array, containing both the targets and the target
+     */
     protected Class<?>[] mergeAllTargets(Class<?> target, Class<?>[] targets) {
-        if (targets.length == 0) {
-            return new Class<?>[]{target};
-        }
         if (target.equals(Object.class)) {
+            // target defaults to object, and it does not make sense to transform to object in the first place
             return targets;
         }
         Class<?>[] mergedTargets = Arrays.copyOf(targets, targets.length + 1);
