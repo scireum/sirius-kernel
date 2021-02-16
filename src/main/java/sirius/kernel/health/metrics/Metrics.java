@@ -47,12 +47,12 @@ public class Metrics implements EveryMinute {
     /**
      * Contains all limits as defined in the system config
      */
-    private Map<String, Limit> limits = new HashMap<>();
+    private final Map<String, Limit> limits = new HashMap<>();
 
     /**
      * Contains the last value of each metric in order to compute differential metrics
      */
-    private Map<String, Double> differentials = new HashMap<>();
+    private final Map<String, Double> differentials = new HashMap<>();
 
     @Part
     private Tasks tasks;
@@ -81,7 +81,7 @@ public class Metrics implements EveryMinute {
      */
     private class MetricCollectorAdapter implements MetricsCollector {
 
-        private DataCollector<Metric> collector;
+        private final DataCollector<Metric> collector;
 
         private MetricCollectorAdapter(DataCollector<Metric> collector) {
             this.collector = collector;
