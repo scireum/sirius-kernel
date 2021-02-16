@@ -34,25 +34,25 @@ public class AutoTransformLoadAction implements ClassLoadAction {
 
     protected static class AutoTransformer<S, T> implements Transformer<S, T> {
 
-        private int priority;
-        private Class<S> sourceType;
-        private Class<T> targetType;
-        private Class<?>[] additionalTargetTypes;
-        private Class<?> transformerClass;
+        private final int priority;
+        private final Class<S> sourceType;
+        private final Class<T> targetType;
+        private final Class<?>[] additionalTargetTypes;
+        private final Class<?> transformerClass;
 
         @Part
         private static GlobalContext globalContext;
 
-        @SuppressWarnings("unchecked")
-        AutoTransformer(Class<?> transformerClass,
-                        AutoTransform autoTransform,
-                        Class<T> targetType,
-                        Class<?>[] additionalTargetTypes) {
-            this.sourceType = (Class<S>) autoTransform.source();
+        public AutoTransformer(Class<?> transformerClass,
+                               Class<S> sourceType,
+                               Class<T> targetType,
+                               Class<?>[] additionalTargetTypes,
+                               int priority) {
+            this.sourceType = sourceType;
             this.targetType = targetType;
             this.additionalTargetTypes = additionalTargetTypes;
             this.transformerClass = transformerClass;
-            this.priority = autoTransform.priority();
+            this.priority = priority;
 
             try {
                 findConstructor();
@@ -153,27 +153,38 @@ public class AutoTransformLoadAction implements ClassLoadAction {
     }
 
     @Override
-    public void handle(@Nonnull MutableGlobalContext ctx, @Nonnull Class<?> clazz) throws Exception {
+    public void handle(@Nonnull MutableGlobalContext mutableContext, @Nonnull Class<?> clazz) throws Exception {
         if (clazz.isAnnotationPresent(Framework.class)
             && !Sirius.isFrameworkEnabled(clazz.getAnnotation(Framework.class).value())) {
             return;
         }
 
         AutoTransform autoTransform = clazz.getAnnotation(AutoTransform.class);
-        Class<?>[] allTargets = mergeAllTargets(autoTransform);
+        Class<?>[] allTargets = mergeAllTargets(autoTransform.target(), autoTransform.targets());
         for (Class<?> target : allTargets) {
-            ctx.registerPart(new AutoTransformer<>(clazz, autoTransform, target, allTargets), Transformer.class);
+            mutableContext.registerPart(new AutoTransformer<>(clazz,
+                                                              autoTransform.source(),
+                                                              target,
+                                                              allTargets,
+                                                              autoTransform.priority()), Transformer.class);
         }
     }
 
-    private Class<?>[] mergeAllTargets(AutoTransform autoTransform) {
-        Class<?> target = autoTransform.target();
-        if (!target.equals(Object.class)) {
-            Class<?>[] targets = autoTransform.targets();
-            Class<?>[] mergedTargets = Arrays.copyOf(targets, targets.length + 1);
-            mergedTargets[targets.length] = target;
-            return mergedTargets;
+    /**
+     * Merge the @AutoTransform `target` with the `targets`, so both can be used.
+     *
+     * See also {@link AutoTransform#target()} and {@link AutoTransform#targets()}.
+     * @param target the target class, or {@link Object Object.class} if none
+     * @param targets the list of target classes, potentially empty
+     * @return an array, containing both the targets and the target
+     */
+    protected Class<?>[] mergeAllTargets(Class<?> target, Class<?>[] targets) {
+        if (target.equals(Object.class)) {
+            // target defaults to object, and it does not make sense to transform to object in the first place
+            return targets;
         }
-        return autoTransform.targets();
+        Class<?>[] mergedTargets = Arrays.copyOf(targets, targets.length + 1);
+        mergedTargets[targets.length] = target;
+        return mergedTargets;
     }
 }
