@@ -49,7 +49,7 @@ public class Metric implements Comparable<Metric> {
     /**
      * Returns the unique code of the metric.
      *
-     * @return the ocde of this metric.
+     * @return the cde of this metric.
      */
     public String getCode() {
         return code;
@@ -103,32 +103,32 @@ public class Metric implements Comparable<Metric> {
     @Override
     @SuppressWarnings("squid:S1698")
     @Explain("Indentity against this is safe and a shortcut to speed up comparisons")
-    public int compareTo(Metric o) {
-        if (o == null) {
+    public int compareTo(Metric other) {
+        if (other == null) {
             return -1;
         }
-        if (o == this) {
+        if (other == this) {
             return 0;
         }
-        if (o.state != state) {
-            return o.state.ordinal() - state.ordinal();
+        if (other.state != state) {
+            return other.state.ordinal() - state.ordinal();
         }
-        if (!Strings.areEqual(label, o.label)) {
-            return label.compareTo(o.label);
+        if (!Strings.areEqual(label, other.label)) {
+            return label.compareTo(other.label);
         }
-        return code.compareTo(o.code);
+        return code.compareTo(other.code);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
         }
-        if (!(o instanceof Metric)) {
+        if (!(other instanceof Metric)) {
             return false;
         }
-        Metric metric = (Metric) o;
-        return Objects.equals(code, metric.code) && state == metric.state;
+        Metric otherMetric = (Metric) other;
+        return Objects.equals(code, otherMetric.code) && state == otherMetric.state;
     }
 
     @Override
