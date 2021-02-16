@@ -49,7 +49,7 @@ public class Metric implements Comparable<Metric> {
     /**
      * Returns the unique code of the metric.
      *
-     * @return the cde of this metric.
+     * @return the code of this metric.
      */
     public String getCode() {
         return code;
