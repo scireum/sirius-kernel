@@ -167,13 +167,13 @@ public class Exec {
         StringBuffer logger = new StringBuffer();
         try (Operation op = new Operation(() -> command, opTimeout)) {
             Process p = Runtime.getRuntime().exec(command, null, directory);
-            Semaphore completionSynchronizer = new Semaphore(2);
+            Semaphore completionSynchronizer = new Semaphore(1);
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger, completionSynchronizer);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger, completionSynchronizer);
             doExec(ignoreExitCodes, logger, p);
 
             // Wait for the stream eaters to complete...
-            completionSynchronizer.acquire(2);
+            completionSynchronizer.acquire();
 
             if (errEater.exHolder.get() != null) {
                 throw new ExecException(errEater.exHolder.get(), logger.toString());
