@@ -34,6 +34,11 @@ public class Exec {
      */
     public static final Log LOG = Log.get("exec");
 
+    /**
+     * StringBuffer for the combined output shared between StreamEaters
+     */
+    private static final StringBuffer logger = new StringBuffer();
+
     private Exec() {
     }
 
@@ -43,14 +48,11 @@ public class Exec {
     private static class StreamEater implements Runnable {
 
         private final InputStream stream;
-        private final StringBuffer logger;
         private final ValueHolder<IOException> exHolder = new ValueHolder<>(null);
         private final Semaphore completionSynchronizer;
 
-        StreamEater(InputStream stream, StringBuffer log, Semaphore completionSynchronizer)
-                throws InterruptedException {
+        StreamEater(InputStream stream, Semaphore completionSynchronizer) throws InterruptedException {
             this.stream = stream;
-            this.logger = log;
             this.completionSynchronizer = completionSynchronizer;
             this.completionSynchronizer.acquire();
         }
@@ -60,11 +62,13 @@ public class Exec {
             try (InputStreamReader isr = new InputStreamReader(stream); BufferedReader br = new BufferedReader(isr)) {
                 Thread.currentThread()
                       .setName(StreamEater.class.getSimpleName() + "-" + Thread.currentThread().getId());
-                String line = br.readLine();
-                while (line != null) {
-                    logger.append(line);
-                    logger.append("\n");
-                    line = br.readLine();
+                synchronized (logger) {
+                    String line = br.readLine();
+                    while (line != null) {
+                        logger.append(line);
+                        logger.append("\n");
+                        line = br.readLine();
+                    }
                 }
             } catch (IOException e) {
                 logger.append(NLS.toUserString(e));
@@ -78,13 +82,11 @@ public class Exec {
          * Creates a new stream eater logging to the given buffer for the given stream.
          *
          * @param stream                 the stream to read
-         * @param logger                 the target for all characters read
          * @param completionSynchronizer a semaphore where a permit is acquired and released once all output hase been processed
          * @return a new stream eater which is already running in a separate thread
          */
-        static StreamEater eat(InputStream stream, StringBuffer logger, Semaphore completionSynchronizer)
-                throws InterruptedException {
-            StreamEater eater = new StreamEater(stream, logger, completionSynchronizer);
+        static StreamEater eat(InputStream stream, Semaphore completionSynchronizer) throws InterruptedException {
+            StreamEater eater = new StreamEater(stream, completionSynchronizer);
             new Thread(eater).start();
             return eater;
         }
@@ -164,16 +166,15 @@ public class Exec {
      */
     public static String exec(String command, boolean ignoreExitCodes, Duration opTimeout, @Nullable File directory)
             throws ExecException {
-        StringBuffer logger = new StringBuffer();
         try (Operation op = new Operation(() -> command, opTimeout)) {
             Process p = Runtime.getRuntime().exec(command, null, directory);
-            Semaphore completionSynchronizer = new Semaphore(1, true);
-            StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger, completionSynchronizer);
-            StreamEater outEater = StreamEater.eat(p.getInputStream(), logger, completionSynchronizer);
+            Semaphore completionSynchronizer = new Semaphore(2);
+            StreamEater errEater = StreamEater.eat(p.getErrorStream(), completionSynchronizer);
+            StreamEater outEater = StreamEater.eat(p.getInputStream(), completionSynchronizer);
             doExec(ignoreExitCodes, logger, p);
 
             // Wait for the stream eaters to complete...
-            completionSynchronizer.acquire();
+            completionSynchronizer.acquire(2);
 
             if (errEater.exHolder.get() != null) {
                 throw new ExecException(errEater.exHolder.get(), logger.toString());
