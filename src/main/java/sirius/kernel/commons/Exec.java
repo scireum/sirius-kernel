@@ -69,7 +69,9 @@ public class Exec {
                     }
                 }
             } catch (IOException e) {
-                logger.append(NLS.toUserString(e));
+                synchronized (logger) {
+                    logger.append(NLS.toUserString(e));
+                }
                 exHolder.set(e);
             } finally {
                 this.completionSynchronizer.release();
