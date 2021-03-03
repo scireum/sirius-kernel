@@ -67,7 +67,7 @@ public class Outcall {
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
-    private static final String HEADER_IF_MODIFIED_SINCE = "if-modified-since";
+    private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
     private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN =
@@ -414,14 +414,10 @@ public class Outcall {
      * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
      */
     public Optional<String> parseFileNameFromContentDisposition() {
-        try {
-            Matcher matcher =
-                    CONTENT_DISPOSITION_FILENAME_PATTERN.matcher(connection.getHeaderField(HEADER_CONTENT_DISPOSITION));
-            if (matcher.find()) {
-                return Optional.ofNullable(matcher.group(2));
-            }
-        } catch (IllegalStateException | IndexOutOfBoundsException e) {
-            Exceptions.ignore(e);
+        Matcher matcher =
+                CONTENT_DISPOSITION_FILENAME_PATTERN.matcher(connection.getHeaderField(HEADER_CONTENT_DISPOSITION));
+        if (matcher.find()) {
+            return Optional.ofNullable(matcher.group(2));
         }
         return Optional.empty();
     }
