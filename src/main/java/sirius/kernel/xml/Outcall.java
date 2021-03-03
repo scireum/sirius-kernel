@@ -58,6 +58,7 @@ public class Outcall {
     private static final int DEFAULT_READ_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
 
     private static final String REQUEST_METHOD_POST = "POST";
+    private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
@@ -121,6 +122,7 @@ public class Outcall {
 
     /**
      * Returns the average time to first byte across all outcalls.
+     *
      * @return the average TTFB across all outcalls
      */
     public static Average getTimeToFirstByte() {
@@ -166,6 +168,19 @@ public class Outcall {
      */
     public Outcall markAsPostRequest() throws IOException {
         connection.setRequestMethod(REQUEST_METHOD_POST);
+        return this;
+    }
+
+    /**
+     * Marks the request as HEAD request, only requesting headers.
+     *
+     * @return the outcall itself for fluent method calls
+     * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
+     */
+    public Outcall onlyRequestHeaders() throws IOException {
+        connection.setDoOutput(false);
+        connection.setDoInput(false);
+        connection.setRequestMethod(REQUEST_METHOD_HEAD);
         return this;
     }
 
@@ -235,6 +250,16 @@ public class Outcall {
     }
 
     /**
+     * Provides access to the response code of the call.
+     *
+     * @return the response code of the call
+     * @throws IOException in case of any IO error
+     */
+    public int getResponseCode() throws IOException {
+        return connection.getResponseCode();
+    }
+
+    /**
      * Sets the header of the HTTP call.
      *
      * @param name  name of the header to set
@@ -244,6 +269,19 @@ public class Outcall {
     public Outcall setRequestProperty(String name, String value) {
         connection.setRequestProperty(name, value);
         return this;
+    }
+
+    /**
+     * Sets the value of the {@code ifModifiedSince} header of this connection.
+     * <p>
+     * The fetching of the object is skipped unless the object has been modified more recently than a certain time.
+     * If the object will not be returned because of this, the response code will be <tt>304</tt>.
+     *
+     * @param ifModifiedSince a date since when the object should be modified
+     * @throws IllegalStateException if already connected
+     */
+    public void setIfModifiedSince(long ifModifiedSince) {
+        connection.setIfModifiedSince(ifModifiedSince);
     }
 
     /**
@@ -335,6 +373,17 @@ public class Outcall {
     @Nullable
     public String getHeaderField(String name) {
         return connection.getHeaderField(name);
+    }
+
+    /**
+     * Returns the response header with the given name.
+     *
+     * @param name        the name of the header to fetch
+     * @param defaultDate a default value to return if the header field is missing or malformed.
+     * @return the value of the given header in the response or the given <tt>defaultDate</tt>
+     */
+    public long getHeaderFieldDate(String name, long defaultDate) {
+        return connection.getHeaderFieldDate(name, defaultDate);
     }
 
     /**
