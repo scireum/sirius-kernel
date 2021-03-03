@@ -430,14 +430,14 @@ public class Outcall {
     public Charset getContentEncoding() {
         String contentType = connection.getContentType();
         if (contentType == null) {
-            return charset;
+            return StandardCharsets.UTF_8;
         }
         try {
             Matcher m = CHARSET_PATTERN.matcher(contentType);
             if (m.find()) {
                 return Charset.forName(m.group(1).trim().toUpperCase());
             } else {
-                return charset;
+                return StandardCharsets.UTF_8;
             }
         } catch (Exception e) {
             Exceptions.ignore(e);
