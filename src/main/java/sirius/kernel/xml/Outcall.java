@@ -39,6 +39,11 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
@@ -62,6 +67,7 @@ public class Outcall {
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
+    private static final String HEADER_IF_MODIFIED_SINCE = "if-modified-since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
     private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN =
@@ -177,11 +183,13 @@ public class Outcall {
 
     /**
      * Marks the request as HEAD request, only requesting headers.
+     * <p>
+     * Note that neither {@link #getInput()} nor {@link #getOutput()} can be invoked on this call.
      *
      * @return the outcall itself for fluent method calls
      * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
-    public Outcall onlyRequestHeaders() throws IOException {
+    public Outcall markAsHeadRequest() throws IOException {
         connection.setDoInput(false);
         connection.setRequestMethod(REQUEST_METHOD_HEAD);
         return this;
@@ -278,7 +286,7 @@ public class Outcall {
     }
 
     /**
-     * Sets the value of the {@code ifModifiedSince} header of this connection.
+     * Sets the value of the {@code if-modified-since} header of this connection.
      * <p>
      * The fetching of the object is skipped unless the object has been modified more recently than a certain time.
      * If the object will not be returned because of this, the response code will be <tt>304</tt>.
@@ -286,8 +294,10 @@ public class Outcall {
      * @param ifModifiedSince a date since when the object should be modified
      * @throws IllegalStateException if already connected
      */
-    public void setIfModifiedSince(long ifModifiedSince) {
-        connection.setIfModifiedSince(ifModifiedSince);
+    public void setIfModifiedSince(LocalDateTime ifModifiedSince) {
+        connection.setRequestProperty(HEADER_IF_MODIFIED_SINCE,
+                                      ifModifiedSince.atOffset(ZoneOffset.UTC)
+                                                     .format(DateTimeFormatter.RFC_1123_DATE_TIME));
     }
 
     /**
@@ -382,14 +392,17 @@ public class Outcall {
     }
 
     /**
-     * Returns the response header with the given name.
+     * Returns the response header with the given name as an optional {@link LocalDateTime}.
      *
-     * @param name        the name of the header to fetch
-     * @param defaultDate a default value to return if the header field is missing or malformed.
-     * @return the value of the given header in the response or the given <tt>defaultDate</tt>
+     * @param name the name of the header to fetch
+     * @return the date of the given header wrapped in an Optional or empty if the field does not exists or can not be parsed as date
      */
-    public long getHeaderFieldDate(String name, long defaultDate) {
-        return connection.getHeaderFieldDate(name, defaultDate);
+    public Optional<LocalDateTime> getHeaderFieldDate(String name) {
+        long timestamp = connection.getHeaderFieldDate(name, -1);
+        if (timestamp >= 0) {
+            return Optional.of(Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime());
+        }
+        return Optional.empty();
     }
 
     /**
