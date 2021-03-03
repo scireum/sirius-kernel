@@ -41,6 +41,7 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -60,8 +61,11 @@ public class Outcall {
     private static final String REQUEST_METHOD_POST = "POST";
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
+    private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN =
+            Pattern.compile("(attachment|inline);\\s*filename\\s*=\\s*\"([^\"]*)\"");
     private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
 
     /**
@@ -239,7 +243,7 @@ public class Outcall {
      * Note that you need to call {@link #markAsPostRequest()} before calling this method.
      *
      * @return the stream of data sent to the call / url
-     * @throws IOException in case of any IO error
+     * @throws IOException                in case of any IO error
      * @throws java.net.ProtocolException if the method doesn't support output
      */
     public OutputStream getOutput() throws IOException {
@@ -386,6 +390,27 @@ public class Outcall {
      */
     public long getHeaderFieldDate(String name, long defaultDate) {
         return connection.getHeaderFieldDate(name, defaultDate);
+    }
+
+    /**
+     * Tries to parse a file name from the content disposition header.
+     * <p>
+     * The format of the header is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
+     * This header provides a filename for content that is going to be downloaded to the file system.
+     *
+     * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
+     */
+    public Optional<String> parseFileNameFromContentDisposition() {
+        try {
+            Matcher matcher =
+                    CONTENT_DISPOSITION_FILENAME_PATTERN.matcher(connection.getHeaderField(HEADER_CONTENT_DISPOSITION));
+            if (matcher.find()) {
+                return Optional.ofNullable(matcher.group(2));
+            }
+        } catch (IllegalStateException | IndexOutOfBoundsException e) {
+            Exceptions.ignore(e);
+        }
+        return Optional.empty();
     }
 
     /**
