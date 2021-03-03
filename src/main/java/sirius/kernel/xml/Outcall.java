@@ -98,7 +98,6 @@ public class Outcall {
 
         connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
-        connection.setDoOutput(true);
         connection.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
         connection.setReadTimeout(DEFAULT_READ_TIMEOUT);
     }
@@ -167,6 +166,7 @@ public class Outcall {
      * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
     public Outcall markAsPostRequest() throws IOException {
+        connection.setDoOutput(true);
         connection.setRequestMethod(REQUEST_METHOD_POST);
         return this;
     }
@@ -178,7 +178,6 @@ public class Outcall {
      * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
     public Outcall onlyRequestHeaders() throws IOException {
-        connection.setDoOutput(false);
         connection.setDoInput(false);
         connection.setRequestMethod(REQUEST_METHOD_HEAD);
         return this;
@@ -235,10 +234,13 @@ public class Outcall {
     }
 
     /**
-     * Provides access to the input of the call.
+     * Provides access to a output stream that writes into this call.
+     * <p>
+     * Note that you need to call {@link #markAsPostRequest()} before calling this method.
      *
      * @return the stream of data sent to the call / url
      * @throws IOException in case of any IO error
+     * @throws java.net.ProtocolException if the method doesn't support output
      */
     public OutputStream getOutput() throws IOException {
         try {
