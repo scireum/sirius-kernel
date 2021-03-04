@@ -39,8 +39,14 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -58,9 +64,14 @@ public class Outcall {
     private static final int DEFAULT_READ_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
 
     private static final String REQUEST_METHOD_POST = "POST";
+    private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
+    private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
+    private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN =
+            Pattern.compile("(attachment|inline);\\s*filename\\s*=\\s*\"([^\"]*)\"");
     private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
 
     /**
@@ -97,7 +108,6 @@ public class Outcall {
 
         connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
-        connection.setDoOutput(true);
         connection.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
         connection.setReadTimeout(DEFAULT_READ_TIMEOUT);
     }
@@ -121,6 +131,7 @@ public class Outcall {
 
     /**
      * Returns the average time to first byte across all outcalls.
+     *
      * @return the average TTFB across all outcalls
      */
     public static Average getTimeToFirstByte() {
@@ -165,7 +176,22 @@ public class Outcall {
      * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
     public Outcall markAsPostRequest() throws IOException {
+        connection.setDoOutput(true);
         connection.setRequestMethod(REQUEST_METHOD_POST);
+        return this;
+    }
+
+    /**
+     * Marks the request as HEAD request, only requesting headers.
+     * <p>
+     * Note that neither {@link #getInput()} nor {@link #getOutput()} can be invoked on this call.
+     *
+     * @return the outcall itself for fluent method calls
+     * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
+     */
+    public Outcall markAsHeadRequest() throws IOException {
+        connection.setDoInput(false);
+        connection.setRequestMethod(REQUEST_METHOD_HEAD);
         return this;
     }
 
@@ -220,10 +246,13 @@ public class Outcall {
     }
 
     /**
-     * Provides access to the input of the call.
+     * Provides access to a output stream that writes into this call.
+     * <p>
+     * Note that you need to call {@link #markAsPostRequest()} before calling this method.
      *
      * @return the stream of data sent to the call / url
-     * @throws IOException in case of any IO error
+     * @throws IOException                in case of any IO error
+     * @throws java.net.ProtocolException if the method doesn't support output
      */
     public OutputStream getOutput() throws IOException {
         try {
@@ -232,6 +261,16 @@ public class Outcall {
             addToTimeoutBlacklist();
             throw e;
         }
+    }
+
+    /**
+     * Provides access to the response code of the call.
+     *
+     * @return the response code of the call
+     * @throws IOException in case of any IO error
+     */
+    public int getResponseCode() throws IOException {
+        return connection.getResponseCode();
     }
 
     /**
@@ -244,6 +283,21 @@ public class Outcall {
     public Outcall setRequestProperty(String name, String value) {
         connection.setRequestProperty(name, value);
         return this;
+    }
+
+    /**
+     * Sets the value of the {@code if-modified-since} header of this connection.
+     * <p>
+     * The fetching of the object is skipped unless the object has been modified more recently than a certain time.
+     * If the object will not be returned because of this, the response code will be <tt>304</tt>.
+     *
+     * @param ifModifiedSince a date since when the object should be modified
+     * @throws IllegalStateException if already connected
+     */
+    public void setIfModifiedSince(LocalDateTime ifModifiedSince) {
+        connection.setRequestProperty(HEADER_IF_MODIFIED_SINCE,
+                                      ifModifiedSince.atOffset(ZoneOffset.UTC)
+                                                     .format(DateTimeFormatter.RFC_1123_DATE_TIME));
     }
 
     /**
@@ -338,6 +392,37 @@ public class Outcall {
     }
 
     /**
+     * Returns the response header with the given name as an optional {@link LocalDateTime}.
+     *
+     * @param name the name of the header to fetch
+     * @return the date of the given header wrapped in an Optional or empty if the field does not exists or can not be parsed as date
+     */
+    public Optional<LocalDateTime> getHeaderFieldDate(String name) {
+        long timestamp = connection.getHeaderFieldDate(name, -1);
+        if (timestamp >= 0) {
+            return Optional.of(Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime());
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Tries to parse a file name from the content disposition header.
+     * <p>
+     * The format of the header is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
+     * This header provides a filename for content that is going to be downloaded to the file system.
+     *
+     * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
+     */
+    public Optional<String> parseFileNameFromContentDisposition() {
+        Matcher matcher =
+                CONTENT_DISPOSITION_FILENAME_PATTERN.matcher(connection.getHeaderField(HEADER_CONTENT_DISPOSITION));
+        if (matcher.find()) {
+            return Optional.ofNullable(matcher.group(2));
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Returns the charset used by the server to encode the response.
      *
      * @return the charset used by the server or <tt>UTF-8</tt> as default
@@ -345,14 +430,14 @@ public class Outcall {
     public Charset getContentEncoding() {
         String contentType = connection.getContentType();
         if (contentType == null) {
-            return charset;
+            return StandardCharsets.UTF_8;
         }
         try {
             Matcher m = CHARSET_PATTERN.matcher(contentType);
             if (m.find()) {
                 return Charset.forName(m.group(1).trim().toUpperCase());
             } else {
-                return charset;
+                return StandardCharsets.UTF_8;
             }
         } catch (Exception e) {
             Exceptions.ignore(e);
