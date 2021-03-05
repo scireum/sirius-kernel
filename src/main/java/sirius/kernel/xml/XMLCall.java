@@ -82,11 +82,14 @@ public class XMLCall {
 
     /**
      * Can be used to generate the XML request.
+     * <p>
+     * This will mark the underlying {@link Outcall} as a POST request.
      *
-     * @return the an input which can be used to generate an XML document which is sent to the URL
+     * @return the output which can be used to generate an XML document which is sent to the URL
      * @throws IOException in case of an IO error while sending the XML document
      */
     public XMLStructuredOutput getOutput() throws IOException {
+        outcall.markAsPostRequest();
         return new XMLStructuredOutput(outcall.getOutput());
     }
 
