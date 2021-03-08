@@ -414,10 +414,12 @@ public class Outcall {
      * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
      */
     public Optional<String> parseFileNameFromContentDisposition() {
-        Matcher matcher =
-                CONTENT_DISPOSITION_FILENAME_PATTERN.matcher(connection.getHeaderField(HEADER_CONTENT_DISPOSITION));
-        if (matcher.find()) {
-            return Optional.ofNullable(matcher.group(2));
+        String contentDisposition = connection.getHeaderField(HEADER_CONTENT_DISPOSITION);
+        if (Strings.isFilled(contentDisposition)) {
+            Matcher matcher = CONTENT_DISPOSITION_FILENAME_PATTERN.matcher(contentDisposition);
+            if (matcher.find()) {
+                return Optional.ofNullable(matcher.group(2));
+            }
         }
         return Optional.empty();
     }
