@@ -190,7 +190,6 @@ public class Outcall {
      * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
     public Outcall markAsHeadRequest() throws IOException {
-        connection.setDoInput(false);
         connection.setRequestMethod(REQUEST_METHOD_HEAD);
         return this;
     }
