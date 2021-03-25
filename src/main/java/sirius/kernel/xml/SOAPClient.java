@@ -304,12 +304,12 @@ public class SOAPClient {
 
             call.addHeader(HEADER_SOAP_ACTION, actionPrefix + action);
 
-            createEnvelope(call.getOutput(), headBuilder, bodyBuilder);
+            XMLStructuredOutput output = call.getOutput();
+            createEnvelope(output, headBuilder, bodyBuilder);
 
             String request = "";
             if (LOG.isFINE()) {
-                request =
-                        Strings.apply("Calling %s %s\n%s", effectiveEndpoint, actionPrefix + action, call.getOutput());
+                request = Strings.apply("Calling %s %s\n%s", effectiveEndpoint, actionPrefix + action, output);
             }
 
             StructuredNode result = call.getInput().getNode(".");
