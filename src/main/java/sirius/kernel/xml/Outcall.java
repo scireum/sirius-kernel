@@ -71,7 +71,7 @@ public class Outcall {
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
     private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN =
-            Pattern.compile("(attachment|inline);\\s*filename\\s*=\\s*(?<unquoted>\"(?<quoted>[^\"]*)\"|[\\w.-]+)");
+            Pattern.compile("(attachment|inline|form-data);.*filename\\s*=\\s*(?<unquoted>\"(?<quoted>[^\"]*)\"|[\\w.-]+)");
     private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
 
     /**
@@ -414,6 +414,10 @@ public class Outcall {
      */
     public Optional<String> parseFileNameFromContentDisposition() {
         String contentDisposition = connection.getHeaderField(HEADER_CONTENT_DISPOSITION);
+        return parseFileName(contentDisposition);
+    }
+
+    private static Optional<String> parseFileName(String contentDisposition) {
         if (Strings.isFilled(contentDisposition)) {
             Matcher matcher = CONTENT_DISPOSITION_FILENAME_PATTERN.matcher(contentDisposition);
             if (matcher.find()) {
