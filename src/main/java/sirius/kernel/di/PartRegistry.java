@@ -152,11 +152,11 @@ class PartRegistry implements MutableGlobalContext {
         for (Field field : clazz.getDeclaredFields()) {
             if (!Modifier.isFinal(field.getModifiers()) && (object != null
                                                             || Modifier.isStatic(field.getModifiers()))) {
-                field.setAccessible(true);
                 getParts(FieldAnnotationProcessor.class).stream()
                                                         .filter(p -> field.isAnnotationPresent(p.getTrigger()))
                                                         .forEach(p -> {
                                                             try {
+                                                                field.setAccessible(true);
                                                                 p.handle(this, object, field);
                                                             } catch (Exception e) {
                                                                 Injector.LOG.WARN(
