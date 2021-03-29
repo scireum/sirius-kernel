@@ -15,6 +15,7 @@ package sirius.kernel.commons;
  * {@link java.util.function.Supplier} instead.
  *
  * @param <T> the type of results supplied by this producer
+ * @see UnitOfWork
  * @see Callback
  * @see Processor
  */
