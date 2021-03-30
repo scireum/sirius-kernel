@@ -74,21 +74,13 @@ public class CombinedFuture {
         if (lastError != null) {
             completionFuture.fail(lastError);
         } else {
-
             completionFuture.success();
         }
     }
 
     private void handleFailedPromise(Throwable throwable) {
-        if (promisesOpen.decrementAndGet() > 0) {
-            return;
-        }
-
-        if (completionFuture != null) {
-            completionFuture.fail(throwable);
-        } else {
-            lastError = throwable;
-        }
+        lastError = throwable;
+        handleSuccessfulPromise();
     }
 
     /**
@@ -103,7 +95,6 @@ public class CombinedFuture {
                 if (lastError != null) {
                     completionFuture.fail(lastError);
                 } else {
-
                     completionFuture.success();
                 }
             }
