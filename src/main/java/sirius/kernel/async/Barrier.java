@@ -40,8 +40,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * This barrier can also be used in a non-blocking way, by calling {@link #asFuture()} after the last call to
  * {@link #add(Promise)}. If possible, the non-block approach should always be preferred.
+ * @deprecated Use {@link CombinedFuture} which has a well defined behaviour when using empty barriers or when
+ * calling add after await (which may yield to undefined behaviour here but will always fail appropriately for
+ * <tt>CombinedFuture</tt>).
  */
 @ParametersAreNonnullByDefault
+@Deprecated
 public class Barrier {
 
     private AtomicInteger promisesMade = new AtomicInteger(0);

@@ -15,6 +15,7 @@ package sirius.kernel.commons;
  * {@link java.util.function.Consumer} instead.
  *
  * @param <T> the type of the object passed to the callback
+ * @see UnitOfWork
  * @see Processor
  * @see Producer
  */
