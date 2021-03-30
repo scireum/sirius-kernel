@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Permits to await the completion of multiple {@link Promise promises} or {@link Future futures}.
  * <p>
- * A CombinedFuture should only be used once and after a call to <tt>asFuture</tt>, no further promises should be added.
+ * A CombinedFuture shall only be used once and after a call to <tt>asFuture</tt>, no further promises should be added.
  * <p>
  * The general call pattern looks like that:
  * <pre>
@@ -36,7 +36,7 @@ public class CombinedFuture {
     private Future completionFuture;
 
     /**
-     * Adds a promise to waited for.
+     * Adds a promise to wait for.
      * <p>
      * Note that one must not call <tt>add</tt> after calling <tt>await</tt>.
      *
@@ -86,7 +86,7 @@ public class CombinedFuture {
     /**
      * Generates a new {@link Future} which completes if the last added promise completes or if any one of those fails.
      *
-     * @return a new future which can used to add completion handlers for all added promises.
+     * @return a new future which can be used to add completion handlers for all added promises.
      */
     public Future asFuture() {
         if (completionFuture == null) {
