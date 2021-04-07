@@ -59,7 +59,7 @@ steps:
     image: hub.scireum.com/scireum/sirius-build:latest
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
-      - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test sonar:sonar -Dsonar.projectKey=${DRONE_REPO_NAME}
+      - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.projectKey=${DRONE_REPO_NAME}
     volumes: *scireum_volumes
     when:
       event:
