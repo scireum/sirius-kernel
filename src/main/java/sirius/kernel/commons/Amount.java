@@ -348,10 +348,27 @@ public class Amount implements Comparable<Amount>, Serializable {
      * @param percent the second percent value which would be applied after this percent value.
      * @return the effective percent value after both percentages would have been applied or <tt>NOTHING</tt> if
      * <tt>this</tt> is empty.
+     * @deprecated Use {@link #chainPercent(Amount)} instead which is the exact same method. This method however implies
+     * that it simply performs {@code this.times(percent.asDecimal())} <b>which it doesn't!</b>
      */
     @Nonnull
     @CheckReturnValue
+    @Deprecated
     public Amount multiplyPercent(@Nonnull Amount percent) {
+        return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
+    }
+
+    /**
+     * Used to multiply two percentages, like two discounts as if they where applied after each other.
+     * <p>
+     * This can be used to compute the effective discount if two discounts like 15% and 5% are applied after
+     * each other. The result would be {@code (15 + 5) - (15 * 5 / 100)} which is <tt>19,25 %</tt>
+     *
+     * @param percent the second percent value which would be applied after this percent value.
+     * @return the effective percent value after both percentages would have been applied or <tt>NOTHING</tt> if
+     * <tt>this</tt> is empty.
+     */
+    public Amount chainPercent(@Nonnull Amount percent) {
         return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
     }
 
