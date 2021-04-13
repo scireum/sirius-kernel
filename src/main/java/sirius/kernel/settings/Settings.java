@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Provides a wrapper around a {@link Config} supplied by <tt>typesafe config</tt>.
@@ -177,8 +178,9 @@ public class Settings {
      * natural order within the file. If multiple files are merged together, the behaviour of this approach is
      * undefined and <tt>priority</tt> should be used.
      *
-     * @param key the path to the config object containing a list of sub object.
+     * @param key the path to the config object containing multiple sub objects.
      * @return a list of config objects underneath the given object or an empty list if there are none
+     * @see #getConfigList(String)
      */
     @Nonnull
     public List<? extends Config> getConfigs(String key) {
@@ -206,6 +208,29 @@ public class Settings {
         });
 
         return result;
+    }
+
+    /**
+     * Returns all config objects in a list underneath the given key.
+     *
+     * @param key the path to the config object containing a list of sub objects.
+     * @return a list of config objects underneath the given object or an empty list if there are none
+     * @see #getConfigs(String)
+     * @see #getStringList(String)
+     */
+    @Nonnull
+    public List<Settings> getConfigList(String key) {
+        try {
+            return getConfig().getConfigList(key)
+                              .stream()
+                              .map(subConfig -> new Settings(subConfig, strict))
+                              .collect(Collectors.toList());
+        } catch (ConfigException e) {
+            if (strict) {
+                Exceptions.handle(e);
+            }
+            return Collections.emptyList();
+        }
     }
 
     /**
