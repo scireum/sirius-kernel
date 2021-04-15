@@ -298,6 +298,28 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
+     * Convenience method for {@link #property(String, Object, Attribute...)} prepending a namespace.
+     * <p>
+     * This will create a property only if the specified data object is not null.
+     * Else no property is created.
+     *
+     * @param namespace  the namespace
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput namespacedPropertyIfFilled(@Nonnull String namespace,
+                                                       @Nonnull String name,
+                                                       @Nullable Object data,
+                                                       Attribute... attributes) {
+        if (data != null) {
+            property(namespace + ":" + name, data, attributes);
+        }
+        return this;
+    }
+
+    /**
      * Adds a property to the current object.
      * <p>
      * This will create a property only if the specified data object is not null.
