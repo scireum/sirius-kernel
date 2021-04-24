@@ -11,6 +11,7 @@ package sirius.kernel.xml;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.nls.NLS;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -33,7 +34,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class XMLStructuredOutput extends AbstractStructuredOutput {
 
-    private TransformerHandler transformerHandler;
+    private final TransformerHandler transformerHandler;
     protected OutputStream out;
     private int opensCalled = 0;
 
@@ -272,7 +273,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         try {
             transformerHandler.startElement("", "", name, null);
             if (value != null) {
-                String val = value.toString();
+                String val = NLS.toMachineString(value);
                 transformerHandler.characters(val.toCharArray(), 0, val.length());
             }
             transformerHandler.endElement("", "", name);
@@ -383,7 +384,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     public StructuredOutput text(Object text) {
         try {
             if (text != null) {
-                String val = text.toString();
+                String val = NLS.toMachineString(text);
                 transformerHandler.characters(val.toCharArray(), 0, val.length());
             }
         } catch (SAXException e) {
