@@ -33,6 +33,12 @@ import java.util.function.Supplier;
  * A textual representation can be created by calling one of the <tt>toString</tt> methods or by supplying
  * a {@link NumberFormat}.
  * <p>
+ * Note that {@link #toMachineString()} to be used to obtain a technical representation suitable for file formats
+ * like XML etc. This is also used by {@link NLS#toMachineString(Object)}. The default representation uses two
+ * decimal digits. However, if the amount has bed {@link #round(int, RoundingMode) rounded}, the given amount
+ * of decimals will be used in all subesquent call to {@link #toMachineString()}. Therefore, this can be used to
+ * control the exact formatting (e.g. when writing XML or JSON).
+ * <p>
  * Being able to be <i>empty</i>, this class handles <tt>null</tt> values gracefully, which simplifies many operations.
  *
  * @see NumberFormat
@@ -46,27 +52,27 @@ public class Amount implements Comparable<Amount>, Serializable {
     /**
      * Represents an missing number. This is also the result of division by 0 and other forbidden operations.
      */
-    public static final Amount NOTHING = new Amount(null);
+    public static final Amount NOTHING = new Amount(null, false);
     /**
      * Representation of 100.00
      */
-    public static final Amount ONE_HUNDRED = new Amount(new BigDecimal(100));
+    public static final Amount ONE_HUNDRED = Amount.of(new BigDecimal(100));
     /**
      * Representation of 0.00
      */
-    public static final Amount ZERO = new Amount(BigDecimal.ZERO);
+    public static final Amount ZERO = Amount.of(BigDecimal.ZERO);
     /**
      * Representation of 1.00
      */
-    public static final Amount ONE = new Amount(BigDecimal.ONE);
+    public static final Amount ONE = Amount.of(BigDecimal.ONE);
     /**
      * Representation of 10.00
      */
-    public static final Amount TEN = new Amount(BigDecimal.TEN);
+    public static final Amount TEN = Amount.of(BigDecimal.TEN);
     /**
      * Representation of -1.00
      */
-    public static final Amount MINUS_ONE = new Amount(new BigDecimal(-1));
+    public static final Amount MINUS_ONE = Amount.of(new BigDecimal(-1));
     /**
      * Defines the internal precision used for all computations.
      */
@@ -76,13 +82,11 @@ public class Amount implements Comparable<Amount>, Serializable {
     private static final int NEUTRAL_METRIC = 4;
 
     private final BigDecimal value;
+    private final boolean rounded;
 
-    private Amount(BigDecimal value) {
-        if (value != null) {
-            this.value = value.setScale(SCALE, RoundingMode.HALF_UP);
-        } else {
-            this.value = null;
-        }
+    private Amount(BigDecimal value, boolean rounded) {
+        this.value = value;
+        this.rounded = rounded;
     }
 
     /**
@@ -117,6 +121,9 @@ public class Amount implements Comparable<Amount>, Serializable {
 
     /**
      * Converts the given value into a number.
+     * <p>
+     * Note that this will enforce a scale of {@link #SCALE} (5) for the given value to ensure a consistent
+     * behaviour. If the given value already has the desired scale set, use {@link #ofRounded(BigDecimal)}.
      *
      * @param amount the value which should be converted into an <tt>Amount</tt>
      * @return an <tt>Amount</tt> representing the given input. <tt>NOTHING</tt> if the input was empty.
@@ -126,7 +133,24 @@ public class Amount implements Comparable<Amount>, Serializable {
         if (amount == null) {
             return NOTHING;
         }
-        return new Amount(amount);
+        return new Amount(amount.setScale(SCALE, RoundingMode.HALF_UP), false);
+    }
+
+    /**
+     * Converts the given value into a number.
+     * <p>
+     * Note that this keeps the scale of the given value as it presumes that it has already been
+     * set to the desired value.
+     *
+     * @param amount the value which should be converted into an <tt>Amount</tt>
+     * @return an <tt>Amount</tt> representing the given input. <tt>NOTHING</tt> if the input was empty.
+     */
+    @Nonnull
+    public static Amount ofRounded(@Nullable BigDecimal amount) {
+        if (amount == null) {
+            return NOTHING;
+        }
+        return new Amount(amount, true);
     }
 
     /**
@@ -798,7 +822,7 @@ public class Amount implements Comparable<Amount>, Serializable {
             return NOTHING;
         }
 
-        return Amount.of(value.setScale(scale, roundingMode));
+        return Amount.ofRounded(value.setScale(scale, roundingMode));
     }
 
     private Value convertToString(NumberFormat format, boolean smartRound) {
@@ -903,6 +927,18 @@ public class Amount implements Comparable<Amount>, Serializable {
         }
 
         return sb.toString();
+    }
+
+    public String toMachineString() {
+        if (isEmpty()) {
+            return "";
+        }
+
+        if (rounded) {
+            return getAmount().toString();
+        } else {
+            return round(2, RoundingMode.HALF_UP).getAmount().toString();
+        }
     }
 
     /**
