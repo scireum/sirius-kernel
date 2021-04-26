@@ -8,6 +8,8 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.nls.NLS;
+
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -155,6 +157,22 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
      * @param value the value of the property
      */
     protected abstract void writeProperty(String name, Object value);
+
+    /**
+     * Creates the string representation to be used when outputting the given value.
+     *
+     * @param value the value to represent
+     * @return the machine-readable string representation of the value
+     */
+    protected String transformToStringRepresentation(Object value) {
+        // We preserve strings here, as NLS.toMachineString performs an implicit trim which might be
+        // unwanted here.
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            return NLS.toMachineString(value);
+        }
+    }
 
     @Override
     public StructuredOutput beginObject(String name, Attribute... attributes) {
