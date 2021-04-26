@@ -85,7 +85,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
-     * Convenience method for {@link #beginArray(String)} prepending a namespace.
+     * Provides a convenient way for {@link #beginArray(String)} prepending a namespace.
      *
      * @param namespace the namespace
      * @param name      the name of the array
@@ -105,7 +105,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
-     * Convenience method for {@link #beginObject(String, Attribute...)} prepending a namespace.
+     * Provides a convenient way for {@link #beginObject(String, Attribute...)} prepending a namespace.
      *
      * @param namespace  the namespace
      * @param name       the name of the object to create
@@ -138,7 +138,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
-     * Convenience method for {@link #beginResult(String)} prepending a namespace.
+     * Provides a convenient way for {@link #beginResult(String)} prepending a namespace.
      *
      * @param namespace the namespace
      * @param name      the unqualified name
@@ -190,7 +190,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
-     * Convenience method for {@link #beginOutput(String, Attribute...)} prepending a namespace.
+     * Provides a convenient way for {@link #beginOutput(String, Attribute...)} prepending a namespace.
      *
      * @param namespace   the namespace
      * @param rootElement the name of the root element of the generated document
@@ -283,7 +283,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
-     * Convenience method for {@link #property(String, Object, Attribute...)} prepending a namespace.
+     * Provides a convenient way for {@link #property(String, Object, Attribute...)} prepending a namespace.
      *
      * @param namespace  the namespace
      * @param name       the name of the property
@@ -296,6 +296,28 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
                                                @Nullable Object data,
                                                Attribute... attributes) {
         return property(namespace + ":" + name, data, attributes);
+    }
+
+    /**
+     * Provides a convenient way for {@link #property(String, Object, Attribute...)} prepending a namespace.
+     * <p>
+     * This will create a property only if the specified data object is not null.
+     * Else no property is created.
+     *
+     * @param namespace  the namespace
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput namespacedPropertyIfFilled(@Nonnull String namespace,
+                                                       @Nonnull String name,
+                                                       @Nullable Object data,
+                                                       Attribute... attributes) {
+        if (data != null) {
+            property(namespace + ":" + name, data, attributes);
+        }
+        return this;
     }
 
     /**
@@ -364,7 +386,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
-     * Convenience method for {@link #nullsafeProperty(String, Object)} prepending a namespace.
+     * Provides a convenient way for {@link #nullsafeProperty(String, Object)} prepending a namespace.
      *
      * @param namespace the namespace
      * @param name      the name of the property
