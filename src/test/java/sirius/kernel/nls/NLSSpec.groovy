@@ -153,9 +153,9 @@ class NLSSpec extends BaseSpecification {
 
         where:
         input      | output
-        "14:30:12" | new LocalTime(14, 30, 12, 0)
-        "14:30"    | new LocalTime(14, 30, 0, 0)
-        "14"       | new LocalTime(14, 0, 0, 0)
+        "14:30:12" | LocalTime.of(14, 30, 12, 0)
+        "14:30"    | LocalTime.of(14, 30, 0, 0)
+        "14"       | LocalTime.of(14, 0, 0, 0)
     }
 
     def "parseMachineString works for decimals"() {
