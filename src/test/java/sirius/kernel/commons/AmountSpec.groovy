@@ -3,6 +3,7 @@ package sirius.kernel.commons
 import sirius.kernel.BaseSpecification
 import sirius.kernel.async.CallContext
 
+import java.math.RoundingMode
 import java.util.function.Supplier
 
 class AmountSpec extends BaseSpecification {
@@ -83,11 +84,17 @@ class AmountSpec extends BaseSpecification {
         Amount.ONE_HUNDRED == Amount.TEN.percentageDifferenceOf(Amount.of(5))
         Amount.of(-50) == Amount.of(5).percentageDifferenceOf(Amount.TEN)
         Amount.of(0.5) == Amount.of(50).asDecimal()
-        Amount.ofMachineString("1.23") == Amount.ofMachineString("1.23223").round(NumberFormat.PERCENT)
         Amount.ONE_HUNDRED.getDigits() == 3
         Amount.ONE.getDigits() == 1
         Amount.ONE_HUNDRED.subtract(Amount.ONE).getDigits() == 2
         Amount.of(477).getDigits() == 3
+    }
+
+    def "rounding works as expected"() {
+        expect:
+        "1.23" == Amount.ofMachineString("1.23223").round(2, RoundingMode.HALF_UP).toMachineString()
+        "1.232" == Amount.ofMachineString("1.23223").round(3, RoundingMode.HALF_UP).toMachineString()
+        "1.2" == Amount.ofMachineString("1.23223").round(1, RoundingMode.HALF_UP).toMachineString()
     }
 
     def "formatting works as expected"() {

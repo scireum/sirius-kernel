@@ -835,7 +835,7 @@ public class NLS {
             return String.valueOf(data);
         }
         if (data instanceof Amount) {
-            return ((Amount) data).toString(NumberFormat.MACHINE_TWO_DECIMAL_PLACES).asString();
+            return ((Amount) data).toMachineString();
         }
         if (data instanceof BigDecimal) {
             return ((BigDecimal) data).toPlainString();
