@@ -53,14 +53,24 @@ class XMLReaderSpec extends BaseSpecification {
         def shouldNotToggle = ValueHolder.of(false)
         and:
         def r = new XMLReader()
-        r.addHandler("value", { n -> shouldNotToggle.set(true) } as NodeHandler)
-        r.addHandler("doc/test/value", { n -> shouldToggle.set(true) } as NodeHandler)
+        r.addHandler("value", updateValueHolderToTrue(shouldNotToggle))
+        r.addHandler("doc/test/value", updateValueHolderToTrue(shouldToggle))
         r.parse(new ByteArrayInputStream(
                 "<doc><test><value>1</value></test><test><value>2</value></test><test><value>5</value></test></doc>".getBytes()))
         then:
         shouldToggle.get()
         and:
         !shouldNotToggle.get()
+    }
+
+    private NodeHandler updateValueHolderToTrue(valueHolder) {
+        NodeHandler value = new NodeHandler() {
+            @Override
+            void process(StructuredNode node) {
+                valueHolder.set(true)
+            }
+        }
+        return value;
     }
 
     def "XMLReader reads attributes"() {
@@ -70,10 +80,14 @@ class XMLReaderSpec extends BaseSpecification {
         def attribute
         def r = new XMLReader()
         and:
-        r.addHandler("test", { n ->
-            attributes = n.getAttributes()
-            attribute = n.getAttribute("namedAttribute")
-        } as NodeHandler)
+        r.addHandler("test",  new NodeHandler() {
+            @Override
+            void process(StructuredNode node) {
+                attributes = node.getAttributes()
+                attribute = node.getAttribute("namedAttribute")
+            }
+        })
+
         when:
         r.parse(new ByteArrayInputStream(
                 "<doc><test namedAttribute=\"abc\" namedAttribute2=\"xyz\">1</test></doc>".getBytes()))
@@ -83,6 +97,7 @@ class XMLReaderSpec extends BaseSpecification {
         attribute.asString() == "abc"
     }
 
+
     def "reading non existing attributes does not throw errors"() {
         given:
         def check = ValueHolder.of(null)
@@ -90,10 +105,14 @@ class XMLReaderSpec extends BaseSpecification {
         def attribute
         def r = new XMLReader()
         and:
-        r.addHandler("test", { n ->
-            attributes = n.getAttributes()
-            attribute = n.getAttribute("namedAttribute")
-        } as NodeHandler)
+        r.addHandler("test", new NodeHandler() {
+            @Override
+            void process(StructuredNode node) {
+                attributes = node.getAttributes()
+                attribute = node.getAttribute("namedAttribute")
+            }
+        })
+
         when:
         r.parse(new ByteArrayInputStream(
                 "<doc><test>1</test></doc>".getBytes()))
