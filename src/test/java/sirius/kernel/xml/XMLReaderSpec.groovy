@@ -13,6 +13,7 @@ import sirius.kernel.commons.ValueHolder
 import sirius.kernel.health.Counter
 import sirius.kernel.health.Exceptions
 
+import javax.annotation.Nonnull
 import javax.xml.xpath.XPathExpressionException
 
 class XMLReaderSpec extends BaseSpecification {
@@ -23,14 +24,8 @@ class XMLReaderSpec extends BaseSpecification {
         def nodes = new Counter()
         def r = new XMLReader()
         and:
-        r.addHandler("test", { n ->
-            try {
-                nodes.inc()
-                check.set(n.queryString("value"))
-            } catch (XPathExpressionException e) {
-                throw Exceptions.handle(e)
-            }
-        } as NodeHandler)
+        r.addHandler("test", getValue(nodes, check))
+
         when:
         r.parse(new ByteArrayInputStream(
                 "<doc><test><value>1</value></test><test><value>2</value></test><test><value>5</value></test></doc>".getBytes()))
@@ -38,6 +33,18 @@ class XMLReaderSpec extends BaseSpecification {
         check.get() == "5"
         and:
         nodes.getCount() == 3
+    }
+
+    @Nonnull
+    private NodeHandler getValue(Counter nodes, ValueHolder<Object> check) {
+        NodeHandler value = new NodeHandler() {
+            @Override
+            void process(StructuredNode node) {
+                nodes.inc();
+                check.set(node.queryString("value"));
+            }
+        };
+        return value;
     }
 
     def "XMLReader supports paths"() {
