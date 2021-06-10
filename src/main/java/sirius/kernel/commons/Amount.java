@@ -391,7 +391,10 @@ public class Amount implements Comparable<Amount>, Serializable {
      * @param percent the second percent value which would be applied after this percent value.
      * @return the effective percent value after both percentages would have been applied or <tt>NOTHING</tt> if
      * <tt>this</tt> is empty.
+     * @deprecated As this method <b>only</b> works with discounts, not with addons. As the name implies that this
+     * method works in both cases, we deprecate it here and moved the business logic into its actual place.
      */
+    @Deprecated
     public Amount chainPercent(@Nonnull Amount percent) {
         return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
     }
