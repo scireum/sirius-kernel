@@ -58,6 +58,18 @@ public class NumberFormat {
             new NumberFormat(2, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
 
     /**
+     * Describes a format which rounds to three decimal places.
+     * <p>
+     * It specifies {@link RoundingMode#HALF_UP} as rounding mode and uses
+     * the decimal format symbols for machine formats, provided by
+     * {@link sirius.kernel.nls.NLS}.
+     *
+     * @see sirius.kernel.nls.NLS#getMachineFormatSymbols()
+     */
+    public static final NumberFormat MACHINE_THREE_DECIMAL_PLACES =
+            new NumberFormat(3, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
+
+    /**
      * Describes a format which rounds to up to five decimal places.
      * <p>
      * It specifies {@link RoundingMode#HALF_UP} as rounding mode and uses
