@@ -364,7 +364,7 @@ public class Amount implements Comparable<Amount>, Serializable {
     }
 
     /**
-     * Used to multiply two percentages, like two discounts as if they where applied after each other.
+     * Used to multiply two percentages, like two discounts as if they were applied after each other.
      * <p>
      * This can be used to compute the effective discount if two discounts like 15% and 5% are applied after
      * each other. The result would be {@code (15 + 5) - (15 * 5 / 100)} which is <tt>19,25 %</tt>
@@ -383,7 +383,7 @@ public class Amount implements Comparable<Amount>, Serializable {
     }
 
     /**
-     * Used to multiply two percentages, like two discounts as if they where applied after each other.
+     * Used to multiply two percentages, like two discounts as if they were applied after each other.
      * <p>
      * This can be used to compute the effective discount if two discounts like 15% and 5% are applied after
      * each other. The result would be {@code (15 + 5) - (15 * 5 / 100)} which is <tt>19,25 %</tt>
@@ -391,13 +391,16 @@ public class Amount implements Comparable<Amount>, Serializable {
      * @param percent the second percent value which would be applied after this percent value.
      * @return the effective percent value after both percentages would have been applied or <tt>NOTHING</tt> if
      * <tt>this</tt> is empty.
+     * @deprecated As this method <b>only</b> works with discounts, not with addons. As the name implies that this
+     * method works in both cases, we deprecate it here and moved the business logic into its actual place.
      */
+    @Deprecated
     public Amount chainPercent(@Nonnull Amount percent) {
         return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
     }
 
     /**
-     * Adds the given number to <tt>this</tt>, if <tt>other</tt> is not empty. Otherwise <tt>this</tt> will be
+     * Adds the given number to <tt>this</tt>, if <tt>other</tt> is not empty. Otherwise, <tt>this</tt> will be
      * returned.
      *
      * @param other the operand to add to this.

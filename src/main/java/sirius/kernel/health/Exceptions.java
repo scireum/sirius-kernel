@@ -60,7 +60,7 @@ public class Exceptions {
     /*
      * Used to cut endless loops while handling errors
      */
-    private static ThreadLocal<Boolean> frozen = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> frozen = new ThreadLocal<>();
 
     private Exceptions() {
     }
@@ -95,7 +95,7 @@ public class Exceptions {
         private Object[] systemErrorMessageParams;
         private boolean processError = true;
         private String key = "HandledException.exception";
-        private Map<String, Object> params = new TreeMap<>();
+        private final Map<String, Object> params = new TreeMap<>();
 
         /**
          * Use {@link Exceptions#handle()} to create an <tt>ErrorHandler</tt>
