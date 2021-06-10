@@ -41,8 +41,8 @@ import java.time.LocalDateTime;
 @AutoRegister
 public abstract class BackgroundLoop {
 
-    private static final double EVERY_SECOND = 1;
-    private static final double EVERY_TEN_SECONDS = 0.1;
+    protected static final double FREQUENCY_EVERY_SECOND = 1;
+    protected static final double FREQUENCY_EVERY_TEN_SECONDS = 0.1;
 
     @Part
     private Tasks tasks;
@@ -83,7 +83,7 @@ public abstract class BackgroundLoop {
      * @return the maximal call frequency in Hertz.
      */
     public double maxCallFrequency() {
-        return Sirius.isStartedAsTest() ? EVERY_SECOND : EVERY_TEN_SECONDS;
+        return Sirius.isStartedAsTest() ? FREQUENCY_EVERY_SECOND : FREQUENCY_EVERY_TEN_SECONDS;
     }
 
     /**
