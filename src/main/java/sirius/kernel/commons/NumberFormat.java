@@ -18,17 +18,17 @@ import java.text.DecimalFormatSymbols;
 /**
  * Used to define the parameters used to create a string representation of a number.
  * <p>
- * Provides a set of default formats and also describes the parameters used to format a number. This is used
- * by {@link Amount} to create string representations.
+ * Provides a set of default formats and also describes the parameters used to format a number.
+ * This is used by {@link Amount} to create string representations.
  */
 public class NumberFormat {
 
     /**
      * Describes the default format used to create string representations of percentages.
      * <p>
-     * It therefore specifies two decimal places which are rounded {@link RoundingMode#HALF_UP}. It uses
-     * the decimal format symbols for the currently active language provided by
-     * {@link sirius.kernel.nls.NLS}. As suffix the percent sign <tt>%</tt> is used.
+     * It therefore specifies two decimal places which are rounded {@link RoundingMode#HALF_UP}.
+     * It uses the decimal format symbols for the currently active language provided by
+     * {@link sirius.kernel.nls.NLS}. A percent sign <tt>%</tt> is used as suffix
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */
@@ -96,11 +96,11 @@ public class NumberFormat {
     public static final NumberFormat MACHINE_NO_DECIMAL_PLACES =
             new NumberFormat(0, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
 
-    private String suffix;
-    private int scale;
-    private boolean useGrouping;
-    private RoundingMode roundingMode;
-    private DecimalFormatSymbols formatSymbols;
+    private final String suffix;
+    private final int scale;
+    private final boolean useGrouping;
+    private final RoundingMode roundingMode;
+    private final DecimalFormatSymbols formatSymbols;
 
     /**
      * Creates a new number format used to format {@link Amount amounts}.
