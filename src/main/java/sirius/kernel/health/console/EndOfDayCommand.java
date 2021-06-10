@@ -42,10 +42,10 @@ public class EndOfDayCommand implements Command {
         output.blankLine();
         output.line("End of Day Tasks");
         output.separator();
-        output.apply("%30s %20s: %-30s", "NAME", "EXECUTED", "DURATION");
+        output.apply("%-30s %-20s %28s", "NAME", "EXECUTED", "DURATION");
         output.separator();
         for (EndOfDayTaskInfo info : endOfDayTaskExecutor.getTaskInfos()) {
-            output.apply("%30s %20s: %-30s",
+            output.apply("%-30s %-20s %28s",
                          info.getTask().getName(),
                          NLS.toUserString(info.getLastExecution()),
                          info.getFormattedLastDuration());
