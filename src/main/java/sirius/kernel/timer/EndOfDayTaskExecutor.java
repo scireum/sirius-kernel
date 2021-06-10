@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Executes all {@link EndOfDayTask end of day tasks} in the given timeframe.
@@ -52,7 +53,7 @@ public class EndOfDayTaskExecutor implements EveryDay {
     @Parts(EndOfDayTask.class)
     private PartCollection<EndOfDayTask> endOfDayTasks;
 
-    private Map<EndOfDayTask, EndOfDayTaskInfo> taskInfos = new ConcurrentHashMap<>();
+    private final Map<EndOfDayTask, EndOfDayTaskInfo> taskInfos = new ConcurrentHashMap<>();
 
     @Override
     public String getConfigKeyName() {
@@ -104,7 +105,7 @@ public class EndOfDayTaskExecutor implements EveryDay {
     }
 
     private EndOfDayTaskInfo executeTask(EndOfDayTask task) {
-        EndOfDayTaskInfo info = taskInfos.computeIfAbsent(task, this::createInfo);
+        EndOfDayTaskInfo info = getInfo(task);
         Watch w = Watch.start();
         try {
             info.lastExecution = LocalDateTime.now();
@@ -128,6 +129,10 @@ public class EndOfDayTaskExecutor implements EveryDay {
         return info;
     }
 
+    private EndOfDayTaskInfo getInfo(EndOfDayTask task) {
+        return taskInfos.computeIfAbsent(task, this::createInfo);
+    }
+
     private EndOfDayTaskInfo createInfo(EndOfDayTask endOfDayTask) {
         EndOfDayTaskInfo info = new EndOfDayTaskInfo();
         info.task = endOfDayTask;
@@ -141,10 +146,11 @@ public class EndOfDayTaskExecutor implements EveryDay {
      * @return a list of execution infos for all end of day tasks
      */
     public List<EndOfDayTaskInfo> getTaskInfos() {
-        ArrayList<EndOfDayTaskInfo> infos = new ArrayList<>(taskInfos.values());
-        infos.sort(Comparator.comparing(info -> info.getTask().getName()));
-
-        return infos;
+        return endOfDayTasks.getParts()
+                            .stream()
+                            .map(this::getInfo)
+                            .sorted(Comparator.comparing(info -> info.getTask().getName()))
+                            .collect(Collectors.toList());
     }
 
     /**
