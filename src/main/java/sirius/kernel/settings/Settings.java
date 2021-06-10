@@ -65,7 +65,7 @@ public class Settings {
      *               requested
      */
     public Settings(Config config, boolean strict) {
-        this.config = config;
+        this.config = config.isResolved() ? config : config.resolve();
         this.strict = strict;
     }
 
