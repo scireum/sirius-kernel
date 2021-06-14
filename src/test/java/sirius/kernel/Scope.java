@@ -16,7 +16,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Permits to contol the execution of a test class or spec.
+ * Permits to control the execution of a test class or spec.
  * <p>
  * This can be placed on a test class or {@link BaseSpecification spec} to control the execution of it.
  * <p>

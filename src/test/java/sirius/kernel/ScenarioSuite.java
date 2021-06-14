@@ -45,8 +45,8 @@ import java.util.stream.Stream;
  */
 public class ScenarioSuite extends WildcardPatternSuite {
 
-    private static Map<String, Boolean> scopeSettings = new HashMap<>();
-    private List<Scenario> scenarios;
+    private static final Map<String, Boolean> scopeSettings = new HashMap<>();
+    private final List<Scenario> scenarios;
 
     private static class ScenarioRunner extends Runner {
 
@@ -54,10 +54,10 @@ public class ScenarioSuite extends WildcardPatternSuite {
                 Description.createTestDescription(Sirius.class, "Framework setup");
         public static final Description FRAMEWORK_TEARDOWN =
                 Description.createTestDescription(Sirius.class, "Framework teardown");
-        private String scenarioFile;
-        private String includes;
-        private String excludes;
-        private List<Runner> allTests;
+        private final String scenarioFile;
+        private final String includes;
+        private final String excludes;
+        private final List<Runner> allTests;
 
         protected ScenarioRunner(String scenarioFile, String includes, String excludes, List<Runner> allTests) {
             this.scenarioFile = scenarioFile;
@@ -181,7 +181,7 @@ public class ScenarioSuite extends WildcardPatternSuite {
      * Use {@literal @RunWith(ScenarioSuite)} for a test suite.
      *
      * @param klass   the test suite to execute
-     * @param builder the builder used to builde the suite
+     * @param builder the builder used to build the suite
      * @throws InitializationError in case of an error during initialization
      */
     public ScenarioSuite(Class<?> klass, RunnerBuilder builder) throws InitializationError {
@@ -210,7 +210,7 @@ public class ScenarioSuite extends WildcardPatternSuite {
     /**
      * Determines if the given test scope is enabled.
      * <p>
-     * This is either done by sepcifying <tt>-Dtest.SCOPE=true</tt> or
+     * This is either done by specifying <tt>-Dtest.SCOPE=true</tt> or
      * <tt>-Dtest.all=true</tt>.
      *
      * @param scope the scope to check
