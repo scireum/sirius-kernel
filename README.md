@@ -52,11 +52,11 @@ functionalities, settings or customer specific overwrites can be dis- or enabled
 
 Each customization can provide its own configuration, classes and resources. These must be placed in a sub-folder
 or package of *customizations*. So if a customization would be named *foo** the base package would be 
-**customizations.foo** and the resources root **customizatons/foo/**. Also custom settings can be provided via
+**customizations.foo** and the resources root **customizations/foo/**. Also custom settings can be provided via
 **customizations/foo/settings.conf**.
 
 The framework will only pickup classes, resources and settings of enabled customizations. Also, the order of these
-is defined, therefor one customization can further customize / overwrite others.
+is defined, therefore one customization can further customize / overwrite others.
 
 To setup which customizations are enabled in what order specify an array for *sirius.customizations* in the 
 **instance.conf**.
