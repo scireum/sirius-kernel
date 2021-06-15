@@ -30,7 +30,11 @@ import java.util.function.Function;
  * the risk of an out-of-memory.
  *
  * @param <T> the type of object to be stored in the cache
+ * @deprecated This undermines the whole point of having central caches with a limited size. A local cache always brings
+ * the risk that we cannot control the amount of caches being created. Therefore, we loose both, cache efficiency and
+ * the size control. Therefore {@link ManagedCache} or {@link InlineCache} are better options.
  */
+@Deprecated
 public class SizedCache<T> {
 
     private final LoadingCache<String, T> cache;
