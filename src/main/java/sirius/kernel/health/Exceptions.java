@@ -17,6 +17,8 @@ import sirius.kernel.di.std.Parts;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -96,6 +98,7 @@ public class Exceptions {
         private boolean processError = true;
         private String key = "HandledException.exception";
         private final Map<String, Object> params = new TreeMap<>();
+        private final Map<ExceptionHint, Object> hints = new HashMap<>();
 
         /**
          * Use {@link Exceptions#handle()} to create an <tt>ErrorHandler</tt>
@@ -192,6 +195,18 @@ public class Exceptions {
         }
 
         /**
+         * Adds a hint which can later be retrieved from the generated {@link HandledException}.
+         *
+         * @param hint  the name of the hint
+         * @param value the value to store
+         * @return <tt>this</tt> in order to fluently call more methods on this handler
+         */
+        public ErrorHandler hint(ExceptionHint hint, Object value) {
+            this.hints.put(hint, value);
+            return this;
+        }
+
+        /**
          * Generates and logs the resulting <tt>HandledException</tt>.
          * <p>
          * The generated exception can be either thrown (it subclasses RuntimeException and therefore
@@ -216,7 +231,7 @@ public class Exceptions {
 
             try {
                 String message = computeMessage();
-                HandledException result = new HandledException(message, ex);
+                HandledException result = new HandledException(message, hints, ex);
                 if (processError) {
                     log.SEVERE(result);
                     notifyHandlers(result);
@@ -231,7 +246,7 @@ public class Exceptions {
                                             + t.getMessage()
                                             + " ("
                                             + t.getClass().getName()
-                                            + ")", t);
+                                            + ")", Collections.emptyMap(), t);
             }
         }
 
@@ -241,7 +256,7 @@ public class Exceptions {
                 return NLS.fmtr("HandledException.systemError")
                           .set("error", Strings.apply(systemErrorMessage, extendParams(ex, systemErrorMessageParams)))
                           .format();
-            } else if (MESSAGE_MODE_RAW.equals(key) && params.containsKey(PARAM_RAW_MESSAGE)){
+            } else if (MESSAGE_MODE_RAW.equals(key) && params.containsKey(PARAM_RAW_MESSAGE)) {
                 return String.valueOf(params.get(PARAM_RAW_MESSAGE));
             } else {
                 // Add exception infos

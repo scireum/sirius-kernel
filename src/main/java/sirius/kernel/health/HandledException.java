@@ -8,6 +8,12 @@
 
 package sirius.kernel.health;
 
+import sirius.kernel.commons.Value;
+
+import java.io.Serial;
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * An exception which has already been handled (logged and reacted upon) can be represented by
  * <tt>HandledException</tt>.
@@ -19,24 +25,31 @@ package sirius.kernel.health;
  */
 public class HandledException extends RuntimeException {
 
+    @Serial
     private static final long serialVersionUID = 4460968279048068701L;
+
+    private final transient Map<ExceptionHint, Object> hints;
 
     /**
      * Creates a new instance with the given message and no exception attached
      *
      * @param message the message to be shown to the user
+     * @param hints   any processing hints which have been specified so far
+     * @param cause   the exception which actually caused this error
      */
-    protected HandledException(String message) {
-        super(message);
+    protected HandledException(String message, Map<ExceptionHint, Object> hints, Throwable cause) {
+        super(message, cause);
+        this.hints = Collections.unmodifiableMap(hints);
     }
 
     /**
-     * Created a new instance with the given message and exception attached
+     * Retrieves the hint which has previously been added.
      *
-     * @param message the message to be shown to the user
-     * @param e       the exception to be attached
+     * @param hint the name of the hint to fetch
+     * @return the hin value (which might be empty)
+     * @see Exceptions.ErrorHandler#hint(ExceptionHint, Object)
      */
-    protected HandledException(String message, Throwable e) {
-        super(message, e);
+    public Value getHint(ExceptionHint hint) {
+        return Value.of(hints.get(hint));
     }
 }
