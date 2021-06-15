@@ -35,10 +35,10 @@ public class HandledException extends RuntimeException {
      *
      * @param message the message to be shown to the user
      * @param hints   any processing hints which have been specified so far
-     * @param ex      the exception to be attached
+     * @param cause   the exception which actually caused this error
      */
-    protected HandledException(String message, Map<ExceptionHint, Object> hints, Throwable ex) {
-        super(message, ex);
+    protected HandledException(String message, Map<ExceptionHint, Object> hints, Throwable cause) {
+        super(message, cause);
         this.hints = Collections.unmodifiableMap(hints);
     }
 
