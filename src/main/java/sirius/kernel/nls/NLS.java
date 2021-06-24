@@ -131,6 +131,7 @@ public class NLS {
      * @return the language code of the default language
      */
     @Nonnull
+    @Deprecated
     public static String getDefaultLanguage() {
         if (defaultLanguage != null) {
             return defaultLanguage;

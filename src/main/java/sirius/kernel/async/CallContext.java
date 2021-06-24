@@ -9,6 +9,7 @@
 package sirius.kernel.async;
 
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -359,6 +360,8 @@ public class CallContext {
      *
      * @return a two-letter language code used for the current thread.
      */
+    @SuppressWarnings("deprecation")
+    @Explain("The replacement for NLS.getDefaultLanguage() is only available in sirius-web.")
     public String getLang() {
         if (lang == null) {
             invokeLazyLanguageInstaller();
