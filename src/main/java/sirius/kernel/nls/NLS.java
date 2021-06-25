@@ -131,7 +131,6 @@ public class NLS {
      * @return the language code of the default language
      */
     @Nonnull
-    @Deprecated
     public static String getDefaultLanguage() {
         if (defaultLanguage != null) {
             return defaultLanguage;
@@ -158,7 +157,6 @@ public class NLS {
      * @return the language code of the fallback language
      */
     @Nonnull
-    @Deprecated
     public static String getFallbackLanguage() {
         String fallback = CallContext.getCurrent().getFallbackLang();
         if (Strings.isEmpty(fallback)) {
