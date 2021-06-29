@@ -45,6 +45,19 @@ steps:
       event:
       - pull_request
 
+  - name: memoio
+    image: plugins/slack
+    settings:
+      webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
+      channel: scireum-dev
+    when:
+      status:
+        - failure
+      event:
+      include:
+        - tag
+        - cron
+
   - name: deploy
     image: hub.scireum.com/scireum/sirius-build-jdk16:latest
     commands:

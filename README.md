@@ -1,4 +1,5 @@
 ![sirius](docs/sirius.jpg)
+[![Build Status](https://drone.scireum.com/api/badges/scireum/sirius-kernel/status.svg?ref=refs/heads/develop)](https://drone.scireum.com/scireum/sirius-kernel)
 
 Welcome to the **kernel module** of the SIRIUS OpenSource framework created by [scireum GmbH](https://www.scireum.de). 
 To learn more about what SIRIUS is please refer to the following links:

@@ -227,7 +227,7 @@ public abstract class BackgroundLoop {
      */
     public static Future nextExecution(Class<? extends BackgroundLoop> type) {
         if (!Sirius.isStartedAsTest()) {
-            throw new IllegalStateException("BackgroundLoop.extExecution may only be called in tests.");
+            throw new IllegalStateException("BackgroundLoop.nextExecution may only be called in tests.");
         }
         return findLoop(type).loopExecuted;
     }
