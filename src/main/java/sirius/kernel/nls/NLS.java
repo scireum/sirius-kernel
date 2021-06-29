@@ -201,6 +201,7 @@ public class NLS {
      *
      * @return a list of supported language codes
      */
+    @Deprecated
     public static Set<String> getSupportedLanguages() {
         if (supportedLanguages == null && Sirius.getSettings() != null) {
             try {
@@ -225,12 +226,13 @@ public class NLS {
      * @param twoLetterLanguageCode the language as two-letter code
      * @return <tt>true</tt> if the language is listed in <tt>nls.languages</tt>, <tt>false</tt> otherwise.
      */
+    @Deprecated
     public static boolean isSupportedLanguage(String twoLetterLanguageCode) {
         return getSupportedLanguages().contains(twoLetterLanguageCode);
     }
 
     /**
-     * Checks if the given language is supproted. Returns the default language otherwise.
+     * Checks if the given language is supported. Returns the default language otherwise.
      * <p>
      * Note that if the given lang is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
      * to {@link sirius.kernel.async.CallContext#setLang(String)} with <tt>null</tt> as parameter won't change
@@ -241,6 +243,7 @@ public class NLS {
      * was passed in, in which case <tt>null</tt> is returned.
      */
     @Nullable
+    @Deprecated
     public static String makeLang(@Nullable String lang) {
         if (Strings.isEmpty(lang)) {
             return null;
