@@ -53,13 +53,7 @@
         <dependency>
             <groupId>com.palantir.docker.compose</groupId>
             <artifactId>docker-compose-rule-core</artifactId>
-            <version>1.3.0</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>cglib-nodep</artifactId>
-                    <groupId>cglib</groupId>
-                </exclusion>
-            </exclusions>
+            <version>1.5.0</version>
         </dependency>
     </dependencies>
 </project>
