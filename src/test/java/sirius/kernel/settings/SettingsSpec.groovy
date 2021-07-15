@@ -8,6 +8,7 @@
 
 package sirius.kernel.settings
 
+
 import sirius.kernel.BaseSpecification
 import sirius.kernel.Sirius
 
@@ -31,4 +32,12 @@ class SettingsSpec extends BaseSpecification {
         keys == ["1", "2", "3"]
     }
 
+    def "no exception is thrown for retrieving a non-existent extension, even when settings are strict"() {
+        when:
+        def extension = Sirius.getSettings().getExtension("non-existent", "not-specified")
+        then:
+        extension == null
+        and:
+        noExceptionThrown()
+    }
 }
