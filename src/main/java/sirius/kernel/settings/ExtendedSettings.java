@@ -120,9 +120,16 @@ public class ExtendedSettings extends Settings {
         if (result != null) {
             return result;
         }
+        if (!getConfig().hasPath(type)) {
+            if (strict) {
+                Extension.LOG.WARN("Unknown extension type requested: %s", type);
+            }
+            return null;
+        }
 
         ConfigObject cfg = getConfig().getConfig(type).root();
         ConfigObject def = (ConfigObject) cfg.get(Extension.DEFAULT);
+
         if (cfg.containsKey(Extension.DEFAULT)) {
             result = new Extension(type, Extension.DEFAULT, def, null);
             defaultsCache.put(type, result);
@@ -153,7 +160,8 @@ public class ExtendedSettings extends Settings {
 
         ConfigObject cfg = getConfig().getConfig(type).root();
         List<Extension> extensions = new ArrayList<>();
-        ConfigObject defaultObject = cfg.containsKey(Extension.DEFAULT) ? (ConfigObject) cfg.get(Extension.DEFAULT) : null;
+        ConfigObject defaultObject =
+                cfg.containsKey(Extension.DEFAULT) ? (ConfigObject) cfg.get(Extension.DEFAULT) : null;
 
         for (Map.Entry<String, ConfigValue> entry : cfg.entrySet()) {
             String key = entry.getKey();
