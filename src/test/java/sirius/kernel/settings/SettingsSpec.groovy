@@ -8,7 +8,7 @@
 
 package sirius.kernel.settings
 
-import com.typesafe.config.Config
+
 import sirius.kernel.BaseSpecification
 import sirius.kernel.Sirius
 
