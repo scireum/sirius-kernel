@@ -117,7 +117,7 @@ public class TaskContext implements SubContext {
      * @param args     the parameters used to format the state message (see {@link Strings#apply(String, Object...)})
      * @deprecated Use either {@link #tryUpdateState(String, Object...)} or {@link #forceUpdateState(String, Object...)}
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public void setState(String newState, Object... args) {
         adapter.setState(Strings.apply(newState, args));
     }

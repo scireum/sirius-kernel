@@ -185,14 +185,11 @@ public class NLS {
      * By default, SIRIUS initializes with the language set in {@code nls.defaultLanguage} so a switchover
      * to the system language has to be performed manually.
      *
-     * @return the language code of the underlying operating system. If the language is not supported (not listed
-     * in {@code nls.languages}), <tt>null</tt> will be returned as
-     * {@link sirius.kernel.async.CallContext#setLang(String)} doesn't change the current language if <tt>null</tt> is
-     * passed in.
+     * @return the language code of the underlying operating system
      */
     @Nullable
     public static String getSystemLanguage() {
-        return makeLang(Locale.getDefault().getLanguage().toLowerCase());
+        return Locale.getDefault().getLanguage().toLowerCase();
     }
 
     /**
@@ -200,8 +197,9 @@ public class NLS {
      * {@code nls.languages}
      *
      * @return a list of supported language codes
+     * @deprecated This is now controlled via ScopeInfo in sirius-web as there is no system-wide truth
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static Set<String> getSupportedLanguages() {
         if (supportedLanguages == null && Sirius.getSettings() != null) {
             try {
@@ -225,8 +223,9 @@ public class NLS {
      *
      * @param twoLetterLanguageCode the language as two-letter code
      * @return <tt>true</tt> if the language is listed in <tt>nls.languages</tt>, <tt>false</tt> otherwise.
+     * @deprecated This is now controlled via ScopeInfo in sirius-web as there is no system-wide truth
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static boolean isSupportedLanguage(String twoLetterLanguageCode) {
         return getSupportedLanguages().contains(twoLetterLanguageCode);
     }
@@ -241,9 +240,10 @@ public class NLS {
      * @param lang the language to check
      * @return <tt>lang</tt> if it was a supported language or the defaultLanguage otherwise, unless an empty string
      * was passed in, in which case <tt>null</tt> is returned.
+     * @deprecated This is now controlled via ScopeInfo in sirius-web as there is no system-wide truth
      */
     @Nullable
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static String makeLang(@Nullable String lang) {
         if (Strings.isEmpty(lang)) {
             return null;
@@ -548,24 +548,16 @@ public class NLS {
      * or {@code ""} if an invalid index was given
      */
     public static String getDayOfWeek(int day) {
-        switch (day) {
-            case Calendar.MONDAY:
-                return CommonKeys.MONDAY.translated();
-            case Calendar.TUESDAY:
-                return CommonKeys.TUESDAY.translated();
-            case Calendar.WEDNESDAY:
-                return CommonKeys.WEDNESDAY.translated();
-            case Calendar.THURSDAY:
-                return CommonKeys.THURSDAY.translated();
-            case Calendar.FRIDAY:
-                return CommonKeys.FRIDAY.translated();
-            case Calendar.SATURDAY:
-                return CommonKeys.SATURDAY.translated();
-            case Calendar.SUNDAY:
-                return CommonKeys.SUNDAY.translated();
-            default:
-                return "";
-        }
+        return switch (day) {
+            case Calendar.MONDAY -> CommonKeys.MONDAY.translated();
+            case Calendar.TUESDAY -> CommonKeys.TUESDAY.translated();
+            case Calendar.WEDNESDAY -> CommonKeys.WEDNESDAY.translated();
+            case Calendar.THURSDAY -> CommonKeys.THURSDAY.translated();
+            case Calendar.FRIDAY -> CommonKeys.FRIDAY.translated();
+            case Calendar.SATURDAY -> CommonKeys.SATURDAY.translated();
+            case Calendar.SUNDAY -> CommonKeys.SUNDAY.translated();
+            default -> "";
+        };
     }
 
     /**
@@ -587,34 +579,21 @@ public class NLS {
      * or <tt>""</tt> if an invalid index was given
      */
     public static String getMonthName(int month) {
-        switch (month) {
-            case 1:
-                return CommonKeys.JANUARY.translated();
-            case 2:
-                return CommonKeys.FEBRUARY.translated();
-            case 3:
-                return CommonKeys.MARCH.translated();
-            case 4:
-                return CommonKeys.APRIL.translated();
-            case 5:
-                return CommonKeys.MAY.translated();
-            case 6:
-                return CommonKeys.JUNE.translated();
-            case 7:
-                return CommonKeys.JULY.translated();
-            case 8:
-                return CommonKeys.AUGUST.translated();
-            case 9:
-                return CommonKeys.SEPTEMBER.translated();
-            case 10:
-                return CommonKeys.OCTOBER.translated();
-            case 11:
-                return CommonKeys.NOVEMBER.translated();
-            case 12:
-                return CommonKeys.DECEMBER.translated();
-            default:
-                return "";
-        }
+        return switch (month) {
+            case 1 -> CommonKeys.JANUARY.translated();
+            case 2 -> CommonKeys.FEBRUARY.translated();
+            case 3 -> CommonKeys.MARCH.translated();
+            case 4 -> CommonKeys.APRIL.translated();
+            case 5 -> CommonKeys.MAY.translated();
+            case 6 -> CommonKeys.JUNE.translated();
+            case 7 -> CommonKeys.JULY.translated();
+            case 8 -> CommonKeys.AUGUST.translated();
+            case 9 -> CommonKeys.SEPTEMBER.translated();
+            case 10 -> CommonKeys.OCTOBER.translated();
+            case 11 -> CommonKeys.NOVEMBER.translated();
+            case 12 -> CommonKeys.DECEMBER.translated();
+            default -> "";
+        };
     }
 
     /**
@@ -815,12 +794,11 @@ public class NLS {
         if (data instanceof Boolean) {
             return data.toString();
         }
-        if (data instanceof Temporal) {
+        if (data instanceof Temporal temporal) {
             // Convert Instant to LocalDateTime to permit a "normal" time format
-            if (data instanceof Instant) {
-                data = LocalDateTime.ofInstant((Instant) data, ZoneId.systemDefault());
+            if (temporal instanceof Instant) {
+                temporal = LocalDateTime.ofInstant((Instant) data, ZoneId.systemDefault());
             }
-            Temporal temporal = (Temporal) data;
             if (ChronoUnit.HOURS.isSupportedBy(temporal)) {
                 if (!ChronoField.DAY_OF_MONTH.isSupportedBy(temporal)) {
                     return MACHINE_FORMAT_TIME_FORMAT.format(temporal);
@@ -900,12 +878,11 @@ public class NLS {
                 return NLS.get(CommonKeys.NO.key(), lang);
             }
         }
-        if (data instanceof Temporal) {
+        if (data instanceof Temporal temporal) {
             // Convert Instant to LocalDateTime to permit a "normal" time format
-            if (data instanceof Instant) {
-                data = LocalDateTime.ofInstant((Instant) data, ZoneId.systemDefault());
+            if (temporal instanceof Instant) {
+                temporal = LocalDateTime.ofInstant((Instant) data, ZoneId.systemDefault());
             }
-            Temporal temporal = (Temporal) data;
             if (ChronoUnit.HOURS.isSupportedBy(temporal)) {
                 if (!ChronoField.DAY_OF_MONTH.isSupportedBy(temporal)) {
                     return getTimeFormatWithSeconds(lang).format(temporal);

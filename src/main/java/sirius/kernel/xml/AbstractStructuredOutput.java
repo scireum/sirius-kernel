@@ -23,6 +23,7 @@ import java.util.function.BiConsumer;
  */
 public abstract class AbstractStructuredOutput implements StructuredOutput {
 
+    private static final Attribute[] EMPTY_ATTRIBUTES_ARRAY = new Attribute[0];
     protected List<Element> nesting = new ArrayList<>();
 
     /**
@@ -37,8 +38,8 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
      */
     protected static class Element {
 
-        private ElementType type;
-        private String name;
+        private final ElementType type;
+        private final String name;
         private boolean empty = true;
 
         protected Element(ElementType type, String name) {
@@ -188,8 +189,8 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
      * Used to fluently create a {@link #beginObject(String, Attribute...)}.
      */
     public class TagBuilder {
-        private List<Attribute> attributes = new ArrayList<>();
-        private String name;
+        private final List<Attribute> attributes = new ArrayList<>();
+        private final String name;
 
         /**
          * Creates a new TabBuilder with the given tag name
@@ -229,7 +230,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
          * Finally creates the tag or object with the given name and attributes.
          */
         public void build() {
-            beginObject(name, attributes.toArray(new Attribute[attributes.size()]));
+            beginObject(name, attributes.toArray(EMPTY_ATTRIBUTES_ARRAY));
         }
     }
 

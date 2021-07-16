@@ -94,12 +94,12 @@ public class Timers implements Startable, Stoppable {
     private PartCollection<EveryDay> everyDay;
 
     private Timer timer;
-    private ReentrantLock timerLock = new ReentrantLock();
+    private final ReentrantLock timerLock = new ReentrantLock();
 
     /*
      * Contains the relative paths of all loaded files
      */
-    private List<WatchedResource> loadedFiles = new CopyOnWriteArrayList<>();
+    private final List<WatchedResource> loadedFiles = new CopyOnWriteArrayList<>();
 
     /*
      * Used to frequently check loaded properties when running in DEVELOP mode.
@@ -396,7 +396,7 @@ public class Timers implements Startable, Stoppable {
 
     private void runDailyTimer(int currentHour, EveryDay task) {
         Optional<Integer> executionHour = getExecutionHour(task);
-        if (!executionHour.isPresent()) {
+        if (executionHour.isEmpty()) {
             LOG.WARN("Skipping daily timer %s as config key '%s' is missing!",
                      task.getClass().getName(),
                      TIMER_DAILY_PREFIX + task.getConfigKeyName());

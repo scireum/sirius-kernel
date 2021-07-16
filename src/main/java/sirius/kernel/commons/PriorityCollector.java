@@ -60,7 +60,7 @@ public class PriorityCollector<T> {
      * @param entity   the entity added to the collector.
      */
     public void add(int priority, T entity) {
-        data.add(new ComparableTuple<Integer, T>(priority, entity));
+        data.add(new ComparableTuple<>(priority, entity));
     }
 
     /**
@@ -70,7 +70,7 @@ public class PriorityCollector<T> {
      * @see #DEFAULT_PRIORITY
      */
     public void addDefault(T entity) {
-        data.add(new ComparableTuple<Integer, T>(DEFAULT_PRIORITY, entity));
+        data.add(new ComparableTuple<>(DEFAULT_PRIORITY, entity));
     }
 
     /**

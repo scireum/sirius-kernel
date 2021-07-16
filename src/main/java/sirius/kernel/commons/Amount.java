@@ -14,6 +14,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -47,6 +48,7 @@ import java.util.function.Supplier;
 @Immutable
 public class Amount implements Comparable<Amount>, Serializable {
 
+    @Serial
     private static final long serialVersionUID = 2187873067365153302L;
 
     /**
@@ -283,7 +285,7 @@ public class Amount implements Comparable<Amount>, Serializable {
      * @deprecated This method has been deprecated. Use <tt>orElseGet()</tt> instead.
      */
     @Nonnull
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public Amount computeIfNull(Supplier<Amount> supplier) {
         return orElseGet(supplier);
     }
@@ -377,7 +379,7 @@ public class Amount implements Comparable<Amount>, Serializable {
      */
     @Nonnull
     @CheckReturnValue
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public Amount multiplyPercent(@Nonnull Amount percent) {
         return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
     }
@@ -394,7 +396,7 @@ public class Amount implements Comparable<Amount>, Serializable {
      * @deprecated As this method <b>only</b> works with discounts, not with addons. As the name implies that this
      * method works in both cases, we deprecate it here and moved the business logic into its actual place.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public Amount chainPercent(@Nonnull Amount percent) {
         return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
     }
@@ -932,6 +934,12 @@ public class Amount implements Comparable<Amount>, Serializable {
         return sb.toString();
     }
 
+    /**
+     * Provides a machine-readable representation of this amount.
+     *
+     * @return the amount formatted in a language independent matter and rounded to two decimal digits or an empty
+     * string if the underlying amount is empty
+     */
     public String toMachineString() {
         if (isEmpty()) {
             return "";

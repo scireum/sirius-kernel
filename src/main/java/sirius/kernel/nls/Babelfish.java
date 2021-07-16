@@ -95,7 +95,7 @@ public class Babelfish {
      * @return a list of all translations which miss an actual value
      */
     public Stream<Translation> getAutocreatedTranslations() {
-        return translationMap.values().stream().filter(e -> e.isAutocreated());
+        return translationMap.values().stream().filter(Translation::isAutocreated);
     }
 
     /**

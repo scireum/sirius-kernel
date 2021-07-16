@@ -73,7 +73,7 @@ public class Strings {
                                                     'w',
                                                     'z'};
 
-    private static Map<Integer, String> unicodeMapping = new TreeMap<>();
+    private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
     static {
         translateRange(0x00C0, "A", "A", "A", "A", "AE", "A", "AE", "C", "E", "E", "E", "E", "I", "I", "I", "I");
@@ -577,7 +577,7 @@ public class Strings {
         Matcher m = regEx.matcher(input);
         boolean result = m.find();
         if (result) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             do {
                 m.appendReplacement(sb, replacement.apply(m.group(1)));
                 result = m.find();
@@ -663,9 +663,7 @@ public class Strings {
             sb.append(input);
         }
 
-        for (int i = 0; i < numberOfPaddings; i++) {
-            sb.append(padding);
-        }
+        sb.append(padding.repeat(numberOfPaddings));
 
         if (left && input != null) {
             sb.append(input);

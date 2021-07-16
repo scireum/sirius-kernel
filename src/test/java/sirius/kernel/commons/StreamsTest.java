@@ -33,9 +33,7 @@ public class StreamsTest {
     @Test
     public void largeTransferTest() throws IOException {
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 10_000; i++) {
-            builder.append("Hello World");
-        }
+        builder.append("Hello World".repeat(10_000));
 
         String testString = builder.toString();
 

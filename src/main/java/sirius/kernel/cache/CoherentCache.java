@@ -77,7 +77,7 @@ class CoherentCache<V> extends ManagedCache<String, V> {
      * Use {@link #addRemover(String, BiPredicate)} and {@link #removeAll(String, String)} which scans each node
      * individually.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Override
     public void removeIf(@Nonnull Predicate<CacheEntry<String, V>> predicate) {
         if (data == null) {

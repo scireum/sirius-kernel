@@ -10,6 +10,7 @@ package sirius.kernel.xml;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.health.Exceptions;
 
 import javax.annotation.CheckReturnValue;
@@ -63,6 +64,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      * @param encoding the charset used to encode the output
      * @param doctype  the doc type used in the XML header
      */
+    @SuppressWarnings("HttpUrlsUsage")
+    @Explain("This is a namespace and not a real URL")
     public XMLStructuredOutput(@Nonnull OutputStream output, @Nonnull Charset encoding, @Nullable String doctype) {
         try {
             this.out = output;

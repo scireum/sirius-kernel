@@ -81,7 +81,8 @@ public class URLBuilder {
                             "Cannot add '%s'! Parameters where already added to: '%s'.",
                             uriPart,
                             url));
-                } else if (uriPart.contains("?")) {
+                }
+                if (uriPart.contains("?")) {
                     questionMark.toggle();
                 }
                 url.append(uriPart);

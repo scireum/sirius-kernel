@@ -203,7 +203,7 @@ public interface Cache<K, V> {
      * Use {@link #addRemover(String, BiPredicate)} and {@link #removeAll(String, String)} which scans each node
      * individually.
      */
-    @Deprecated
+    @Deprecated(since = "2021/07/01")
     void removeIf(@Nonnull Predicate<CacheEntry<K, V>> predicate);
 
     /**

@@ -42,10 +42,10 @@ public class Operation implements AutoCloseable {
     private static final Set<Operation> ops =
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
-    private Supplier<String> nameProvider;
-    private Duration timeout;
+    private final Supplier<String> nameProvider;
+    private final Duration timeout;
     private String name;
-    private Watch w = Watch.start();
+    private final Watch w = Watch.start();
 
     /**
      * Creates a new operation.

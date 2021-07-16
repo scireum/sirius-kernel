@@ -84,7 +84,7 @@ public class ComparableTuple<F extends Comparable<F>, S> extends Tuple<F, S>
     public static <K extends Comparable<K>, V> List<ComparableTuple<K, V>> fromComparableMap(@Nonnull Map<K, V> map) {
         List<ComparableTuple<K, V>> result = new ArrayList<>(map.size());
         for (Map.Entry<K, V> e : map.entrySet()) {
-            result.add(new ComparableTuple<K, V>(e.getKey(), e.getValue()));
+            result.add(new ComparableTuple<>(e.getKey(), e.getValue()));
         }
         return result;
     }

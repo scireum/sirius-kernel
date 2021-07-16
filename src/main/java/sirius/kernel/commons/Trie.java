@@ -166,12 +166,12 @@ public class Trie<V> {
         /**
          * Contains a sorted list of keys
          */
-        private List<Character> keys = new ArrayList<>();
+        private final List<Character> keys = new ArrayList<>();
 
         /**
          * Contains the list of continuations matching the keys list
          */
-        private List<Node> continuations = new ArrayList<>();
+        private final List<Node> continuations = new ArrayList<>();
 
         /**
          * Contains the value associated with the path to this node

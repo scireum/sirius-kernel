@@ -9,7 +9,7 @@
 package sirius.kernel.di.transformers;
 
 @AutoTransform(source = ParentClass.class,
-        targets = {TargetClassAutotransform.class},
+        targets = TargetClassAutotransform.class,
         target = TargetClassAutotransformChildWeird.class)
 public class TargetClassAutotransformChildWeird extends TargetClassAutotransform {
 

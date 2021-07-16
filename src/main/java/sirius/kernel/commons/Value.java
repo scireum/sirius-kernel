@@ -366,7 +366,7 @@ public class Value {
         if (separator == null) {
             separator = "";
         }
-        return Value.of(toString() + separator + value);
+        return Value.of(this + separator + value);
     }
 
     /**
@@ -391,7 +391,7 @@ public class Value {
         if (separator == null) {
             separator = "";
         }
-        return Value.of(value + separator + toString());
+        return Value.of(value + separator + this);
     }
 
     /**

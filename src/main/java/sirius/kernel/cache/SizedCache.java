@@ -34,7 +34,7 @@ import java.util.function.Function;
  * the risk that we cannot control the amount of caches being created. Therefore, we loose both, cache efficiency and
  * the size control. Therefore {@link ManagedCache} or {@link InlineCache} are better options.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class SizedCache<T> {
 
     private final LoadingCache<String, T> cache;

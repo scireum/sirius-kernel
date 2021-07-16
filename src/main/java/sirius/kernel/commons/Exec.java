@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serial;
 import java.time.Duration;
 import java.util.concurrent.Semaphore;
 
@@ -97,6 +98,7 @@ public class Exec {
      */
     public static class ExecException extends Exception {
 
+        @Serial
         private static final long serialVersionUID = -4736872491172480346L;
         private final String log;
 
@@ -184,6 +186,9 @@ public class Exec {
                 throw new ExecException(outEater.exHolder.get(), logger.toString());
             }
             return logger.toString();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ExecException(e, logger.toString());
         } catch (Exception e) {
             throw new ExecException(e, logger.toString());
         }

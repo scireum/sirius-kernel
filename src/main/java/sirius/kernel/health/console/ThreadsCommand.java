@@ -26,7 +26,7 @@ import java.util.Optional;
 @Register
 public class ThreadsCommand implements Command {
 
-    private ThreadMXBean t = ManagementFactory.getThreadMXBean();
+    private final ThreadMXBean t = ManagementFactory.getThreadMXBean();
 
     @Override
     public void execute(Output output, String... params) throws Exception {

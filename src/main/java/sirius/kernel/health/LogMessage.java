@@ -17,12 +17,12 @@ import java.util.logging.Level;
  * Contains a log message passed from {@link Log} to {@link LogTap}.
  */
 public class LogMessage {
-    private String message;
-    private long timestamp;
-    private Level logLevel;
-    private Log receiver;
-    private StackTraceElement caller;
-    private String thread;
+    private final String message;
+    private final long timestamp;
+    private final Level logLevel;
+    private final Log receiver;
+    private final StackTraceElement caller;
+    private final String thread;
 
     /**
      * Creates a new log message based on the given parameters.

@@ -76,15 +76,11 @@ class ManagedCacheRemoverBuilder<K, V, T> implements CacheRemoverBuilder<K, V, T
     public Cache<K, V> removeIf(BiPredicate<String, T> predicate) {
         return cache.addRemover(discriminator, (selector, entry) -> {
             Tuple<T, State> t = mapper.apply(selector, entry);
-            switch (t.getSecond()) {
-                case FILTERED:
-                    return false;
-                case REMOVED:
-                    return true;
-                case UNDECIDED:
-                default:
-                    return predicate.test(selector, t.getFirst());
-            }
+            return switch (t.getSecond()) {
+                case FILTERED -> false;
+                case REMOVED -> true;
+                default -> predicate.test(selector, t.getFirst());
+            };
         });
     }
 

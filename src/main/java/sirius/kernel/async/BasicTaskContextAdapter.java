@@ -55,7 +55,7 @@ public class BasicTaskContextAdapter implements TaskContextAdapter {
      * @deprecated Use either {@link #forceUpdateState(String)} or {@link #tryUpdateState(String)}
      */
     @Override
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public void setState(String message) {
         this.state = message;
     }

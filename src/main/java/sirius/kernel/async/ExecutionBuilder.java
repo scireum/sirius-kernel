@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 public class ExecutionBuilder {
 
     private static final String SYSTEM_ASYNC = "ASYNC";
-    private Tasks tasks;
+    private final Tasks tasks;
 
     /**
      * Internal class which takes care of passing along the CallContext and for storing the configuration made by the
@@ -146,7 +146,7 @@ public class ExecutionBuilder {
         }
     }
 
-    private TaskWrapper wrapper = new TaskWrapper();
+    private final TaskWrapper wrapper = new TaskWrapper();
 
     /**
      * Generates a new ExecutionBuilder for the given category.

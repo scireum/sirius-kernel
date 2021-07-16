@@ -19,7 +19,7 @@ import java.io.Reader;
 public class BOMReader extends Reader {
 
     private boolean bomSkipped = false;
-    private Reader delegate;
+    private final Reader delegate;
 
     /**
      * Creates a new reader wrapping the given one.
