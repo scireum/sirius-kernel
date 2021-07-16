@@ -318,7 +318,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
      * Use {@link #addRemover(String, BiPredicate)} and {@link #removeAll(String, String)} which scans each node
      * individually.
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(since = "2021/07/01")
     @Override
     public void removeIf(@Nonnull Predicate<CacheEntry<K, V>> predicate) {
         if (data == null) {
