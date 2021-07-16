@@ -50,7 +50,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -94,20 +94,20 @@ public class NLS {
             DateTimeFormatter.ofPattern("H:mm[:ss]", Locale.ENGLISH);
     private static final DateTimeFormatter MACHINE_FORMAT_TIME_FORMAT =
             DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ENGLISH);
-    private static final Map<String, DateTimeFormatter> fullDateTimeFormatters = new TreeMap<>();
-    private static final Map<String, DateTimeFormatter> dateTimeFormatters = new TreeMap<>();
-    private static final Map<String, DateTimeFormatter> dateFormatters = new TreeMap<>();
-    private static final Map<String, DateTimeFormatter> shortDateFormatters = new TreeMap<>();
-    private static final Map<String, DateTimeFormatter> timeFormatters = new TreeMap<>();
-    private static final Map<String, DateTimeFormatter> parseTimeFormatters = new TreeMap<>();
-    private static final Map<String, DateTimeFormatter> fullTimeFormatters = new TreeMap<>();
+    private static final Map<String, DateTimeFormatter> fullDateTimeFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> dateTimeFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> dateFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> shortDateFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> timeFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> parseTimeFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> fullTimeFormatters = new ConcurrentHashMap<>();
 
     private static final long SECOND = 1000;
     private static final long MINUTE = 60 * SECOND;
     private static final long HOUR = 60 * MINUTE;
     private static final long DAY = 24 * HOUR;
 
-    private static final String[] UNITS = {"Bytes", "kB", "MB", "GB", "TB", "PB"};
+    private static final String[] UNITS = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
 
     private NLS() {
     }
