@@ -124,10 +124,9 @@ public class Metric implements Comparable<Metric> {
         if (this == other) {
             return true;
         }
-        if (!(other instanceof Metric)) {
+        if (!(other instanceof Metric otherMetric)) {
             return false;
         }
-        Metric otherMetric = (Metric) other;
         return Objects.equals(code, otherMetric.code) && state == otherMetric.state;
     }
 

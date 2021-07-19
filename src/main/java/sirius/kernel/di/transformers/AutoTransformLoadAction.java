@@ -50,7 +50,7 @@ public class AutoTransformLoadAction implements ClassLoadAction {
                                int priority) {
             this.sourceType = sourceType;
             this.targetType = targetType;
-            this.additionalTargetTypes = additionalTargetTypes;
+            this.additionalTargetTypes = additionalTargetTypes.clone();
             this.transformerClass = transformerClass;
             this.priority = priority;
 

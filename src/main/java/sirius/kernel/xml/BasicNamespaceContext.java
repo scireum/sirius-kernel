@@ -22,7 +22,7 @@ import java.util.stream.Stream;
  */
 public class BasicNamespaceContext implements NamespaceContext {
 
-    private Map<String, String> prefixToUri = new HashMap<>();
+    private final Map<String, String> prefixToUri = new HashMap<>();
 
     /**
      * Registers a prefix and namespace URI.

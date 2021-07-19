@@ -46,7 +46,7 @@ import java.util.function.Function;
  */
 public class Formatter {
     private boolean urlEncode = false;
-    private Map<String, String> replacement = new TreeMap<>();
+    private final Map<String, String> replacement = new TreeMap<>();
     private Function<String, Optional<String>> parameterProvider;
     private boolean ignoreMissingPrameters;
     private String pattern;
@@ -247,7 +247,7 @@ public class Formatter {
      * @return <tt>this</tt> to permit fluent method chains
      * @deprecated Use either {@link #setDirect(String, String)} or {@link #setDirectUnencoded(String, String)}
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public Formatter setDirect(String property, String value, boolean urlEncode) {
         replacement.put(property, urlEncode ? Strings.urlEncode(value) : value);
         return this;

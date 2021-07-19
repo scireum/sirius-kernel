@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,12 +46,12 @@ import java.util.function.Function;
  */
 public class XMLReader extends DefaultHandler {
 
-    private TaskContext taskContext;
+    private final TaskContext taskContext;
 
-    private Map<String, NodeHandler> handlers = new TreeMap<>();
-    private List<SAX2DOMHandler> activeHandlers = new ArrayList<>();
-    private DocumentBuilder documentBuilder;
-    private List<String> currentPath = new ArrayList<>();
+    private final Map<String, NodeHandler> handlers = new TreeMap<>();
+    private final List<SAX2DOMHandler> activeHandlers = new ArrayList<>();
+    private final DocumentBuilder documentBuilder;
+    private final List<String> currentPath = new ArrayList<>();
 
     /**
      * Creates a new XMLReader.
@@ -108,7 +109,7 @@ public class XMLReader extends DefaultHandler {
             handler.createElement(name, attributes);
         }
 
-        // Start a new handler is necessary
+        // Start a new handler if necessary
         currentPath.add(name);
         NodeHandler handler = handlers.get(Strings.join(currentPath, "/"));
         if (handler == null) {
@@ -162,6 +163,7 @@ public class XMLReader extends DefaultHandler {
      */
     static class UserInterruptException extends RuntimeException {
 
+        @Serial
         private static final long serialVersionUID = -7454219131982518216L;
     }
 
@@ -174,7 +176,7 @@ public class XMLReader extends DefaultHandler {
      *                     processing a malformed XML).
      */
     public void parse(InputStream stream, Function<String, InputStream> resourceLocator) throws IOException {
-        try {
+        try (stream) {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
             org.xml.sax.XMLReader reader = saxParser.getXMLReader();
@@ -192,8 +194,6 @@ public class XMLReader extends DefaultHandler {
         } catch (UserInterruptException e) {
             // IGNORED - this is used to cancel parsing if the used tried to
             // cancel a process.
-        } finally {
-            stream.close();
         }
     }
 

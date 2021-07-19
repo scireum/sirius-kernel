@@ -51,7 +51,7 @@ public class XMLGenerator extends XMLStructuredOutput {
      */
     public String generate(String encoding) {
         try {
-            return new String(((ByteArrayOutputStream) out).toByteArray(), encoding);
+            return ((ByteArrayOutputStream) out).toString(encoding);
         } catch (UnsupportedEncodingException e) {
             throw Exceptions.handle(e);
         }

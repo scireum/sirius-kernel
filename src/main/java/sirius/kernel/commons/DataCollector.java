@@ -42,7 +42,7 @@ import java.util.function.Consumer;
  */
 public class DataCollector<T> implements Consumer<T> {
 
-    private List<T> data = new ArrayList<>();
+    private final List<T> data = new ArrayList<>();
 
     /**
      * Creates a new <tt>DataCollector</tt>.

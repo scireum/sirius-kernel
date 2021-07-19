@@ -25,7 +25,7 @@ import java.util.function.Function;
  */
 public class OptionalValueComputer<K, V> implements ValueComputer<K, V> {
 
-    private Function<K, Optional<V>> computer;
+    private final Function<K, Optional<V>> computer;
 
     private OptionalValueComputer(Function<K, Optional<V>> computer) {
         this.computer = computer;

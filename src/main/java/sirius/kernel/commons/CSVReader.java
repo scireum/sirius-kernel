@@ -41,7 +41,7 @@ import java.util.function.Consumer;
  */
 public class CSVReader {
 
-    private Reader input;
+    private final Reader input;
     private char separator = ';';
     private char quotation = '"';
     private boolean ignoreWhitespaces = true;

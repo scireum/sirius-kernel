@@ -16,9 +16,6 @@ import sirius.kernel.timer.EveryDay;
 import sirius.kernel.timer.Timers;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -31,11 +28,7 @@ public class TimerCommand implements Command {
 
     private static final String LINE_FORMAT = "%20s %-30s";
 
-    private static final Set<String> ACCEPTED_PARAMS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("all",
-                                                                                                               "oneMinute",
-                                                                                                               "tenMinutes",
-                                                                                                               "oneHour",
-                                                                                                               "everyDay")));
+    private static final Set<String> ACCEPTED_PARAMS = Set.of("all", "oneMinute", "tenMinutes", "oneHour", "everyDay");
 
     private static final String USAGE = "Usage: timer all|oneMinute|tenMinutes|oneHour|everyDay <hour>";
 

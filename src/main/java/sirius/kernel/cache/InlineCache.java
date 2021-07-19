@@ -27,8 +27,8 @@ import java.util.function.Supplier;
 public class InlineCache<E> {
     private E buffer;
     private long lastComputation;
-    private long timeout;
-    private Supplier<E> computer;
+    private final long timeout;
+    private final Supplier<E> computer;
 
     /**
      * Creates a new inline cache based on the given parameters.

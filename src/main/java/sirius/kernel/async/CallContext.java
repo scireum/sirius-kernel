@@ -60,16 +60,16 @@ public class CallContext {
     public static final String MDC_PARENT = "parent";
 
     private static final ThreadLocal<CallContext> currentContext = new ThreadLocal<>();
-    private static Map<Long, CallContext> contextMap = new ConcurrentHashMap<>();
+    private static final Map<Long, CallContext> contextMap = new ConcurrentHashMap<>();
     private static String nodeName = null;
-    private static Counter interactionCounter = new Counter();
+    private static final Counter interactionCounter = new Counter();
 
-    private Map<String, Object> mdc = new ConcurrentHashMap<>();
+    private final Map<String, Object> mdc = new ConcurrentHashMap<>();
 
     /*
      * Needs to be synchronized as a CallContext might be shared across several sub tasks
      */
-    private Map<Class<? extends SubContext>, SubContext> subContext = Collections.synchronizedMap(new HashMap<>());
+    private final Map<Class<? extends SubContext>, SubContext> subContext = Collections.synchronizedMap(new HashMap<>());
     private Watch watch = Watch.start();
     private String lang;
     private Consumer<CallContext> lazyLanguageInstaller;

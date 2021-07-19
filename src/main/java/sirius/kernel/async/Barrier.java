@@ -45,12 +45,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <tt>CombinedFuture</tt>).
  */
 @ParametersAreNonnullByDefault
-@Deprecated
+@Deprecated(forRemoval = true)
 public class Barrier {
 
-    private AtomicInteger promisesMade = new AtomicInteger(0);
-    private AtomicInteger promisesOpen = new AtomicInteger(0);
-    private Semaphore semaphore = new Semaphore(0);
+    private final AtomicInteger promisesMade = new AtomicInteger(0);
+    private final AtomicInteger promisesOpen = new AtomicInteger(0);
+    private final Semaphore semaphore = new Semaphore(0);
     private Future completionFuture = new Future();
 
     /**

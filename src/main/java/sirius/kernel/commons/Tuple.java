@@ -127,10 +127,9 @@ public class Tuple<F, S> {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Tuple<?, ?>)) {
+        if (!(obj instanceof Tuple<?, ?> other)) {
             return false;
         }
-        Tuple<?, ?> other = (Tuple<?, ?>) obj;
 
         return Objects.equals(first, other.getFirst()) && Objects.equals(second, other.getSecond());
     }

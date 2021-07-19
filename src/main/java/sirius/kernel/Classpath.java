@@ -46,9 +46,9 @@ public class Classpath {
      */
     protected static final Log LOG = Log.get("classpath");
     private List<URL> componentRoots;
-    private ClassLoader loader;
-    private String componentName;
-    private List<String> customizations;
+    private final ClassLoader loader;
+    private final String componentName;
+    private final List<String> customizations;
 
     /**
      * Creates a new Classpath, scanning for component roots with the given name

@@ -40,8 +40,8 @@ public class StructuredNode {
 
     private static final XPathFactory XPATH = XPathFactory.newInstance();
 
-    private Node node;
-    private NamespaceContext namespaceContext;
+    private final Node node;
+    private final NamespaceContext namespaceContext;
 
     /**
      * Wraps the given node

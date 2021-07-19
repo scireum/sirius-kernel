@@ -30,7 +30,7 @@ public class Microtiming {
 
     private static volatile boolean enabled = false;
     private static volatile long lastReset;
-    private static Map<String, Timing> timings = new ConcurrentHashMap<>();
+    private static final Map<String, Timing> timings = new ConcurrentHashMap<>();
 
     private Microtiming() {
     }

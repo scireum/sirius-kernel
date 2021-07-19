@@ -38,11 +38,9 @@ public abstract class PullBasedSpliterator<T> implements Spliterator<T> {
             return true;
         }
 
-        if (!endReached) {
-            iterator = pullNextBlock();
-            if (iterator == null || !iterator.hasNext()) {
-                endReached = true;
-            }
+        iterator = pullNextBlock();
+        if (iterator == null || !iterator.hasNext()) {
+            endReached = true;
         }
 
         return tryAdvance(action);

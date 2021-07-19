@@ -8,12 +8,16 @@
 
 package sirius.kernel.xml;
 
+import java.io.Serial;
 import java.net.URL;
 
 /**
  * Wraps a SOAP fault as <tt>Exception</tt>.
  */
 public class SOAPFaultException extends RuntimeException {
+
+    @Serial
+    private static final long serialVersionUID = 1657270622312190730L;
 
     private final String action;
     private final URL endpoint;

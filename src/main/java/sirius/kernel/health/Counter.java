@@ -17,8 +17,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * Counts up to {@code Long.MAX_VALUE - 1} starting at 0 and overflowing to 0.
  */
 public class Counter {
-    private AtomicLong startTimeMillis = new AtomicLong(System.currentTimeMillis());
-    private AtomicLong count = new AtomicLong();
+    private final AtomicLong startTimeMillis = new AtomicLong(System.currentTimeMillis());
+    private final AtomicLong count = new AtomicLong();
     private final long max;
 
     /**

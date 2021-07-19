@@ -21,10 +21,10 @@ import sirius.kernel.commons.Strings;
  */
 class SAX2DOMHandler {
 
-    private Document document;
+    private final Document document;
     private Node root;
     private Node currentNode;
-    private NodeHandler nodeHandler;
+    private final NodeHandler nodeHandler;
 
     protected SAX2DOMHandler(NodeHandler handler, Document document) {
         this.nodeHandler = handler;

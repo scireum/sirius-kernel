@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 public class Composable implements Transformable {
 
-    private Object source;
+    private final Object source;
     protected Map<Class<?>, Object> components;
 
     private static final Object NULL = new Object();

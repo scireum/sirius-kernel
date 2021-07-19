@@ -39,7 +39,7 @@ public interface TaskContextAdapter {
      * @param message the message to set as state
      * @deprecated Use either {@link #forceUpdateState(String)} or {@link #tryUpdateState(String)}
      */
-    @Deprecated
+    @Deprecated(since = "2021/07/01")
     void setState(String message);
 
     /**

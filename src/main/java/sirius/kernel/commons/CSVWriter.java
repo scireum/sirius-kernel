@@ -30,7 +30,7 @@ import java.util.List;
 public class CSVWriter implements Closeable {
 
     private String lineSeparator = "\n";
-    private Writer writer;
+    private final Writer writer;
     private boolean firstLine = true;
     private char separator = ';';
     private String separatorString = String.valueOf(';');

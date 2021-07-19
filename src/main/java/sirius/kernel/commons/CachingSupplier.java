@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 public class CachingSupplier<T> implements Supplier<T> {
 
     private ValueHolder<T> value;
-    private Supplier<T> supplier;
+    private final Supplier<T> supplier;
 
     /**
      * Creates a new instance with the operation to delay.

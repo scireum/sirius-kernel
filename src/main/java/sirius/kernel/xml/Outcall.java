@@ -422,7 +422,7 @@ public class Outcall {
             Matcher matcher = CONTENT_DISPOSITION_FILENAME_PATTERN.matcher(contentDisposition);
             if (matcher.find()) {
                 Optional<String> filename = Optional.ofNullable(matcher.group("quoted"));
-                if (!filename.isPresent()) {
+                if (filename.isEmpty()) {
                     filename = Optional.ofNullable(matcher.group("unquoted"));
                 }
                 return filename;

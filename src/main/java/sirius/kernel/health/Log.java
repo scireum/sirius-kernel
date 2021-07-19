@@ -165,27 +165,14 @@ public class Log {
             return Level.INFO;
         }
 
-        switch (levelName.toUpperCase()) {
-            case "FINE":
-            case "DEBUG":
-            case "TRACE":
-                return Level.FINE;
-
-            case "WARNING":
-            case "WARN":
-                return Level.WARNING;
-            case "SEVERE":
-            case "ERROR":
-            case "PROBLEM":
-                return Level.SEVERE;
-            case "OFF":
-            case "DISABLED":
-                return Level.OFF;
-            case "ALL":
-                return Level.ALL;
-            default:
-                return Level.INFO;
-        }
+        return switch (levelName.toUpperCase()) {
+            case "FINE", "DEBUG", "TRACE" -> Level.FINE;
+            case "WARNING", "WARN" -> Level.WARNING;
+            case "SEVERE", "ERROR", "PROBLEM" -> Level.SEVERE;
+            case "OFF", "DISABLED" -> Level.OFF;
+            case "ALL" -> Level.ALL;
+            default -> Level.INFO;
+        };
     }
 
     private void log(Level level, Object msg) {
