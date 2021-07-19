@@ -796,8 +796,8 @@ public class NLS {
         }
         if (data instanceof Temporal temporal) {
             // Convert Instant to LocalDateTime to permit a "normal" time format
-            if (temporal instanceof Instant) {
-                temporal = LocalDateTime.ofInstant((Instant) data, ZoneId.systemDefault());
+            if (data instanceof Instant instant) {
+                temporal = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
             }
             if (ChronoUnit.HOURS.isSupportedBy(temporal)) {
                 if (!ChronoField.DAY_OF_MONTH.isSupportedBy(temporal)) {
@@ -880,8 +880,8 @@ public class NLS {
         }
         if (data instanceof Temporal temporal) {
             // Convert Instant to LocalDateTime to permit a "normal" time format
-            if (temporal instanceof Instant) {
-                temporal = LocalDateTime.ofInstant((Instant) data, ZoneId.systemDefault());
+            if (data instanceof Instant instant) {
+                temporal = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
             }
             if (ChronoUnit.HOURS.isSupportedBy(temporal)) {
                 if (!ChronoField.DAY_OF_MONTH.isSupportedBy(temporal)) {

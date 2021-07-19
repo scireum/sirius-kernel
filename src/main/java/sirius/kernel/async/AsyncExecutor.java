@@ -9,6 +9,7 @@
 package sirius.kernel.async;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Counter;
@@ -59,25 +60,29 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
     }
 
     @Override
-    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+    @SuppressWarnings("PatternVariableCanBeUsed")
+    @Explain("We don't use a pattern here, as the instanceof is negated")
+    public void rejectedExecution(Runnable originalTask, ThreadPoolExecutor executor) {
         try {
             // If the executor is used by another Java framework, we cannot recover anything and
             // simply try to execute while blocking the caller...
-            if (!(r instanceof ExecutionBuilder.TaskWrapper wrapper)) {
-                r.run();
+            if (!(originalTask instanceof ExecutionBuilder.TaskWrapper)) {
+                originalTask.run();
                 blocked.inc();
                 return;
             }
 
+            ExecutionBuilder.TaskWrapper wrappedTask = (ExecutionBuilder.TaskWrapper) originalTask;
+
             // Otherwise we invoke the drop handler if present or otherwise also attempt a
             // blocking execution.
-            if (wrapper.dropHandler != null) {
-                wrapper.drop();
+            if (wrappedTask.dropHandler != null) {
+                wrappedTask.drop();
                 dropped.inc();
-            } else if (wrapper.synchronizer == null) {
+            } else if (wrappedTask.synchronizer == null) {
                 CallContext current = CallContext.getCurrent();
                 try {
-                    wrapper.run();
+                    wrappedTask.run();
                 } finally {
                     CallContext.setCurrent(current);
                 }
@@ -88,9 +93,9 @@ public class AsyncExecutor extends ThreadPoolExecutor implements RejectedExecuti
                           .withSystemErrorMessage(
                                   "The execution of a frequency scheduled task '%s' (%s) synchronized on '%s' "
                                   + "was rejected by: %s - Aborting!",
-                                  wrapper.runnable,
-                                  wrapper.runnable.getClass(),
-                                  wrapper.synchronizer,
+                                  wrappedTask.runnable,
+                                  wrappedTask.runnable.getClass(),
+                                  wrappedTask.synchronizer,
                                   category)
                           .handle();
             }
