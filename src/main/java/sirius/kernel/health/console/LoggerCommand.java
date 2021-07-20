@@ -14,7 +14,6 @@ import sirius.kernel.health.Log;
 import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 /**
  * Permits to change the level of a logger at runtime.
@@ -34,12 +33,9 @@ public class LoggerCommand implements Command {
             output.blankLine();
             output.line("Known loggers:");
             output.separator();
-            for (Log logger : Log.getAllLoggers()
-                                 .stream()
-                                 .sorted(Comparator.comparing(Log::getName))
-                                 .collect(Collectors.toList())) {
+            Log.getAllLoggers().stream().sorted(Comparator.comparing(Log::getName)).forEach(logger -> {
                 output.apply("%-30s %-10s", logger.getName(), logger.getLevel());
-            }
+            });
             output.separator();
         }
     }
