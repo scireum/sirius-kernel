@@ -113,7 +113,8 @@ public class Log {
     @SuppressWarnings("squid:S2250")
     @Explain("Loggers are only created once, so there is no performance hotspot")
     public static synchronized Log get(String name) {
-        Optional<Log> existingInstance = all.stream().filter(logger -> Strings.areEqual(logger.getName(), name)).findFirst();
+        Optional<Log> existingInstance =
+                all.stream().filter(logger -> Strings.areEqual(logger.getName(), name)).findFirst();
         if (existingInstance.isPresent()) {
             return existingInstance.get();
         }
