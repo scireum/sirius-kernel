@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>8.0.1</version>
+        <version>8.0.2</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
     <name>SIRIUS kernel</name>
@@ -49,15 +49,19 @@
             <version>1.7.30</version>
         </dependency>
 
-        <!-- Used to auto-start Docker environments -->
+        <!-- Used to auto-start Docker environments. Excluding dependencies not required for docker-compose. -->
         <dependency>
             <groupId>com.palantir.docker.compose</groupId>
             <artifactId>docker-compose-rule-core</artifactId>
-            <version>1.3.0</version>
+            <version>1.7.0</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>cglib-nodep</artifactId>
-                    <groupId>cglib</groupId>
+                    <groupId>com.palantir.conjure.java.runtime</groupId>
+                    <artifactId>conjure-java-jackson-serialization</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.palantir.docker.compose</groupId>
+                    <artifactId>docker-compose-rule-events-api-objects</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
