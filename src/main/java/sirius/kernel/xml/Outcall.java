@@ -70,8 +70,8 @@ public class Outcall {
     private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
-    private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN =
-            Pattern.compile("(attachment|inline|form-data);.*filename\\s*=\\s*(?<unquoted>\"(?<quoted>[^\"]*)\"|[\\w.-]+)");
+    private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN = Pattern.compile(
+            "(attachment|inline|form-data);.*filename\\s*=\\s*(?<unquoted>\"(?<quoted>[^\"]*)\"|[\\w.-]+)");
     private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
 
     /**
@@ -464,5 +464,12 @@ public class Outcall {
         if (Strings.isFilled(name) && Strings.isFilled(value)) {
             setRequestProperty("Cookie", name + "=" + value);
         }
+    }
+
+    /**
+     * Disconnects from the sever and indicates that other requests to the server are unlikely in the near future.
+     */
+    public void disconnect() {
+        connection.disconnect();
     }
 }
