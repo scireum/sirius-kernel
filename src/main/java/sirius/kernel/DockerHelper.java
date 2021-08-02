@@ -60,6 +60,9 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
     @ConfigValue("docker.hostIp")
     private String hostIp;
 
+    @ConfigValue("docker.hostPort")
+    private String hostPort;
+
     @SuppressWarnings("FieldMayBeFinal")
     @Explain("This is only the default, the field is filled with a config later")
     @ConfigValue("docker.file")
@@ -101,7 +104,8 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
                 machine = DockerMachine.localMachine().build();
             } else {
                 LOG.INFO("Using hostIp: %s", hostIp);
-                machine = new DockerMachine(hostIp, System.getenv());
+                String dockerHost = Strings.apply("tcp://%s:%s", hostIp, hostPort);
+                machine = DockerMachine.remoteMachine().withEnvironment(System.getenv()).host(dockerHost).build();
             }
         }
         return machine;
