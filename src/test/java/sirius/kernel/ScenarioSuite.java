@@ -105,6 +105,10 @@ public class ScenarioSuite extends WildcardPatternSuite {
             System.setProperty(Sirius.SIRIUS_TEST_SCENARIO_PROPERTY, scenarioFile == null ? "" : scenarioFile);
             runNotifier.fireTestStarted(FRAMEWORK_SETUP);
             try {
+                // In case of a configured scenario, ensure framework shutdown
+                if (scenarioFile != null) {
+                    TestHelper.performTearDown();
+                }
                 TestHelper.setUp(ScenarioSuite.class);
             } catch (Exception e) {
                 runNotifier.fireTestFailure(new Failure(FRAMEWORK_SETUP, e));
