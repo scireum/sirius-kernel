@@ -45,7 +45,7 @@ public class CombinedFutureTest {
         CombinedFuture combinedFuture = new CombinedFuture();
         Future future = new Future();
         combinedFuture.add(future);
-        future.fail(new IllegalStateException("Test"));
+        future.fail(new IllegalStateException("ThisIsExpected"));
         Assert.assertTrue(combinedFuture.asFuture().isCompleted());
     }
 }
