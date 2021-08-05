@@ -8,17 +8,17 @@
 
 package sirius.kernel.commons;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class FilesTest {
+class FilesTest {
 
     @Test
-    public void testgetFileExtension() {
+    void testgetFileExtension() {
         assertEquals("txt", Files.getFileExtension("text.txt"));
         assertEquals("txt", Files.getFileExtension("/foo/bar/text.txt"));
         assertEquals("txt", Files.getFileExtension("/foo/bar/text.foo.txt"));
@@ -28,7 +28,7 @@ public class FilesTest {
     }
 
     @Test
-    public void testgetBasepath() {
+    void testgetBasepath() {
         assertEquals("/foo", Files.getBasepath("/foo/test.txt"));
         assertEquals("/foo", Files.getBasepath("/foo/bar"));
         assertEquals("/foo/bar", Files.getBasepath("/foo/bar/test.txt"));
@@ -41,7 +41,7 @@ public class FilesTest {
     }
 
     @Test
-    public void testgetFilenameAndExtension() {
+    void testgetFilenameAndExtension() {
         assertEquals("test.txt", Files.getFilenameAndExtension("/foo/bar/test.txt"));
         assertEquals("test.txt", Files.getFilenameAndExtension("test.txt"));
         assertEquals("test.txt", Files.getFilenameAndExtension("bar/test.txt"));
@@ -53,7 +53,7 @@ public class FilesTest {
     }
 
     @Test
-    public void testgetFilenameWithoutExtension() {
+    void testgetFilenameWithoutExtension() {
         assertEquals("test", Files.getFilenameWithoutExtension("test.txt"));
         assertEquals("test", Files.getFilenameWithoutExtension("test"));
         assertEquals("test", Files.getFilenameWithoutExtension("/bar/test.txt"));
@@ -65,7 +65,7 @@ public class FilesTest {
     }
 
     @Test
-    public void toSaneFilename() {
+    void toSaneFilename() {
         assertEquals("test.pdf", Files.toSaneFileName("test.pdf").orElse(""));
         assertEquals("test", Files.toSaneFileName("test").orElse(""));
         assertEquals(".pdf", Files.toSaneFileName(".pdf").orElse(""));

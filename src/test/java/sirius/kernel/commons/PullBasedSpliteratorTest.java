@@ -8,8 +8,7 @@
 
 package sirius.kernel.commons;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -20,7 +19,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class PullBasedSpliteratorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class PullBasedSpliteratorTest {
 
     private static class TestSpliterator extends PullBasedSpliterator<Integer> {
 
@@ -49,9 +50,9 @@ public class PullBasedSpliteratorTest {
     }
 
     @Test
-    public void streamWorksProperly() {
-        Assert.assertEquals(10, StreamSupport.stream( new TestSpliterator(), false).count());
-        Assert.assertEquals(StreamSupport.stream(new TestSpliterator(), false).collect(Collectors.toList()),
-                            Stream.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).collect(Collectors.toList()));
+    void streamWorksProperly() {
+        assertEquals(10, StreamSupport.stream(new TestSpliterator(), false).count());
+        assertEquals(StreamSupport.stream(new TestSpliterator(), false).collect(Collectors.toList()),
+                     Stream.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).collect(Collectors.toList()));
     }
 }

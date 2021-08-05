@@ -1,12 +1,12 @@
 package sirius.kernel.commons;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-public class MultiMapTest {
+class MultiMapTest {
     @Test
-    public void test() {
+    void test() {
         MultiMap<String, String> mm = MultiMap.create();
         mm.put("A", "A");
         mm.put("A", "B");

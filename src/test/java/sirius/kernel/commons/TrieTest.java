@@ -1,20 +1,20 @@
 package sirius.kernel.commons;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class TrieTest {
+class TrieTest {
 
-    private Trie<Integer> trie;
+    private static Trie<Integer> trie;
 
-    @Before
-    public void createTrie() {
+    @BeforeAll
+    static void createTrie() {
         trie = Trie.create();
         trie.put("one", 1);
         trie.put("on", 2);
@@ -26,7 +26,7 @@ public class TrieTest {
     }
 
     @Test
-    public void isFilled() {
+    void isFilled() {
         String check = "I'd like to have three beer please";
         Trie.ContainmentIterator<Integer> iter = trie.iterator();
 
@@ -44,13 +44,13 @@ public class TrieTest {
         assertEquals(5, found);
 
         assertEquals(2, (int) trie.get("on"));
-        assertEquals(null, trie.get("onx"));
+        assertNull(trie.get("onx"));
         assertTrue(trie.containsKey("thrae"));
         assertFalse(trie.containsKey("thre"));
     }
 
     @Test
-    public void keySet() {
+    void keySet() {
         assertEquals(7, trie.size());
         assertEquals(new HashSet<>(Arrays.asList("one", "on", "one1", "two", "three", "thrae", "th")), trie.keySet());
         assertEquals(new HashSet<>(Arrays.asList("one", "on", "one1", "two", "three", "thrae", "th")),

@@ -1,14 +1,14 @@
 package sirius.kernel.commons;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PriorityCollectorTest {
+class PriorityCollectorTest {
     @Test
-    public void test() {
+    void test() {
         PriorityCollector<String> c = PriorityCollector.create();
         c.addDefault("B");
         c.add(50, "A");

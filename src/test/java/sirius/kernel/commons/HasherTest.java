@@ -8,18 +8,18 @@
 
 package sirius.kernel.commons;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HasherTest {
+class HasherTest {
 
     @Test
-    public void testMD5() throws URISyntaxException, IOException {
+    void testMD5() throws URISyntaxException, IOException {
         assertEquals("b10a8db164e0754105b7a99be72e3fe5", Hasher.md5().hash("Hello World").toHexString());
         assertEquals("sQqNsWTgdUEFt6mb5y4/5Q==", Hasher.md5().hash("Hello World").toBase64String());
         assertEquals("e59ff97941044f85df5297e1c302d260",
@@ -29,7 +29,7 @@ public class HasherTest {
     }
 
     @Test
-    public void testSHA() {
+    void testSHA() {
         assertEquals("0a4d55a8d778e5022fab701977c5d840bbc486d0", Hasher.sha1().hash("Hello World").toHexString());
         assertEquals("a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
                      Hasher.sha256().hash("Hello World").toHexString());
