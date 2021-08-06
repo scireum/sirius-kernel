@@ -8,8 +8,8 @@
 
 package sirius.kernel.cache
 
+import org.junit.jupiter.api.Tag
 import sirius.kernel.BaseSpecification
-import sirius.kernel.Scope
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Tuple
 import sirius.kernel.commons.Wait
@@ -19,9 +19,9 @@ import java.util.function.BiPredicate
 import java.util.function.Function
 import java.util.function.Predicate
 
+@Tag("nightly")
 class ManagedCacheSpec extends BaseSpecification {
 
-    @Scope(Scope.SCOPE_NIGHTLY)
     def "test run eviction removes old entries"() {
         given:
         def cache = new ManagedCache("test-cache", null, null)
