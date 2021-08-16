@@ -1082,7 +1082,7 @@ public class NLS {
             }
         }
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
-            return (V) Boolean.valueOf(Boolean.parseBoolean(value));
+            return (V) Boolean.valueOf(value);
         }
 
         return parseDatesFromMachineString(clazz, value);
