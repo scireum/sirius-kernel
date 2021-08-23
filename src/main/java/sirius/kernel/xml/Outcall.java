@@ -53,10 +53,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Used to call an URL and send or receive data.
+ * Used to call a URL and send or receive data.
  * <p>
- * This is basically a thin wrapper over <tt>HttpURLConnection</tt> which adds some boilder plate code and a bit
+ * This is basically a thin wrapper over <tt>HttpURLConnection</tt> which adds some boilerplate code and a bit
  * of logging / monitoring.
+ * <p>
+ * Note that in contrast to HttpUrlConnection, we attempt to follow protocol changing redirects (e.g. from HTTP to
+ * HTTPS).
  */
 public class Outcall {
 
@@ -70,29 +73,35 @@ public class Outcall {
     private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
-    private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN =
-            Pattern.compile("(attachment|inline|form-data);.*filename\\s*=\\s*(?<unquoted>\"(?<quoted>[^\"]*)\"|[\\w.-]+)");
+    private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN = Pattern.compile(
+            "(attachment|inline|form-data);.*filename\\s*=\\s*(?<unquoted>\"(?<quoted>[^\"]*)\"|[\\w.-]+)");
     private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
 
     /**
      * Keeps track of hosts for which we ran into a connect timeout.
      * <p>
-     * These hosts are blacklisted for a short amout of time ({@link #connectTimeoutBlacklistDuration}) to prevent
+     * These hosts are blacklisted for a short amount of time ({@link #connectTimeoutBlacklistDuration}) to prevent
      * cascading failures.
      */
     private static final Map<String, Long> timeoutBlacklist = new ConcurrentHashMap<>();
 
     /**
      * If the {@link #timeoutBlacklist} contains more than the given number of entries, we remove all expired ones
-     * manually. These might be hosts which are only connected sporadiccaly and had a hickup. Everything else will be
+     * manually. These might be hosts which are only connected sporadically and had a hiccup. Everything else will be
      * kept clean in {@link #checkTimeoutBlacklist(URL)}.
      */
-    private static final int TIMEOUT_BLACKLIST_HIGHT_WATERMARK = 100;
+    private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
+
+    /**
+     * Max redirects to follow manually.
+     */
+    private static final int MAX_FOLLOW_REDIRECTS = 3;
+    private static final String HEADER_LOCATION = "Location";
 
     @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
 
-    private final HttpURLConnection connection;
+    private HttpURLConnection connection;
     private Charset charset = StandardCharsets.UTF_8;
 
     private static final Average timeToFirstByte = new Average();
@@ -205,6 +214,7 @@ public class Outcall {
     public InputStream getInput() throws IOException {
         Watch watch = Watch.start();
         try {
+            connect();
             return connection.getInputStream();
         } catch (SocketTimeoutException e) {
             addToTimeoutBlacklist();
@@ -227,6 +237,42 @@ public class Outcall {
         }
     }
 
+    private void connect() throws IOException {
+        int maxAttempts = MAX_FOLLOW_REDIRECTS;
+        while (maxAttempts-- > 0) {
+            int responseCode = connection.getResponseCode();
+            if (responseCode != HttpURLConnection.HTTP_MOVED_TEMP
+                && responseCode != HttpURLConnection.HTTP_MOVED_PERM
+                && responseCode != HttpURLConnection.HTTP_SEE_OTHER) {
+                return;
+            }
+            String location = connection.getHeaderField(HEADER_LOCATION);
+            if (Strings.isEmpty(location)) {
+                return;
+            }
+
+            followRedirect(new URL(location));
+        }
+    }
+
+    private void followRedirect(URL location) throws IOException {
+        checkTimeoutBlacklist(location);
+        HttpURLConnection previousConnection = connection;
+        connection = (HttpURLConnection) location.openConnection();
+        connection.setRequestMethod(previousConnection.getRequestMethod());
+        connection.setDoInput(true);
+        connection.setConnectTimeout(previousConnection.getConnectTimeout());
+        connection.setReadTimeout(previousConnection.getReadTimeout());
+        previousConnection.getRequestProperties().forEach((name, values) -> {
+            for (String value : values) {
+                connection.setRequestProperty(name, value);
+            }
+        });
+        if ((previousConnection instanceof HttpsURLConnection) && (connection instanceof HttpsURLConnection)) {
+            ((HttpsURLConnection) connection).setSSLSocketFactory(((HttpsURLConnection) previousConnection).getSSLSocketFactory());
+        }
+    }
+
     private void addToTimeoutBlacklist() {
         if (connectTimeoutBlacklistDuration.isZero()) {
             return;
@@ -234,8 +280,8 @@ public class Outcall {
 
         long now = System.currentTimeMillis();
         timeoutBlacklist.put(connection.getURL().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
-        if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGHT_WATERMARK) {
-            // We collected bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
+        if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGH_WATERMARK) {
+            // We collected a bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
             timeoutBlacklist.forEach((host, timeout) -> {
                 if (timeout < now) {
                     timeoutBlacklist.remove(host);
@@ -269,6 +315,7 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public int getResponseCode() throws IOException {
+        connect();
         return connection.getResponseCode();
     }
 
