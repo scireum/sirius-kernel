@@ -221,7 +221,7 @@ public class Outcall {
             throw e;
         } catch (IOException e) {
             int statusCode = connection.getResponseCode();
-            if (statusCode != 200) {
+            if (statusCode != HttpURLConnection.HTTP_OK) {
                 InputStream errorStream = connection.getErrorStream();
                 if (errorStream != null) {
                     return errorStream;
@@ -434,6 +434,12 @@ public class Outcall {
      */
     @Nullable
     public String getHeaderField(String name) {
+        try {
+            connect();
+        } catch (IOException e) {
+            // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
+            Exceptions.ignore(e);
+        }
         return connection.getHeaderField(name);
     }
 
@@ -444,6 +450,13 @@ public class Outcall {
      * @return the date of the given header wrapped in an Optional or empty if the field does not exists or can not be parsed as date
      */
     public Optional<LocalDateTime> getHeaderFieldDate(String name) {
+        try {
+            connect();
+        } catch (IOException e) {
+            // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
+            Exceptions.ignore(e);
+        }
+
         long timestamp = connection.getHeaderFieldDate(name, -1);
         if (timestamp >= 0) {
             return Optional.of(Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime());
@@ -460,7 +473,7 @@ public class Outcall {
      * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
      */
     public Optional<String> parseFileNameFromContentDisposition() {
-        String contentDisposition = connection.getHeaderField(HEADER_CONTENT_DISPOSITION);
+        String contentDisposition = getHeaderField(HEADER_CONTENT_DISPOSITION);
         return parseFileName(contentDisposition);
     }
 
@@ -484,7 +497,7 @@ public class Outcall {
      * @return the charset used by the server or <tt>UTF-8</tt> as default
      */
     public Charset getContentEncoding() {
-        String contentType = connection.getContentType();
+        String contentType = getHeaderField("content-type");
         if (contentType == null) {
             return StandardCharsets.UTF_8;
         }
