@@ -216,9 +216,6 @@ public class Outcall {
         try {
             connect();
             return connection.getInputStream();
-        } catch (SocketTimeoutException e) {
-            addToTimeoutBlacklist();
-            throw e;
         } catch (IOException e) {
             int statusCode = connection.getResponseCode();
             if (statusCode != HttpURLConnection.HTTP_OK) {
@@ -238,20 +235,26 @@ public class Outcall {
     }
 
     private void connect() throws IOException {
-        int maxAttempts = MAX_FOLLOW_REDIRECTS;
-        while (maxAttempts-- > 0) {
-            int responseCode = connection.getResponseCode();
-            if (responseCode != HttpURLConnection.HTTP_MOVED_TEMP
-                && responseCode != HttpURLConnection.HTTP_MOVED_PERM
-                && responseCode != HttpURLConnection.HTTP_SEE_OTHER) {
-                return;
-            }
-            String location = connection.getHeaderField(HEADER_LOCATION);
-            if (Strings.isEmpty(location)) {
-                return;
-            }
+        try {
+            int maxAttempts = MAX_FOLLOW_REDIRECTS;
+            while (maxAttempts-- > 0) {
+                int responseCode = connection.getResponseCode();
+                if (responseCode != HttpURLConnection.HTTP_MOVED_TEMP
+                    && responseCode != HttpURLConnection.HTTP_MOVED_PERM
+                    && responseCode != HttpURLConnection.HTTP_SEE_OTHER) {
+                    return;
+                }
+                String location = connection.getHeaderField(HEADER_LOCATION);
+                if (Strings.isEmpty(location)) {
+                    return;
+                }
 
-            followRedirect(new URL(location));
+                followRedirect(new URL(location));
+            }
+        } catch (SocketTimeoutException e) {
+            addToTimeoutBlacklist();
+            throw e;
+
         }
     }
 
@@ -358,6 +361,7 @@ public class Outcall {
         if (Strings.isEmpty(user)) {
             return this;
         }
+
         try {
             String userAndPassword = user + ":" + password;
             String encodedAuthorization = Base64.getEncoder().encodeToString(userAndPassword.getBytes(charset.name()));
