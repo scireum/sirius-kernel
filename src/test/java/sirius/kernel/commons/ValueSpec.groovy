@@ -214,4 +214,22 @@ class ValueSpec extends BaseSpecification {
         then:
         noExceptionThrown()
     }
+
+    def "append properly handles empty/null"() {
+        expect:
+        Value.EMPTY.append(" ", "x") == "x"
+        and:
+        Value.of("x").append(" ", null).asString() == "x"
+        and:
+        Value.of("x").append(" ", "y").asString() == "x y"
+    }
+
+    def "tryAppend only emits an output if the value is filled"() {
+        expect:
+        Value.EMPTY.tryAppend(" ", "x").isEmptyString()
+        and:
+        Value.of("x").tryAppend(" ", null).asString() == "x"
+        and:
+        Value.of("x").tryAppend(" ", "y").asString() == "x y"
+    }
 }
