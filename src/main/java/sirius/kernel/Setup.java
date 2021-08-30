@@ -81,6 +81,7 @@ public class Setup {
     }
 
     protected ClassLoader loader;
+    protected Level defaultLevel = Level.INFO;
     protected Mode mode;
     protected DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
     protected String consoleLogFormat = "[%1$s] %4$-7s [%3$s - %2$s] %5$s%6$s%n";
@@ -120,13 +121,27 @@ public class Setup {
     }
 
     /**
-     * Sepcifies the pattern used to format the timestamp of log messages in the console.
+     * Specifies the pattern used to format the timestamp of log messages in the console.
      *
      * @param formatter the formatter to use
      * @return the setup itself for fluent method calls
      */
     public Setup withConsoleLogDateFormat(DateTimeFormatter formatter) {
         this.dateTimeFormatter = formatter;
+        return this;
+    }
+
+    /**
+     * Used to set the default log level used by the root logger.
+     * <p>
+     * Note that each logger can be configured by specifying <tt>logging.[NAME]</tt> in the
+     * system configuration.
+     *
+     * @param level the level to use
+     * @return the setup itself for fluent method calls
+     */
+    public Setup withDefaultLogLevel(Level level) {
+        this.defaultLevel = level;
         return this;
     }
 
@@ -266,7 +281,7 @@ public class Setup {
         consoleHandler.setLevel(Level.ALL);
 
         rootLogger.addHandler(consoleHandler);
-        rootLogger.setLevel(Level.INFO);
+        rootLogger.setLevel(defaultLevel);
     }
 
     private class StdOutHandler extends StreamHandler {
