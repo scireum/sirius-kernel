@@ -291,8 +291,8 @@ public class Setup {
         }
 
         @Override
-        public synchronized void publish(LogRecord record) {
-            super.publish(record);
+        public synchronized void publish(LogRecord logRecord) {
+            super.publish(logRecord);
             flush();
         }
     }
@@ -300,14 +300,14 @@ public class Setup {
     private class SaneFormatter extends Formatter {
 
         @Override
-        public String format(LogRecord record) {
+        public String format(LogRecord logRecord) {
             return String.format(consoleLogFormat,
                                  dateTimeFormatter.format(LocalDateTime.now()),
-                                 record.getSourceClassName(),
-                                 record.getLoggerName(),
-                                 record.getLevel(),
-                                 formatMessage(record),
-                                 NLS.toUserString(record.getThrown()));
+                                 logRecord.getSourceClassName(),
+                                 logRecord.getLoggerName(),
+                                 logRecord.getLevel(),
+                                 formatMessage(logRecord),
+                                 NLS.toUserString(logRecord.getThrown()));
         }
     }
 
