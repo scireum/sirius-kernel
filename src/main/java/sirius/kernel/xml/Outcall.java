@@ -528,4 +528,17 @@ public class Outcall {
             setRequestProperty("Cookie", name + "=" + value);
         }
     }
+
+    /**
+     * Returns the URL that is currently or last connected to.
+     * <p>
+     * This will be the URL with which this call was created with in most cases,
+     * but will be updated when any redirects have been followed,
+     * making it useful if you wanna know the URL that was then actually connected with in the end.
+     *
+     * @return the URL of the current connection
+     */
+    public URL getLastConnectedURL() {
+        return connection.getURL();
+    }
 }
