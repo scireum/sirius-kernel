@@ -249,12 +249,11 @@ public class Outcall {
                     return;
                 }
 
-                followRedirect(new URL(location));
+                followRedirect(new URL(connection.getURL(), location));
             }
         } catch (SocketTimeoutException e) {
             addToTimeoutBlacklist();
             throw e;
-
         }
     }
 
