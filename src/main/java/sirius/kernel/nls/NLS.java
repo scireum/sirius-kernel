@@ -414,6 +414,28 @@ public class NLS {
     }
 
     /**
+     * Checks if a translation is available for the given property and language.
+     *
+     * @param property the property key to check
+     * @param lang     the language to check for or <tt>null</tt> to use the current language
+     * @return <tt>true</tt> if a translation is present, <tt>false</tt> otherwise
+     */
+    @SuppressWarnings("squid:S2637")
+    @Explain("Strings.isEmpty checks for null on lang")
+    public static boolean exists(String property, @Nullable String lang) {
+        if (Strings.isEmpty(property)) {
+            return false;
+        }
+        Translation translation = blubb.get(property, null, false);
+        if (translation == null) {
+            return false;
+        }
+
+        return Strings.isFilled(translation.translate(Strings.isEmpty(lang) ? getCurrentLang() : lang,
+                                                      getFallbackLanguage()));
+    }
+
+    /**
      * Returns a translated text for the given <tt>property</tt> or for the given <tt>fallback</tt>, if no translation
      * for <tt>property</tt> was found.
      *
