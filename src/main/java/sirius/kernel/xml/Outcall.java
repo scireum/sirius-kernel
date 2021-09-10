@@ -9,6 +9,7 @@
 package sirius.kernel.xml;
 
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
@@ -19,27 +20,30 @@ import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -48,7 +52,6 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,10 +66,9 @@ import java.util.regex.Pattern;
  */
 public class Outcall {
 
-    private static final int DEFAULT_CONNECT_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
-    private static final int DEFAULT_READ_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
+    private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofMinutes(5);
 
-    private static final String REQUEST_METHOD_POST = "POST";
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
@@ -88,21 +90,24 @@ public class Outcall {
     /**
      * If the {@link #timeoutBlacklist} contains more than the given number of entries, we remove all expired ones
      * manually. These might be hosts which are only connected sporadically and had a hiccup. Everything else will be
-     * kept clean in {@link #checkTimeoutBlacklist(URL)}.
+     * kept clean in {@link #checkTimeoutBlacklist(URI)}.
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
-
-    /**
-     * Max redirects to follow manually.
-     */
-    private static final int MAX_FOLLOW_REDIRECTS = 3;
-    private static final String HEADER_LOCATION = "Location";
 
     @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
 
-    private HttpURLConnection connection;
+    private HttpClient client;
+    private HttpRequest request;
+    private HttpClient.Builder clientBuilder;
+    private HttpRequest.Builder requestBuilder;
+    private HttpResponse.BodyHandler<?> bodyHandler = HttpResponse.BodyHandlers.ofInputStream();
+    private HttpResponse<?> response;
     private Charset charset = StandardCharsets.UTF_8;
+
+    // Provide an output stream for old apis
+    private final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    private boolean postFromOutput = false;
 
     private static final Average timeToFirstByte = new Average();
 
@@ -110,32 +115,138 @@ public class Outcall {
      * Creates a new <tt>Outcall</tt> to the given URL.
      *
      * @param url the url to call
-     * @throws IOException in case of any IO error
+     * @throws IOException if the host is blacklisted
      */
     public Outcall(URL url) throws IOException {
-        checkTimeoutBlacklist(url);
+        URI uri;
+        try {
+            uri = url.toURI();
+        } catch (URISyntaxException e) {
+            // throw as IOException to not alter method declaration
+            throw new IOException(e.getMessage());
+        }
+        checkTimeoutBlacklist(uri);
 
-        connection = (HttpURLConnection) url.openConnection();
-        connection.setDoInput(true);
-        connection.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
-        connection.setReadTimeout(DEFAULT_READ_TIMEOUT);
+        clientBuilder = HttpClient.newBuilder().connectTimeout(DEFAULT_CONNECT_TIMEOUT);
+        requestBuilder = HttpRequest.newBuilder(uri).timeout(DEFAULT_READ_TIMEOUT);
     }
 
-    private void checkTimeoutBlacklist(URL url) throws IOException {
+    /**
+     * Creates a new <tt>Outcall</tt> to the given URL.
+     *
+     * @param uri the url to call
+     * @throws IOException if the host is blacklisted
+     */
+    public Outcall(URI uri) throws IOException {
+        checkTimeoutBlacklist(uri);
+
+        clientBuilder = HttpClient.newBuilder().connectTimeout(DEFAULT_CONNECT_TIMEOUT);
+        requestBuilder = HttpRequest.newBuilder(uri);
+    }
+
+    /**
+     * Creates a new <tt>Outcall</tt> with the given client and request.
+     *
+     * @param client  the http client to use
+     * @param request the request to execute
+     * @throws IOException if the host is blacklisted
+     */
+    public Outcall(HttpClient client, HttpRequest request) throws IOException {
+        checkTimeoutBlacklist(request.uri());
+
+        this.client = client;
+        this.request = request;
+    }
+
+    private void checkTimeoutBlacklist(URI uri) throws IOException {
         if (connectTimeoutBlacklistDuration.isZero()) {
             return;
         }
 
-        Long timeout = timeoutBlacklist.get(url.getHost());
+        Long timeout = timeoutBlacklist.get(uri.getHost());
         if (timeout != null) {
             if (timeout > System.currentTimeMillis()) {
                 throw new IOException(Strings.apply(
                         "Connecting to host %s is currently rejected due to connectivity issues.",
-                        url.getHost()));
+                        uri.getHost()));
             } else {
-                timeoutBlacklist.remove(url.getHost());
+                timeoutBlacklist.remove(uri.getHost());
             }
         }
+    }
+
+    /**
+     * Allows to modify the client before the request is sent by returning the builder that is used to create it.
+     *
+     * @return the underlying {@link HttpClient.Builder}
+     */
+    public HttpClient.Builder modifyClient() {
+        if (client != null) {
+            throw new IllegalStateException("Can no longer modify client, request has already been sent!");
+        }
+        return clientBuilder;
+    }
+
+    /**
+     * Allows to modify the request before the request is sent by returning the builder that is used to create it.
+     *
+     * @return the underlying {@link HttpRequest.Builder}
+     */
+    public HttpRequest.Builder modifyRequest() {
+        if (client != null) {
+            throw new IllegalStateException("Can no longer modify request, request has already been sent!");
+        }
+        return requestBuilder;
+    }
+
+    /**
+     * Executes the outcall with the given {@link java.net.http.HttpResponse.BodyHandler response handler}.
+     *
+     * @param handler a response body handler
+     * @param <R>     the body type
+     * @return the response, typed by the given handler
+     * @throws IOException in case of any IO error
+     * @see java.net.http.HttpResponse.BodyHandlers
+     */
+    @SuppressWarnings("unchecked")
+    public <R> HttpResponse<R> doCall(HttpResponse.BodyHandler<R> handler) throws IOException {
+        bodyHandler = handler;
+        connect();
+        return (HttpResponse<R>) response;
+    }
+
+    /**
+     * Executes the outcall, retrieving the response as String.
+     *
+     * @return the response
+     * @throws IOException in case of any IO error
+     * @see java.net.http.HttpResponse.BodyHandlers
+     */
+    public HttpResponse<String> callForString() throws IOException {
+        return doCall(HttpResponse.BodyHandlers.ofString());
+    }
+
+    /**
+     * Executes the outcall, retrieving the response into the given Path.
+     *
+     * @param file the path to write the file into@
+     * @return the response
+     * @throws IOException in case of any IO error
+     * @see java.net.http.HttpResponse.BodyHandlers
+     */
+    public HttpResponse<Path> callForFile(Path file) throws IOException {
+        return doCall(HttpResponse.BodyHandlers.ofFile(file));
+    }
+
+    /**
+     * Executes the outcall, retrieving the response as input stream.
+     *
+     * @return the response
+     * @throws IOException in case of any IO error
+     * @see java.net.http.HttpResponse.BodyHandlers
+     */
+    public HttpResponse<InputStream> callForInputStream() throws IOException {
+        return doCall(HttpResponse.BodyHandlers.ofInputStream());
     }
 
     /**
@@ -156,37 +267,32 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public Outcall postData(Context params, Charset charset) throws IOException {
-        markAsPostRequest();
-        connection.setRequestProperty(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED);
         this.charset = charset;
 
-        OutputStreamWriter writer = new OutputStreamWriter(getOutput(), charset.name());
         StringBuilder sb = new StringBuilder();
-        boolean first = true;
+        Monoflop monoflop = Monoflop.create();
         for (Map.Entry<String, Object> entry : params.entrySet()) {
-            if (!first) {
+            if (monoflop.successiveCall()) {
                 sb.append("&");
             }
-            first = false;
             sb.append(URLEncoder.encode(entry.getKey(), charset.name()));
             sb.append("=");
             sb.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
         }
-        writer.write(sb.toString());
-        writer.flush();
+        modifyRequest().header(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
+                       .POST(HttpRequest.BodyPublishers.ofString(sb.toString(), charset));
 
         return this;
     }
 
     /**
-     * Marks the request as POST request.
+     * Marks the request as POST request and uses the given publisher as the body to POST.
      *
+     * @param bodyPublisher the body to publish
      * @return the outcall itself for fluent method calls
-     * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
-    public Outcall markAsPostRequest() throws IOException {
-        connection.setDoOutput(true);
-        connection.setRequestMethod(REQUEST_METHOD_POST);
+    public Outcall markAsPostRequest(HttpRequest.BodyPublisher bodyPublisher) {
+        modifyRequest().POST(bodyPublisher);
         return this;
     }
 
@@ -199,79 +305,31 @@ public class Outcall {
      * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
     public Outcall markAsHeadRequest() throws IOException {
-        connection.setRequestMethod(REQUEST_METHOD_HEAD);
+        modifyRequest().method(REQUEST_METHOD_HEAD, HttpRequest.BodyPublishers.noBody());
         return this;
-    }
-
-    /**
-     * Provides access to the result of the call.
-     * <p>
-     * Once this method is called, the call will be started and data will be read.
-     *
-     * @return the stream returned by the call
-     * @throws IOException in case of any IO error
-     */
-    public InputStream getInput() throws IOException {
-        Watch watch = Watch.start();
-        try {
-            connect();
-            return connection.getInputStream();
-        } catch (IOException e) {
-            int statusCode = connection.getResponseCode();
-            if (statusCode != HttpURLConnection.HTTP_OK) {
-                InputStream errorStream = connection.getErrorStream();
-                if (errorStream != null) {
-                    return errorStream;
-                }
-            }
-
-            throw e;
-        } finally {
-            timeToFirstByte.addValue(watch.elapsedMillis());
-            if (Microtiming.isEnabled()) {
-                watch.submitMicroTiming("OUTCALL", connection.getURL().getHost() + connection.getURL().getPath());
-            }
-        }
     }
 
     private void connect() throws IOException {
         try {
-            int maxAttempts = MAX_FOLLOW_REDIRECTS;
-            while (maxAttempts-- > 0) {
-                int responseCode = connection.getResponseCode();
-                if (responseCode != HttpURLConnection.HTTP_MOVED_TEMP
-                    && responseCode != HttpURLConnection.HTTP_MOVED_PERM
-                    && responseCode != HttpURLConnection.HTTP_SEE_OTHER) {
-                    return;
-                }
-                String location = connection.getHeaderField(HEADER_LOCATION);
-                if (Strings.isEmpty(location)) {
-                    return;
-                }
-
-                followRedirect(new URL(connection.getURL(), location));
+            if (response != null) {
+                return;
             }
-        } catch (SocketTimeoutException e) {
+            if (client == null) {
+                client = clientBuilder.build();
+            }
+            if (request == null) {
+                if (postFromOutput) {
+                    requestBuilder.POST(HttpRequest.BodyPublishers.ofByteArray(out.toByteArray()));
+                }
+                request = requestBuilder.build();
+            }
+            response = client.send(request, bodyHandler);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Thread was interrupted!");
+        } catch (IOException e) {
             addToTimeoutBlacklist();
             throw e;
-        }
-    }
-
-    private void followRedirect(URL location) throws IOException {
-        checkTimeoutBlacklist(location);
-        HttpURLConnection previousConnection = connection;
-        connection = (HttpURLConnection) location.openConnection();
-        connection.setRequestMethod(previousConnection.getRequestMethod());
-        connection.setDoInput(true);
-        connection.setConnectTimeout(previousConnection.getConnectTimeout());
-        connection.setReadTimeout(previousConnection.getReadTimeout());
-        previousConnection.getRequestProperties().forEach((name, values) -> {
-            for (String value : values) {
-                connection.setRequestProperty(name, value);
-            }
-        });
-        if ((previousConnection instanceof HttpsURLConnection) && (connection instanceof HttpsURLConnection)) {
-            ((HttpsURLConnection) connection).setSSLSocketFactory(((HttpsURLConnection) previousConnection).getSSLSocketFactory());
         }
     }
 
@@ -281,7 +339,7 @@ public class Outcall {
         }
 
         long now = System.currentTimeMillis();
-        timeoutBlacklist.put(connection.getURL().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
+        timeoutBlacklist.put(request.uri().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
         if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGH_WATERMARK) {
             // We collected a bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
             timeoutBlacklist.forEach((host, timeout) -> {
@@ -293,24 +351,6 @@ public class Outcall {
     }
 
     /**
-     * Provides access to a output stream that writes into this call.
-     * <p>
-     * Note that you need to call {@link #markAsPostRequest()} before calling this method.
-     *
-     * @return the stream of data sent to the call / url
-     * @throws IOException                in case of any IO error
-     * @throws java.net.ProtocolException if the method doesn't support output
-     */
-    public OutputStream getOutput() throws IOException {
-        try {
-            return connection.getOutputStream();
-        } catch (SocketTimeoutException e) {
-            addToTimeoutBlacklist();
-            throw e;
-        }
-    }
-
-    /**
      * Provides access to the response code of the call.
      *
      * @return the response code of the call
@@ -318,7 +358,7 @@ public class Outcall {
      */
     public int getResponseCode() throws IOException {
         connect();
-        return connection.getResponseCode();
+        return response.statusCode();
     }
 
     /**
@@ -329,7 +369,7 @@ public class Outcall {
      * @return the outcall itself for fluent method calls
      */
     public Outcall setRequestProperty(String name, String value) {
-        connection.setRequestProperty(name, value);
+        modifyRequest().header(name, value);
         return this;
     }
 
@@ -342,10 +382,10 @@ public class Outcall {
      * @param ifModifiedSince a date since when the object should be modified
      * @throws IllegalStateException if already connected
      */
-    public void setIfModifiedSince(LocalDateTime ifModifiedSince) {
-        connection.setRequestProperty(HEADER_IF_MODIFIED_SINCE,
-                                      ifModifiedSince.atOffset(ZoneOffset.UTC)
-                                                     .format(DateTimeFormatter.RFC_1123_DATE_TIME));
+    public Outcall setIfModifiedSince(LocalDateTime ifModifiedSince) {
+        setRequestProperty(HEADER_IF_MODIFIED_SINCE,
+                           ifModifiedSince.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.RFC_1123_DATE_TIME));
+        return this;
     }
 
     /**
@@ -379,15 +419,14 @@ public class Outcall {
      * @return the outcall itself for fluent method calls
      */
     public Outcall trustSelfSignedCertificates() {
-        if (connection instanceof HttpsURLConnection) {
-            try {
-                SSLContext sc = SSLContext.getInstance("TLS");
-                sc.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
-                ((HttpsURLConnection) connection).setSSLSocketFactory(sc.getSocketFactory());
-            } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                throw Exceptions.handle(e);
-            }
+        try {
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
+            modifyClient().sslContext(sc);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw Exceptions.handle(e);
         }
+
         return this;
     }
 
@@ -396,13 +435,13 @@ public class Outcall {
      * when opening a communications link to the resource referenced
      * by this outcall. If the timeout expires before the
      * connection can be established, a
-     * java.net.SocketTimeoutException is raised. A timeout of zero is
+     * {@link java.net.http.HttpConnectTimeoutException} is raised. A timeout of zero is
      * interpreted as an infinite timeout.
      *
      * @param timeoutMillis specifies the connect timeout value in milliseconds
      */
     public void setConnectTimeout(int timeoutMillis) {
-        connection.setConnectTimeout(timeoutMillis);
+        modifyClient().connectTimeout(Duration.ofMillis(timeoutMillis));
     }
 
     /**
@@ -410,23 +449,13 @@ public class Outcall {
      * milliseconds. A non-zero value specifies the timeout when
      * reading from Input stream when a connection is established to a
      * resource. If the timeout expires before there is data available
-     * for read, a java.net.SocketTimeoutException is raised. A
+     * for read, a {@link java.net.http.HttpTimeoutException} is raised. A
      * timeout of zero is interpreted as an infinite timeout.
      *
      * @param timeoutMillis specifies the timeout value to be used in milliseconds
      */
     public void setReadTimeout(int timeoutMillis) {
-        connection.setReadTimeout(timeoutMillis);
-    }
-
-    /**
-     * Returns the result of the call as String.
-     *
-     * @return a String containing the complete result of the call
-     * @throws IOException in case of any IO error
-     */
-    public String getData() throws IOException {
-        return Streams.readToString(new InputStreamReader(getInput(), getContentEncoding()));
+        modifyRequest().timeout(Duration.ofMillis(timeoutMillis));
     }
 
     /**
@@ -443,7 +472,7 @@ public class Outcall {
             // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
             Exceptions.ignore(e);
         }
-        return connection.getHeaderField(name);
+        return response.headers().firstValue(name).orElse(null);
     }
 
     /**
@@ -460,11 +489,15 @@ public class Outcall {
             Exceptions.ignore(e);
         }
 
-        long timestamp = connection.getHeaderFieldDate(name, -1);
-        if (timestamp >= 0) {
-            return Optional.of(Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime());
-        }
-        return Optional.empty();
+        return response.headers().firstValue(name).flatMap(value -> {
+            try {
+                return Optional.of(LocalDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME)
+                                                .atZone(ZoneId.systemDefault())
+                                                .toLocalDateTime());
+            } catch (Exception e) {
+                return Optional.empty();
+            }
+        });
     }
 
     /**
@@ -495,6 +528,78 @@ public class Outcall {
     }
 
     /**
+     * Sets a HTTP cookie
+     *
+     * @param name  name of the cookie
+     * @param value value of the cookie
+     */
+    public void setCookie(String name, String value) {
+        if (Strings.isFilled(name) && Strings.isFilled(value)) {
+            setRequestProperty("Cookie", name + "=" + value);
+        }
+    }
+
+    /**
+     * Marks the request as POST request and uses the contents written to {@link #getOutput()} as the body to POST.
+     *
+     * @return the outcall itself for fluent method calls
+     */
+    public Outcall markAsPostRequest() {
+        postFromOutput = true;
+        return this;
+    }
+
+    /**
+     * Provides access to a output stream that writes into this call.
+     * <p>
+     * Note that you need to call {@link #markAsPostRequest()} before writing your data into this method.
+     *
+     * @return the stream of data sent to the call / url
+     */
+    public OutputStream getOutput() {
+        return out;
+    }
+
+    /**
+     * Provides access to the result of the call.
+     * <p>
+     * Once this method is called, the call will be started and data will be read.
+     *
+     * @return the stream returned by the call
+     * @throws IOException in case of any IO error
+     */
+    public InputStream getInput() throws IOException {
+        Watch watch = Watch.start();
+        try {
+            connect();
+            if (response.body() instanceof InputStream) {
+                return (InputStream) response.body();
+            }
+            throw new IllegalStateException();
+        } catch (IOException e) {
+            if (response.statusCode() != HttpURLConnection.HTTP_OK && response.body() instanceof InputStream) {
+                return (InputStream) response.body();
+            }
+            throw e;
+        } finally {
+            timeToFirstByte.addValue(watch.elapsedMillis());
+            if (Microtiming.isEnabled()) {
+                watch.submitMicroTiming("OUTCALL", request.uri().getHost() + request.uri().getPath());
+            }
+        }
+    }
+
+    /**
+     * Returns the result of the call as String.
+     *
+     * @return a String containing the complete result of the call
+     * @throws IOException in case of any IO error
+     */
+    public String getData() throws IOException {
+        return Streams.readToString(new InputStreamReader(getInput(), getContentEncoding()));
+    }
+
+    /**
      * Returns the charset used by the server to encode the response.
      *
      * @return the charset used by the server or <tt>UTF-8</tt> as default
@@ -517,28 +622,11 @@ public class Outcall {
         }
     }
 
-    /**
-     * Sets a HTTP cookie
-     *
-     * @param name  name of the cookie
-     * @param value value of the cookie
-     */
-    public void setCookie(String name, String value) {
-        if (Strings.isFilled(name) && Strings.isFilled(value)) {
-            setRequestProperty("Cookie", name + "=" + value);
-        }
+    public HttpClient getClient() {
+        return client;
     }
 
-    /**
-     * Returns the URL that is currently or last connected to.
-     * <p>
-     * This will be the URL with which this call was created with in most cases,
-     * but will be updated when any redirects have been followed,
-     * making it useful if you wanna know the URL that was then actually connected with in the end.
-     *
-     * @return the URL of the current connection
-     */
-    public URL getLastConnectedURL() {
-        return connection.getURL();
+    public HttpRequest getRequest() {
+        return request;
     }
 }
