@@ -265,6 +265,8 @@ public class Outcall {
         connection.setDoInput(true);
         connection.setConnectTimeout(previousConnection.getConnectTimeout());
         connection.setReadTimeout(previousConnection.getReadTimeout());
+        // We need to manually disconnect as the request properties can not be read when connected
+        previousConnection.disconnect();
         previousConnection.getRequestProperties().forEach((name, values) -> {
             for (String value : values) {
                 connection.setRequestProperty(name, value);
