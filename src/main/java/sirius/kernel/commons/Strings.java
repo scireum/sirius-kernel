@@ -17,13 +17,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Provides various helper methods for dealing with Java <tt>Strings</tt>
@@ -298,6 +301,51 @@ public class Strings {
             }
         }
         return result;
+    }
+
+    /**
+     * Split a string into multiple lines with a width of at most maxCharacters.
+     *
+     * @param input         the string to split
+     * @param maxCharacters the maximum amount of characters per line
+     * @return the resulting lines
+     */
+    public static List<String> splitSmart(String input, int maxCharacters) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        for (String toAdd : splitIntoWords(input, maxCharacters)) {
+            if (!current.isEmpty() && current.length() + toAdd.length() >= maxCharacters) {
+                result.add(current.toString());
+                current = new StringBuilder();
+            }
+            if (!current.isEmpty()) {
+                current.append(" ");
+            }
+            current.append(toAdd);
+        }
+        if (!current.isEmpty()) {
+            result.add(current.toString());
+        }
+        return result;
+    }
+
+    /**
+     * Split a string into words of at most maxCharacters length.
+     * <p>
+     * If a word is longer than maxCharacters, it is split into multiple parts.
+     *
+     * @param input         the input string
+     * @param maxCharacters the maximum number of characters a word may have
+     * @return a list of the words of the input string
+     */
+    private static List<String> splitIntoWords(String input, int maxCharacters) {
+        return Arrays.stream(input.split(" ")).<String>mapMulti((string, consumer) -> {
+            while (string.length() > maxCharacters) {
+                consumer.accept(string.substring(0, maxCharacters));
+                string = string.substring(maxCharacters);
+            }
+            consumer.accept(string);
+        }).filter(Strings::isFilled).collect(Collectors.toList());
     }
 
     /**
