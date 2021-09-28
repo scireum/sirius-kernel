@@ -10,7 +10,7 @@ package sirius.kernel.xml;
 
 import javax.xml.namespace.NamespaceContext;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 
 /**
  * Simple call to send XML to a server (URL) and receive XML back.
@@ -27,7 +27,7 @@ public class XMLCall {
      * @return an <tt>XMLCall</tt> which can be used to send and receive XML
      * @throws IOException in case of an IO error
      */
-    public static XMLCall to(URL url) throws IOException {
+    public static XMLCall to(URI url) throws IOException {
         return to(url, "text/xml");
     }
 
@@ -39,7 +39,7 @@ public class XMLCall {
      * @return a new instance to perform the xml call
      * @throws IOException in case of an IO error
      */
-    public static XMLCall to(URL url, String contentType) throws IOException {
+    public static XMLCall to(URI url, String contentType) throws IOException {
         XMLCall result = new XMLCall();
         result.outcall = new Outcall(url);
         result.outcall.setRequestProperty("Content-Type", contentType);
@@ -100,6 +100,6 @@ public class XMLCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public XMLStructuredInput getInput() throws IOException {
-        return new XMLStructuredInput(outcall.getInput(), namespaceContext);
+        return new XMLStructuredInput(outcall.callForInputStream().body(), namespaceContext);
     }
 }

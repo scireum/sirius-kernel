@@ -291,7 +291,7 @@ public class SOAPClient {
 
         try (Operation op = new Operation(() -> Strings.apply("SOAP %s -> %s", action, effectiveEndpoint),
                                           Duration.ofSeconds(15))) {
-            XMLCall call = XMLCall.to(effectiveEndpoint);
+            XMLCall call = XMLCall.to(effectiveEndpoint.toURI());
             call.withNamespaceContext(namespaceContext);
             call.getOutcall().markAsPostRequest();
             if (callEnhancer != null) {

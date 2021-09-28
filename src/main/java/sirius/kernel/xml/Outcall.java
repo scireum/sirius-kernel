@@ -29,10 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -114,26 +111,6 @@ public class Outcall {
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
      *
-     * @param url the url to call
-     * @throws IOException if the host is blacklisted
-     */
-    public Outcall(URL url) throws IOException {
-        URI uri;
-        try {
-            uri = url.toURI();
-        } catch (URISyntaxException e) {
-            // throw as IOException to not alter method declaration
-            throw new IOException(e.getMessage());
-        }
-        checkTimeoutBlacklist(uri);
-
-        clientBuilder = HttpClient.newBuilder().connectTimeout(DEFAULT_CONNECT_TIMEOUT);
-        requestBuilder = HttpRequest.newBuilder(uri).timeout(DEFAULT_READ_TIMEOUT);
-    }
-
-    /**
-     * Creates a new <tt>Outcall</tt> to the given URL.
-     *
      * @param uri the url to call
      * @throws IOException if the host is blacklisted
      */
@@ -156,23 +133,6 @@ public class Outcall {
 
         this.client = client;
         this.request = request;
-    }
-
-    private void checkTimeoutBlacklist(URI uri) throws IOException {
-        if (connectTimeoutBlacklistDuration.isZero()) {
-            return;
-        }
-
-        Long timeout = timeoutBlacklist.get(uri.getHost());
-        if (timeout != null) {
-            if (timeout > System.currentTimeMillis()) {
-                throw new IOException(Strings.apply(
-                        "Connecting to host %s is currently rejected due to connectivity issues.",
-                        uri.getHost()));
-            } else {
-                timeoutBlacklist.remove(uri.getHost());
-            }
-        }
     }
 
     /**
@@ -299,7 +259,7 @@ public class Outcall {
     /**
      * Marks the request as HEAD request, only requesting headers.
      * <p>
-     * Note that neither {@link #getInput()} nor {@link #getOutput()} can be invoked on this call.
+     * Note that {@link #getOutput()} can not be invoked on this call, as we will send no body at all.
      *
      * @return the outcall itself for fluent method calls
      * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
@@ -307,47 +267,6 @@ public class Outcall {
     public Outcall markAsHeadRequest() throws IOException {
         modifyRequest().method(REQUEST_METHOD_HEAD, HttpRequest.BodyPublishers.noBody());
         return this;
-    }
-
-    private void connect() throws IOException {
-        try {
-            if (response != null) {
-                return;
-            }
-            if (client == null) {
-                client = clientBuilder.build();
-            }
-            if (request == null) {
-                if (postFromOutput) {
-                    requestBuilder.POST(HttpRequest.BodyPublishers.ofByteArray(out.toByteArray()));
-                }
-                request = requestBuilder.build();
-            }
-            response = client.send(request, bodyHandler);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IOException("Thread was interrupted!");
-        } catch (IOException e) {
-            addToTimeoutBlacklist();
-            throw e;
-        }
-    }
-
-    private void addToTimeoutBlacklist() {
-        if (connectTimeoutBlacklistDuration.isZero()) {
-            return;
-        }
-
-        long now = System.currentTimeMillis();
-        timeoutBlacklist.put(request.uri().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
-        if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGH_WATERMARK) {
-            // We collected a bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
-            timeoutBlacklist.forEach((host, timeout) -> {
-                if (timeout < now) {
-                    timeoutBlacklist.remove(host);
-                }
-            });
-        }
     }
 
     /**
@@ -561,42 +480,13 @@ public class Outcall {
     }
 
     /**
-     * Provides access to the result of the call.
-     * <p>
-     * Once this method is called, the call will be started and data will be read.
-     *
-     * @return the stream returned by the call
-     * @throws IOException in case of any IO error
-     */
-    public InputStream getInput() throws IOException {
-        Watch watch = Watch.start();
-        try {
-            connect();
-            if (response.body() instanceof InputStream) {
-                return (InputStream) response.body();
-            }
-            throw new IllegalStateException();
-        } catch (IOException e) {
-            if (response.statusCode() != HttpURLConnection.HTTP_OK && response.body() instanceof InputStream) {
-                return (InputStream) response.body();
-            }
-            throw e;
-        } finally {
-            timeToFirstByte.addValue(watch.elapsedMillis());
-            if (Microtiming.isEnabled()) {
-                watch.submitMicroTiming("OUTCALL", request.uri().getHost() + request.uri().getPath());
-            }
-        }
-    }
-
-    /**
      * Returns the result of the call as String.
      *
      * @return a String containing the complete result of the call
      * @throws IOException in case of any IO error
      */
     public String getData() throws IOException {
-        return Streams.readToString(new InputStreamReader(getInput(), getContentEncoding()));
+        return Streams.readToString(new InputStreamReader(callForInputStream().body(), getContentEncoding()));
     }
 
     /**
@@ -619,6 +509,72 @@ public class Outcall {
         } catch (Exception e) {
             Exceptions.ignore(e);
             return StandardCharsets.UTF_8;
+        }
+    }
+
+    private void connect() throws IOException {
+        Watch watch = Watch.start();
+        try {
+            if (response != null) {
+                return;
+            }
+            if (client == null) {
+                client = clientBuilder.build();
+            }
+            if (request == null) {
+                if (postFromOutput) {
+                    requestBuilder.POST(HttpRequest.BodyPublishers.ofByteArray(out.toByteArray()));
+                }
+                request = requestBuilder.build();
+            }
+            response = client.send(request, bodyHandler);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Thread was interrupted!");
+        } catch (IOException e) {
+            addToTimeoutBlacklist();
+            throw e;
+        } finally {
+            if (response.body() instanceof InputStream) {
+                timeToFirstByte.addValue(watch.elapsedMillis());
+            }
+            if (Microtiming.isEnabled()) {
+                watch.submitMicroTiming("OUTCALL", request.uri().getHost() + request.uri().getPath());
+            }
+        }
+    }
+
+    private void checkTimeoutBlacklist(URI uri) throws IOException {
+        if (connectTimeoutBlacklistDuration.isZero()) {
+            return;
+        }
+
+        Long timeout = timeoutBlacklist.get(uri.getHost());
+        if (timeout != null) {
+            if (timeout > System.currentTimeMillis()) {
+                throw new IOException(Strings.apply(
+                        "Connecting to host %s is currently rejected due to connectivity issues.",
+                        uri.getHost()));
+            } else {
+                timeoutBlacklist.remove(uri.getHost());
+            }
+        }
+    }
+
+    private void addToTimeoutBlacklist() {
+        if (connectTimeoutBlacklistDuration.isZero()) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        timeoutBlacklist.put(request.uri().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
+        if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGH_WATERMARK) {
+            // We collected a bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
+            timeoutBlacklist.forEach((host, timeout) -> {
+                if (timeout < now) {
+                    timeoutBlacklist.remove(host);
+                }
+            });
         }
     }
 
