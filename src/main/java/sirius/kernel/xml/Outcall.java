@@ -193,7 +193,7 @@ public class Outcall {
      * @return the underlying {@link HttpRequest.Builder}
      */
     public HttpRequest.Builder modifyRequest() {
-        if (client != null) {
+        if (request != null) {
             throw new IllegalStateException("Can no longer modify request, request has already been sent!");
         }
         return requestBuilder;
