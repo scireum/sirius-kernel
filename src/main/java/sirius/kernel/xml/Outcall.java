@@ -8,6 +8,7 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Streams;
@@ -29,14 +30,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -96,10 +99,9 @@ public class Outcall {
 
     private HttpClient client;
     private HttpRequest request;
-    private HttpClient.Builder clientBuilder;
-    private HttpRequest.Builder requestBuilder;
-    private HttpResponse.BodyHandler<?> bodyHandler = HttpResponse.BodyHandlers.ofInputStream();
-    private HttpResponse<?> response;
+    private final HttpClient.Builder clientBuilder;
+    private final HttpRequest.Builder requestBuilder;
+    private HttpResponse<InputStream> response;
     private Charset charset = StandardCharsets.UTF_8;
 
     // Provide an output stream for old apis
@@ -118,21 +120,7 @@ public class Outcall {
         checkTimeoutBlacklist(uri);
 
         clientBuilder = HttpClient.newBuilder().connectTimeout(DEFAULT_CONNECT_TIMEOUT);
-        requestBuilder = HttpRequest.newBuilder(uri);
-    }
-
-    /**
-     * Creates a new <tt>Outcall</tt> with the given client and request.
-     *
-     * @param client  the http client to use
-     * @param request the request to execute
-     * @throws IOException if the host is blacklisted
-     */
-    public Outcall(HttpClient client, HttpRequest request) throws IOException {
-        checkTimeoutBlacklist(request.uri());
-
-        this.client = client;
-        this.request = request;
+        requestBuilder = HttpRequest.newBuilder(uri).timeout(DEFAULT_READ_TIMEOUT);
     }
 
     /**
@@ -160,53 +148,14 @@ public class Outcall {
     }
 
     /**
-     * Executes the outcall with the given {@link java.net.http.HttpResponse.BodyHandler response handler}.
+     * Executes the outcall and returns the response.
      *
-     * @param handler a response body handler
-     * @param <R>     the body type
-     * @return the response, typed by the given handler
+     * @return the response, with the body as {@link InputStream}
      * @throws IOException in case of any IO error
-     * @see java.net.http.HttpResponse.BodyHandlers
      */
-    @SuppressWarnings("unchecked")
-    public <R> HttpResponse<R> doCall(HttpResponse.BodyHandler<R> handler) throws IOException {
-        bodyHandler = handler;
+    public HttpResponse<InputStream> getResponse() throws IOException {
         connect();
-        return (HttpResponse<R>) response;
-    }
-
-    /**
-     * Executes the outcall, retrieving the response as String.
-     *
-     * @return the response
-     * @throws IOException in case of any IO error
-     * @see java.net.http.HttpResponse.BodyHandlers
-     */
-    public HttpResponse<String> callForString() throws IOException {
-        return doCall(HttpResponse.BodyHandlers.ofString());
-    }
-
-    /**
-     * Executes the outcall, retrieving the response into the given Path.
-     *
-     * @param file the path to write the file into@
-     * @return the response
-     * @throws IOException in case of any IO error
-     * @see java.net.http.HttpResponse.BodyHandlers
-     */
-    public HttpResponse<Path> callForFile(Path file) throws IOException {
-        return doCall(HttpResponse.BodyHandlers.ofFile(file));
-    }
-
-    /**
-     * Executes the outcall, retrieving the response as input stream.
-     *
-     * @return the response
-     * @throws IOException in case of any IO error
-     * @see java.net.http.HttpResponse.BodyHandlers
-     */
-    public HttpResponse<InputStream> callForInputStream() throws IOException {
-        return doCall(HttpResponse.BodyHandlers.ofInputStream());
+        return response;
     }
 
     /**
@@ -259,7 +208,7 @@ public class Outcall {
     /**
      * Marks the request as HEAD request, only requesting headers.
      * <p>
-     * Note that {@link #getOutput()} can not be invoked on this call, as we will send no body at all.
+     * Note that {@link #postFromOutput()} can not be invoked on this call, as we will send no body at all.
      *
      * @return the outcall itself for fluent method calls
      * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
@@ -459,23 +408,15 @@ public class Outcall {
     }
 
     /**
-     * Marks the request as POST request and uses the contents written to {@link #getOutput()} as the body to POST.
-     *
-     * @return the outcall itself for fluent method calls
-     */
-    public Outcall markAsPostRequest() {
-        postFromOutput = true;
-        return this;
-    }
-
-    /**
      * Provides access to a output stream that writes into this call.
      * <p>
-     * Note that you need to call {@link #markAsPostRequest()} before writing your data into this method.
+     * This will automatically mark the underlying request as a POST request,
+     * with the contents written into this stream as body.
      *
      * @return the stream of data sent to the call / url
      */
-    public OutputStream getOutput() {
+    public OutputStream postFromOutput() {
+        postFromOutput = true;
         return out;
     }
 
@@ -486,7 +427,7 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public String getData() throws IOException {
-        return Streams.readToString(new InputStreamReader(callForInputStream().body(), getContentEncoding()));
+        return Streams.readToString(new InputStreamReader(getResponse().body(), getContentEncoding()));
     }
 
     /**
@@ -513,31 +454,32 @@ public class Outcall {
     }
 
     private void connect() throws IOException {
+        if (response != null) {
+            return;
+        }
+
+        if (client == null) {
+            client = clientBuilder.build();
+        }
+        if (request == null) {
+            if (postFromOutput) {
+                requestBuilder.POST(HttpRequest.BodyPublishers.ofByteArray(out.toByteArray()));
+            }
+            request = requestBuilder.build();
+        }
+
         Watch watch = Watch.start();
-        try {
-            if (response != null) {
-                return;
-            }
-            if (client == null) {
-                client = clientBuilder.build();
-            }
-            if (request == null) {
-                if (postFromOutput) {
-                    requestBuilder.POST(HttpRequest.BodyPublishers.ofByteArray(out.toByteArray()));
-                }
-                request = requestBuilder.build();
-            }
-            response = client.send(request, bodyHandler);
+        try (Operation op = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri().getPath(),
+                                          client.connectTimeout().orElse(DEFAULT_CONNECT_TIMEOUT).plusSeconds(1))) {
+            response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IOException("Thread was interrupted!");
-        } catch (IOException e) {
+        } catch (HttpTimeoutException | ConnectException | SocketTimeoutException e) {
             addToTimeoutBlacklist();
             throw e;
         } finally {
-            if (response.body() instanceof InputStream) {
-                timeToFirstByte.addValue(watch.elapsedMillis());
-            }
+            timeToFirstByte.addValue(watch.elapsedMillis());
             if (Microtiming.isEnabled()) {
                 watch.submitMicroTiming("OUTCALL", request.uri().getHost() + request.uri().getPath());
             }

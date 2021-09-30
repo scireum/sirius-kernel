@@ -89,8 +89,7 @@ public class XMLCall {
      * @throws IOException in case of an IO error while sending the XML document
      */
     public XMLStructuredOutput getOutput() throws IOException {
-        outcall.markAsPostRequest();
-        return new XMLStructuredOutput(outcall.getOutput());
+        return new XMLStructuredOutput(outcall.postFromOutput());
     }
 
     /**
@@ -100,6 +99,6 @@ public class XMLCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public XMLStructuredInput getInput() throws IOException {
-        return new XMLStructuredInput(outcall.callForInputStream().body(), namespaceContext);
+        return new XMLStructuredInput(outcall.getResponse().body(), namespaceContext);
     }
 }
