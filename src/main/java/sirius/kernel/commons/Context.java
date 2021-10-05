@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.script.ScriptContext;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -172,6 +173,13 @@ public class Context implements Map<String, Object> {
      * @return <tt>this</tt> to permit fluent method calls
      */
     public Context set(String key, Object value) {
+        if (value instanceof Value) {
+            throw new IllegalArgumentException(Strings.apply("A Context cannot hold a Value: %s - Please unwrap.", value));
+        }
+        if (value instanceof Optional) {
+            throw new IllegalArgumentException(Strings.apply("A Context cannot hold an Optional: %s - Please unwrap.", value));
+        }
+
         data.put(key, value);
         return this;
     }
