@@ -44,14 +44,10 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Native Language Support used by the framework.
@@ -84,7 +80,6 @@ public class NLS {
     private static final Babelfish blubb = new Babelfish();
 
     private static String defaultLanguage;
-    private static Set<String> supportedLanguages;
 
     private static final DateTimeFormatter MACHINE_DATE_TIME_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
@@ -190,70 +185,6 @@ public class NLS {
     @Nullable
     public static String getSystemLanguage() {
         return Locale.getDefault().getLanguage().toLowerCase();
-    }
-
-    /**
-     * Returns a list of two-letter codes enumerating all supported languages. Provided via the config in
-     * {@code nls.languages}
-     *
-     * @return a list of supported language codes
-     * @deprecated This is now controlled via ScopeInfo in sirius-web as there is no system-wide truth
-     */
-    @Deprecated(forRemoval = true)
-    public static Set<String> getSupportedLanguages() {
-        if (supportedLanguages == null && Sirius.getSettings() != null) {
-            try {
-                supportedLanguages = Sirius.getSettings()
-                                           .getStringList("nls.languages")
-                                           .stream()
-                                           .map(String::toLowerCase)
-                                           .collect(Collectors.toCollection(LinkedHashSet::new));
-            } catch (Exception e) {
-                Exceptions.handle(e);
-            }
-        }
-        // Returns the default language or (for very early access we default to en)
-        return supportedLanguages == null ?
-               Collections.singleton("en") :
-               Collections.unmodifiableSet(supportedLanguages);
-    }
-
-    /**
-     * Determines if the given language code is supported or not.
-     *
-     * @param twoLetterLanguageCode the language as two-letter code
-     * @return <tt>true</tt> if the language is listed in <tt>nls.languages</tt>, <tt>false</tt> otherwise.
-     * @deprecated This is now controlled via ScopeInfo in sirius-web as there is no system-wide truth
-     */
-    @Deprecated(forRemoval = true)
-    public static boolean isSupportedLanguage(String twoLetterLanguageCode) {
-        return getSupportedLanguages().contains(twoLetterLanguageCode);
-    }
-
-    /**
-     * Checks if the given language is supported. Returns the default language otherwise.
-     * <p>
-     * Note that if the given lang is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
-     * to {@link sirius.kernel.async.CallContext#setLang(String)} with <tt>null</tt> as parameter won't change
-     * the language at all.
-     *
-     * @param lang the language to check
-     * @return <tt>lang</tt> if it was a supported language or the defaultLanguage otherwise, unless an empty string
-     * was passed in, in which case <tt>null</tt> is returned.
-     * @deprecated This is now controlled via ScopeInfo in sirius-web as there is no system-wide truth
-     */
-    @Nullable
-    @Deprecated(forRemoval = true)
-    public static String makeLang(@Nullable String lang) {
-        if (Strings.isEmpty(lang)) {
-            return null;
-        }
-        String langAsLowerCase = lang.toLowerCase();
-        if (getSupportedLanguages().contains(langAsLowerCase)) {
-            return langAsLowerCase;
-        } else {
-            return getDefaultLanguage();
-        }
     }
 
     /**
