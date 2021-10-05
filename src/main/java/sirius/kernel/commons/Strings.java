@@ -14,6 +14,7 @@ import sirius.kernel.nls.NLS;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -274,6 +275,20 @@ public class Strings {
             }
         }
         return value;
+    }
+
+    /**
+     * Returns an url decoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
+     *
+     * @param value the value to be decoded.
+     * @return an url decoded representation of value, using UTF-8 as character encoding.
+     */
+    public static String urlDecode(String value) {
+        try {
+            return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw Exceptions.handle(e);
+        }
     }
 
     /**
