@@ -84,6 +84,11 @@ public class StringsTest {
     }
 
     @Test
+    public void urlDecode() {
+        assertEquals("A?TEST&BÄÖÜ", Strings.urlDecode("A%3FTEST%26B%C3%84%C3%96%C3%9C"));
+    }
+
+    @Test
     public void split() {
         assertEquals(Tuple.create("A", "B"), Strings.split("A|B", "|"));
         assertEquals(Tuple.create("A", "&B"), Strings.split("A&&B", "&"));
