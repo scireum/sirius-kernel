@@ -178,18 +178,18 @@ public class Outcall {
     public Outcall postData(Context params, Charset charset) throws IOException {
         this.charset = charset;
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder parameterString = new StringBuilder();
         Monoflop monoflop = Monoflop.create();
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             if (monoflop.successiveCall()) {
-                sb.append("&");
+                parameterString.append("&");
             }
-            sb.append(URLEncoder.encode(entry.getKey(), charset.name()));
-            sb.append("=");
-            sb.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
+            parameterString.append(URLEncoder.encode(entry.getKey(), charset.name()));
+            parameterString.append("=");
+            parameterString.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
         }
         modifyRequest().header(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
-                       .POST(HttpRequest.BodyPublishers.ofString(sb.toString(), charset));
+                       .POST(HttpRequest.BodyPublishers.ofString(parameterString.toString(), charset));
 
         return this;
     }
@@ -288,9 +288,9 @@ public class Outcall {
      */
     public Outcall trustSelfSignedCertificates() {
         try {
-            SSLContext sc = SSLContext.getInstance("TLS");
-            sc.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
-            modifyClient().sslContext(sc);
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
+            modifyClient().sslContext(sslContext);
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             throw Exceptions.handle(e);
         }
@@ -363,6 +363,7 @@ public class Outcall {
                                                 .atZone(ZoneId.systemDefault())
                                                 .toLocalDateTime());
             } catch (Exception e) {
+                Exceptions.ignore(e);
                 return Optional.empty();
             }
         });
