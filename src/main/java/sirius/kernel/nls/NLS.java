@@ -74,7 +74,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 @SuppressWarnings("squid:S1192")
-@Explain("String literales here have different semantics and are therefore duplicated.")
+@Explain("String literals here have different semantics and are therefore duplicated.")
 public class NLS {
 
     private static final Babelfish blubb = new Babelfish();
@@ -443,7 +443,6 @@ public class NLS {
 
     /**
      * Creates a formatted using the pattern supplied by the translation value for the given <tt>property</tt>.
-     * smasmassm
      *
      * @param property the property to used to retrieve a translated pattern
      * @param lang     a two-letter language code for which the translation is requested
@@ -1091,7 +1090,7 @@ public class NLS {
      * @param lang  the two-letter code of the language which format should be used
      * @param <V>   the target type be be parsed
      * @return an instance of <tt>clazz</tt> representing the parsed string or <tt>null</tt> if value was empty.
-     * @throws IllegalArgumentException if the given input was not well formed or if instances of <tt>clazz</tt>
+     * @throws IllegalArgumentException if the given input was not well-formed or if instances of <tt>clazz</tt>
      *                                  cannot be created. The thrown exception has a translated error message which
      *                                  can be directly presented to the user.
      */
@@ -1161,11 +1160,11 @@ public class NLS {
     }
 
     /**
-     * If there is exactly one "." in the pattern and no "," and we have less then 3 digits behind the "." we treat this
+     * If there is exactly one "." in the pattern and no "," and we have less than 3 digits behind the "." we treat this
      * as english decimal format and not as german grouping separator.
      *
      * @param value the parsed value or <tt>null</tt> if the format doesn't match
-     * @return <tt>true</tt> if the format being used is a english / technical one and not a german one where "." is the
+     * @return <tt>true</tt> if the format being used is an english / technical one and not a german one where "." is the
      * thousand separator
      */
     private static Double tryParseMachineFormat(String value) {
@@ -1235,9 +1234,9 @@ public class NLS {
      *
      * @param clazz  the expected class of the value to be parsed
      * @param string the string to be parsed
-     * @param <V>    the target type be be parsed
+     * @param <V>    the target type to be parsed
      * @return an instance of <tt>clazz</tt> representing the parsed string or <tt>null</tt> if value was empty.
-     * @throws IllegalArgumentException if the given input was not well formed or if instances of <tt>clazz</tt>
+     * @throws IllegalArgumentException if the given input was not well-formed or if instances of <tt>clazz</tt>
      *                                  cannot be created. The thrown exception has a translated error message which
      *                                  can be directly presented to the user.
      */
@@ -1246,11 +1245,11 @@ public class NLS {
     }
 
     /**
-     * Converts a given time range in milliseconds to a human readable format using the current language
+     * Converts a given time range in milliseconds to a human-readable format using the current language
      *
      * @param duration       the duration in milliseconds
      * @param includeSeconds determines whether to include seconds or to ignore everything below minutes
-     * @param includeMillis  determines whether to include milli seconds or to ignore everything below seconds
+     * @param includeMillis  determines whether to include milliseconds or to ignore everything below seconds
      * @return a string representation of the given duration in days, hours, minutes and,
      * if enabled, seconds and milliseconds
      */
