@@ -248,6 +248,7 @@ public class Outcall {
      * If the object will not be returned because of this, the response code will be <tt>304</tt>.
      *
      * @param ifModifiedSince a date since when the object should be modified
+     * @return the outcall itself for fluent method calls
      * @throws IllegalStateException if already connected
      */
     public Outcall setIfModifiedSince(LocalDateTime ifModifiedSince) {
