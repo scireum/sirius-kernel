@@ -19,7 +19,9 @@ import java.util.TreeMap;
 /**
  * Provides an execution context to scripts etc.
  * <p>
- * This is basically a wrapper for {@code Map&lt;String, Object&gt;}
+ * This is basically a wrapper for {@code Map&lt;String, Object&gt;}. However, note that we do not accept {@link Value}
+ * and {@link Optional} as values, as these are most probably erroneous (we most probably want the unwrapped value in
+ * this case).
  */
 public class Context implements Map<String, Object> {
 
@@ -166,7 +168,7 @@ public class Context implements Map<String, Object> {
 
     /**
      * Associates the given <tt>value</tt> to the given <tt>key</tt>, while returning <tt>this</tt>
-     * to permit fluent method chains
+     * to permit fluent method chains.
      *
      * @param key   the key to which the value will be bound
      * @param value the value to be associated with the given key
@@ -174,10 +176,12 @@ public class Context implements Map<String, Object> {
      */
     public Context set(String key, Object value) {
         if (value instanceof Value) {
-            throw new IllegalArgumentException(Strings.apply("A Context cannot hold a Value: %s - Please unwrap.", value));
+            throw new IllegalArgumentException(Strings.apply("A Context cannot hold a Value: %s - Please unwrap.",
+                                                             value));
         }
         if (value instanceof Optional) {
-            throw new IllegalArgumentException(Strings.apply("A Context cannot hold an Optional: %s - Please unwrap.", value));
+            throw new IllegalArgumentException(Strings.apply("A Context cannot hold an Optional: %s - Please unwrap.",
+                                                             value));
         }
 
         data.put(key, value);
