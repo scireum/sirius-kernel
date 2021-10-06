@@ -67,7 +67,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * <b>Configuration</b>
  * <ul>
  * <li><b>nls.defaultLanguage:</b> Sets the two-letter code used as default language</li>
- * <li><b>nls.language:</b> Sets an array of two-letter codes which enumerate all supported languages</li>
  * </ul>
  *
  * @see Babelfish
