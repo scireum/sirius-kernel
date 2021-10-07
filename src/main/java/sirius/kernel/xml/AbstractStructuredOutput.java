@@ -8,11 +8,13 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -151,6 +153,29 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
      */
     protected abstract void endObject(String name);
 
+    @Override
+    public StructuredOutput object(@Nonnull String name, Record object) {
+        if (object == null) {
+            return this;
+        }
+
+        beginObject(name);
+        for (RecordComponent component : object.getClass().getRecordComponents()) {
+            try {
+                property(component.getName(), component.getAccessor().invoke(object));
+            } catch (Exception e) {
+                throw new IllegalArgumentException(Strings.apply(
+                        "Failed to serialize record component %s of record %s with type %s: %s",
+                        component.getName(),
+                        object,
+                        object.getClass().getName(),
+                        e.getMessage()));
+            }
+        }
+
+        return endObject();
+    }
+
     /**
      * Must be implemented by subclasses to generate a property.
      *
@@ -287,7 +312,11 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         if (getCurrentType() != ElementType.OBJECT && getCurrentType() != ElementType.ARRAY) {
             throw new IllegalArgumentException("Invalid result structure. Cannot place a property here.");
         }
-        writeProperty(name, data);
+        if (data instanceof Record record) {
+            object(name, record);
+        } else {
+            writeProperty(name, data);
+        }
         nesting.get(0).setEmpty(false);
         return this;
     }

@@ -852,8 +852,7 @@ public class Amount implements Comparable<Amount>, Serializable {
      *               the decimal format symbols and rounding mode
      * @return a <tt>Value</tt> containing the string representation according to the given format
      * or an empty <tt>Value</tt> if <tt>this</tt> is empty.
-     * @see Value#append(String, Object)
-     * @see Value#prepend(String, Object)
+     * @see Value#tryAppend(String, Object)
      */
     @Nonnull
     public Value toString(@Nonnull NumberFormat format) {

@@ -27,6 +27,7 @@ import sirius.kernel.settings.ExtendedSettings;
 import javax.annotation.Nullable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
+import java.net.URLConnection;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -370,6 +371,10 @@ public class Sirius {
     }
 
     private static void setupClasspath() {
+        if (Sirius.isDev()) {
+            // in a local dev environment we disable caching jar connections to hotswap libs especially templates
+            URLConnection.setDefaultUseCaches("jar", false);
+        }
         classpath = new Classpath(setup.getLoader(), "component.marker", customizations);
 
         classpath.getComponentRoots().forEach(url -> LOG.INFO("Classpath: %s", url));

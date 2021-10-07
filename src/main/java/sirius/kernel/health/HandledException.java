@@ -11,7 +11,7 @@ package sirius.kernel.health;
 import sirius.kernel.commons.Value;
 
 import java.io.Serial;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -39,7 +39,7 @@ public class HandledException extends RuntimeException {
      */
     protected HandledException(String message, Map<ExceptionHint, Object> hints, Throwable cause) {
         super(message, cause);
-        this.hints = Collections.unmodifiableMap(hints);
+        this.hints = new HashMap<>(hints);
     }
 
     /**
@@ -51,5 +51,20 @@ public class HandledException extends RuntimeException {
      */
     public Value getHint(ExceptionHint hint) {
         return Value.of(hints.get(hint));
+    }
+
+    /**
+     * Includes hints into the handled exception.
+     * <p>
+     * Adding hints after a handled exception has been created can help to categorize them
+     * when they reach specific processing stages.
+     *
+     * @param hint  the {@link ExceptionHint hint} to add
+     * @param value the hint's value
+     * @return the exception itself for fluent calls
+     */
+    public HandledException withHint(ExceptionHint hint, Object value) {
+        this.hints.put(hint, value);
+        return this;
     }
 }

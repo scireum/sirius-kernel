@@ -370,6 +370,31 @@ public class Value {
     }
 
     /**
+     * Returns a value which wraps {@code this + separator + suffix}
+     * <p>
+     * If this value is empty an empty value will be returned without appending the given suffix. If the given
+     * suffix is empty, this value is returned.
+     *
+     * @param separator the separator to be put in between the two. If the given value is <tt>null</tt>, "" is assumed
+     * @param suffix    the value to be appended to the current value.
+     * @return a <tt>Value</tt> representing the current value appended with the given value and separated
+     * with the given separator
+     */
+    @Nonnull
+    public Value tryAppend(@Nullable String separator, @Nullable Object suffix) {
+        if (Strings.isEmpty(suffix)) {
+            return this;
+        }
+        if (isEmptyString()) {
+            return Value.EMPTY;
+        }
+        if (separator == null) {
+            separator = "";
+        }
+        return Value.of(this + separator + suffix);
+    }
+
+    /**
      * Returns a value which wraps {@code value + separator + this}
      * <p>
      * If the current value is empty, the given value is returned (without the separator). If the given

@@ -8,7 +8,9 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
@@ -19,27 +21,29 @@ import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
+import java.net.ConnectException;
 import java.net.SocketTimeoutException;
-import java.net.URL;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -48,85 +52,110 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Used to call an URL and send or receive data.
+ * Used to call a URL and send or receive data.
  * <p>
- * This is basically a thin wrapper over <tt>HttpURLConnection</tt> which adds some boilder plate code and a bit
+ * This is basically a thin wrapper over <tt>HttpURLConnection</tt> which adds some boilerplate code and a bit
  * of logging / monitoring.
+ * <p>
+ * Note that in contrast to HttpUrlConnection, we attempt to follow protocol changing redirects (e.g. from HTTP to
+ * HTTPS).
  */
 public class Outcall {
 
-    private static final int DEFAULT_CONNECT_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
-    private static final int DEFAULT_READ_TIMEOUT = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
+    private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofMinutes(5);
 
-    private static final String REQUEST_METHOD_POST = "POST";
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
-    private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN =
-            Pattern.compile("(attachment|inline|form-data);.*filename\\s*=\\s*(?<unquoted>\"(?<quoted>[^\"]*)\"|[\\w.-]+)");
+    private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN = Pattern.compile(
+            "(attachment|inline|form-data);.*filename\\s*=\\s*(?<unquoted>\"(?<quoted>[^\"]*)\"|[\\w.-]+)");
     private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
 
     /**
      * Keeps track of hosts for which we ran into a connect timeout.
      * <p>
-     * These hosts are blacklisted for a short amout of time ({@link #connectTimeoutBlacklistDuration}) to prevent
+     * These hosts are blacklisted for a short amount of time ({@link #connectTimeoutBlacklistDuration}) to prevent
      * cascading failures.
      */
     private static final Map<String, Long> timeoutBlacklist = new ConcurrentHashMap<>();
 
     /**
      * If the {@link #timeoutBlacklist} contains more than the given number of entries, we remove all expired ones
-     * manually. These might be hosts which are only connected sporadiccaly and had a hickup. Everything else will be
-     * kept clean in {@link #checkTimeoutBlacklist(URL)}.
+     * manually. These might be hosts which are only connected sporadically and had a hiccup. Everything else will be
+     * kept clean in {@link #checkTimeoutBlacklist(URI)}.
      */
-    private static final int TIMEOUT_BLACKLIST_HIGHT_WATERMARK = 100;
+    private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
 
     @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
 
-    private final HttpURLConnection connection;
+    private HttpClient client;
+    private HttpRequest request;
+    private final HttpClient.Builder clientBuilder;
+    private final HttpRequest.Builder requestBuilder;
+    private HttpResponse<InputStream> response;
     private Charset charset = StandardCharsets.UTF_8;
+
+    // Provide an output stream for old apis
+    private final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    private boolean postFromOutput = false;
 
     private static final Average timeToFirstByte = new Average();
 
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
      *
-     * @param url the url to call
-     * @throws IOException in case of any IO error
+     * @param uri the url to call
+     * @throws IOException if the host is blacklisted
      */
-    public Outcall(URL url) throws IOException {
-        checkTimeoutBlacklist(url);
+    public Outcall(URI uri) throws IOException {
+        checkTimeoutBlacklist(uri);
 
-        connection = (HttpURLConnection) url.openConnection();
-        connection.setDoInput(true);
-        connection.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
-        connection.setReadTimeout(DEFAULT_READ_TIMEOUT);
+        clientBuilder = HttpClient.newBuilder().connectTimeout(DEFAULT_CONNECT_TIMEOUT);
+        requestBuilder = HttpRequest.newBuilder(uri).timeout(DEFAULT_READ_TIMEOUT);
     }
 
-    private void checkTimeoutBlacklist(URL url) throws IOException {
-        if (connectTimeoutBlacklistDuration.isZero()) {
-            return;
+    /**
+     * Allows to modify the client before the request is sent by returning the builder that is used to create it.
+     *
+     * @return the underlying {@link HttpClient.Builder}
+     */
+    public HttpClient.Builder modifyClient() {
+        if (client != null) {
+            throw new IllegalStateException("Can no longer modify client, request has already been sent!");
         }
+        return clientBuilder;
+    }
 
-        Long timeout = timeoutBlacklist.get(url.getHost());
-        if (timeout != null) {
-            if (timeout > System.currentTimeMillis()) {
-                throw new IOException(Strings.apply(
-                        "Connecting to host %s is currently rejected due to connectivity issues.",
-                        url.getHost()));
-            } else {
-                timeoutBlacklist.remove(url.getHost());
-            }
+    /**
+     * Allows to modify the request before the request is sent by returning the builder that is used to create it.
+     *
+     * @return the underlying {@link HttpRequest.Builder}
+     */
+    public HttpRequest.Builder modifyRequest() {
+        if (request != null) {
+            throw new IllegalStateException("Can no longer modify request, request has already been sent!");
         }
+        return requestBuilder;
+    }
+
+    /**
+     * Executes the outcall and returns the response.
+     *
+     * @return the response, with the body as {@link InputStream}
+     * @throws IOException in case of any IO error
+     */
+    public HttpResponse<InputStream> getResponse() throws IOException {
+        connect();
+        return response;
     }
 
     /**
@@ -147,119 +176,46 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public Outcall postData(Context params, Charset charset) throws IOException {
-        markAsPostRequest();
-        connection.setRequestProperty(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED);
         this.charset = charset;
 
-        OutputStreamWriter writer = new OutputStreamWriter(getOutput(), charset.name());
-        StringBuilder sb = new StringBuilder();
-        boolean first = true;
+        StringBuilder parameterString = new StringBuilder();
+        Monoflop monoflop = Monoflop.create();
         for (Map.Entry<String, Object> entry : params.entrySet()) {
-            if (!first) {
-                sb.append("&");
+            if (monoflop.successiveCall()) {
+                parameterString.append("&");
             }
-            first = false;
-            sb.append(URLEncoder.encode(entry.getKey(), charset.name()));
-            sb.append("=");
-            sb.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
+            parameterString.append(URLEncoder.encode(entry.getKey(), charset.name()));
+            parameterString.append("=");
+            parameterString.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
         }
-        writer.write(sb.toString());
-        writer.flush();
+        modifyRequest().header(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
+                       .POST(HttpRequest.BodyPublishers.ofString(parameterString.toString(), charset));
 
         return this;
     }
 
     /**
-     * Marks the request as POST request.
+     * Marks the request as POST request and uses the given publisher as the body to POST.
      *
+     * @param bodyPublisher the body to publish
      * @return the outcall itself for fluent method calls
-     * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
-    public Outcall markAsPostRequest() throws IOException {
-        connection.setDoOutput(true);
-        connection.setRequestMethod(REQUEST_METHOD_POST);
+    public Outcall markAsPostRequest(HttpRequest.BodyPublisher bodyPublisher) {
+        modifyRequest().POST(bodyPublisher);
         return this;
     }
 
     /**
      * Marks the request as HEAD request, only requesting headers.
      * <p>
-     * Note that neither {@link #getInput()} nor {@link #getOutput()} can be invoked on this call.
+     * Note that {@link #postFromOutput()} can not be invoked on this call, as we will send no body at all.
      *
      * @return the outcall itself for fluent method calls
      * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
     public Outcall markAsHeadRequest() throws IOException {
-        connection.setRequestMethod(REQUEST_METHOD_HEAD);
+        modifyRequest().method(REQUEST_METHOD_HEAD, HttpRequest.BodyPublishers.noBody());
         return this;
-    }
-
-    /**
-     * Provides access to the result of the call.
-     * <p>
-     * Once this method is called, the call will be started and data will be read.
-     *
-     * @return the stream returned by the call
-     * @throws IOException in case of any IO error
-     */
-    public InputStream getInput() throws IOException {
-        Watch watch = Watch.start();
-        try {
-            return connection.getInputStream();
-        } catch (SocketTimeoutException e) {
-            addToTimeoutBlacklist();
-            throw e;
-        } catch (IOException e) {
-            int statusCode = connection.getResponseCode();
-            if (statusCode != 200) {
-                InputStream errorStream = connection.getErrorStream();
-                if (errorStream != null) {
-                    return errorStream;
-                }
-            }
-
-            throw e;
-        } finally {
-            timeToFirstByte.addValue(watch.elapsedMillis());
-            if (Microtiming.isEnabled()) {
-                watch.submitMicroTiming("OUTCALL", connection.getURL().getHost() + connection.getURL().getPath());
-            }
-        }
-    }
-
-    private void addToTimeoutBlacklist() {
-        if (connectTimeoutBlacklistDuration.isZero()) {
-            return;
-        }
-
-        long now = System.currentTimeMillis();
-        timeoutBlacklist.put(connection.getURL().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
-        if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGHT_WATERMARK) {
-            // We collected bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
-            timeoutBlacklist.forEach((host, timeout) -> {
-                if (timeout < now) {
-                    timeoutBlacklist.remove(host);
-                }
-            });
-        }
-    }
-
-    /**
-     * Provides access to a output stream that writes into this call.
-     * <p>
-     * Note that you need to call {@link #markAsPostRequest()} before calling this method.
-     *
-     * @return the stream of data sent to the call / url
-     * @throws IOException                in case of any IO error
-     * @throws java.net.ProtocolException if the method doesn't support output
-     */
-    public OutputStream getOutput() throws IOException {
-        try {
-            return connection.getOutputStream();
-        } catch (SocketTimeoutException e) {
-            addToTimeoutBlacklist();
-            throw e;
-        }
     }
 
     /**
@@ -269,7 +225,8 @@ public class Outcall {
      * @throws IOException in case of any IO error
      */
     public int getResponseCode() throws IOException {
-        return connection.getResponseCode();
+        connect();
+        return response.statusCode();
     }
 
     /**
@@ -280,7 +237,7 @@ public class Outcall {
      * @return the outcall itself for fluent method calls
      */
     public Outcall setRequestProperty(String name, String value) {
-        connection.setRequestProperty(name, value);
+        modifyRequest().header(name, value);
         return this;
     }
 
@@ -291,12 +248,13 @@ public class Outcall {
      * If the object will not be returned because of this, the response code will be <tt>304</tt>.
      *
      * @param ifModifiedSince a date since when the object should be modified
+     * @return the outcall itself for fluent method calls
      * @throws IllegalStateException if already connected
      */
-    public void setIfModifiedSince(LocalDateTime ifModifiedSince) {
-        connection.setRequestProperty(HEADER_IF_MODIFIED_SINCE,
-                                      ifModifiedSince.atOffset(ZoneOffset.UTC)
-                                                     .format(DateTimeFormatter.RFC_1123_DATE_TIME));
+    public Outcall setIfModifiedSince(LocalDateTime ifModifiedSince) {
+        setRequestProperty(HEADER_IF_MODIFIED_SINCE,
+                           ifModifiedSince.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.RFC_1123_DATE_TIME));
+        return this;
     }
 
     /**
@@ -311,6 +269,7 @@ public class Outcall {
         if (Strings.isEmpty(user)) {
             return this;
         }
+
         try {
             String userAndPassword = user + ":" + password;
             String encodedAuthorization = Base64.getEncoder().encodeToString(userAndPassword.getBytes(charset.name()));
@@ -329,15 +288,14 @@ public class Outcall {
      * @return the outcall itself for fluent method calls
      */
     public Outcall trustSelfSignedCertificates() {
-        if (connection instanceof HttpsURLConnection) {
-            try {
-                SSLContext sc = SSLContext.getInstance("TLS");
-                sc.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
-                ((HttpsURLConnection) connection).setSSLSocketFactory(sc.getSocketFactory());
-            } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                throw Exceptions.handle(e);
-            }
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
+            modifyClient().sslContext(sslContext);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw Exceptions.handle(e);
         }
+
         return this;
     }
 
@@ -346,13 +304,13 @@ public class Outcall {
      * when opening a communications link to the resource referenced
      * by this outcall. If the timeout expires before the
      * connection can be established, a
-     * java.net.SocketTimeoutException is raised. A timeout of zero is
+     * {@link java.net.http.HttpConnectTimeoutException} is raised. A timeout of zero is
      * interpreted as an infinite timeout.
      *
      * @param timeoutMillis specifies the connect timeout value in milliseconds
      */
     public void setConnectTimeout(int timeoutMillis) {
-        connection.setConnectTimeout(timeoutMillis);
+        modifyClient().connectTimeout(Duration.ofMillis(timeoutMillis));
     }
 
     /**
@@ -360,23 +318,13 @@ public class Outcall {
      * milliseconds. A non-zero value specifies the timeout when
      * reading from Input stream when a connection is established to a
      * resource. If the timeout expires before there is data available
-     * for read, a java.net.SocketTimeoutException is raised. A
+     * for read, a {@link java.net.http.HttpTimeoutException} is raised. A
      * timeout of zero is interpreted as an infinite timeout.
      *
      * @param timeoutMillis specifies the timeout value to be used in milliseconds
      */
     public void setReadTimeout(int timeoutMillis) {
-        connection.setReadTimeout(timeoutMillis);
-    }
-
-    /**
-     * Returns the result of the call as String.
-     *
-     * @return a String containing the complete result of the call
-     * @throws IOException in case of any IO error
-     */
-    public String getData() throws IOException {
-        return Streams.readToString(new InputStreamReader(getInput(), getContentEncoding()));
+        modifyRequest().timeout(Duration.ofMillis(timeoutMillis));
     }
 
     /**
@@ -387,7 +335,13 @@ public class Outcall {
      */
     @Nullable
     public String getHeaderField(String name) {
-        return connection.getHeaderField(name);
+        try {
+            connect();
+        } catch (IOException e) {
+            // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
+            Exceptions.ignore(e);
+        }
+        return response.headers().firstValue(name).orElse(null);
     }
 
     /**
@@ -397,11 +351,23 @@ public class Outcall {
      * @return the date of the given header wrapped in an Optional or empty if the field does not exists or can not be parsed as date
      */
     public Optional<LocalDateTime> getHeaderFieldDate(String name) {
-        long timestamp = connection.getHeaderFieldDate(name, -1);
-        if (timestamp >= 0) {
-            return Optional.of(Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime());
+        try {
+            connect();
+        } catch (IOException e) {
+            // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
+            Exceptions.ignore(e);
         }
-        return Optional.empty();
+
+        return response.headers().firstValue(name).flatMap(value -> {
+            try {
+                return Optional.of(LocalDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME)
+                                                .atZone(ZoneId.systemDefault())
+                                                .toLocalDateTime());
+            } catch (Exception e) {
+                Exceptions.ignore(e);
+                return Optional.empty();
+            }
+        });
     }
 
     /**
@@ -413,7 +379,7 @@ public class Outcall {
      * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
      */
     public Optional<String> parseFileNameFromContentDisposition() {
-        String contentDisposition = connection.getHeaderField(HEADER_CONTENT_DISPOSITION);
+        String contentDisposition = getHeaderField(HEADER_CONTENT_DISPOSITION);
         return parseFileName(contentDisposition);
     }
 
@@ -432,12 +398,47 @@ public class Outcall {
     }
 
     /**
+     * Sets a HTTP cookie
+     *
+     * @param name  name of the cookie
+     * @param value value of the cookie
+     */
+    public void setCookie(String name, String value) {
+        if (Strings.isFilled(name) && Strings.isFilled(value)) {
+            setRequestProperty("Cookie", name + "=" + value);
+        }
+    }
+
+    /**
+     * Provides access to a output stream that writes into this call.
+     * <p>
+     * This will automatically mark the underlying request as a POST request,
+     * with the contents written into this stream as body.
+     *
+     * @return the stream of data sent to the call / url
+     */
+    public OutputStream postFromOutput() {
+        postFromOutput = true;
+        return out;
+    }
+
+    /**
+     * Returns the result of the call as String.
+     *
+     * @return a String containing the complete result of the call
+     * @throws IOException in case of any IO error
+     */
+    public String getData() throws IOException {
+        return Streams.readToString(new InputStreamReader(getResponse().body(), getContentEncoding()));
+    }
+
+    /**
      * Returns the charset used by the server to encode the response.
      *
      * @return the charset used by the server or <tt>UTF-8</tt> as default
      */
     public Charset getContentEncoding() {
-        String contentType = connection.getContentType();
+        String contentType = getHeaderField("content-type");
         if (contentType == null) {
             return StandardCharsets.UTF_8;
         }
@@ -454,15 +455,78 @@ public class Outcall {
         }
     }
 
-    /**
-     * Sets a HTTP cookie
-     *
-     * @param name  name of the cookie
-     * @param value value of the cookie
-     */
-    public void setCookie(String name, String value) {
-        if (Strings.isFilled(name) && Strings.isFilled(value)) {
-            setRequestProperty("Cookie", name + "=" + value);
+    private void connect() throws IOException {
+        if (response != null) {
+            return;
         }
+
+        if (client == null) {
+            client = clientBuilder.build();
+        }
+        if (request == null) {
+            if (postFromOutput) {
+                requestBuilder.POST(HttpRequest.BodyPublishers.ofByteArray(out.toByteArray()));
+            }
+            request = requestBuilder.build();
+        }
+
+        Watch watch = Watch.start();
+        try (Operation op = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri().getPath(),
+                                          client.connectTimeout().orElse(DEFAULT_CONNECT_TIMEOUT).plusSeconds(1))) {
+            response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Thread was interrupted!");
+        } catch (HttpTimeoutException | ConnectException | SocketTimeoutException e) {
+            addToTimeoutBlacklist();
+            throw e;
+        } finally {
+            timeToFirstByte.addValue(watch.elapsedMillis());
+            if (Microtiming.isEnabled()) {
+                watch.submitMicroTiming("OUTCALL", request.uri().getHost() + request.uri().getPath());
+            }
+        }
+    }
+
+    private void checkTimeoutBlacklist(URI uri) throws IOException {
+        if (connectTimeoutBlacklistDuration.isZero()) {
+            return;
+        }
+
+        Long timeout = timeoutBlacklist.get(uri.getHost());
+        if (timeout != null) {
+            if (timeout > System.currentTimeMillis()) {
+                throw new IOException(Strings.apply(
+                        "Connecting to host %s is currently rejected due to connectivity issues.",
+                        uri.getHost()));
+            } else {
+                timeoutBlacklist.remove(uri.getHost());
+            }
+        }
+    }
+
+    private void addToTimeoutBlacklist() {
+        if (connectTimeoutBlacklistDuration.isZero()) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        timeoutBlacklist.put(request.uri().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
+        if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGH_WATERMARK) {
+            // We collected a bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
+            timeoutBlacklist.forEach((host, timeout) -> {
+                if (timeout < now) {
+                    timeoutBlacklist.remove(host);
+                }
+            });
+        }
+    }
+
+    public HttpClient getClient() {
+        return client;
+    }
+
+    public HttpRequest getRequest() {
+        return request;
     }
 }

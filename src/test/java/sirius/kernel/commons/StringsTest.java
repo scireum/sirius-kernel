@@ -2,6 +2,7 @@ package sirius.kernel.commons;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -84,6 +85,11 @@ class StringsTest {
     }
 
     @Test
+    void urlDecode() {
+        assertEquals("A?TEST&BÄÖÜ", Strings.urlDecode("A%3FTEST%26B%C3%84%C3%96%C3%9C"));
+    }
+
+    @Test
     void split() {
         assertEquals(Tuple.create("A", "B"), Strings.split("A|B", "|"));
         assertEquals(Tuple.create("A", "&B"), Strings.split("A&&B", "&"));
@@ -91,6 +97,18 @@ class StringsTest {
         assertEquals(Tuple.create("A", ""), Strings.split("A|", "|"));
         assertEquals(Tuple.create("", "B"), Strings.split("|B", "|"));
         assertEquals(Tuple.create("A&B", null), Strings.split("A&B", "|"));
+    }
+
+    @Test
+    void splitSmart() {
+        assertEquals(List.of("a"), Strings.splitSmart("a", 2));
+        assertEquals(List.of(), Strings.splitSmart("", 0));
+        assertEquals(List.of(), Strings.splitSmart("", 2));
+        assertEquals(List.of("das ist", "ein", "Test"), Strings.splitSmart("das ist ein Test", 7));
+        assertEquals(List.of("lange-w", "örter-w", "erden-a", "uch-get", "rennt"),
+                     Strings.splitSmart("lange-wörter-werden-auch-getrennt", 7));
+        assertEquals(List.of("Ein langer Text kann in eine Zeile"),
+                     Strings.splitSmart("Ein langer Text kann in eine Zeile", 40));
     }
 
     @Test

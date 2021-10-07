@@ -41,9 +41,6 @@ import java.util.logging.Logger;
  * <li>WARN</li>
  * <li>ERROR</li>
  * </ul>
- * <p>
- * Internally uses log4j to perform all logging operations. Still it is recommended to only log through this facade
- * and not to rely on any log4j specific behaviour.
  */
 @SuppressWarnings("squid:S00100")
 @Explain("We have these special method names so they stand out from the business logic.")

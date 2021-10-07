@@ -62,9 +62,9 @@ class TasksSpec extends BaseSpecification {
         task2Future.await(DEFAULT_TIMEOUT)
         then: "we expect the task the be dropped"
         dropped.get() == true
-        and: "we expecte the task1 to have successfully completed"
+        and: "we expect the task1 to have successfully completed"
         task1Future.isSuccessful()
-        and: "we expecte the task1 to have failed"
+        and: "we expect the task1 to have failed"
         task2Future.isFailed()
     }
 
@@ -94,7 +94,7 @@ class TasksSpec extends BaseSpecification {
         Thread.currentThread().getId() != task1Thread.get()
     }
 
-    def "An executor uses parrallel threads if possible and required"() {
+    def "An executor uses parallel threads if possible and required"() {
         given: "a future the synchronize the threads"
         Future thread2Finished = new Future()
         and: "a place to store the thread ids which executed the task"
