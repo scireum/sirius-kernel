@@ -8,11 +8,11 @@
 
 package sirius.kernel.async
 
+import org.junit.jupiter.api.Tag
 import sirius.kernel.BaseSpecification
-import sirius.kernel.Scope
 import sirius.kernel.commons.Wait
 
-@Scope(Scope.SCOPE_NIGHTLY)
+@Tag("nightly")
 class BackgroundLoopSpec extends BaseSpecification {
 
     def "BackgroundLoop limits to max frequency"() {

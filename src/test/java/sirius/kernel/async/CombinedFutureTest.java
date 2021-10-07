@@ -8,44 +8,46 @@
 
 package sirius.kernel.async;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Provides tests for {@link CombinedFuture}
  */
-public class CombinedFutureTest {
+class CombinedFutureTest {
 
     @Test
-    public void emptyCombinedFutureDontBlock() {
+    void emptyCombinedFutureDontBlock() {
         CombinedFuture combinedFuture = new CombinedFuture();
-        Assert.assertTrue(combinedFuture.asFuture().isCompleted());
+        assertTrue(combinedFuture.asFuture().isCompleted());
     }
 
     @Test
-    public void combinedFutureActuallyAwait() {
+    void combinedFutureActuallyAwait() {
         CombinedFuture combinedFuture = new CombinedFuture();
         Future future = new Future();
         combinedFuture.add(future);
-        Assert.assertFalse(combinedFuture.asFuture().isCompleted());
+        assertFalse(combinedFuture.asFuture().isCompleted());
         future.success();
-        Assert.assertTrue(combinedFuture.asFuture().isCompleted());
+        assertTrue(combinedFuture.asFuture().isCompleted());
     }
 
     @Test
-    public void combinedFutureWorkWithCompletedFutures() {
+    void combinedFutureWorkWithCompletedFutures() {
         CombinedFuture combinedFuture = new CombinedFuture();
         Future future = new Future().success();
         combinedFuture.add(future);
-        Assert.assertTrue(combinedFuture.asFuture().isCompleted());
+        assertTrue(combinedFuture.asFuture().isCompleted());
     }
 
     @Test
-    public void combinedFutureWorkWithFailingFutures() {
+    void combinedFutureWorkWithFailingFutures() {
         CombinedFuture combinedFuture = new CombinedFuture();
         Future future = new Future();
         combinedFuture.add(future);
-        future.fail(new IllegalStateException("Test"));
-        Assert.assertTrue(combinedFuture.asFuture().isCompleted());
+        future.fail(new IllegalStateException("ThisIsExpected"));
+        assertTrue(combinedFuture.asFuture().isCompleted());
     }
 }

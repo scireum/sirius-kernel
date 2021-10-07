@@ -8,19 +8,19 @@
 
 package sirius.kernel.commons;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class StreamsTest {
+class StreamsTest {
 
     @Test
-    public void transferTest() throws IOException {
+    void transferTest() throws IOException {
         String testString = "Hello from the other side...";
 
         ByteArrayInputStream in = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
@@ -31,7 +31,7 @@ public class StreamsTest {
     }
 
     @Test
-    public void largeTransferTest() throws IOException {
+    void largeTransferTest() throws IOException {
         StringBuilder builder = new StringBuilder();
         builder.append("Hello World".repeat(10_000));
 

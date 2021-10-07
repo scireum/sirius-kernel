@@ -55,13 +55,4 @@ public @interface Scenario {
      */
     String excludes() default "";
 
-    /**
-     * Determines the {@link Scope} to check when executing this suite.
-     * <p>
-     * This can be used to limit a complete scenario to a specific scope (e.g. nightly tests instead of every build).
-     *
-     * @return the scope used to determine if this scenario is to be executed
-     * @see Scope
-     */
-    String scope() default "";
 }

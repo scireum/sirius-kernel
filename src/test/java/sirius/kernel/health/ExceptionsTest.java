@@ -8,10 +8,9 @@
 
 package sirius.kernel.health;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import sirius.kernel.TestHelper;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import sirius.kernel.SiriusExtension;
 
 import java.util.logging.Level;
 
@@ -21,20 +20,11 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests for the {@link Exceptions} class.
  */
-public class ExceptionsTest {
-
-    @BeforeClass
-    public static void setUp() {
-        TestHelper.setUp(ExceptionsTest.class);
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        TestHelper.tearDown(ExceptionsTest.class);
-    }
+@ExtendWith(SiriusExtension.class)
+class ExceptionsTest {
 
     @Test
-    public void testDeprecatedMethodCallWarner() {
+    void testDeprecatedMethodCallWarner() {
         LogHelper.clearMessages();
         caller();
         assertTrue(LogHelper.hasMessage(Level.WARNING,
@@ -52,10 +42,9 @@ public class ExceptionsTest {
     }
 
     @Test
-    public void testRootCauseRemains() {
+    void testRootCauseRemains() {
         HandledException root = Exceptions.createHandled().withSystemErrorMessage("Root Cause").handle();
         HandledException ex = Exceptions.handle(new Exception(new IllegalArgumentException(root)));
         assertEquals(root, Exceptions.getRootCause(ex));
     }
-
 }

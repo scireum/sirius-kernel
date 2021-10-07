@@ -9,6 +9,7 @@
 package sirius.kernel;
 
 import com.googlecode.junittoolbox.WildcardPatternSuite;
+import org.junit.jupiter.api.Tag;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
@@ -105,6 +106,10 @@ public class ScenarioSuite extends WildcardPatternSuite {
             System.setProperty(Sirius.SIRIUS_TEST_SCENARIO_PROPERTY, scenarioFile == null ? "" : scenarioFile);
             runNotifier.fireTestStarted(FRAMEWORK_SETUP);
             try {
+                // In case of a configured scenario, ensure framework shutdown
+                if (scenarioFile != null) {
+                    TestHelper.performTearDown();
+                }
                 TestHelper.setUp(ScenarioSuite.class);
             } catch (Exception e) {
                 runNotifier.fireTestFailure(new Failure(FRAMEWORK_SETUP, e));
@@ -131,9 +136,11 @@ public class ScenarioSuite extends WildcardPatternSuite {
                 return;
             }
 
-            // Ignore tests if their Scope isn't enabled.
-            Scope scope = runner.getDescription().getTestClass().getAnnotation(Scope.class);
-            if (scope != null && !isScopeEnabled(scope.value())) {
+            // Ignore tests with nightly tags.
+            // CAVEAT: this only work when annotated on class level, like the former scope
+            // This interception breaks surefires test counting
+            Tag tag = runner.getDescription().getTestClass().getAnnotation(Tag.class);
+            if (tag != null && !isScopeEnabled(tag.value())) {
                 runNotifier.fireTestIgnored(runner.getDescription());
                 return;
             }
@@ -196,7 +203,6 @@ public class ScenarioSuite extends WildcardPatternSuite {
         result.add(new ScenarioRunner(null, null, null, tests));
         if (scenarios != null) {
             scenarios.stream()
-                     .filter(scenario -> isScopeEnabled(scenario.scope()))
                      .map(scenario -> new ScenarioRunner(scenario.file(),
                                                          scenario.includes(),
                                                          scenario.excludes(),
@@ -222,8 +228,8 @@ public class ScenarioSuite extends WildcardPatternSuite {
         }
 
         return scopeSettings.computeIfAbsent(scope, ignored -> {
-            return Value.of(System.getProperty("test." + scope))
-                        .asBoolean(Value.of(System.getProperty("test.all")).asBoolean());
+            // NOTE: this is potentially dangerous, but should work until spock will be removed
+            return !System.getProperty("test.excluded.groups", "") .contains(scope);
         });
     }
 }

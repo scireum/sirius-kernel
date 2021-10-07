@@ -30,7 +30,7 @@ steps:
   - name: cron_unit_tests
     image: hub.scireum.com/scireum/sirius-build-jdk16:latest
     commands:
-      - mvn clean test -Dtest.nightly=true
+      - mvn clean test
     volumes: *scireum_volumes
     when:
       event:
@@ -39,7 +39,7 @@ steps:
   - name: test
     image: hub.scireum.com/scireum/sirius-build-jdk16:latest
     commands:
-      - mvn clean test
+      - mvn clean test -Dtest.excluded.groups=nightly
     volumes: *scireum_volumes
     when:
       event:
