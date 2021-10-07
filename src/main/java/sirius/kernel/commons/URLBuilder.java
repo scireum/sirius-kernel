@@ -174,7 +174,7 @@ public class URLBuilder {
         try {
             return asURL().toURI();
         } catch (URISyntaxException e) {
-            throw new IllegalStateException(Strings.apply("Could not create URL: %s", e.getMessage()));
+            throw new IllegalStateException(Strings.apply("Could not create URI: %s", e.getMessage()));
         }
     }
 }
