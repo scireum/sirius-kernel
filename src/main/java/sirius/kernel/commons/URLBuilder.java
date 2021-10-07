@@ -11,6 +11,8 @@ package sirius.kernel.commons;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -155,9 +157,24 @@ public class URLBuilder {
         try {
             return new URL(url.toString());
         } catch (MalformedURLException e) {
-            throw new IllegalStateException(Strings.apply(
-                    "Could not create URL: %s", e.getMessage()
-            ));
+            throw new IllegalStateException(Strings.apply("Could not create URL: %s", e.getMessage()));
+        }
+    }
+
+    /**
+     * Creates a {@link URI URI object} from the resulting string of this builder.
+     * <p>
+     * Only works if the url contains a valid protocol.
+     * This internally uses {@link #asURL()} as we only want valid URLs to be build as URI.
+     *
+     * @return the url that was built as a {@link URI URI object}
+     * @throws IllegalStateException should only happen if no protocol or an invalid protocol has been given
+     */
+    public URI asURI() {
+        try {
+            return asURL().toURI();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(Strings.apply("Could not create URI: %s", e.getMessage()));
         }
     }
 }
