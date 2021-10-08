@@ -18,11 +18,10 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Tag("nightly")
+@Tag(Tags.NIGHTLY)
 @Test
 /**
- * Convenince compound annotation to annotate as a nightly tagged Test.
- */
-public @interface NightlyTest {
+ * Convenience compound annotation to annotate as a nightly tagged Test.
+ */ public @interface NightlyTest {
 
 }
