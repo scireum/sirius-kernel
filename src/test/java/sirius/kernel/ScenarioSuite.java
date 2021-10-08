@@ -23,7 +23,6 @@ import org.spockframework.runtime.model.FeatureInfo;
 import org.spockframework.runtime.model.SpecInfo;
 import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Value;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -216,8 +215,8 @@ public class ScenarioSuite extends WildcardPatternSuite {
     /**
      * Determines if the given test scope is enabled.
      * <p>
-     * This is either done by specifying <tt>-Dtest.SCOPE=true</tt> or
-     * <tt>-Dtest.all=true</tt>.
+     * This evaluates against a JUnit groups that must be active. We test this by checking for exclusion
+     * of the group.
      *
      * @param scope the scope to check
      * @return <tt>true</tt> if the scope is enabled, <tt>false</tt> otherwise
@@ -228,8 +227,9 @@ public class ScenarioSuite extends WildcardPatternSuite {
         }
 
         return scopeSettings.computeIfAbsent(scope, ignored -> {
-            // NOTE: this is potentially dangerous, but should work until spock will be removed
-            return !System.getProperty("test.excluded.groups", "") .contains(scope);
+            // NOTE: this is potentially dangerous, as it works on one potentiall input property and not the
+            // actual system activated groups, but should work until spock will be removed
+            return !System.getProperty("test.excluded.groups", "").contains(scope);
         });
     }
 }
