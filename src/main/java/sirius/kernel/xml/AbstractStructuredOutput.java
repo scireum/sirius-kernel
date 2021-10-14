@@ -15,6 +15,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.RecordComponent;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -191,10 +192,12 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
      * @return the machine-readable string representation of the value
      */
     protected String transformToStringRepresentation(Object value) {
-        // We preserve strings here, as NLS.toMachineString performs an implicit trim which might be
-        // unwanted here.
-        if (value instanceof String) {
-            return (String) value;
+        // We preserve some objects here because:
+        //  * String: as NLS.toMachineString performs an implicit trim which might be unwanted here.
+        //  * LocalDateTime: as we want a "full ISO" format "date"T"time" and not "date" "time" as NLS.toMachineString
+        //    does
+        if ((value instanceof String) || (value instanceof LocalDateTime)) {
+            return value.toString();
         } else {
             return NLS.toMachineString(value);
         }
