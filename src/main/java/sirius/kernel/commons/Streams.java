@@ -30,6 +30,11 @@ public class Streams {
     }
 
     /**
+     * Contains the proper character which can be written into a <tt>Writer</tt> to add BOM.
+     */
+    public static final int UNICODE_BOM_CHARACTER = '\ufeff';
+
+    /**
      * Transfers all bytes from the given source to the destination.
      *
      * @param source      the source to read bytes from
