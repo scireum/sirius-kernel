@@ -17,7 +17,7 @@ import java.io.Reader;
  * As Java sadly is incapable of handling these bytes, we discard them here. Note that in order to write a BOM,
  * {@link Streams#UNICODE_BOM_CHARACTER} can be used.
  *
- * @see CSVWriter#writeUnicodeBOM() 
+ * @see CSVWriter#writeUnicodeBOM()
  */
 public class BOMReader extends Reader {
 
