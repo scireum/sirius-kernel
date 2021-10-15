@@ -21,10 +21,9 @@ import java.util.List;
  * By default <tt>;</tt> is used to separate columns and line breaks are used to separate rows. If a column value
  * contains the separator character or a line break, it is quoted using <tt>&quot;</tt>.
  * <p>
- * If the quotation character occurs withing an already quoted string, it is escaped using <tt>\</tt>. If no
- * quotation charater is specified (set to <tt>\0</tt>), the escape character is used if possible. If quoting or
- * escaping
- * is required but disabled (using <tt>\0</tt> for their respective value), an exception will be thrown as no
+ * If the quotation character occurs within an already quoted string, it is escaped using <tt>\</tt>. If no
+ * quotation character is specified (set to <tt>\0</tt>), the escape character is used if possible. If quoting or
+ * escaping is required but disabled (using <tt>\0</tt> for their respective value), an exception will be thrown as no
  * valid output can be generated.
  */
 public class CSVWriter implements Closeable {
@@ -50,6 +49,20 @@ public class CSVWriter implements Closeable {
      */
     public CSVWriter(Writer writer) {
         this.writer = writer;
+    }
+
+    /**
+     * Emits a UNICODE byte order mark.
+     * <p>
+     * This must be invoked right after the writer has been created before any headers or rows have been written.
+     *
+     * @return the writer itself for fluent method calls
+     * @throws IOException in case an IO error occurs while writing the BOM
+     */
+    public CSVWriter writeUnicodeBOM() throws IOException {
+        this.writer.write(Streams.UNICODE_BOM_CHARACTER);
+
+        return this;
     }
 
     /**
@@ -224,7 +237,7 @@ public class CSVWriter implements Closeable {
      * Transforms the value into a string representation suitable for outputting in a CSV file.
      *
      * @param object the object to convert
-     * @return a machine readable string representation
+     * @return a machine-readable string representation
      */
     private String convertToString(Object object) {
         if (object == null) {

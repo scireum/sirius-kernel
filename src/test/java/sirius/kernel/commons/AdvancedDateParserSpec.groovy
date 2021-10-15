@@ -20,7 +20,7 @@ import java.time.ZoneOffset
 class AdvancedDateParserSpec extends BaseSpecification {
 
     @Part
-    private static TimeProvider timeProvider;
+    private static TimeProvider timeProvider
 
     def "German date can be parsed"() {
         when:
@@ -87,7 +87,7 @@ class AdvancedDateParserSpec extends BaseSpecification {
         parser.parse("32.07.2017").asDateTime()
         then:
         thrown(ParseException)
-        when: "The number of days exeeds the days in a specific month..."
+        when: "The number of days exceeds the days in a specific month..."
         parser.parse("31.06.2017").asDateTime()
         then:
         thrown(ParseException)
@@ -126,7 +126,7 @@ class AdvancedDateParserSpec extends BaseSpecification {
         given:
         AdvancedDateParser parser = new AdvancedDateParser("de")
         when: "A date is parsed into a DateSelection"
-        def dateSelection = parser.parse("07.07.2017 12:34:56");
+        def dateSelection = parser.parse("07.07.2017 12:34:56")
         then: "its result can be re-parsed by the date parser..."
         parser.parse(dateSelection.toString()).asDateTime() == dateSelection.asDateTime()
     }
