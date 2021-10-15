@@ -21,7 +21,7 @@ import java.util.List;
  * By default <tt>;</tt> is used to separate columns and line breaks are used to separate rows. If a column value
  * contains the separator character or a line break, it is quoted using <tt>&quot;</tt>.
  * <p>
- * If the quotation character occurs withing an already quoted string, it is escaped using <tt>\</tt>. If no
+ * If the quotation character occurs within an already quoted string, it is escaped using <tt>\</tt>. If no
  * quotation character is specified (set to <tt>\0</tt>), the escape character is used if possible. If quoting or
  * escaping is required but disabled (using <tt>\0</tt> for their respective value), an exception will be thrown as no
  * valid output can be generated.
