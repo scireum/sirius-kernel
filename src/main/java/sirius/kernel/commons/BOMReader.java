@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * Wraps a given reader and removes a Unicode BOM (byte order mark) is present.
+ * Wraps a given reader and removes a Unicode BOM (byte order mark) if present.
  * <p>
  * As Java sadly is incapable of handling these bytes, we discard them here. Note that in order to write a BOM,
  * {@link Streams#UNICODE_BOM_CHARACTER} can be used.
