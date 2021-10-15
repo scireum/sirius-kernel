@@ -27,6 +27,27 @@ class CSVWriterSpec extends BaseSpecification {
         output.toString() == "a;b;c\n1;2;3\nd;e;f"
     }
 
+    def "data with BOM can be written and re-read"() {
+        given:
+        StringWriter output = new StringWriter()
+        and:
+        CSVWriter writer = new CSVWriter(output)
+        when:
+        writer.writeUnicodeBOM()
+        writer.writeArray("a", "b", "c")
+        writer.writeArray(1, 2, 3)
+        writer.writeList(Arrays.asList("d", "e", "f"))
+        and:
+        output.close()
+        def csvData = output.toString()
+        def row = null
+        new CSVReader(new BOMReader(new StringReader(csvData))).execute({data -> if (row == null) { row = data } })
+        then:
+        csvData.charAt(0) == Streams.UNICODE_BOM_CHARACTER
+        and:
+        row.at(0).asString() == "a"
+    }
+
     def "changing the lineSeparator works"() {
         given:
         StringWriter output = new StringWriter()
