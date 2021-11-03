@@ -1189,7 +1189,7 @@ public class NLS {
 
     @SuppressWarnings("unchecked")
     private static <V> V parseDatesFromUserString(Class<V> clazz, String value, String lang) {
-        boolean invertMonthAndDay = "fr".equals(NLS.getCurrentLang());
+        boolean invertMonthAndDay = "fr".equals(lang);
         if (LocalDate.class.equals(clazz)) {
             try {
                 AdvancedDateParser parser = new AdvancedDateParser(lang, invertMonthAndDay);
