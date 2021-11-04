@@ -69,6 +69,18 @@ class AdvancedDateParserSpec extends BaseSpecification {
         thrown(ParseException)
     }
 
+    def "French date formats can be parsed"() {
+        when:
+        AdvancedDateParser parser = new AdvancedDateParser("fr", true)
+        then:
+        parser.parse("27.07.17").asDateTime() == LocalDateTime.parse("2017-07-27T00:00:00")
+        parser.parse("27/07/17").asDateTime() == LocalDateTime.parse("2017-07-27T00:00:00")
+        when:
+        parser.parse("07/27/17").asDateTime()
+        then:
+        thrown(ParseException)
+    }
+
     def "Relative dates can be parsed"() {
         when:
         AdvancedDateParser parser = new AdvancedDateParser("de")

@@ -68,7 +68,7 @@ public class AdvancedDateParser {
     private static final String DASH_DATE_SEPARATOR = "-";
 
     private final String lang;
-    private boolean parseBritishDate = false;
+    private boolean invertMonthAndDay = false;
     private Tokenizer tokenizer;
     private boolean startOfDay = false;
     private boolean startOfWeek = false;
@@ -94,14 +94,14 @@ public class AdvancedDateParser {
     /**
      * Creates a new parser for the given language to use.
      *
-     * @param lang             contains the two letter language code to obtain the translations for the available
-     *                         modifiers etc.
-     * @param parseBritishDate determines if british dates (DD/MM/YYYY) instead of american (MM/DD/YYYY) dates should
-     *                         be parsed.
+     * @param lang              contains the two letter language code to obtain the translations for the available
+     *                          modifiers etc.
+     * @param invertMonthAndDay determines if british dates (DD/MM/YYYY) instead of american (MM/DD/YYYY) dates should
+     *                          be parsed.
      */
-    public AdvancedDateParser(String lang, boolean parseBritishDate) {
+    public AdvancedDateParser(String lang, boolean invertMonthAndDay) {
         this.lang = lang;
-        this.parseBritishDate = parseBritishDate;
+        this.invertMonthAndDay = invertMonthAndDay;
     }
 
     /**
@@ -692,7 +692,7 @@ public class AdvancedDateParser {
             }
         }
 
-        if (parseBritishDate) {
+        if (invertMonthAndDay) {
             // The empire uses a format DD/MM/YYYY instead of the yankee version (MM/DD/YYYY), therefore
             // we have to flip month and day here...
             return buildDateAndParseTime(month, day, year);

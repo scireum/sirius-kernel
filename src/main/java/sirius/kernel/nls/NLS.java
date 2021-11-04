@@ -1189,9 +1189,10 @@ public class NLS {
 
     @SuppressWarnings("unchecked")
     private static <V> V parseDatesFromUserString(Class<V> clazz, String value, String lang) {
+        boolean invertMonthAndDay = "fr".equals(lang);
         if (LocalDate.class.equals(clazz)) {
             try {
-                AdvancedDateParser parser = new AdvancedDateParser(lang);
+                AdvancedDateParser parser = new AdvancedDateParser(lang, invertMonthAndDay);
                 return (V) parser.parse(value).asDateTime().toLocalDate();
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
@@ -1199,7 +1200,7 @@ public class NLS {
         }
         if (LocalDateTime.class.equals(clazz)) {
             try {
-                AdvancedDateParser parser = new AdvancedDateParser(lang);
+                AdvancedDateParser parser = new AdvancedDateParser(lang, invertMonthAndDay);
                 return (V) parser.parse(value).asDateTime();
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
@@ -1207,7 +1208,7 @@ public class NLS {
         }
         if (ZonedDateTime.class.equals(clazz)) {
             try {
-                AdvancedDateParser parser = new AdvancedDateParser(lang);
+                AdvancedDateParser parser = new AdvancedDateParser(lang, invertMonthAndDay);
                 return (V) ZonedDateTime.from(parser.parse(value).asDateTime());
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
@@ -1222,7 +1223,7 @@ public class NLS {
         }
         if (AdvancedDateParser.DateSelection.class.equals(clazz)) {
             try {
-                AdvancedDateParser parser = new AdvancedDateParser(lang);
+                AdvancedDateParser parser = new AdvancedDateParser(lang, invertMonthAndDay);
                 return (V) parser.parse(value);
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
