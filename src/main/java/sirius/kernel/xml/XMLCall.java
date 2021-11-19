@@ -8,9 +8,13 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.health.Exceptions;
+
 import javax.xml.namespace.NamespaceContext;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * Simple call to send XML to a server (URL) and receive XML back.
@@ -27,8 +31,12 @@ public class XMLCall {
      * @return an <tt>XMLCall</tt> which can be used to send and receive XML
      * @throws IOException in case of an IO error
      */
-    public static XMLCall to(URI url) throws IOException {
-        return to(url, "text/xml");
+    public static XMLCall to(URL url) throws IOException {
+        try {
+            return to(url.toURI());
+        } catch (URISyntaxException e) {
+            throw Exceptions.handle(e);
+        }
     }
 
     /**
@@ -39,9 +47,36 @@ public class XMLCall {
      * @return a new instance to perform the xml call
      * @throws IOException in case of an IO error
      */
-    public static XMLCall to(URI url, String contentType) throws IOException {
+    public static XMLCall to(URL url, String contentType) throws IOException {
+        try {
+            return to(url.toURI(), contentType);
+        } catch (URISyntaxException e) {
+            throw Exceptions.handle(e);
+        }
+    }
+
+    /**
+     * Creates a new XMLCall for the given uri with Content-Type 'text/xml'.
+     *
+     * @param uri the target URI to call
+     * @return an <tt>XMLCall</tt> which can be used to send and receive XML
+     * @throws IOException in case of an IO error
+     */
+    public static XMLCall to(URI uri) throws IOException {
+        return to(uri, "text/xml");
+    }
+
+    /**
+     * Creates a new XMLCall for the given uri.
+     *
+     * @param uri         the target URI to call
+     * @param contentType the Content-Type to use
+     * @return a new instance to perform the xml call
+     * @throws IOException in case of an IO error
+     */
+    public static XMLCall to(URI uri, String contentType) throws IOException {
         XMLCall result = new XMLCall();
-        result.outcall = new Outcall(url);
+        result.outcall = new Outcall(uri);
         result.outcall.setRequestProperty("Content-Type", contentType);
         return result;
     }
