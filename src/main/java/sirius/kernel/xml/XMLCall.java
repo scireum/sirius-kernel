@@ -56,27 +56,27 @@ public class XMLCall {
     }
 
     /**
-     * Creates a new XMLCall for the given url with Content-Type 'text/xml'.
+     * Creates a new XMLCall for the given uri with Content-Type 'text/xml'.
      *
-     * @param url the target URL to call
+     * @param uri the target URI to call
      * @return an <tt>XMLCall</tt> which can be used to send and receive XML
      * @throws IOException in case of an IO error
      */
-    public static XMLCall to(URI url) throws IOException {
-        return to(url, "text/xml");
+    public static XMLCall to(URI uri) throws IOException {
+        return to(uri, "text/xml");
     }
 
     /**
-     * Creates a new XMLCall for the given url.
+     * Creates a new XMLCall for the given uri.
      *
-     * @param url         the target URL to call
+     * @param uri         the target URI to call
      * @param contentType the Content-Type to use
      * @return a new instance to perform the xml call
      * @throws IOException in case of an IO error
      */
-    public static XMLCall to(URI url, String contentType) throws IOException {
+    public static XMLCall to(URI uri, String contentType) throws IOException {
         XMLCall result = new XMLCall();
-        result.outcall = new Outcall(url);
+        result.outcall = new Outcall(uri);
         result.outcall.setRequestProperty("Content-Type", contentType);
         return result;
     }
