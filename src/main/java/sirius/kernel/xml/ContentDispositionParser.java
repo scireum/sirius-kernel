@@ -29,10 +29,10 @@ public class ContentDispositionParser {
     /**
      * This is the regular expression to match the content disposition type segment.
      * <p>
-     * A content disposition header can start either with inline or attachment followed by comma;
+     * A content disposition header can start either with inline or attachment followed by semicolon;
      * For example: attachment; filename="filename.jpg" or inline; filename="filename.jpg"
-     * (inline|attachment)\\s*; -> Match either inline or attachment, followed by zero o more
-     * optional whitespaces characters followed by a comma.
+     * (inline|attachment)\\s*; -> Match either inline or attachment, followed by zero or more
+     * optional whitespaces characters followed by a semicolon.
      */
     private static final String CONTENT_DISPOSITION_TYPE = "(inline|attachment)\\s*;";
 
