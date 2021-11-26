@@ -151,6 +151,9 @@ public class ContentDispositionParser {
      * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
      */
     public static Optional<String> parseFileName(String contentDisposition) {
+        if (Strings.isEmpty(contentDisposition)) {
+            return Optional.empty();
+        }
         try {
             return parseContentDispositionWithFileName(contentDisposition).or(() -> parseContentDispositionWithFileNameAsterisk(
                     contentDisposition)).map(String::trim);
