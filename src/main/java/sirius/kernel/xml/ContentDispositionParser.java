@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 /**
  * Static helper class which helps to parse filenames from content disposition headers
  */
-public class ContentDispositionHelper {
+public class ContentDispositionParser {
 
     /**
      * This is the regular expression to match the content disposition type segment.
@@ -137,7 +137,7 @@ public class ContentDispositionHelper {
     private static final Pattern encodedSymbolPattern =
             Pattern.compile("%[0-9a-f]{2}|[0-9a-z!#$&+-.^_`|~]", Pattern.CASE_INSENSITIVE);
 
-    private ContentDispositionHelper() {
+    private ContentDispositionParser() {
         // static helper class with no public constructor
     }
 

@@ -377,7 +377,7 @@ public class Outcall {
      * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
      */
     public Optional<String> parseFileNameFromContentDisposition() {
-        return ContentDispositionHelper.parseFileName(getHeaderField(HEADER_CONTENT_DISPOSITION));
+        return ContentDispositionParser.parseFileName(getHeaderField(HEADER_CONTENT_DISPOSITION));
     }
 
     /**

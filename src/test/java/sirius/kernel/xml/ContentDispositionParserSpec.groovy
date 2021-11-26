@@ -11,11 +11,11 @@ package sirius.kernel.xml
 
 import spock.lang.Specification
 
-class OutCallSpec extends Specification {
+class ContentDispositionParserSpec extends Specification {
 
     def "parseContentDisposition regex works for different scenarios"() {
         expect:
-        ContentDispositionHelper.parseFileName(input).get() == output
+        ContentDispositionParser.parseFileName(input).get() == output
 
         where:
         input                                                       | output
