@@ -157,7 +157,7 @@ public class ContentDispositionParser {
         try {
             return parseContentDispositionWithFileName(contentDisposition).or(() -> parseContentDispositionWithFileNameAsterisk(
                     contentDisposition)).map(String::trim);
-        } catch (IllegalStateException exception) {
+        } catch (IllegalStateException | IllegalArgumentException exception) {
             Exceptions.ignore(exception);
         }
         return Optional.empty();
