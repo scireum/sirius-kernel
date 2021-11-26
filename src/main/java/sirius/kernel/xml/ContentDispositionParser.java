@@ -31,7 +31,7 @@ public class ContentDispositionParser {
      * <p>
      * A content disposition header can start either with inline or attachment followed by comma;
      * For example: attachment; filename="filename.jpg" or inline; filename="filename.jpg"
-     * (inline|attachment)\\s*; -> Match either inline or attachment, followed by zero o more
+     * (inline|attachment)\\s*; -> Match either inline or attachment, followed by zero or more
      * optional whitespaces characters followed by a comma.
      */
     private static final String CONTENT_DISPOSITION_TYPE = "(inline|attachment)\\s*;";
