@@ -338,6 +338,10 @@ public class Outcall {
         } catch (IOException e) {
             // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
             Exceptions.ignore(e);
+            return null;
+        }
+        if (response == null) {
+            return null;
         }
         return response.headers().firstValue(name).orElse(null);
     }
@@ -349,14 +353,7 @@ public class Outcall {
      * @return the date of the given header wrapped in an Optional or empty if the field does not exists or can not be parsed as date
      */
     public Optional<LocalDateTime> getHeaderFieldDate(String name) {
-        try {
-            connect();
-        } catch (IOException e) {
-            // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
-            Exceptions.ignore(e);
-        }
-
-        return response.headers().firstValue(name).flatMap(value -> {
+        return Optional.ofNullable(getHeaderField(name)).flatMap(value -> {
             try {
                 return Optional.of(LocalDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME)
                                                 .atZone(ZoneId.systemDefault())
