@@ -1027,9 +1027,9 @@ public class NLS {
      *
      * @param clazz the expected class of the value to be parsed
      * @param value the string to be parsed
-     * @param <V>   the target type be be parsed
+     * @param <V>   the target type to be parsed
      * @return an instance of <tt>clazz</tt> representing the parsed string or <tt>null</tt> if value was empty.
-     * @throws IllegalArgumentException if the given input was not well formed or if instances of <tt>clazz</tt>
+     * @throws IllegalArgumentException if the given input was not well-formed or if instances of <tt>clazz</tt>
      *                                  cannot be created. The thrown exception has a translated error message which
      *                                  can be directly presented to the user.
      */
@@ -1138,7 +1138,7 @@ public class NLS {
      * @param clazz the expected class of the value to be parsed
      * @param value the string to be parsed
      * @param lang  the two-letter code of the language which format should be used
-     * @param <V>   the target type be be parsed
+     * @param <V>   the target type to be parsed
      * @return an instance of <tt>clazz</tt> representing the parsed string or <tt>null</tt> if value was empty.
      * @throws IllegalArgumentException if the given input was not well-formed or if instances of <tt>clazz</tt>
      *                                  cannot be created. The thrown exception has a translated error message which
