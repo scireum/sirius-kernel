@@ -1002,7 +1002,7 @@ public class NLS {
         }
 
         try {
-            return LocalDate.parse(value.getRawString(), formatter);
+            return LocalDate.parse(value.getString(), formatter);
         } catch (DateTimeParseException exception) {
             try {
                 return LocalDate.parse(value.getString(), getDateFormat(fallbackLanguageFormat));
