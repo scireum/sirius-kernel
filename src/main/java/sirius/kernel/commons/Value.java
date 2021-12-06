@@ -1317,12 +1317,8 @@ public class Value {
             return null;
         }
 
-        if (is(LocalDate.class)) {
+        if (asLocalDate(null) != null) {
             return asLocalDate(null);
-        }
-
-        if (is(LocalDateTime.class)) {
-            return asLocalDateTime(null).toLocalDate();
         }
 
         try {
