@@ -24,6 +24,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Collection;
@@ -1296,6 +1298,50 @@ public class Value {
             return defaultValue;
         }
         return LocalDateTime.ofInstant(temporal, ZoneId.systemDefault());
+    }
+
+    /**
+     * Parses a date using the given formatter. Tries parsing with the format for the given fallback language in case
+     * of a parsing error. Falls back to the {@link NLS#getCurrentLang() current language}, then to ISO format.
+     * <p>
+     * Throws a {@link DateTimeParseException} if the given value could not be parsed as a date.
+     *
+     * @param formatter              the formatter to use for parsing
+     * @param fallbackLanguageFormat the language providing a fallback date format
+     * @return the date or <tt>null</tt> if there is no source value to parse
+     * @throws DateTimeParseException if the given value could not be parsed as a date
+     */
+    @Nullable
+    public LocalDate extractDate(DateTimeFormatter formatter, String fallbackLanguageFormat) {
+        if (isNull()) {
+            return null;
+        }
+
+        if (is(LocalDate.class)) {
+            return asLocalDate(null);
+        }
+
+        if (is(LocalDateTime.class)) {
+            return asLocalDateTime(null).toLocalDate();
+        }
+
+        try {
+            return LocalDate.parse(getString(), formatter);
+        } catch (DateTimeParseException exception) {
+            try {
+                return LocalDate.parse(getString(), NLS.getDateFormat(fallbackLanguageFormat));
+            } catch (DateTimeParseException e) {
+                try {
+                    return LocalDate.parse(getString(), NLS.getDateFormat(NLS.getCurrentLang()));
+                } catch (DateTimeParseException ex) {
+                    try {
+                        return LocalDate.parse(getString());
+                    } catch (DateTimeParseException exc) {
+                        throw exception;
+                    }
+                }
+            }
+        }
     }
 
     /**
