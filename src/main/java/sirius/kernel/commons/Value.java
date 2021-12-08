@@ -1317,6 +1317,7 @@ public class Value {
         try {
             return Value.of(LocalDate.parse(getString(), formatter));
         } catch (DateTimeParseException exception) {
+            Exceptions.ignore(exception);
             return this;
         }
     }
