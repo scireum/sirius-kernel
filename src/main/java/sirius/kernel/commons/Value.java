@@ -1301,43 +1301,34 @@ public class Value {
     }
 
     /**
-     * Parses a date using the given formatter. Tries parsing with the format for the given fallback language in case
-     * of a parsing error. Falls back to the {@link NLS#getCurrentLang() current language}, then to ISO format.
-     * <p>
-     * Throws a {@link DateTimeParseException} if the given value could not be parsed as a date.
+     * Parses the value as {@link LocalDate} using the given {@link DateTimeFormatter formatter}.
      *
-     * @param formatter              the formatter to use for parsing
-     * @param fallbackLanguageFormat the language providing a fallback date format
-     * @return the date or <tt>null</tt> if there is no source value to parse
-     * @throws DateTimeParseException if the given value could not be parsed as a date
+     * @param formatter the formatter for the expected date format
+     * @return the parsed LocalDate wrapped as a Value, or the Value itself if it was empty or a parsing error occurred
      */
-    @Nullable
-    public LocalDate extractDate(DateTimeFormatter formatter, String fallbackLanguageFormat) {
+    public Value tryParseLocalDate(DateTimeFormatter formatter) {
         if (isNull()) {
-            return null;
+            return this;
         }
-
-        if (asLocalDate(null) != null) {
-            return asLocalDate(null);
+        LocalDate localDate = asLocalDate(null);
+        if (localDate != null) {
+            return Value.of(localDate);
         }
-
         try {
-            return LocalDate.parse(getString(), formatter);
+            return Value.of(LocalDate.parse(getString(), formatter));
         } catch (DateTimeParseException exception) {
-            try {
-                return LocalDate.parse(getString(), NLS.getDateFormat(fallbackLanguageFormat));
-            } catch (DateTimeParseException e) {
-                try {
-                    return LocalDate.parse(getString(), NLS.getDateFormat(NLS.getCurrentLang()));
-                } catch (DateTimeParseException ex) {
-                    try {
-                        return LocalDate.parse(getString());
-                    } catch (DateTimeParseException exc) {
-                        throw exception;
-                    }
-                }
-            }
+            return this;
         }
+    }
+
+    /**
+     * Parses the value as {@link LocalDate} using the date format for the given language.
+     *
+     * @param languageCode the language to format the date for
+     * @return the parsed LocalDate wrapped as a Value, or the Value itself if it was empty or a parsing error occurred
+     */
+    public Value tryParseLocalDate(String languageCode) {
+        return tryParseLocalDate(NLS.getDateFormat(languageCode));
     }
 
     /**
