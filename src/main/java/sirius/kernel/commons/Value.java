@@ -24,6 +24,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Collection;
@@ -1296,6 +1298,38 @@ public class Value {
             return defaultValue;
         }
         return LocalDateTime.ofInstant(temporal, ZoneId.systemDefault());
+    }
+
+    /**
+     * Parses the value as {@link LocalDate} using the given {@link DateTimeFormatter formatter}.
+     *
+     * @param formatter the formatter for the expected date format
+     * @return the parsed LocalDate wrapped as a Value, or the Value itself if it was empty or a parsing error occurred
+     */
+    public Value tryParseLocalDate(DateTimeFormatter formatter) {
+        if (isNull()) {
+            return this;
+        }
+        LocalDate localDate = asLocalDate(null);
+        if (localDate != null) {
+            return Value.of(localDate);
+        }
+        try {
+            return Value.of(LocalDate.parse(getString(), formatter));
+        } catch (DateTimeParseException exception) {
+            Exceptions.ignore(exception);
+            return this;
+        }
+    }
+
+    /**
+     * Parses the value as {@link LocalDate} using the date format for the given language.
+     *
+     * @param languageCode the language to format the date for
+     * @return the parsed LocalDate wrapped as a Value, or the Value itself if it was empty or a parsing error occurred
+     */
+    public Value tryParseLocalDate(String languageCode) {
+        return tryParseLocalDate(NLS.getDateFormat(languageCode));
     }
 
     /**
