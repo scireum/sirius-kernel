@@ -66,9 +66,6 @@ import java.util.regex.Pattern;
  */
 public class Outcall {
 
-    private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(30);
-    private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofMinutes(5);
-
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
@@ -92,6 +89,11 @@ public class Outcall {
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
 
+    @ConfigValue("http.outcall.defaultConnectTimeout")
+    private static Duration defaultConnectTimeout;
+
+    @ConfigValue("http.outcall.defaultReadTimeout")
+    private static Duration defaultReadTimeout;
     @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
 
@@ -117,8 +119,8 @@ public class Outcall {
     public Outcall(URI uri) throws IOException {
         checkTimeoutBlacklist(uri);
 
-        clientBuilder = HttpClient.newBuilder().connectTimeout(DEFAULT_CONNECT_TIMEOUT);
-        requestBuilder = HttpRequest.newBuilder(uri).timeout(DEFAULT_READ_TIMEOUT);
+        clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
+        requestBuilder = HttpRequest.newBuilder(uri).timeout(defaultReadTimeout);
     }
 
     /**
@@ -452,7 +454,7 @@ public class Outcall {
 
         Watch watch = Watch.start();
         try (Operation op = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri().getPath(),
-                                          client.connectTimeout().orElse(DEFAULT_CONNECT_TIMEOUT).plusSeconds(1))) {
+                                          client.connectTimeout().orElse(defaultConnectTimeout).plusSeconds(1))) {
             response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
