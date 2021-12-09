@@ -94,6 +94,13 @@ public class Outcall {
 
     @ConfigValue("http.outcall.defaultReadTimeout")
     private static Duration defaultReadTimeout;
+
+    @ConfigValue("http.outcall.interactive.connectTimeout")
+    private static Duration interactiveConnectTimeout;
+
+    @ConfigValue("http.outcall.interactive.readTimeout")
+    private static Duration interactiveReadTimeout;
+
     @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
 
@@ -325,6 +332,14 @@ public class Outcall {
      */
     public void setReadTimeout(int timeoutMillis) {
         modifyRequest().timeout(Duration.ofMillis(timeoutMillis));
+    }
+
+    /**
+     * Sets the connect and read timeout to a interactively reasonable duration defined in http.outcall.interactive.*
+     */
+    public void setInteractive() {
+        setConnectTimeout((int) interactiveConnectTimeout.toMillis());
+        setReadTimeout((int) interactiveReadTimeout.toMillis());
     }
 
     /**
