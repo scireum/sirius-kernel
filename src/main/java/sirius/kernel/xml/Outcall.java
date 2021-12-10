@@ -8,6 +8,7 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.Sirius;
 import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Monoflop;
@@ -17,9 +18,11 @@ import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -89,19 +92,13 @@ public class Outcall {
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
 
-    @ConfigValue("http.outcall.defaultConnectTimeout")
+    @ConfigValue("http.outcall.timeouts.default.connectTimeout")
     private static Duration defaultConnectTimeout;
 
-    @ConfigValue("http.outcall.defaultReadTimeout")
+    @ConfigValue("http.outcall.timeouts.default.readTimeout")
     private static Duration defaultReadTimeout;
 
-    @ConfigValue("http.outcall.interactive.connectTimeout")
-    private static Duration interactiveConnectTimeout;
-
-    @ConfigValue("http.outcall.interactive.readTimeout")
-    private static Duration interactiveReadTimeout;
-
-    @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
+    @ConfigValue("http.outcall.timeouts.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
 
     private HttpClient client;
@@ -335,11 +332,32 @@ public class Outcall {
     }
 
     /**
-     * Sets the connect and read timeout to a interactively reasonable duration defined in http.outcall.interactive.*
+     * Sets the connect and read timeout to the values specified in the config block http.outcall.timeouts.*
+     * where * equals the configKey parameter.
+     * <p>
+     * See the http.outcall.timeouts.soap block in component-kernel.conf for reference.
+     *
+     * @param configKey the config key of the timeout configuration block
+     * @return this for fluent method calls
      */
-    public void setInteractive() {
-        setConnectTimeout((int) interactiveConnectTimeout.toMillis());
-        setReadTimeout((int) interactiveReadTimeout.toMillis());
+    public Outcall withConfiguredTimeout(@Nonnull String configKey) {
+        Duration connectTimeout =
+                Sirius.getSettings().getDuration(Strings.apply("http.outcall.timeouts.%s.connectTimeout", configKey));
+        Duration readTimeout =
+                Sirius.getSettings().getDuration(Strings.apply("http.outcall.timeouts.%s.readTimeout", configKey));
+
+        if (!connectTimeout.isZero() && !readTimeout.isZero()) {
+            setConnectTimeout((int) connectTimeout.toMillis());
+            setReadTimeout((int) readTimeout.toMillis());
+        } else {
+            throw Exceptions.handle()
+                            .to(Log.SYSTEM)
+                            .withSystemErrorMessage("A timeout configuration could not be found for config string: %s",
+                                                    configKey)
+                            .handle();
+        }
+
+        return this;
     }
 
     /**
