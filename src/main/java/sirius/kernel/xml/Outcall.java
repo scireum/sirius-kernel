@@ -98,7 +98,7 @@ public class Outcall {
     @ConfigValue("http.outcall.timeouts.default.readTimeout")
     private static Duration defaultReadTimeout;
 
-    @ConfigValue("http.outcall.timeouts.connectTimeoutBlacklistDuration")
+    @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
 
     private HttpClient client;
