@@ -188,7 +188,7 @@ public class Outcall {
             parameterString.append("=");
             parameterString.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
         }
-        modifyRequest().header(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
+        modifyRequest().setHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
                        .POST(HttpRequest.BodyPublishers.ofString(parameterString.toString(), charset));
 
         return this;
@@ -237,7 +237,7 @@ public class Outcall {
      * @return the outcall itself for fluent method calls
      */
     public Outcall setRequestProperty(String name, String value) {
-        modifyRequest().header(name, value);
+        modifyRequest().setHeader(name, value);
         return this;
     }
 
