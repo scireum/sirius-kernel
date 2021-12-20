@@ -344,16 +344,8 @@ public class Outcall {
     public Outcall withConfiguredTimeout(@Nonnull String configKey) {
         Extension extension = Sirius.getSettings().getExtension("http.outcall.timeouts", configKey);
 
-        if (extension != null) {
-            setConnectTimeout((int) extension.getConfig().getDuration("connectTimeout").toMillis());
-            setReadTimeout((int) extension.getConfig().getDuration("readTimeout").toMillis());
-        } else {
-            throw Exceptions.handle()
-                            .to(Log.SYSTEM)
-                            .withSystemErrorMessage("For the following config string no timeout configuration and "
-                                                    + "default block could be found: %s", configKey)
-                            .handle();
-        }
+        setConnectTimeout((int) extension.getConfig().getDuration("connectTimeout").toMillis());
+        setReadTimeout((int) extension.getConfig().getDuration("readTimeout").toMillis());
 
         return this;
     }
