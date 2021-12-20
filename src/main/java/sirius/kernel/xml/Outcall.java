@@ -21,6 +21,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.settings.Extension;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -341,19 +342,16 @@ public class Outcall {
      * @return this for fluent method calls
      */
     public Outcall withConfiguredTimeout(@Nonnull String configKey) {
-        Duration connectTimeout =
-                Sirius.getSettings().getDuration(Strings.apply("http.outcall.timeouts.%s.connectTimeout", configKey));
-        Duration readTimeout =
-                Sirius.getSettings().getDuration(Strings.apply("http.outcall.timeouts.%s.readTimeout", configKey));
+        Extension extension = Sirius.getSettings().getExtension("http.outcall.timeouts", configKey);
 
-        if (!connectTimeout.isZero() && !readTimeout.isZero()) {
-            setConnectTimeout((int) connectTimeout.toMillis());
-            setReadTimeout((int) readTimeout.toMillis());
+        if (extension != null) {
+            setConnectTimeout((int) extension.getConfig().getDuration("connectTimeout").toMillis());
+            setReadTimeout((int) extension.getConfig().getDuration("readTimeout").toMillis());
         } else {
             throw Exceptions.handle()
                             .to(Log.SYSTEM)
-                            .withSystemErrorMessage("A timeout configuration could not be found for config string: %s",
-                                                    configKey)
+                            .withSystemErrorMessage("For the following config string no timeout configuration and "
+                                                    + "default block could be found: %s", configKey)
                             .handle();
         }
 
