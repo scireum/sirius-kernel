@@ -92,6 +92,11 @@ public class SOAPClient {
      */
     public static final String NODE_FAULTSTRING = "faultstring";
 
+    /**
+     * Contains the config key of the timeouts defined in http.outcall.timeouts.soap.*.
+     */
+    public static final String SOAP_TIMEOUT_CONFIG_KEY = "soap";
+
     private final URL endpoint;
     private final BasicNamespaceContext namespaceContext = new BasicNamespaceContext();
     private List<Attribute> namespaceDefinitions;
@@ -292,6 +297,7 @@ public class SOAPClient {
         try (Operation op = new Operation(() -> Strings.apply("SOAP %s -> %s", action, effectiveEndpoint),
                                           Duration.ofSeconds(15))) {
             XMLCall call = XMLCall.to(effectiveEndpoint.toURI());
+            call.getOutcall().withConfiguredTimeout(SOAP_TIMEOUT_CONFIG_KEY);
             call.withNamespaceContext(namespaceContext);
             if (callEnhancer != null) {
                 callEnhancer.accept(call);

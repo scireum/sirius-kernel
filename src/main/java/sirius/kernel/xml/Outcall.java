@@ -8,6 +8,7 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.Sirius;
 import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Monoflop;
@@ -17,9 +18,12 @@ import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.settings.Extension;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -66,9 +70,6 @@ import java.util.regex.Pattern;
  */
 public class Outcall {
 
-    private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(30);
-    private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofMinutes(5);
-
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
@@ -91,6 +92,12 @@ public class Outcall {
      * kept clean in {@link #checkTimeoutBlacklist(URI)}.
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
+
+    @ConfigValue("http.outcall.timeouts.default.connectTimeout")
+    private static Duration defaultConnectTimeout;
+
+    @ConfigValue("http.outcall.timeouts.default.readTimeout")
+    private static Duration defaultReadTimeout;
 
     @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
@@ -117,8 +124,8 @@ public class Outcall {
     public Outcall(URI uri) throws IOException {
         checkTimeoutBlacklist(uri);
 
-        clientBuilder = HttpClient.newBuilder().connectTimeout(DEFAULT_CONNECT_TIMEOUT);
-        requestBuilder = HttpRequest.newBuilder(uri).timeout(DEFAULT_READ_TIMEOUT);
+        clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
+        requestBuilder = HttpRequest.newBuilder(uri).timeout(defaultReadTimeout);
     }
 
     /**
@@ -326,6 +333,24 @@ public class Outcall {
     }
 
     /**
+     * Sets the connect and read timeout to the values specified in the config block http.outcall.timeouts.*
+     * where * equals the configKey parameter.
+     * <p>
+     * See the http.outcall.timeouts.soap block in component-kernel.conf for reference.
+     *
+     * @param configKey the config key of the timeout configuration block
+     * @return this for fluent method calls
+     */
+    public Outcall withConfiguredTimeout(@Nonnull String configKey) {
+        Extension extension = Sirius.getSettings().getExtension("http.outcall.timeouts", configKey);
+
+        setConnectTimeout((int) extension.getConfig().getDuration("connectTimeout").toMillis());
+        setReadTimeout((int) extension.getConfig().getDuration("readTimeout").toMillis());
+
+        return this;
+    }
+
+    /**
      * Returns the response header with the given name.
      *
      * @param name the name of the header to fetch
@@ -452,7 +477,7 @@ public class Outcall {
 
         Watch watch = Watch.start();
         try (Operation op = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri().getPath(),
-                                          client.connectTimeout().orElse(DEFAULT_CONNECT_TIMEOUT).plusSeconds(1))) {
+                                          client.connectTimeout().orElse(defaultConnectTimeout).plusSeconds(1))) {
             response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
