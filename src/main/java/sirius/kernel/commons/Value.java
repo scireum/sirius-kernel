@@ -73,8 +73,8 @@ public class Value {
             return EMPTY;
         }
 
-        if (data instanceof Value) {
-            return (Value) data;
+        if (data instanceof Value value) {
+            return value;
         }
 
         Value val = new Value();
@@ -720,8 +720,8 @@ public class Value {
      */
     @Nullable
     public String getRawString() {
-        if (data instanceof String) {
-            return (String) data;
+        if (data instanceof String string) {
+            return string;
         }
 
         return getString();
@@ -778,11 +778,11 @@ public class Value {
         if (data == null) {
             return "";
         }
-        if (data instanceof Double) {
-            return NLS.smartRound((Double) data);
+        if (data instanceof Double doubleValue) {
+            return NLS.smartRound(doubleValue);
         }
-        if (data instanceof BigDecimal) {
-            return NLS.smartRound(((BigDecimal) data).doubleValue());
+        if (data instanceof BigDecimal bigDecimal) {
+            return NLS.smartRound(bigDecimal.doubleValue());
         }
         return asString();
     }
@@ -803,8 +803,8 @@ public class Value {
         if (isNull() || Strings.isEmpty(data)) {
             return defaultValue;
         }
-        if (data instanceof Boolean) {
-            return (Boolean) data;
+        if (data instanceof Boolean booleanValue) {
+            return booleanValue;
         }
 
         // fast-track for common cases without the need to involve NLS framework
@@ -848,11 +848,11 @@ public class Value {
             if (isNull()) {
                 return defaultValue;
             }
-            if (data instanceof Integer) {
-                return (Integer) data;
+            if (data instanceof Integer integer) {
+                return integer;
             }
-            if (data instanceof BigDecimal) {
-                return (int) ((BigDecimal) data).longValue();
+            if (data instanceof BigDecimal bigDecimal) {
+                return (int) bigDecimal.longValue();
             }
 
             return Integer.parseInt(String.valueOf(data).trim());
@@ -881,8 +881,8 @@ public class Value {
             if (isNull()) {
                 return null;
             }
-            if (data instanceof Integer) {
-                return (Integer) data;
+            if (data instanceof Integer integer) {
+                return integer;
             }
             if (data instanceof BigDecimal) {
                 return (int) ((BigDecimal) data).longValue();
@@ -913,14 +913,14 @@ public class Value {
             if (isNull()) {
                 return defaultValue;
             }
-            if (data instanceof Long) {
-                return (Long) data;
+            if (data instanceof Long longValue) {
+                return longValue;
             }
-            if (data instanceof Integer) {
-                return (Integer) data;
+            if (data instanceof Integer integer) {
+                return integer;
             }
-            if (data instanceof BigDecimal) {
-                return ((BigDecimal) data).longValue();
+            if (data instanceof BigDecimal bigDecimal) {
+                return bigDecimal.longValue();
             }
             return Long.parseLong(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -948,8 +948,8 @@ public class Value {
             if (isNull()) {
                 return null;
             }
-            if (data instanceof Long) {
-                return (Long) data;
+            if (data instanceof Long longValue) {
+                return longValue;
             }
             return Long.parseLong(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -977,17 +977,17 @@ public class Value {
             if (isNull()) {
                 return defaultValue;
             }
-            if (data instanceof Double) {
-                return (Double) data;
+            if (data instanceof Double doubleValue) {
+                return doubleValue;
             }
-            if (data instanceof Long) {
-                return (Long) data;
+            if (data instanceof Long longValue) {
+                return longValue;
             }
-            if (data instanceof Integer) {
-                return (Integer) data;
+            if (data instanceof Integer integer) {
+                return integer;
             }
-            if (data instanceof BigDecimal) {
-                return ((BigDecimal) data).doubleValue();
+            if (data instanceof BigDecimal bigDecimal) {
+                return bigDecimal.doubleValue();
             }
             return Double.parseDouble(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -1375,20 +1375,20 @@ public class Value {
             if (isNull()) {
                 return null;
             }
-            if (data instanceof BigDecimal) {
-                return (BigDecimal) data;
+            if (data instanceof BigDecimal bigDecimal) {
+                return bigDecimal;
             }
-            if (data instanceof Amount) {
-                return ((Amount) data).getAmount();
+            if (data instanceof Amount amount) {
+                return amount.getAmount();
             }
-            if (data instanceof Double) {
-                return BigDecimal.valueOf((Double) data);
+            if (data instanceof Double doubleValue) {
+                return BigDecimal.valueOf(doubleValue);
             }
-            if (data instanceof Long) {
-                return BigDecimal.valueOf((Long) data);
+            if (data instanceof Long longValue) {
+                return BigDecimal.valueOf(longValue);
             }
-            if (data instanceof Integer) {
-                return BigDecimal.valueOf((Integer) data);
+            if (data instanceof Integer integer) {
+                return BigDecimal.valueOf(integer);
             }
             return new BigDecimal(asString().replace(',', '.').trim(), MathContext.UNLIMITED);
         } catch (NumberFormatException e) {
@@ -1408,8 +1408,8 @@ public class Value {
      * @see #getBigDecimal(java.math.BigDecimal)
      */
     public Amount getAmount() {
-        if (data instanceof Amount) {
-            return (Amount) data;
+        if (data instanceof Amount amount) {
+            return amount;
         }
         return Amount.ofRounded(getBigDecimal());
     }
@@ -1819,8 +1819,8 @@ public class Value {
             return true;
         }
         // Unwrap values
-        if (other instanceof Value) {
-            other = ((Value) other).data;
+        if (other instanceof Value value) {
+            other = value.data;
         }
         // Compare for object identity
         if (data == other) {
