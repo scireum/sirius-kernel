@@ -1411,7 +1411,7 @@ public class Value {
         if (data instanceof Amount) {
             return (Amount) data;
         }
-        return Amount.of(getBigDecimal());
+        return Amount.ofRounded(getBigDecimal());
     }
 
     /**
