@@ -1400,6 +1400,9 @@ public class Value {
     /**
      * Returns the <tt>Amount</tt> for the wrapped value.
      * <p>
+     * Note that this will enforce a scale of {@link Amount#SCALE} (5) for the given value to ensure a consistent
+     * behaviour. If the given value already has the desired scale set, use {@link #getRoundedAmount()}.
+     * <p>
      * If the wrapped value can be converted to a BigDecimal ({@link #getBigDecimal(java.math.BigDecimal)},
      * an <tt>Amount</tt> for the result is returned. Otherwise, an empty <tt>Amount</tt> is returned.
      *
@@ -1411,7 +1414,7 @@ public class Value {
         if (data instanceof Amount amount) {
             return amount;
         }
-        return Amount.ofRounded(getBigDecimal());
+        return Amount.of(getBigDecimal());
     }
 
     /**
