@@ -1418,6 +1418,25 @@ public class Value {
     }
 
     /**
+     * Returns the <tt>Amount</tt> for the wrapped value.
+     * <p>
+     * Note that this keeps the scale of the given value.
+     * <p>
+     * If the wrapped value can be converted to a BigDecimal ({@link #getBigDecimal(java.math.BigDecimal)},
+     * an <tt>Amount</tt> for the result is returned. Otherwise, an empty <tt>Amount</tt> is returned.
+     *
+     * @return the wrapped value converted to <tt>Amount</tt>. The result might be an empty amount, if the wrapped
+     * value is <tt>null</tt> or if no conversion was possible.
+     * @see #getBigDecimal(java.math.BigDecimal)
+     */
+    public Amount getRoundedAmount() {
+        if (data instanceof Amount amount) {
+            return amount;
+        }
+        return Amount.ofRounded(getBigDecimal());
+    }
+
+    /**
      * Converts the wrapped value to an enum constant of the given <tt>clazz</tt>.
      *
      * @param clazz the type of the enum to use
