@@ -25,7 +25,7 @@ plugins {
     id("java-library")
 }
 
-apply(plugin = "sirius-parent")
+apply(plugin = "com.scireum.sirius-parent")
 
 dependencies {
     api("org.apache.commons:commons-math3:3.6.1")
