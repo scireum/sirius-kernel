@@ -13,7 +13,6 @@ buildscript {
     repositories {
         mavenLocal()
         maven("https://mvn.scireum.com")
-        jcenter()
     }
     dependencies {
         classpath("com.scireum:sirius-parent:1.0-SNAPSHOT")
