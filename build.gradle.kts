@@ -30,16 +30,14 @@ dependencies {
     api("org.apache.commons:commons-math3:3.6.1")
 
     // Provides the tools to load the system configuration
-    api("com.typesafe:config:1.3.4")
+    api("com.typesafe:config:1.4.1")
     // Useful helper classes by Google
-    api("com.google.guava:guava:21.0")
-    // The logging framework we use
-    api("log4j:log4j:1.2.17")
-    //Required logging bridge to make slf4j log to log4j
-    api("org.slf4j:slf4j-log4j12:1.7.28")
+    api("com.google.guava:guava:31.0.1-jre")
+    // Required logging bridge to make slf4j log to our logging system
+    api("org.slf4j:slf4j-jdk14:1.7.32")
     // JSR305 annotations like @Nonnull etc
-    api("com.google.code.findbugs:jsr305:3.0.1")
+    api("com.google.code.findbugs:jsr305:3.0.2")
     // Used to auto-start Docker environments
-    api("com.palantir.docker.compose:docker-compose-rule-core:1.3.0")
+    api("com.palantir.docker.compose:docker-compose-rule-core:1.7.0")
 }
 
