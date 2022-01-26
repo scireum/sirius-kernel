@@ -8,6 +8,7 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.Sirius;
 import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Monoflop;
@@ -71,6 +72,9 @@ public class Outcall {
 
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String HEADER_USER_AGENT = "User-Agent";
+    private static final String HEADER_ACCEPT = "Accept";
+    private static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
@@ -108,7 +112,28 @@ public class Outcall {
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     private boolean postFromOutput = false;
 
+    private static String defaultUserAgent;
     private static final Average timeToFirstByte = new Average();
+
+    private static String getDefaultUserAgent() {
+        if (defaultUserAgent == null) {
+            // default format is 'product.name/product.version (+product.baseUrl)', but version or baseUrl could be empty
+            StringBuilder userAgentString = new StringBuilder(Sirius.getSettings().getString("product.name"));
+            String version = Sirius.getSettings().getString("product.version");
+            if (Strings.isFilled(version)) {
+                userAgentString.append("/");
+                userAgentString.append(version);
+            }
+            String baseUrl = Sirius.getSettings().getString("product.baseUrl");
+            if (Strings.isFilled(baseUrl)) {
+                userAgentString.append(" (+");
+                userAgentString.append(baseUrl);
+                userAgentString.append(")");
+            }
+            defaultUserAgent = userAgentString.toString();
+        }
+        return defaultUserAgent;
+    }
 
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
@@ -120,7 +145,10 @@ public class Outcall {
         checkTimeoutBlacklist(uri);
 
         clientBuilder = HttpClient.newBuilder().connectTimeout(DEFAULT_CONNECT_TIMEOUT);
-        requestBuilder = HttpRequest.newBuilder(uri).timeout(DEFAULT_READ_TIMEOUT);
+        requestBuilder = HttpRequest.newBuilder(uri)
+                                    .header(HEADER_USER_AGENT, getDefaultUserAgent())
+                                    .header(HEADER_ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
+                                    .timeout(DEFAULT_READ_TIMEOUT);
     }
 
     /**
