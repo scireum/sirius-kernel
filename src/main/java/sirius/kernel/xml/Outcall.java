@@ -119,7 +119,7 @@ public class Outcall {
     private static String defaultUserAgent;
     private static final Average timeToFirstByte = new Average();
 
-    private static String getDefaultUserAgent() {
+    private static String buildDefaultUserAgent() {
         if (defaultUserAgent == null) {
             // default format is 'product.name/product.version (+product.baseUrl)', but version or baseUrl could be empty
             StringBuilder userAgentString = new StringBuilder(Sirius.getSettings().getString("product.name"));
@@ -150,7 +150,7 @@ public class Outcall {
 
         clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
         requestBuilder = HttpRequest.newBuilder(uri)
-                                    .header(HEADER_USER_AGENT, getDefaultUserAgent())
+                                    .header(HEADER_USER_AGENT, buildDefaultUserAgent())
                                     .header(HEADER_ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
                                     .timeout(defaultReadTimeout);
     }
