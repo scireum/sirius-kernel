@@ -18,9 +18,12 @@ import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.settings.Extension;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -67,9 +70,6 @@ import java.util.regex.Pattern;
  */
 public class Outcall {
 
-    private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(30);
-    private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofMinutes(5);
-
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_USER_AGENT = "User-Agent";
@@ -79,8 +79,6 @@ public class Outcall {
     private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
-    private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN = Pattern.compile(
-            "(attachment|inline|form-data);.*filename\\s*=\\s*(?<unquoted>\"(?<quoted>[^\"]*)\"|[\\w.-]+)");
     private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
 
     /**
@@ -97,6 +95,12 @@ public class Outcall {
      * kept clean in {@link #checkTimeoutBlacklist(URI)}.
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
+
+    @ConfigValue("http.outcall.timeouts.default.connectTimeout")
+    private static Duration defaultConnectTimeout;
+
+    @ConfigValue("http.outcall.timeouts.default.readTimeout")
+    private static Duration defaultReadTimeout;
 
     @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
@@ -144,11 +148,11 @@ public class Outcall {
     public Outcall(URI uri) throws IOException {
         checkTimeoutBlacklist(uri);
 
-        clientBuilder = HttpClient.newBuilder().connectTimeout(DEFAULT_CONNECT_TIMEOUT);
+        clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
         requestBuilder = HttpRequest.newBuilder(uri)
                                     .header(HEADER_USER_AGENT, getDefaultUserAgent())
                                     .header(HEADER_ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
-                                    .timeout(DEFAULT_READ_TIMEOUT);
+                                    .timeout(defaultReadTimeout);
     }
 
     /**
@@ -216,7 +220,7 @@ public class Outcall {
             parameterString.append("=");
             parameterString.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
         }
-        modifyRequest().header(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
+        modifyRequest().setHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
                        .POST(HttpRequest.BodyPublishers.ofString(parameterString.toString(), charset));
 
         return this;
@@ -265,7 +269,7 @@ public class Outcall {
      * @return the outcall itself for fluent method calls
      */
     public Outcall setRequestProperty(String name, String value) {
-        modifyRequest().header(name, value);
+        modifyRequest().setHeader(name, value);
         return this;
     }
 
@@ -356,6 +360,24 @@ public class Outcall {
     }
 
     /**
+     * Sets the connect and read timeout to the values specified in the config block http.outcall.timeouts.*
+     * where * equals the configKey parameter.
+     * <p>
+     * See the http.outcall.timeouts.soap block in component-kernel.conf for reference.
+     *
+     * @param configKey the config key of the timeout configuration block
+     * @return this for fluent method calls
+     */
+    public Outcall withConfiguredTimeout(@Nonnull String configKey) {
+        Extension extension = Sirius.getSettings().getExtension("http.outcall.timeouts", configKey);
+
+        setConnectTimeout((int) extension.getConfig().getDuration("connectTimeout").toMillis());
+        setReadTimeout((int) extension.getConfig().getDuration("readTimeout").toMillis());
+
+        return this;
+    }
+
+    /**
      * Returns the response header with the given name.
      *
      * @param name the name of the header to fetch
@@ -368,6 +390,10 @@ public class Outcall {
         } catch (IOException e) {
             // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
             Exceptions.ignore(e);
+            return null;
+        }
+        if (response == null) {
+            return null;
         }
         return response.headers().firstValue(name).orElse(null);
     }
@@ -379,14 +405,7 @@ public class Outcall {
      * @return the date of the given header wrapped in an Optional or empty if the field does not exists or can not be parsed as date
      */
     public Optional<LocalDateTime> getHeaderFieldDate(String name) {
-        try {
-            connect();
-        } catch (IOException e) {
-            // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
-            Exceptions.ignore(e);
-        }
-
-        return response.headers().firstValue(name).flatMap(value -> {
+        return Optional.ofNullable(getHeaderField(name)).flatMap(value -> {
             try {
                 return Optional.of(LocalDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME)
                                                 .atZone(ZoneId.systemDefault())
@@ -407,22 +426,7 @@ public class Outcall {
      * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
      */
     public Optional<String> parseFileNameFromContentDisposition() {
-        String contentDisposition = getHeaderField(HEADER_CONTENT_DISPOSITION);
-        return parseFileName(contentDisposition);
-    }
-
-    private static Optional<String> parseFileName(String contentDisposition) {
-        if (Strings.isFilled(contentDisposition)) {
-            Matcher matcher = CONTENT_DISPOSITION_FILENAME_PATTERN.matcher(contentDisposition);
-            if (matcher.find()) {
-                Optional<String> filename = Optional.ofNullable(matcher.group("quoted"));
-                if (filename.isEmpty()) {
-                    filename = Optional.ofNullable(matcher.group("unquoted"));
-                }
-                return filename;
-            }
-        }
-        return Optional.empty();
+        return ContentDispositionParser.parseFileName(getHeaderField(HEADER_CONTENT_DISPOSITION));
     }
 
     /**
@@ -500,7 +504,7 @@ public class Outcall {
 
         Watch watch = Watch.start();
         try (Operation op = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri().getPath(),
-                                          client.connectTimeout().orElse(DEFAULT_CONNECT_TIMEOUT).plusSeconds(1))) {
+                                          client.connectTimeout().orElse(defaultConnectTimeout).plusSeconds(1))) {
             response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
