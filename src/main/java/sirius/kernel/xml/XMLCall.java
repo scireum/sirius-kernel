@@ -134,6 +134,6 @@ public class XMLCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public XMLStructuredInput getInput() throws IOException {
-        return new XMLStructuredInput(outcall.getResponse().body(), namespaceContext);
+        return new XMLStructuredInput(outcall.getResponseBody(), namespaceContext);
     }
 }
