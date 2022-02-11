@@ -63,6 +63,9 @@ import java.util.regex.Pattern;
  * <p>
  * This is basically a thin wrapper over <tt>{@link HttpClient}</tt> which adds some boilerplate code and a bit
  * of logging / monitoring.
+ * <p>
+ * By default, we will follow redirects via {@link  java.net.http.HttpClient.Redirect#NORMAL}. However, one can use
+ * {@link #noFollowRedirects()} or {@link #alwaysFollowRedirects()} to customize this behaviour.
  */
 public class Outcall {
 
@@ -144,7 +147,9 @@ public class Outcall {
     public Outcall(URI uri) throws IOException {
         checkTimeoutBlacklist(uri);
 
-        clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
+        clientBuilder = HttpClient.newBuilder()
+                                  .connectTimeout(defaultConnectTimeout)
+                                  .followRedirects(HttpClient.Redirect.NORMAL);
         requestBuilder = HttpRequest.newBuilder(uri)
                                     .header(HEADER_USER_AGENT, buildDefaultUserAgent())
                                     .header(HEADER_ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
@@ -173,6 +178,26 @@ public class Outcall {
             throw new IllegalStateException("Can no longer modify request, request has already been sent!");
         }
         return requestBuilder;
+    }
+
+    /**
+     * Instructs the client to not follow any redirects.
+     *
+     * @return the outcall itself for fluent method calls
+     */
+    public Outcall noFollowRedirects() {
+        modifyClient().followRedirects(HttpClient.Redirect.NEVER);
+        return this;
+    }
+
+    /**
+     * Instructs the client to {@link java.net.http.HttpClient.Redirect#ALWAYS} follow redirects.
+     *
+     * @return the outcall itself for fluent method calls
+     */
+    public Outcall alwaysFollowRedirects() {
+        modifyClient().followRedirects(HttpClient.Redirect.ALWAYS);
+        return this;
     }
 
     /**
