@@ -317,7 +317,7 @@ public class Outcall {
     }
 
     /**
-     * Sents the given context as POST to the designated server.
+     * Sends the given context as POST to the designated server.
      *
      * @param params  the data to POST
      * @param charset the charset to use when encoding the post data
