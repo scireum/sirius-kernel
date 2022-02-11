@@ -369,6 +369,10 @@ public class Outcall {
 
     /**
      * Executes the outcall and returns the response.
+     * <p>
+     * Use {@link #getResponseBody()} to directly access the response. Note however, that this will throw an
+     * exception if a non-OK response has been received. use this method to access the response (and its contents)
+     * even though an error was received.
      *
      * @return the response, with the body as {@link InputStream}
      * @throws IOException in case of any IO error
@@ -515,9 +519,37 @@ public class Outcall {
      *
      * @return a String containing the complete result of the call
      * @throws IOException in case of any IO error
+     * @see #getResponseBody()
      */
     public String getData() throws IOException {
-        return Streams.readToString(new InputStreamReader(getResponse().body(), getContentEncoding()));
+        return Streams.readToString(new InputStreamReader(getResponseBody(), getContentEncoding()));
+    }
+
+    /**
+     * Returns the response as input stream.
+     * <p>
+     * Note that this will throw an <tt>IOException</tt>, if the response code isn't in the <tt>200-299</tt> range.
+     * Use {@link #getResponse()} and {@link HttpResponse#body()} to access the body of erroneous responses.
+     *
+     * @return the response of the call as input stream
+     * @throws IOException in case of any IO error
+     */
+    public InputStream getResponseBody() throws IOException {
+        if (isErroneous()) {
+            throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
+                                                getResponse().statusCode()));
+        }
+        return getResponse().body();
+    }
+
+    /**
+     * Determines if a non-OK (out of the <tt>200-299</tt> range) status code has been received.
+     *
+     * @return <tt>true</tt> if a non-OK status code has been received, <tt>false</tt> otherwise
+     * @throws IOException in case of any IO error
+     */
+    public boolean isErroneous() throws IOException {
+        return getResponse().statusCode() < 200 || getResponse().statusCode() > 299;
     }
 
     /**
