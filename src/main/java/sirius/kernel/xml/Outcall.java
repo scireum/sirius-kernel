@@ -18,7 +18,6 @@ import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.Log;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
@@ -62,11 +61,11 @@ import java.util.regex.Pattern;
 /**
  * Used to call a URL and send or receive data.
  * <p>
- * This is basically a thin wrapper over <tt>HttpURLConnection</tt> which adds some boilerplate code and a bit
+ * This is basically a thin wrapper over <tt>{@link HttpClient}</tt> which adds some boilerplate code and a bit
  * of logging / monitoring.
  * <p>
- * Note that in contrast to HttpUrlConnection, we attempt to follow protocol changing redirects (e.g. from HTTP to
- * HTTPS).
+ * By default, we will follow redirects via {@link  java.net.http.HttpClient.Redirect#NORMAL}. However, one can use
+ * {@link #noFollowRedirects()} or {@link #alwaysFollowRedirects()} to customize this behaviour.
  */
 public class Outcall {
 
@@ -148,7 +147,9 @@ public class Outcall {
     public Outcall(URI uri) throws IOException {
         checkTimeoutBlacklist(uri);
 
-        clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
+        clientBuilder = HttpClient.newBuilder()
+                                  .connectTimeout(defaultConnectTimeout)
+                                  .followRedirects(HttpClient.Redirect.NORMAL);
         requestBuilder = HttpRequest.newBuilder(uri)
                                     .header(HEADER_USER_AGENT, buildDefaultUserAgent())
                                     .header(HEADER_ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
@@ -180,85 +181,23 @@ public class Outcall {
     }
 
     /**
-     * Executes the outcall and returns the response.
+     * Instructs the client to not follow any redirects.
      *
-     * @return the response, with the body as {@link InputStream}
-     * @throws IOException in case of any IO error
-     */
-    public HttpResponse<InputStream> getResponse() throws IOException {
-        connect();
-        return response;
-    }
-
-    /**
-     * Returns the average time to first byte across all outcalls.
-     *
-     * @return the average TTFB across all outcalls
-     */
-    public static Average getTimeToFirstByte() {
-        return timeToFirstByte;
-    }
-
-    /**
-     * Sents the given context as POST to the designated server.
-     *
-     * @param params  the data to POST
-     * @param charset the charset to use when encoding the post data
      * @return the outcall itself for fluent method calls
-     * @throws IOException in case of any IO error
      */
-    public Outcall postData(Context params, Charset charset) throws IOException {
-        this.charset = charset;
-
-        StringBuilder parameterString = new StringBuilder();
-        Monoflop monoflop = Monoflop.create();
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            if (monoflop.successiveCall()) {
-                parameterString.append("&");
-            }
-            parameterString.append(URLEncoder.encode(entry.getKey(), charset.name()));
-            parameterString.append("=");
-            parameterString.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
-        }
-        modifyRequest().setHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
-                       .POST(HttpRequest.BodyPublishers.ofString(parameterString.toString(), charset));
-
+    public Outcall noFollowRedirects() {
+        modifyClient().followRedirects(HttpClient.Redirect.NEVER);
         return this;
     }
 
     /**
-     * Marks the request as POST request and uses the given publisher as the body to POST.
-     *
-     * @param bodyPublisher the body to publish
-     * @return the outcall itself for fluent method calls
-     */
-    public Outcall markAsPostRequest(HttpRequest.BodyPublisher bodyPublisher) {
-        modifyRequest().POST(bodyPublisher);
-        return this;
-    }
-
-    /**
-     * Marks the request as HEAD request, only requesting headers.
-     * <p>
-     * Note that {@link #postFromOutput()} can not be invoked on this call, as we will send no body at all.
+     * Instructs the client to {@link java.net.http.HttpClient.Redirect#ALWAYS} follow redirects.
      *
      * @return the outcall itself for fluent method calls
-     * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
-    public Outcall markAsHeadRequest() throws IOException {
-        modifyRequest().method(REQUEST_METHOD_HEAD, HttpRequest.BodyPublishers.noBody());
+    public Outcall alwaysFollowRedirects() {
+        modifyClient().followRedirects(HttpClient.Redirect.ALWAYS);
         return this;
-    }
-
-    /**
-     * Provides access to the response code of the call.
-     *
-     * @return the response code of the call
-     * @throws IOException in case of any IO error
-     */
-    public int getResponseCode() throws IOException {
-        connect();
-        return response.statusCode();
     }
 
     /**
@@ -378,55 +317,54 @@ public class Outcall {
     }
 
     /**
-     * Returns the response header with the given name.
+     * Sends the given context as POST to the designated server.
      *
-     * @param name the name of the header to fetch
-     * @return the value of the given header in the response or <tt>null</tt> if no header with this name was submitted.
+     * @param params  the data to POST
+     * @param charset the charset to use when encoding the post data
+     * @return the outcall itself for fluent method calls
+     * @throws IOException in case of any IO error
      */
-    @Nullable
-    public String getHeaderField(String name) {
-        try {
-            connect();
-        } catch (IOException e) {
-            // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
-            Exceptions.ignore(e);
-            return null;
-        }
-        if (response == null) {
-            return null;
-        }
-        return response.headers().firstValue(name).orElse(null);
-    }
+    public Outcall postData(Context params, Charset charset) throws IOException {
+        this.charset = charset;
 
-    /**
-     * Returns the response header with the given name as an optional {@link LocalDateTime}.
-     *
-     * @param name the name of the header to fetch
-     * @return the date of the given header wrapped in an Optional or empty if the field does not exists or can not be parsed as date
-     */
-    public Optional<LocalDateTime> getHeaderFieldDate(String name) {
-        return Optional.ofNullable(getHeaderField(name)).flatMap(value -> {
-            try {
-                return Optional.of(LocalDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME)
-                                                .atZone(ZoneId.systemDefault())
-                                                .toLocalDateTime());
-            } catch (Exception e) {
-                Exceptions.ignore(e);
-                return Optional.empty();
+        StringBuilder parameterString = new StringBuilder();
+        Monoflop monoflop = Monoflop.create();
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            if (monoflop.successiveCall()) {
+                parameterString.append("&");
             }
-        });
+            parameterString.append(URLEncoder.encode(entry.getKey(), charset.name()));
+            parameterString.append("=");
+            parameterString.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
+        }
+        modifyRequest().setHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
+                       .POST(HttpRequest.BodyPublishers.ofString(parameterString.toString(), charset));
+
+        return this;
     }
 
     /**
-     * Tries to parse a file name from the content disposition header.
-     * <p>
-     * The format of the header is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
-     * This header provides a filename for content that is going to be downloaded to the file system.
+     * Marks the request as POST request and uses the given publisher as the body to POST.
      *
-     * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
+     * @param bodyPublisher the body to publish
+     * @return the outcall itself for fluent method calls
      */
-    public Optional<String> parseFileNameFromContentDisposition() {
-        return ContentDispositionParser.parseFileName(getHeaderField(HEADER_CONTENT_DISPOSITION));
+    public Outcall markAsPostRequest(HttpRequest.BodyPublisher bodyPublisher) {
+        modifyRequest().POST(bodyPublisher);
+        return this;
+    }
+
+    /**
+     * Marks the request as HEAD request, only requesting headers.
+     * <p>
+     * Note that {@link #postFromOutput()} can not be invoked on this call, as we will send no body at all.
+     *
+     * @return the outcall itself for fluent method calls
+     * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
+     */
+    public Outcall markAsHeadRequest() throws IOException {
+        modifyRequest().method(REQUEST_METHOD_HEAD, HttpRequest.BodyPublishers.noBody());
+        return this;
     }
 
     /**
@@ -455,36 +393,18 @@ public class Outcall {
     }
 
     /**
-     * Returns the result of the call as String.
+     * Executes the outcall and returns the response.
+     * <p>
+     * Use {@link #getResponseBody()} to directly access the response. Note however, that this will throw an
+     * exception if a non-OK response has been received. use this method to access the response (and its contents)
+     * even though an error was received.
      *
-     * @return a String containing the complete result of the call
+     * @return the response, with the body as {@link InputStream}
      * @throws IOException in case of any IO error
      */
-    public String getData() throws IOException {
-        return Streams.readToString(new InputStreamReader(getResponse().body(), getContentEncoding()));
-    }
-
-    /**
-     * Returns the charset used by the server to encode the response.
-     *
-     * @return the charset used by the server or <tt>UTF-8</tt> as default
-     */
-    public Charset getContentEncoding() {
-        String contentType = getHeaderField("content-type");
-        if (contentType == null) {
-            return StandardCharsets.UTF_8;
-        }
-        try {
-            Matcher m = CHARSET_PATTERN.matcher(contentType);
-            if (m.find()) {
-                return Charset.forName(m.group(1).trim().toUpperCase());
-            } else {
-                return StandardCharsets.UTF_8;
-            }
-        } catch (Exception e) {
-            Exceptions.ignore(e);
-            return StandardCharsets.UTF_8;
-        }
+    public HttpResponse<InputStream> getResponse() throws IOException {
+        connect();
+        return response;
     }
 
     private void connect() throws IOException {
@@ -554,11 +474,156 @@ public class Outcall {
         }
     }
 
+    /**
+     * Provides access to the response code of the call.
+     *
+     * @return the response code of the call
+     * @throws IOException in case of any IO error
+     */
+    public int getResponseCode() throws IOException {
+        return getResponse().statusCode();
+    }
+
+    /**
+     * Returns the response header with the given name.
+     *
+     * @param name the name of the header to fetch
+     * @return the value of the given header in the response or <tt>null</tt> if no header with this name was submitted.
+     */
+    @Nullable
+    public String getHeaderField(String name) {
+        try {
+            connect();
+        } catch (IOException e) {
+            // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
+            Exceptions.ignore(e);
+            return null;
+        }
+        if (response == null) {
+            return null;
+        }
+        return response.headers().firstValue(name).orElse(null);
+    }
+
+    /**
+     * Returns the response header with the given name as an optional {@link LocalDateTime}.
+     *
+     * @param name the name of the header to fetch
+     * @return the date of the given header wrapped in an Optional or empty if the field does not exists or can not be parsed as date
+     */
+    public Optional<LocalDateTime> getHeaderFieldDate(String name) {
+        return Optional.ofNullable(getHeaderField(name)).flatMap(value -> {
+            try {
+                return Optional.of(LocalDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME)
+                                                .atZone(ZoneId.systemDefault())
+                                                .toLocalDateTime());
+            } catch (Exception e) {
+                Exceptions.ignore(e);
+                return Optional.empty();
+            }
+        });
+    }
+
+    /**
+     * Tries to parse a file name from the content disposition header.
+     * <p>
+     * The format of the header is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
+     * This header provides a filename for content that is going to be downloaded to the file system.
+     *
+     * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
+     */
+    public Optional<String> parseFileNameFromContentDisposition() {
+        return ContentDispositionParser.parseFileName(getHeaderField(HEADER_CONTENT_DISPOSITION));
+    }
+
+    /**
+     * Returns the result of the call as String.
+     * <p>
+     * Note that just like {@link #getResponseBody()}, this will throw an <tt>IOException</tt>, if the
+     * response code isn't in the <tt>200-299</tt> range.
+     *
+     * @return a String containing the complete result of the call
+     * @throws IOException in case of any IO error
+     * @see #getResponseBody()
+     */
+    public String getData() throws IOException {
+        return Streams.readToString(new InputStreamReader(getResponseBody(), getContentEncoding()));
+    }
+
+    /**
+     * Returns the response as input stream.
+     * <p>
+     * Note that this will throw an <tt>IOException</tt>, if the response code isn't in the <tt>200-299</tt> range.
+     * Use {@link #getResponse()} and {@link HttpResponse#body()} to access the body of erroneous responses.
+     *
+     * @return the response of the call as input stream
+     * @throws IOException in case of any IO error
+     */
+    public InputStream getResponseBody() throws IOException {
+        if (isErroneous()) {
+            throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
+                                                getResponse().statusCode()));
+        }
+        return getResponse().body();
+    }
+
+    /**
+     * Determines if a non-OK (out of the <tt>200-299</tt> range) status code has been received.
+     *
+     * @return <tt>true</tt> if a non-OK status code has been received, <tt>false</tt> otherwise
+     * @throws IOException in case of any IO error
+     */
+    public boolean isErroneous() throws IOException {
+        return getResponse().statusCode() < 200 || getResponse().statusCode() > 299;
+    }
+
+    /**
+     * Returns the charset used by the server to encode the response.
+     *
+     * @return the charset used by the server or <tt>UTF-8</tt> as default
+     */
+    public Charset getContentEncoding() {
+        String contentType = getHeaderField("content-type");
+        if (contentType == null) {
+            return StandardCharsets.UTF_8;
+        }
+        try {
+            Matcher m = CHARSET_PATTERN.matcher(contentType);
+            if (m.find()) {
+                return Charset.forName(m.group(1).trim().toUpperCase());
+            } else {
+                return StandardCharsets.UTF_8;
+            }
+        } catch (Exception e) {
+            Exceptions.ignore(e);
+            return StandardCharsets.UTF_8;
+        }
+    }
+
+    /**
+     * Provides access to the underlying HTTP client.
+     *
+     * @return the underlying HTTP client used to perform the request
+     */
     public HttpClient getClient() {
         return client;
     }
 
+    /**
+     * Provides access to the underlying request used to perform the HTTP request.
+     *
+     * @return the actual request sent to the server
+     */
     public HttpRequest getRequest() {
         return request;
+    }
+
+    /**
+     * Returns the average time to first byte across all outcalls.
+     *
+     * @return the average TTFB across all outcalls
+     */
+    public static Average getTimeToFirstByte() {
+        return timeToFirstByte;
     }
 }
