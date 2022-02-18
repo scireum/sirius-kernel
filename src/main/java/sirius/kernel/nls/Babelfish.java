@@ -139,9 +139,7 @@ public class Babelfish {
         Translation entry = new Translation(property);
         entry.setAutocreated(true);
 
-        inLock(newTranslations -> {
-            newTranslations.put(entry.getKey(), entry);
-        });
+        inLock(newTranslations -> newTranslations.put(entry.getKey(), entry));
 
         return entry;
     }
@@ -233,9 +231,7 @@ public class Babelfish {
         if (m.matches()) {
             String baseName = m.group(1);
             String lang = m.group(2);
-            inLock(newTranslations -> {
-                importProperties(baseName, lang, newTranslations);
-            });
+            inLock(newTranslations -> importProperties(baseName, lang, newTranslations));
         }
     }
 
