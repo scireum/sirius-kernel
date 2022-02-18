@@ -10,6 +10,7 @@ package sirius.kernel.nls;
 
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
@@ -135,7 +136,13 @@ public class Babelfish {
     }
 
     private Translation autocreateMissingEntry(@Nonnull String property) {
-        LOG.INFO("Non-existent translation: %s", property);
+        StringBuilder message = new StringBuilder();
+        message.append("Non-existent translation: ").append(property);
+        if(!Sirius.isProd()) {
+            message.append("\n---------------------------------------------------\n");
+            message.append(ExecutionPoint.snapshot());
+        }
+        LOG.INFO( message.toString());
         Translation entry = new Translation(property);
         entry.setAutocreated(true);
 
