@@ -247,12 +247,12 @@ public class Babelfish {
         }
     }
 
-    private void importProperty(Map<String, Translation> modifyableTranslationsCopy,
+    private void importProperty(Map<String, Translation> modifiableTranslationsCopy,
                                 String lang,
                                 String file,
                                 String key,
                                 String value) {
-        Translation entry = modifyableTranslationsCopy.computeIfAbsent(key, Translation::new);
+        Translation entry = modifiableTranslationsCopy.computeIfAbsent(key, Translation::new);
         entry.setAutocreated(false);
 
         String previous = entry.addTranslation(lang, value);
