@@ -10,6 +10,7 @@ package sirius.kernel.nls;
 
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
@@ -135,13 +136,17 @@ public class Babelfish {
     }
 
     private Translation autocreateMissingEntry(@Nonnull String property) {
-        LOG.INFO("Non-existent translation: %s", property);
+        StringBuilder message = new StringBuilder();
+        message.append("Non-existent translation: ").append(property);
+        if (!Sirius.isProd()) {
+            message.append("\n---------------------------------------------------\n");
+            message.append(ExecutionPoint.snapshot());
+        }
+        LOG.INFO(message.toString());
         Translation entry = new Translation(property);
         entry.setAutocreated(true);
 
-        inLock(newTranslations -> {
-            newTranslations.put(entry.getKey(), entry);
-        });
+        inLock(newTranslations -> newTranslations.put(entry.getKey(), entry));
 
         return entry;
     }
@@ -233,9 +238,7 @@ public class Babelfish {
         if (m.matches()) {
             String baseName = m.group(1);
             String lang = m.group(2);
-            inLock(newTranslations -> {
-                importProperties(baseName, lang, newTranslations);
-            });
+            inLock(newTranslations -> importProperties(baseName, lang, newTranslations));
         }
     }
 
@@ -247,12 +250,12 @@ public class Babelfish {
         }
     }
 
-    private void importProperty(Map<String, Translation> modifyableTranslationsCopy,
+    private void importProperty(Map<String, Translation> modifiableTranslationsCopy,
                                 String lang,
                                 String file,
                                 String key,
                                 String value) {
-        Translation entry = modifyableTranslationsCopy.computeIfAbsent(key, Translation::new);
+        Translation entry = modifiableTranslationsCopy.computeIfAbsent(key, Translation::new);
         entry.setAutocreated(false);
 
         String previous = entry.addTranslation(lang, value);
