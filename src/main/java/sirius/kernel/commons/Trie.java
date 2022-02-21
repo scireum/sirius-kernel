@@ -81,7 +81,7 @@ public class Trie<V> {
          * This will not change the internal state.
          *
          * @param c the character to continue with
-         * @return <tt>true</tt> if the current path can continued using the given character,
+         * @return <tt>true</tt> if the current path can be continued using the given character,
          * <tt>false</tt> otherwise.
          */
         boolean canContinue(char c);
@@ -89,7 +89,7 @@ public class Trie<V> {
         /**
          * Tries to continue the current path with the given character.
          * <p>
-         * If the current path can be continued, the internal state will be updated. Otherwise the internal
+         * If the current path can be continued, the internal state will be updated. Otherwise, the internal
          * state will remain unchanged - the iterator is not reset automatically.
          *
          * @param c the character to continue with
@@ -203,7 +203,7 @@ public class Trie<V> {
         }
 
         /**
-         * Adds a new step for the given character. Internally, a binary search is performed as the keylist
+         * Adds a new step for the given character. Internally, a binary search is performed as the key-list
          * is sorted ascending.
          */
         void addStep(char c) {
@@ -337,7 +337,7 @@ public class Trie<V> {
     /**
      * Retrieves all keys that are stored in this {@link Trie}.
      *
-     * @return a {@link Set} of all keys that are stored in this {@link Trie}
+     * @return an {@link Collections#unmodifiableSet(Set) unmodifiable set} of all keys that are stored in this {@link Trie}
      */
     public Set<String> keySet() {
         return getAllKeysBeginningWith("");
@@ -356,7 +356,8 @@ public class Trie<V> {
      * Performs a prefix search within this {@link Trie}'s {@link #keySet() key set}
      *
      * @param prefix to search for
-     * @return all keys that are beginning with the given <tt>prefix</tt> (may include <tt>prefix</tt> itself)
+     * @return an {@link Collections#unmodifiableSet(Set) unmodifiable set} holding all keys that are beginning with
+     * the given <tt>prefix</tt> (may include <tt>prefix</tt> itself)
      */
     public Set<String> getAllKeysBeginningWith(String prefix) {
         ContainmentIterator<V> iter = iterator();
@@ -387,6 +388,6 @@ public class Trie<V> {
             iter.goBack();
         }
 
-        return result;
+        return Collections.unmodifiableSet(result);
     }
 }
