@@ -78,6 +78,7 @@ public class Outcall {
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_USER_AGENT = "User-Agent";
     private static final String HEADER_ACCEPT = "Accept";
+    private static final String HEADER_LOCATION = "Location";
     private static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
@@ -427,14 +428,18 @@ public class Outcall {
             request = requestBuilder.build();
         }
 
-        int connections = 0;
-        do {
-            makeRequest();
-            connections++;
-        } while (connections < MAX_REDIRECTS && checkAndBuildRedirectRequest(response));
+        int attempts = MAX_REDIRECTS;
+        while (attempts-- > 0) {
+            performRequest();
+            Optional<URI> redirectedURI = checkForRedirectURI();
+            if (redirectedURI.isEmpty()) {
+                return;
+            }
+            installRedirectRequest(redirectedURI.get());
+        }
     }
 
-    private void makeRequest() throws IOException {
+    private void performRequest() throws IOException {
         Watch watch = Watch.start();
         try (Operation op = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri().getPath(),
                                           client.connectTimeout().orElse(defaultConnectTimeout).plusSeconds(1))) {
@@ -640,56 +645,44 @@ public class Outcall {
         return timeToFirstByte;
     }
 
+    private void installRedirectRequest(URI redirectedURI) {
+        HttpRequest.Builder redirectBuilder = requestBuilder.copy();
+        redirectBuilder.uri(redirectedURI);
+        if (shouldSwitchToGet(response.statusCode(), request.method())) {
+            redirectBuilder.GET();
+        }
+        request = redirectBuilder.build();
+    }
+
     /**
-     * Checks to see if a new request is needed and builds it into the active {@link #request}.
+     * Checks the response and {@link #redirectPolicy}, if we should redirect and generates the URI to redirect to.
+     *
+     * @return The URI to redirect to, wrapped in an Optional, or {@link Optional#empty()} if no redirect is needed
+     * @throws IOException in case we should redirect but fail to generate a URI
      */
-    private boolean checkAndBuildRedirectRequest(HttpResponse<InputStream> response) throws IOException {
+    private Optional<URI> checkForRedirectURI() throws IOException {
         if (redirectPolicy == HttpClient.Redirect.NEVER) {
             // redirect disabled, no further checks needed
-            return false;
+            return Optional.empty();
         }
-        int responseCode = response.statusCode();
-        if (isRedirecting(responseCode)) {
+        if (isRedirecting(response.statusCode())) {
             URI redirectedURI = makeRedirectedURI(response.headers());
             if (canRedirect(redirectedURI)) {
-                // copy and modify the base request builder
-                HttpRequest.Builder redirectBuilder = requestBuilder.copy();
-                redirectBuilder.uri(redirectedURI);
-                if (shouldSwitchToGet(responseCode, request.method())) {
-                    redirectBuilder.GET();
-                }
-                request = redirectBuilder.build();
-                return true;
-            } else {
-                return false;
+                return Optional.of(redirectedURI);
             }
         }
-        return false;
+        return Optional.empty();
     }
 
     private boolean isRedirecting(int statusCode) {
-        if (statusCode < 300) {
-            // < 300: not a redirect code
-            return false;
-        }
-        if (statusCode > 308) {
-            // 309-399 Unassigned => don't follow
-            // > 399: not a redirect code
-            return false;
-        }
-
         return switch (statusCode) {
-            // 300: MultipleChoice => don't follow
-            // 304: Not Modified => don't follow
-            // 305: Proxy Redirect => don't follow.
-            // 306: Unused => don't follow
-            case 300, 304, 305, 306 -> false;
+            case 301, 302, 303, 307, 308 -> true;
             // 301: Moved permanently => follow
             // 302: Found => follow
             // 303: See other => follow
             // 307: Temp Redirect => follow
             // 308: Permanent Redirect => follow
-            default -> true;
+            default -> false;
         };
     }
 
@@ -701,20 +694,14 @@ public class Outcall {
             case 303 -> true;
             case 307, 308 -> false;
 
-            default -> false; // unexpected
+            default -> false;
         };
     }
 
     private URI makeRedirectedURI(HttpHeaders headers) throws IOException {
-        Optional<String> locationHeader = headers.firstValue("Location");
-        if (locationHeader.isEmpty()) {
-            throw new ConnectException("Invalid redirection");
-        }
-        URI redirectedURI = makeURIFromLocation(locationHeader.get());
-
-        // redirect could be relative to original URL
-        redirectedURI = request.uri().resolve(redirectedURI);
-        return redirectedURI;
+        String locationHeader =
+                headers.firstValue(HEADER_LOCATION).orElseThrow(() -> new ConnectException("Invalid redirection"));
+        return request.uri().resolve(makeURIFromLocation(locationHeader));
     }
 
     private URI makeURIFromLocation(String location) throws ConnectException {
