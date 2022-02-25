@@ -11,6 +11,7 @@ package sirius.kernel.xml;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
@@ -34,10 +35,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
+import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
@@ -73,12 +78,14 @@ public class Outcall {
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_USER_AGENT = "User-Agent";
     private static final String HEADER_ACCEPT = "Accept";
+    private static final String HEADER_LOCATION = "Location";
     private static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
     private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
+    private static final int MAX_REDIRECTS = 5;
 
     /**
      * Keeps track of hosts for which we ran into a connect timeout.
@@ -109,6 +116,7 @@ public class Outcall {
     private final HttpClient.Builder clientBuilder;
     private final HttpRequest.Builder requestBuilder;
     private HttpResponse<InputStream> response;
+    private HttpClient.Redirect redirectPolicy = HttpClient.Redirect.NORMAL;
     private Charset charset = StandardCharsets.UTF_8;
 
     // Provide an output stream for old apis
@@ -147,9 +155,7 @@ public class Outcall {
     public Outcall(URI uri) throws IOException {
         checkTimeoutBlacklist(uri);
 
-        clientBuilder = HttpClient.newBuilder()
-                                  .connectTimeout(defaultConnectTimeout)
-                                  .followRedirects(HttpClient.Redirect.NORMAL);
+        clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
         requestBuilder = HttpRequest.newBuilder(uri)
                                     .header(HEADER_USER_AGENT, buildDefaultUserAgent())
                                     .header(HEADER_ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
@@ -186,7 +192,7 @@ public class Outcall {
      * @return the outcall itself for fluent method calls
      */
     public Outcall noFollowRedirects() {
-        modifyClient().followRedirects(HttpClient.Redirect.NEVER);
+        redirectPolicy = HttpClient.Redirect.NEVER;
         return this;
     }
 
@@ -196,7 +202,7 @@ public class Outcall {
      * @return the outcall itself for fluent method calls
      */
     public Outcall alwaysFollowRedirects() {
-        modifyClient().followRedirects(HttpClient.Redirect.ALWAYS);
+        redirectPolicy = HttpClient.Redirect.ALWAYS;
         return this;
     }
 
@@ -422,6 +428,18 @@ public class Outcall {
             request = requestBuilder.build();
         }
 
+        int attempts = MAX_REDIRECTS;
+        while (attempts-- > 0) {
+            performRequest();
+            Optional<URI> redirectedURI = checkForRedirectURI();
+            if (redirectedURI.isEmpty()) {
+                return;
+            }
+            installRedirectRequest(redirectedURI.get());
+        }
+    }
+
+    private void performRequest() throws IOException {
         Watch watch = Watch.start();
         try (Operation op = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri().getPath(),
                                           client.connectTimeout().orElse(defaultConnectTimeout).plusSeconds(1))) {
@@ -625,5 +643,95 @@ public class Outcall {
      */
     public static Average getTimeToFirstByte() {
         return timeToFirstByte;
+    }
+
+    private void installRedirectRequest(URI redirectedURI) {
+        HttpRequest.Builder redirectBuilder = requestBuilder.copy();
+        redirectBuilder.uri(redirectedURI);
+        if (shouldSwitchToGet(response.statusCode(), request.method())) {
+            redirectBuilder.GET();
+        }
+        request = redirectBuilder.build();
+    }
+
+    /**
+     * Checks the response and {@link #redirectPolicy}, if we should redirect and generates the URI to redirect to.
+     *
+     * @return The URI to redirect to, wrapped in an Optional, or {@link Optional#empty()} if no redirect is needed
+     * @throws IOException in case we should redirect but fail to generate a URI
+     */
+    private Optional<URI> checkForRedirectURI() throws IOException {
+        if (redirectPolicy == HttpClient.Redirect.NEVER) {
+            // redirect disabled, no further checks needed
+            return Optional.empty();
+        }
+        if (isRedirecting(response.statusCode())) {
+            URI redirectedURI = makeRedirectedURI(response.headers());
+            if (canRedirect(redirectedURI)) {
+                return Optional.of(redirectedURI);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private boolean isRedirecting(int statusCode) {
+        return switch (statusCode) {
+            case 301, 302, 303, 307, 308 -> true;
+            // 301: Moved permanently => follow
+            // 302: Found => follow
+            // 303: See other => follow
+            // 307: Temp Redirect => follow
+            // 308: Permanent Redirect => follow
+            default -> false;
+        };
+    }
+
+    @SuppressWarnings("DuplicateBranchesInSwitch")
+    @Explain("Duplicated case is there to visualize expected values.")
+    private boolean shouldSwitchToGet(int statusCode, String originalMethod) {
+        return switch (statusCode) {
+            case 301, 302 -> "POST".equals(originalMethod);
+            case 303 -> true;
+            case 307, 308 -> false;
+
+            default -> false;
+        };
+    }
+
+    private URI makeRedirectedURI(HttpHeaders headers) throws IOException {
+        String locationHeader =
+                headers.firstValue(HEADER_LOCATION).orElseThrow(() -> new ConnectException("Invalid redirection"));
+        return request.uri().resolve(makeURIFromLocation(locationHeader));
+    }
+
+    private URI makeURIFromLocation(String location) throws ConnectException {
+        try {
+            return new URI(location);
+        } catch (URISyntaxException exception) {
+            Exceptions.ignore(exception);
+            try {
+                // There are illegal chars in the redirect header url, try again with encoding the header
+                URL urlObject = new URL(location);
+                return new URI(urlObject.getProtocol(),
+                               urlObject.getUserInfo(),
+                               urlObject.getHost(),
+                               urlObject.getPort(),
+                               urlObject.getPath(),
+                               urlObject.getQuery(),
+                               urlObject.getRef());
+            } catch (MalformedURLException | URISyntaxException secondException) {
+                throw new ConnectException("Invalid redirection: " + secondException.getMessage());
+            }
+        }
+    }
+
+    private boolean canRedirect(URI redirectedURI) {
+        String newScheme = redirectedURI.getScheme();
+        String oldScheme = request.uri().getScheme();
+        return switch (redirectPolicy) {
+            case ALWAYS -> true;
+            case NEVER -> false;
+            case NORMAL -> newScheme.equalsIgnoreCase(oldScheme) || "https".equalsIgnoreCase(newScheme);
+        };
     }
 }
