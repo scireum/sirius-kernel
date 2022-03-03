@@ -236,7 +236,7 @@ public class Strings {
     }
 
     /**
-     * Returns the first non empty value of the given array.
+     * Returns the first non-empty value of the given array.
      * <p>
      * This can be used to provide a default value or to check several sources for a value, e.g.:
      * <pre>
