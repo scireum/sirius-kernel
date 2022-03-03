@@ -251,6 +251,7 @@ public class Strings {
      * @return the first value of values which is filled.
      * Returns <tt>null</tt> if all are empty or if no values where passed in
      */
+    @Nullable
     public static String firstFilled(String... values) {
         if (values != null) {
             for (String s : values) {
@@ -268,6 +269,7 @@ public class Strings {
      * @param value the value to be encoded.
      * @return an url encoded representation of value, using UTF-8 as character encoding.
      */
+    @Nullable
     public static String urlEncode(@Nullable String value) {
         if (isFilled(value)) {
             try {
@@ -286,6 +288,7 @@ public class Strings {
      * @param value the value to be decoded.
      * @return an url decoded representation of value, using UTF-8 as character encoding.
      */
+    @Nullable
     public static String urlDecode(@Nullable String value) {
         if (isFilled(value)) {
             try {
@@ -588,6 +591,7 @@ public class Strings {
      * @return a trimmed version of the string representation of the given object.
      * Returns <tt>null</tt> if an empty string was given.
      */
+    @Nullable
     public static String trim(Object object) {
         if (isEmpty(object)) {
             return null;
