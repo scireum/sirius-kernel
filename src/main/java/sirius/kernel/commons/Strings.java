@@ -286,12 +286,15 @@ public class Strings {
      * @param value the value to be decoded.
      * @return an url decoded representation of value, using UTF-8 as character encoding.
      */
-    public static String urlDecode(String value) {
-        try {
-            return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw Exceptions.handle(e);
+    public static String urlDecode(@Nullable String value) {
+        if (isFilled(value)) {
+            try {
+                return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+            } catch (UnsupportedEncodingException e) {
+                throw Exceptions.handle(e);
+            }
         }
+        return value;
     }
 
     /**
