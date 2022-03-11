@@ -588,7 +588,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getDateFormat(String lang) {
-        return dateFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternDate", l)));
+        return safeGetDateTimeFormat(lang, dateFormatters, "NLS.patternDate");
     }
 
     /**
@@ -598,8 +598,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getShortDateFormat(String lang) {
-        return shortDateFormatters.computeIfAbsent(lang,
-                                                   l -> DateTimeFormatter.ofPattern(get("NLS.patternShortDate", l)));
+        return safeGetDateTimeFormat(lang, shortDateFormatters, "NLS.patternShortDate");
     }
 
     /**
@@ -615,8 +614,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getTimeFormatWithSeconds(String lang) {
-        return fullTimeFormatters.computeIfAbsent(lang,
-                                                  l -> DateTimeFormatter.ofPattern(get("NLS.patternFullTime", l)));
+        return safeGetDateTimeFormat(lang, fullTimeFormatters, "NLS.patternFullTime");
     }
 
     /**
@@ -630,7 +628,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getTimeFormat(String lang) {
-        return timeFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternTime", l)));
+        return safeGetDateTimeFormat(lang, timeFormatters, "NLS.patternTime");
     }
 
     /**
@@ -645,8 +643,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getTimeParseFormat(String lang) {
-        return parseTimeFormatters.computeIfAbsent(lang,
-                                                   l -> DateTimeFormatter.ofPattern(get("NLS.patternParseTime", l)));
+        return safeGetDateTimeFormat(lang, parseTimeFormatters, "NLS.patternParseTime");
     }
 
     /**
@@ -656,8 +653,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getDateTimeFormat(String lang) {
-        return fullDateTimeFormatters.computeIfAbsent(lang,
-                                                      l -> DateTimeFormatter.ofPattern(get("NLS.patternDateTime", l)));
+        return safeGetDateTimeFormat(lang, fullDateTimeFormatters, "NLS.patternDateTime");
     }
 
     /**
@@ -667,10 +663,16 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getDateTimeFormatWithoutSeconds(String lang) {
-        return dateTimeFormatters.computeIfAbsent(lang,
-                                                  l -> DateTimeFormatter.ofPattern(get(
-                                                          "NLS.patternDateTime.withoutSeconds",
-                                                          l)));
+        return safeGetDateTimeFormat(lang, dateTimeFormatters, "NLS.patternDateTime.withoutSeconds");
+    }
+
+    private static DateTimeFormatter safeGetDateTimeFormat(String lang,
+                                                           Map<String, DateTimeFormatter> formatters,
+                                                           String nlsProperty) {
+        if (Strings.isEmpty(lang)) {
+            lang = getCurrentLang();
+        }
+        return formatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get(nlsProperty, l)));
     }
 
     /**
