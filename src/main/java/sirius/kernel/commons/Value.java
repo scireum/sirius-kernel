@@ -1329,6 +1329,9 @@ public class Value {
      * @return the parsed LocalDate wrapped as a Value, or the Value itself if it was empty or a parsing error occurred
      */
     public Value tryParseLocalDate(String languageCode) {
+        if (Strings.isEmpty(languageCode)) {
+            return this;
+        }
         return tryParseLocalDate(NLS.getDateFormat(languageCode));
     }
 
