@@ -672,7 +672,7 @@ public class NLS {
         if (Strings.isEmpty(lang)) {
             lang = getCurrentLang();
         }
-        return formatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get(nlsProperty, l)));
+        return formatters.computeIfAbsent(lang, ignored -> DateTimeFormatter.ofPattern(get(nlsProperty, lang)));
     }
 
     /**
