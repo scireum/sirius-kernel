@@ -1304,10 +1304,11 @@ public class Value {
      * Parses the value as {@link LocalDate} using the given {@link DateTimeFormatter formatter}.
      *
      * @param formatter the formatter for the expected date format
-     * @return the parsed LocalDate wrapped as a Value, or the Value itself if it was empty or a parsing error occurred
+     * @return the parsed LocalDate wrapped as a Value on success. Returns the Value itself, if it or the given
+     * formatter were empty, or if a parsing error occurred.
      */
     public Value tryParseLocalDate(DateTimeFormatter formatter) {
-        if (isNull()) {
+        if (isNull() || formatter == null) {
             return this;
         }
         LocalDate localDate = asLocalDate(null);
@@ -1326,9 +1327,13 @@ public class Value {
      * Parses the value as {@link LocalDate} using the date format for the given language.
      *
      * @param languageCode the language to format the date for
-     * @return the parsed LocalDate wrapped as a Value, or the Value itself if it was empty or a parsing error occurred
+     * @return the parsed LocalDate wrapped as a Value on success. Returns the Value itself, if it or the given
+     * language were empty, or if a parsing error occurred.
      */
     public Value tryParseLocalDate(String languageCode) {
+        if (Strings.isEmpty(languageCode)) {
+            return this;
+        }
         return tryParseLocalDate(NLS.getDateFormat(languageCode));
     }
 
