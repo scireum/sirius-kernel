@@ -74,12 +74,13 @@ import java.util.regex.Pattern;
  */
 public class Outcall {
 
-    private static final String REQUEST_METHOD_HEAD = "HEAD";
-    private static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_USER_AGENT = "User-Agent";
     public static final String HEADER_ACCEPT = "Accept";
-    private static final String HEADER_LOCATION = "Location";
     public static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
+
+    private static final String REQUEST_METHOD_HEAD = "HEAD";
+    private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String HEADER_LOCATION = "Location";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
