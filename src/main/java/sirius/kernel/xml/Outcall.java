@@ -74,12 +74,13 @@ import java.util.regex.Pattern;
  */
 public class Outcall {
 
+    public static final String HEADER_USER_AGENT = "User-Agent";
+    public static final String HEADER_ACCEPT = "Accept";
+    public static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
+
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
-    private static final String HEADER_USER_AGENT = "User-Agent";
-    private static final String HEADER_ACCEPT = "Accept";
     private static final String HEADER_LOCATION = "Location";
-    private static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
     private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
@@ -126,9 +127,14 @@ public class Outcall {
     private static String defaultUserAgent;
     private static final Average timeToFirstByte = new Average();
 
-    private static String buildDefaultUserAgent() {
+    /**
+     * Builds the default user agent string as 'product.name/product.version (+product.baseUrl)', where version or
+     * baseUrl could be empty. This is attached to every outgoing request (see {@link Outcall#Outcall(java.net.URI)}).
+     *
+     * @return the default user agent string
+     */
+    public static String buildDefaultUserAgent() {
         if (defaultUserAgent == null) {
-            // default format is 'product.name/product.version (+product.baseUrl)', but version or baseUrl could be empty
             StringBuilder userAgentString = new StringBuilder(Sirius.getSettings().getString("product.name"));
             String version = Sirius.getSettings().getString("product.version");
             if (Strings.isFilled(version)) {
@@ -733,5 +739,13 @@ public class Outcall {
             case NEVER -> false;
             case NORMAL -> newScheme.equalsIgnoreCase(oldScheme) || "https".equalsIgnoreCase(newScheme);
         };
+    }
+
+    public static Duration getDefaultConnectTimeout() {
+        return defaultConnectTimeout;
+    }
+
+    public static Duration getDefaultReadTimeout() {
+        return defaultReadTimeout;
     }
 }
