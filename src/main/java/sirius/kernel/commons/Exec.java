@@ -120,12 +120,12 @@ public class Exec {
     /**
      * Executes the given command and returns a transcript of stderr and stdout
      *
-     * @param command the command to execute
+     * @param cmdarray array containing the command to call and its arguments
      * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails or returns an exit code other than 0.
      */
-    public static String exec(String command) throws ExecException {
-        return exec(command, false);
+    public static String exec(String[] cmdarray) throws ExecException {
+        return exec(cmdarray, false);
     }
 
     /**
@@ -133,32 +133,32 @@ public class Exec {
      * <p>
      * This is using a default operation timeout of five minutes - after which it is logged as hanging.
      *
-     * @param command         the command to execute
+     * @param cmdarray        array containing the command to call and its arguments
      * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
      * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails
      */
-    public static String exec(String command, boolean ignoreExitCodes) throws ExecException {
-        return exec(command, ignoreExitCodes, Duration.ofMinutes(5));
+    public static String exec(String[] cmdarray, boolean ignoreExitCodes) throws ExecException {
+        return exec(cmdarray, ignoreExitCodes, Duration.ofMinutes(5));
     }
 
     /**
      * Executes the given command and returns a transcript of stderr and stdout.
      *
-     * @param command         the command to execute
+     * @param cmdarray        array containing the command to call and its arguments
      * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
      * @param opTimeout       the duration after which the execution should be logged as hanging
      * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails
      */
-    public static String exec(String command, boolean ignoreExitCodes, Duration opTimeout) throws ExecException {
-        return exec(command, ignoreExitCodes, opTimeout, null);
+    public static String exec(String[] cmdarray, boolean ignoreExitCodes, Duration opTimeout) throws ExecException {
+        return exec(cmdarray, ignoreExitCodes, opTimeout, null);
     }
 
     /**
      * Executes the given command and returns a transcript of stderr and stdout.
      *
-     * @param command         the command to execute
+     * @param cmdarray        array containing the command to call and its arguments
      * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
      * @param opTimeout       the duration after which the execution should be logged as hanging
      * @param directory       the working directory of the subprocess,
@@ -166,11 +166,11 @@ public class Exec {
      * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails
      */
-    public static String exec(String command, boolean ignoreExitCodes, Duration opTimeout, @Nullable File directory)
+    public static String exec(String[] cmdarray, boolean ignoreExitCodes, Duration opTimeout, @Nullable File directory)
             throws ExecException {
         StringBuilder logger = new StringBuilder();
-        try (Operation op = new Operation(() -> command, opTimeout)) {
-            Process p = Runtime.getRuntime().exec(command, null, directory);
+        try (Operation op = new Operation(() -> Strings.join(" ", cmdarray), opTimeout)) {
+            Process p = Runtime.getRuntime().exec(cmdarray, null, directory);
             Semaphore completionSynchronizer = new Semaphore(2);
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger, completionSynchronizer);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger, completionSynchronizer);
