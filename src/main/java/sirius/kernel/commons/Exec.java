@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serial;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -32,6 +33,7 @@ public class Exec {
      * Can be used to log errors and infos when executing external programs.
      */
     public static final Log LOG = Log.get("exec");
+    private static final String[] EMPTY_ARRAY = new String[0];
 
     private Exec() {
     }
@@ -120,12 +122,12 @@ public class Exec {
     /**
      * Executes the given command and returns a transcript of stderr and stdout
      *
-     * @param cmdarray array containing the command to call and its arguments
+     * @param cmdlist list containing the command to call and its arguments
      * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails or returns an exit code other than 0.
      */
-    public static String exec(String[] cmdarray) throws ExecException {
-        return exec(cmdarray, false);
+    public static String exec(List<String> cmdlist) throws ExecException {
+        return exec(cmdlist, false);
     }
 
     /**
@@ -133,32 +135,32 @@ public class Exec {
      * <p>
      * This is using a default operation timeout of five minutes - after which it is logged as hanging.
      *
-     * @param cmdarray        array containing the command to call and its arguments
+     * @param cmdlist         list containing the command to call and its arguments
      * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
      * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails
      */
-    public static String exec(String[] cmdarray, boolean ignoreExitCodes) throws ExecException {
-        return exec(cmdarray, ignoreExitCodes, Duration.ofMinutes(5));
+    public static String exec(List<String> cmdlist, boolean ignoreExitCodes) throws ExecException {
+        return exec(cmdlist, ignoreExitCodes, Duration.ofMinutes(5));
     }
 
     /**
      * Executes the given command and returns a transcript of stderr and stdout.
      *
-     * @param cmdarray        array containing the command to call and its arguments
+     * @param cmdlist         list containing the command to call and its arguments
      * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
      * @param opTimeout       the duration after which the execution should be logged as hanging
      * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails
      */
-    public static String exec(String[] cmdarray, boolean ignoreExitCodes, Duration opTimeout) throws ExecException {
-        return exec(cmdarray, ignoreExitCodes, opTimeout, null);
+    public static String exec(List<String> cmdlist, boolean ignoreExitCodes, Duration opTimeout) throws ExecException {
+        return exec(cmdlist, ignoreExitCodes, opTimeout, null);
     }
 
     /**
      * Executes the given command and returns a transcript of stderr and stdout.
      *
-     * @param cmdarray        array containing the command to call and its arguments
+     * @param cmdlist         list containing the command to call and its arguments
      * @param ignoreExitCodes if an exit code other than 0 should result in an exception being thrown
      * @param opTimeout       the duration after which the execution should be logged as hanging
      * @param directory       the working directory of the subprocess,
@@ -166,11 +168,13 @@ public class Exec {
      * @return the transcript of stderr and stdout produced by the executed command
      * @throws ExecException in case the external program fails
      */
-    public static String exec(String[] cmdarray, boolean ignoreExitCodes, Duration opTimeout, @Nullable File directory)
-            throws ExecException {
+    public static String exec(List<String> cmdlist,
+                              boolean ignoreExitCodes,
+                              Duration opTimeout,
+                              @Nullable File directory) throws ExecException {
         StringBuilder logger = new StringBuilder();
-        try (Operation op = new Operation(() -> Strings.join(" ", cmdarray), opTimeout)) {
-            Process p = Runtime.getRuntime().exec(cmdarray, null, directory);
+        try (Operation op = new Operation(() -> String.join(" ", cmdlist), opTimeout)) {
+            Process p = Runtime.getRuntime().exec(cmdlist.toArray(EMPTY_ARRAY), null, directory);
             Semaphore completionSynchronizer = new Semaphore(2);
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger, completionSynchronizer);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger, completionSynchronizer);
