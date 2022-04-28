@@ -49,6 +49,13 @@
             <version>1.7.32</version>
         </dependency>
 
+        <!-- scireum parsii -->
+        <dependency>
+            <groupId>com.scireum</groupId>
+            <artifactId>parsii</artifactId>
+            <version>5.0.1</version>
+        </dependency>
+
         <!-- Used to auto-start Docker environments. Excluding dependencies not required for docker-compose. -->
         <dependency>
             <groupId>com.palantir.docker.compose</groupId>
