@@ -197,7 +197,7 @@ public class Exec {
     }
 
     private static String[] parseCommandToArray(String command) {
-        ArrayList<String> commandList = new ArrayList<>();
+        List<String> commandList = new ArrayList<>();
         CommandParser commandParser = new CommandParser(command);
         commandList.add(commandParser.parseCommand());
         commandList.addAll(commandParser.getArgs());
