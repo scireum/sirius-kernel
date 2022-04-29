@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serial;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -32,6 +34,7 @@ public class Exec {
      * Can be used to log errors and infos when executing external programs.
      */
     public static final Log LOG = Log.get("exec");
+    private static final String[] EMPTY_ARRAY = new String[0];
 
     private Exec() {
     }
@@ -170,7 +173,7 @@ public class Exec {
             throws ExecException {
         StringBuilder logger = new StringBuilder();
         try (Operation op = new Operation(() -> command, opTimeout)) {
-            Process p = Runtime.getRuntime().exec(command, null, directory);
+            Process p = Runtime.getRuntime().exec(parseCommandToArray(command), null, directory);
             Semaphore completionSynchronizer = new Semaphore(2);
             StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger, completionSynchronizer);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger, completionSynchronizer);
@@ -192,6 +195,14 @@ public class Exec {
         } catch (Exception e) {
             throw new ExecException(e, logger.toString());
         }
+    }
+
+    private static String[] parseCommandToArray(String command) {
+        List<String> commandList = new ArrayList<>();
+        CommandParser commandParser = new CommandParser(command);
+        commandList.add(commandParser.parseCommand());
+        commandList.addAll(commandParser.getArgs());
+        return commandList.toArray(EMPTY_ARRAY);
     }
 
     private static void doExec(boolean ignoreExitCodes, StringBuilder logger, Process p) throws ExecException {

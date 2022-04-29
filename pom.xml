@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>9.1.0</version>
+        <version>10.0.0</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
     <name>SIRIUS kernel</name>
@@ -47,6 +47,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.32</version>
+        </dependency>
+
+        <!-- scireum parsii -->
+        <dependency>
+            <groupId>com.scireum</groupId>
+            <artifactId>parsii</artifactId>
+            <version>5.0.1</version>
         </dependency>
 
         <!-- Used to auto-start Docker environments. Excluding dependencies not required for docker-compose. -->
