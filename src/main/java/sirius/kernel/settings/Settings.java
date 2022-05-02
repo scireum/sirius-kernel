@@ -22,6 +22,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Priorized;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
@@ -55,6 +56,8 @@ public class Settings {
 
     private static final String PRIORITY = "priority";
     private static final String ID = "id";
+    private static final String TRANSLATED_STRING_DEFAULT_KEY = "default";
+    private static final String TRANSLATED_STRING_FALLBACK_KEY = "fallback";
 
     private final Config config;
     protected final boolean strict;
@@ -315,7 +318,17 @@ public class Settings {
             Map<String, String> translations = value.get(Map.class, Collections.emptyMap());
             String effectiveLanguage = Strings.isEmpty(lang) ? NLS.getCurrentLang() : lang;
             return Optional.ofNullable(translations.get(effectiveLanguage))
-                           .or(() -> Optional.ofNullable(translations.get("default")))
+                           .or(() -> Optional.ofNullable(translations.get(TRANSLATED_STRING_DEFAULT_KEY)))
+                           .or(() -> {
+                               Optional<String> fallbackValue =
+                                       Optional.ofNullable(translations.get(TRANSLATED_STRING_FALLBACK_KEY));
+                               fallbackValue.ifPresent(fallbackString -> Log.SYSTEM.WARN(
+                                       "Found a 'fallback' key in a translated config value (%s) with value '%s'. Please use 'default' as key name.",
+                                       key,
+                                       fallbackString));
+
+                               return fallbackValue;
+                           })
                            .orElse("");
         }
 
