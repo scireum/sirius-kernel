@@ -136,13 +136,16 @@ public class Babelfish {
     }
 
     private Translation autocreateMissingEntry(@Nonnull String property) {
-        StringBuilder message = new StringBuilder();
-        message.append("Non-existent translation: ").append(property);
-        if (!Sirius.isProd()) {
-            message.append("\n---------------------------------------------------\n");
-            message.append(ExecutionPoint.snapshot());
+        if (Sirius.isRunning()) {
+            StringBuilder message = new StringBuilder();
+            message.append("Non-existent translation: ").append(property);
+            if (!Sirius.isProd()) {
+                message.append("\n---------------------------------------------------\n");
+                message.append(ExecutionPoint.snapshot());
+            }
+            LOG.INFO(message.toString());
         }
-        LOG.INFO(message.toString());
+
         Translation entry = new Translation(property);
         entry.setAutocreated(true);
 
