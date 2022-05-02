@@ -9,12 +9,15 @@
 package sirius.kernel.settings;
 
 import com.typesafe.config.ConfigObject;
+import sirius.kernel.Sirius;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,16 +71,29 @@ public class Extension extends Settings implements Comparable<Extension> {
      */
     @Nonnull
     public Value getRaw(String path) {
-        if (configObject.containsKey(path)) {
-            return Value.of(getConfig().getValue(path).unwrapped());
-        }
-        return Value.of(null);
+        return super.get(path);
     }
 
     @Override
     @Nonnull
     public Value get(String path) {
-        return getRaw(path).translate();
+        // This method will be removed soon so that the original behaviour of Settings.get takes its place.
+        // Automatic translation will then be replaced by manual using getTranslatedString.
+        Value value = super.get(path);
+        if (!Sirius.isProd() && value.isFilled() && value.is(String.class)) {
+            if (value.asString().startsWith("$") && !value.startsWith("${")) {
+                Log.SYSTEM.WARN(
+                        "Extension.get with automatic translation was used for %s of %s for key %s\n%s\n\nThis has been deprecated. use getTranslatedString as automatic translation will be disabled.",
+                        getId(),
+                        getType(),
+                        path,
+                        ExecutionPoint.snapshot());
+            }
+
+            return Value.of(NLS.smartGet(value.asString(), null));
+        }
+
+        return value;
     }
 
     @Override
