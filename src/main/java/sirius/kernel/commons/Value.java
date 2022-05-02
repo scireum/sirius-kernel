@@ -1927,9 +1927,12 @@ public class Value {
      * if the string representation of the wrapped value starts with {@code $}.
      * The dollar sign is skipped when passing the key to <tt>NLS</tt>. Otherwise <tt>this</tt> is returned.
      * @see NLS#get(String)
+     * @deprecated User {@link sirius.kernel.settings.Settings#getTranslatedString(String)} if this value is
+     * loaded from a Config/Settings. Otherwise use {@link NLS#smartGet(String)}
      */
     @Nonnull
     @CheckReturnValue
+    @Deprecated
     public Value translate() {
         return translate(null);
     }
@@ -1943,9 +1946,12 @@ public class Value {
      * if the string representation of the wrapped value starts with {@code $}.
      * The dollar sign is skipped when passing the key to <tt>NLS</tt>. Otherwise <tt>this</tt> is returned.
      * @see NLS#get(String, String)
+     * @deprecated User {@link sirius.kernel.settings.Settings#getTranslatedString(String, String)} if this value is
+     * loaded from a Config/Settings. Otherwise use {@link NLS#smartGet(String, String)}
      */
     @Nonnull
     @CheckReturnValue
+    @Deprecated
     public Value translate(String lang) {
         if (isFilled() && is(String.class)) {
             return Value.of(NLS.smartGet(asString(), lang));
