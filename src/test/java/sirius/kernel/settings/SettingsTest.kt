@@ -24,13 +24,11 @@ class SettingsTest {
             translatedKey = "${'$'}testKey"
             mapKey {
                 en: test
+                de: "ein Test"
+                default: "fallback"
             }
-            
-            mapKeyWithDefault {
-                default: test
-            }            
         """
-                ), true
+                ), false
         )
 
         Assertions.assertEquals("", settings.getTranslatedString("unknown", "en"))
@@ -38,7 +36,8 @@ class SettingsTest {
         Assertions.assertEquals("testKey", settings.getTranslatedString("translatedKey", "en"))
         Assertions.assertEquals("5", settings.getTranslatedString("intKey", "en"))
         Assertions.assertEquals("test", settings.getTranslatedString("mapKey", "en"))
-        Assertions.assertEquals("test", settings.getTranslatedString("mapKeyWithDefault", "en"))
+        Assertions.assertEquals("ein Test", settings.getTranslatedString("mapKey", "de"))
+        Assertions.assertEquals("fallback", settings.getTranslatedString("mapKey", "xx"))
     }
 
 }
