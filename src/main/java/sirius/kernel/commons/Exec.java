@@ -173,18 +173,17 @@ public class Exec {
             throws ExecException {
         StringBuilder logger = new StringBuilder();
         try (Operation op = new Operation(() -> command, opTimeout)) {
-            Process p = Runtime.getRuntime().exec(parseCommandToArray(command), null, directory);
-            Semaphore completionSynchronizer = new Semaphore(2);
-            StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger, completionSynchronizer);
+            Process p = new ProcessBuilder().command(parseCommandToArray(command))
+                                            .directory(directory)
+                                            .redirectErrorStream(true)
+                                            .start();
+            Semaphore completionSynchronizer = new Semaphore(1);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger, completionSynchronizer);
             doExec(ignoreExitCodes, logger, p);
 
             // Wait for the stream eaters to complete...
-            completionSynchronizer.acquire(2);
+            completionSynchronizer.acquire(1);
 
-            if (errEater.exHolder.get() != null) {
-                throw new ExecException(errEater.exHolder.get(), logger.toString());
-            }
             if (outEater.exHolder.get() != null) {
                 throw new ExecException(outEater.exHolder.get(), logger.toString());
             }
