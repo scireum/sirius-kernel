@@ -63,17 +63,13 @@ public class Exec {
                 Thread.currentThread()
                       .setName(StreamEater.class.getSimpleName() + "-" + Thread.currentThread().getId());
                 String line = br.readLine();
-                synchronized (logger) {
-                    while (line != null) {
-                        logger.append(line);
-                        logger.append("\n");
-                        line = br.readLine();
-                    }
+                while (line != null) {
+                    logger.append(line);
+                    logger.append("\n");
+                    line = br.readLine();
                 }
             } catch (IOException e) {
-                synchronized (logger) {
-                    logger.append(NLS.toUserString(e));
-                }
+                logger.append(NLS.toUserString(e));
                 exHolder.set(e);
             } finally {
                 this.completionSynchronizer.release();
