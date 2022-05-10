@@ -163,18 +163,6 @@ class ValueSpec extends BaseSpecification {
         true    | true
     }
 
-    def "Test translate works as expected"() {
-        expect:
-        Value.of(input).translate(lang).get() == output
-        where:
-        input                    | output                   | lang
-        'regular string'         | "regular string"         | "de"
-        '$nls.test.translate'    | "übersetzungs test"      | "de"
-        '$nls.test.translate'    | "translation test"       | "en"
-        LocalDate.of(1999, 1, 1) | LocalDate.of(1999, 1, 1) | null
-        ["test1", "test2"]       | ["test1", "test2"]       | null
-    }
-
     def "Boxing and retrieving an amount works"() {
         expect:
         Value.of(Amount.of(0.00001)).getAmount() == Amount.of(0.00001)

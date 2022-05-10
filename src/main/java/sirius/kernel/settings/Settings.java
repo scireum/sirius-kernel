@@ -22,6 +22,8 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Priorized;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
+import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -53,6 +56,8 @@ public class Settings {
 
     private static final String PRIORITY = "priority";
     private static final String ID = "id";
+    private static final String TRANSLATED_STRING_DEFAULT_KEY = "default";
+    private static final String TRANSLATED_STRING_FALLBACK_KEY = "fallback";
 
     private final Config config;
     protected final boolean strict;
@@ -267,7 +272,7 @@ public class Settings {
     /**
      * Returns the string for the given key.
      *
-     * @param key the key used to lookup the string value
+     * @param key the key used to look up the string value
      * @return the string value stored of the given key
      */
     @Nonnull
@@ -276,9 +281,78 @@ public class Settings {
     }
 
     /**
+     * Returns a translated string for the given key.
+     * <p>
+     * Based on the available config section at <tt>key</tt> this will perform the appropriate translation task:
+     *     <ul>
+     *         <li>
+     *             If the key doesn't exist, <tt>""</tt> will be returned. Note that if this config is <tt>strict</tt>,
+     *             an error is logged if the requested path does not exist. However, no exception will be thrown.
+     *         </li>
+     *         <li>If the key points to a plain string literal, this will be returned</li>
+     *         <li>
+     *             If the key points to a string literal starting with "$", an {@link sirius.kernel.nls.NLS#get(String)}
+     *             look up for the value will be performed.
+     *         </li>
+     *         <li>
+     *             If the key points to a config map, the value with the current language as key or the <tt>default</tt>
+     *             value will be used.
+     *         </li>
+     *     </ul>
+     * </p>
+     *
+     * @param key  the key used to look up the string value
+     * @param lang the language to fetch the translation for. Use <tt>null</tt> to indicate that the
+     *             {@link NLS#getCurrentLang() current language} should be used.
+     * @return the translated string
+     */
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public String getTranslatedString(String key, @Nullable String lang) {
+        Value value = get(key);
+        if (value.isFilled() && value.is(String.class)) {
+            return NLS.smartGet(value.asString(), lang);
+        }
+
+        if (value.is(Map.class)) {
+            Map<String, String> translations = value.get(Map.class, Collections.emptyMap());
+            String effectiveLanguage = Strings.isEmpty(lang) ? NLS.getCurrentLang() : lang;
+            return Optional.ofNullable(translations.get(effectiveLanguage))
+                           .or(() -> Optional.ofNullable(translations.get(TRANSLATED_STRING_DEFAULT_KEY)))
+                           .or(() -> {
+                               Optional<String> fallbackValue =
+                                       Optional.ofNullable(translations.get(TRANSLATED_STRING_FALLBACK_KEY));
+                               fallbackValue.ifPresent(fallbackString -> Log.SYSTEM.WARN(
+                                       "Found a 'fallback' key in a translated config value (%s) with value '%s'. Please use 'default' as key name.",
+                                       key,
+                                       fallbackString));
+
+                               return fallbackValue;
+                           })
+                           .orElse("");
+        }
+
+        return value.asString("");
+    }
+
+    /**
+     * Returns a translated string for the given key.
+     * <p>
+     * This is a boilerplate for {@code getTranslatedString(key, null)}.
+     *
+     * @param key the key used to look up the string value
+     * @return the translated string
+     * @see #getTranslatedString(String, String)
+     */
+    @Nonnull
+    public String getTranslatedString(String key) {
+        return getTranslatedString(key, null);
+    }
+
+    /**
      * Returns the integer value for the given key.
      *
-     * @param key the key used to lookup the value
+     * @param key the key used to look up the value
      * @return the integer value stored in the config or 0 if an invalid value is present
      */
     public int getInt(String key) {
@@ -288,7 +362,7 @@ public class Settings {
     /**
      * Returns the list of strings for the given key.
      *
-     * @param key the key used to lookup the value
+     * @param key the key used to look up the value
      * @return a list of strings stored of the given key
      */
     @Nonnull
