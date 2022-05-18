@@ -95,6 +95,11 @@ public class Promises {
     public static <V> Promise<List<V>> parallel(List<Promise<V>> list) {
         final Promise<List<V>> result = new Promise<>();
 
+        if (list.isEmpty()) {
+            result.success(Collections.emptyList());
+            return result;
+        }
+
         // Create a list with the correct length
         final List<V> resultList = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
