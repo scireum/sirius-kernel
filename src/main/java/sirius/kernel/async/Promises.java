@@ -100,6 +100,10 @@ public class Promises {
             return result;
         }
 
+        if (list.size() == 1) {
+            return list.get(0).map(value -> Collections.singletonList(value));
+        }
+
         // Create a list with the correct length
         final List<V> resultList = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
