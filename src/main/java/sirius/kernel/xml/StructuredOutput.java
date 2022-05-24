@@ -8,6 +8,9 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.NumberFormat;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -56,7 +59,8 @@ public interface StructuredOutput {
 
     /**
      * Outputs all record components of the given record as an object with the given name.
-     * @param name the name to use for the object
+     *
+     * @param name   the name to use for the object
      * @param object the record itself to output. Note that if <tt>object</tt> is <tt>null</tt>, nothing will be output
      * @return the output itself for fluent method calls
      */
@@ -70,6 +74,20 @@ public interface StructuredOutput {
      * @return the output itself for fluent method calls
      */
     StructuredOutput property(@Nonnull String name, @Nullable Object data);
+
+    /**
+     * Adds an Amount property to the current object.
+     *
+     * @param name         the name of the property
+     * @param amount       the {@link Amount value} of the property
+     * @param numberFormat the {@link NumberFormat} used to format the written output
+     * @param smartRound   smart round trailing zeros
+     * @return the output itself for fluent method calls
+     */
+    StructuredOutput amountProperty(@Nonnull String name,
+                                    @Nullable Amount amount,
+                                    @Nonnull NumberFormat numberFormat,
+                                    boolean smartRound);
 
     /**
      * Adds a property to the current object.

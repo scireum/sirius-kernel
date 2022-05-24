@@ -8,6 +8,8 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
 
@@ -327,6 +329,24 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     @Override
     public StructuredOutput nullsafeProperty(@Nonnull String name, @Nullable Object data) {
         property(name, data != null ? data : "");
+        return this;
+    }
+
+    @Override
+    public StructuredOutput amountProperty(@Nonnull String name,
+                                           @Nullable Amount amount,
+                                           @Nonnull NumberFormat numberFormat,
+                                           boolean smartRound) {
+        if (amount == null || Amount.NOTHING.equals(amount)) {
+            return property(name, null);
+        }
+
+        if (smartRound) {
+            property(name, amount.toSmartRoundedString(numberFormat).getRoundedAmount());
+        } else {
+            property(name, amount.toString(numberFormat).getRoundedAmount());
+        }
+
         return this;
     }
 }
