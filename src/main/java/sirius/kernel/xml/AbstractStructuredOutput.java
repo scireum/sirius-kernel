@@ -323,9 +323,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
 
     @Override
     public StructuredOutput property(String name, Object data) {
-        if (getCurrentType() != ElementType.OBJECT && getCurrentType() != ElementType.ARRAY) {
-            throw new IllegalArgumentException("Invalid result structure. Cannot place a property here.");
-        }
+        validateResultStructure();
         if (data instanceof Record record) {
             object(name, record);
         } else {
@@ -350,9 +348,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
             return property(name, null);
         }
 
-        if (getCurrentType() != ElementType.OBJECT && getCurrentType() != ElementType.ARRAY) {
-            throw new IllegalArgumentException("Invalid result structure. Cannot place a property here.");
-        }
+        validateResultStructure();
 
         if (smartRound) {
             writeAmountProperty(name, amount.toSmartRoundedString(numberFormat).asString());
@@ -362,5 +358,11 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
 
         nesting.get(0).setEmpty(false);
         return this;
+    }
+
+    private void validateResultStructure() {
+        if (getCurrentType() != ElementType.OBJECT && getCurrentType() != ElementType.ARRAY) {
+            throw new IllegalArgumentException("Invalid result structure. Cannot place a property here.");
+        }
     }
 }
