@@ -188,6 +188,15 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     protected abstract void writeProperty(String name, Object value);
 
     /**
+     * Writes formatted amounts. Must be implemented by subclasses to generate a property.
+     *
+     * @param name            the name of the property
+     * @param formattedAmount the amount formatted with either {@link Amount#toString(NumberFormat)}
+     *                        or {@link Amount#toSmartRoundedString(NumberFormat)}
+     */
+    protected abstract void writeAmountProperty(String name, String formattedAmount);
+
+    /**
      * Creates the string representation to be used when outputting the given value.
      *
      * @param value the value to represent
@@ -341,12 +350,17 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
             return property(name, null);
         }
 
-        if (smartRound) {
-            property(name, amount.toSmartRoundedString(numberFormat).getRoundedAmount());
-        } else {
-            property(name, amount.toString(numberFormat).getRoundedAmount());
+        if (getCurrentType() != ElementType.OBJECT && getCurrentType() != ElementType.ARRAY) {
+            throw new IllegalArgumentException("Invalid result structure. Cannot place a property here.");
         }
 
+        if (smartRound) {
+            writeAmountProperty(name, amount.toSmartRoundedString(numberFormat).asString());
+        } else {
+            writeAmountProperty(name, amount.toString(numberFormat).asString());
+        }
+
+        nesting.get(0).setEmpty(false);
         return this;
     }
 }
