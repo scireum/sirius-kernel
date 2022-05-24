@@ -324,8 +324,8 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     @Override
     public StructuredOutput property(String name, Object data) {
         validateResultStructure();
-        if (data instanceof Record record) {
-            object(name, record);
+        if (data instanceof Record castRecord) {
+            object(name, castRecord);
         } else {
             writeProperty(name, data);
         }
