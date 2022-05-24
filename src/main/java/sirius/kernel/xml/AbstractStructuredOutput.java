@@ -358,7 +358,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
                                            @Nullable Amount amount,
                                            @Nonnull NumberFormat numberFormat,
                                            boolean smartRound) {
-        if (amount == null || Amount.NOTHING.equals(amount)) {
+        if (amount == null || amount.isEmpty()) {
             return property(name, null);
         }
 
