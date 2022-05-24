@@ -8,9 +8,12 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.Sirius;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.CheckReturnValue;
@@ -324,6 +327,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     @Override
     public StructuredOutput property(String name, Object data) {
         validateResultStructure();
+        warnImproperAmountUsage(name, data);
         if (data instanceof Record castRecord) {
             object(name, castRecord);
         } else {
@@ -331,6 +335,16 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         }
         nesting.get(0).setEmpty(false);
         return this;
+    }
+
+    protected void warnImproperAmountUsage(String name, Object data) {
+        if (!Sirius.isProd() && data instanceof Amount) {
+            Log.SYSTEM.WARN("""
+                                    Use StructuredOutput.amountProperty to output Amounts to guarantee proper numeric formatting.
+                                    Property name: '%s'
+                                    %s
+                                    """, name, ExecutionPoint.fastSnapshot());
+        }
     }
 
     @Override
