@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -242,6 +243,25 @@ public class Amount implements Comparable<Amount>, Serializable {
     @Nullable
     public BigDecimal getAmount() {
         return value;
+    }
+
+    /**
+     * Unwraps the internally used <tt>BigDecimal</tt> stripping training zeros. May be <tt>null</tt> if this <tt>Amount</tt> is
+     * <tt>NOTHING</tt>.
+     * <p>
+     * Note that negative scales are dropped, otherwise multiples of 10 would be represented as 1E<i>n</i> where <i>n</i> is the
+     * amount of trailing zeros: eg: 100 -> 1E2.
+     *
+     * @return the internally used <tt>BigDecimal</tt>
+     */
+    @Nullable
+    public BigDecimal getStrippedAmount() {
+        return Optional.ofNullable(value)
+                       .map(BigDecimal::stripTrailingZeros)
+                       .map(bigDecimal -> bigDecimal.scale() < 0 ?
+                                          bigDecimal.setScale(0, RoundingMode.UNNECESSARY) :
+                                          bigDecimal)
+                       .orElse(value);
     }
 
     /**
