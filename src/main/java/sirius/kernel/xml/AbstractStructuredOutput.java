@@ -8,7 +8,12 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.Sirius;
+import sirius.kernel.async.ExecutionPoint;
+import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.CheckReturnValue;
@@ -186,6 +191,15 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     protected abstract void writeProperty(String name, Object value);
 
     /**
+     * Writes formatted amounts. Must be implemented by subclasses to generate a property.
+     *
+     * @param name            the name of the property
+     * @param formattedAmount the amount formatted with either {@link Amount#toString(NumberFormat)}
+     *                        or {@link Amount#toSmartRoundedString(NumberFormat)}
+     */
+    protected abstract void writeAmountProperty(String name, String formattedAmount);
+
+    /**
      * Creates the string representation to be used when outputting the given value.
      *
      * @param value the value to represent
@@ -312,11 +326,10 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
 
     @Override
     public StructuredOutput property(String name, Object data) {
-        if (getCurrentType() != ElementType.OBJECT && getCurrentType() != ElementType.ARRAY) {
-            throw new IllegalArgumentException("Invalid result structure. Cannot place a property here.");
-        }
-        if (data instanceof Record record) {
-            object(name, record);
+        validateResultStructure();
+        warnImproperAmountUsage(name, data);
+        if (data instanceof Record castRecord) {
+            object(name, castRecord);
         } else {
             writeProperty(name, data);
         }
@@ -324,9 +337,46 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         return this;
     }
 
+    protected void warnImproperAmountUsage(String name, Object data) {
+        if (!Sirius.isProd() && data instanceof Amount) {
+            Log.SYSTEM.WARN("""
+                                    Use StructuredOutput.amountProperty to output Amounts to guarantee proper numeric formatting.
+                                    Property name: '%s'
+                                    %s
+                                    """, name, ExecutionPoint.fastSnapshot());
+        }
+    }
+
     @Override
     public StructuredOutput nullsafeProperty(@Nonnull String name, @Nullable Object data) {
         property(name, data != null ? data : "");
         return this;
+    }
+
+    @Override
+    public StructuredOutput amountProperty(@Nonnull String name,
+                                           @Nullable Amount amount,
+                                           @Nonnull NumberFormat numberFormat,
+                                           boolean smartRound) {
+        if (amount == null || amount.isEmpty()) {
+            return property(name, null);
+        }
+
+        validateResultStructure();
+
+        if (smartRound) {
+            writeAmountProperty(name, amount.toSmartRoundedString(numberFormat).asString());
+        } else {
+            writeAmountProperty(name, amount.toString(numberFormat).asString());
+        }
+
+        nesting.get(0).setEmpty(false);
+        return this;
+    }
+
+    private void validateResultStructure() {
+        if (getCurrentType() != ElementType.OBJECT && getCurrentType() != ElementType.ARRAY) {
+            throw new IllegalArgumentException("Invalid result structure. Cannot place a property here.");
+        }
     }
 }

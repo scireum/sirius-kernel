@@ -284,6 +284,11 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         }
     }
 
+    @Override
+    protected void writeAmountProperty(String name, String amount) {
+        writeProperty(name, amount);
+    }
+
     /**
      * Provides a convenient way for {@link #property(String, Object, Attribute...)} prepending a namespace.
      *
