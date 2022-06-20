@@ -66,7 +66,7 @@ public class Settings {
      * Creates a new wrapper for the given config.
      *
      * @param config the config to wrap
-     * @param strict determines if the config is strict. A strict config will log an error if an unkown path is
+     * @param strict determines if the config is strict. A strict config will log an error if an unknown path is
      *               requested
      */
     public Settings(Config config, boolean strict) {
@@ -94,7 +94,7 @@ public class Settings {
      * but might be empty: {@link Value#isNull()}
      */
     @Nonnull
-    public Value get(String path) {
+    public Value getRaw(String path) {
         try {
             return Value.of(getConfig().getAnyRef(path));
         } catch (ConfigException e) {
@@ -104,6 +104,21 @@ public class Settings {
 
             return Value.EMPTY;
         }
+    }
+
+    /**
+     * Returns the {@link Value} defined for the given key.
+     * <p>
+     * Note that if this config is <tt>strict</tt>, an error is logged if the requested path does not exist. However,
+     * no exception will be thrown.
+     *
+     * @param path the access path to retrieve the value
+     * @return the value wrapping the contents for the given path. This will never be <tt>null</tt>,
+     * but might be empty: {@link Value#isNull()}
+     */
+    @Nonnull
+    public Value get(String path) {
+        return getRaw(path);
     }
 
     /**
@@ -309,7 +324,7 @@ public class Settings {
     @SuppressWarnings("unchecked")
     @Nonnull
     public String getTranslatedString(String key, @Nullable String lang) {
-        Value value = get(key);
+        Value value = getRaw(key);
         if (value.isFilled() && value.is(String.class)) {
             return NLS.smartGet(value.asString(), lang);
         }
