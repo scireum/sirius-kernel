@@ -16,14 +16,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
- * Used to succesively build URLs.
+ * Used to successively build URLs.
  * <p>
  * The major advantage is to be able to add parameters without caring if a '?' or a '&amp;' has to be used.
  */
 public class URLBuilder {
-
-    private final StringBuilder url;
-    private final Monoflop questionMark = Monoflop.create();
 
     /**
      * Can be used to specify the HTTP protocol in {@link #URLBuilder(String, String)}.
@@ -35,13 +32,24 @@ public class URLBuilder {
      */
     public static final String PROTOCOL_HTTPS = "https";
 
+    private static final String QUERY_SEPARATOR = "?";
+
+    private final StringBuilder url;
+    private final Monoflop questionMark = Monoflop.create();
+
     /**
      * Creates a new instance pre filled with the given baseURL.
      *
-     * @param baseURL the base url to stat with in a form like <tt>http://somehost.com</tt>
+     * @param baseURL the base url to stat with in a form like <tt>http://somehost.com</tt> or
+     *                <tt>http://somehost.com?some=parameter</tt>
      */
     public URLBuilder(@Nonnull String baseURL) {
         url = new StringBuilder();
+
+        if (baseURL.contains(QUERY_SEPARATOR)) {
+            questionMark.toggle();
+        }
+
         if (baseURL.endsWith("/")) {
             url.append(baseURL, 0, baseURL.length() - 1);
         } else {
@@ -84,7 +92,7 @@ public class URLBuilder {
                             uriPart,
                             url));
                 }
-                if (uriPart.contains("?")) {
+                if (uriPart.contains(QUERY_SEPARATOR)) {
                     questionMark.toggle();
                 }
                 url.append(uriPart);
@@ -116,7 +124,7 @@ public class URLBuilder {
      */
     public URLBuilder addParameter(@Nonnull String key, @Nullable Object value, boolean urlEncode) {
         if (questionMark.firstCall()) {
-            url.append("?");
+            url.append(QUERY_SEPARATOR);
         } else {
             url.append("&");
         }
