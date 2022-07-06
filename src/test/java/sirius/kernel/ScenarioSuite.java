@@ -21,7 +21,6 @@ import org.spockframework.runtime.SpecInfoBuilder;
 import org.spockframework.runtime.Sputnik;
 import org.spockframework.runtime.model.FeatureInfo;
 import org.spockframework.runtime.model.SpecInfo;
-import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.Strings;
 
 import javax.annotation.Nonnull;
@@ -206,7 +205,7 @@ public class ScenarioSuite extends WildcardPatternSuite {
                                                          scenario.includes(),
                                                          scenario.excludes(),
                                                          tests))
-                     .collect(Lambdas.into(result));
+                     .forEach(result::add);
         }
 
         return result;
