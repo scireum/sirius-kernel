@@ -102,7 +102,7 @@ public class Promises {
         }
 
         if (list.size() == 1) {
-            return list.get(0).map(value -> Collections.singletonList(value));
+            return list.get(0).map(Collections::singletonList);
         }
 
         // Create a list with the correct length

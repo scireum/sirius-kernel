@@ -22,7 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 /**
- * Provides a convenient way of computing commong hash functions.
+ * Provides a convenient way of computing common hash functions.
  */
 public class Hasher {
 
