@@ -36,16 +36,7 @@ steps:
       event:
       - cron
 
-  - name: test
-    image: scireum/sirius-build-jdk18
-    commands:
-      - mvn clean test -Dtest.excluded.groups=nightly
-    volumes: *scireum_volumes
-    when:
-      event:
-      - pull_request
-
-  - name: memoio
+  - name: cron_report_failures
     image: plugins/slack
     settings:
       webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
@@ -55,8 +46,16 @@ steps:
         - failure
       event:
       include:
-        - tag
         - cron
+
+  - name: test
+    image: scireum/sirius-build-jdk18
+    commands:
+      - mvn clean test -Dtest.excluded.groups=nightly
+    volumes: *scireum_volumes
+    when:
+      event:
+      - pull_request
 
   - name: deploy
     image: scireum/sirius-build-jdk18
@@ -76,6 +75,16 @@ steps:
     volumes: *scireum_volumes
     when:
       event:
+        - tag
+
+  - name: notify-tag-build
+    image: plugins/slack
+    settings:
+      webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
+      channel: scireum-dev
+    when:
+      event:
+      include:
         - tag
 
 volumes:
