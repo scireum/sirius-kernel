@@ -34,7 +34,7 @@ steps:
     volumes: *scireum_volumes
     when:
       event:
-      - cron
+        - cron
 
   - name: cron_report_failures
     image: plugins/slack
@@ -45,7 +45,6 @@ steps:
       status:
         - failure
       event:
-      include:
         - cron
 
   - name: test
@@ -55,7 +54,7 @@ steps:
     volumes: *scireum_volumes
     when:
       event:
-      - pull_request
+        - pull_request
 
   - name: deploy
     image: scireum/sirius-build-jdk18
@@ -65,7 +64,7 @@ steps:
     volumes: *scireum_volumes
     when:
       event:
-      - tag
+        - tag
 
   - name: sonar
     image: scireum/sirius-build-jdk18
@@ -82,9 +81,9 @@ steps:
     settings:
       webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
       channel: scireum-dev
+      template: "{{Repo.Name}}: {{Build.Tag}}"
     when:
       event:
-      include:
         - tag
 
 volumes:
