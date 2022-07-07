@@ -60,7 +60,7 @@
         <dependency>
             <groupId>com.palantir.docker.compose</groupId>
             <artifactId>docker-compose-rule-core</artifactId>
-            <version>1.7.0</version>
+            <version>1.8.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.palantir.conjure.java.runtime</groupId>
@@ -71,6 +71,18 @@
                     <artifactId>docker-compose-rule-events-api-objects</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- Required, as the version provided by docker-compose-rule-core has security issues -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+        <!-- Required, as the version provided by docker-compose-rule-core has security issues -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.13.2.1</version>
         </dependency>
     </dependencies>
 
