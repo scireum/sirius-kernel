@@ -394,13 +394,13 @@ public class Tasks implements Startable, Stoppable, Killable {
         for (Map.Entry<String, AsyncExecutor> e : executors.entrySet()) {
             AsyncExecutor exec = e.getValue();
             if (!exec.isTerminated()) {
-                blockUnitExecutorTerminates(e.getKey(), exec);
+                blockUntilExecutorTerminates(e.getKey(), exec);
             }
         }
         executors.clear();
     }
 
-    private void blockUnitExecutorTerminates(String name, AsyncExecutor exec) {
+    private void blockUntilExecutorTerminates(String name, AsyncExecutor exec) {
         LOG.INFO("Waiting for async executor '%s' to terminate...", name);
         try {
             if (!exec.awaitTermination(EXECUTOR_SHUTDOWN_WAIT.getSeconds(), TimeUnit.SECONDS)) {

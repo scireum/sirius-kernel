@@ -56,7 +56,7 @@ public class ExecutionBuilder {
         boolean fork;
 
         /**
-         * What to do if the we drop the task because the system is overloaded
+         * What to do if we drop the task because the system is overloaded
          */
         Runnable dropHandler;
 
@@ -71,7 +71,7 @@ public class ExecutionBuilder {
         Future promise = new Future();
 
         /**
-         * Contains the inertnally computed task number
+         * Contains the internally computed task number
          */
         long jobNumber;
 
@@ -82,7 +82,7 @@ public class ExecutionBuilder {
         Average durationAverage;
 
         /**
-         * If a synchorinzer is present this can be used to limit the call frequency of a task
+         * If a synchronizer is present this can be used to limit the call frequency of a task
          */
         long intervalMinLength;
 
