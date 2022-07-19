@@ -135,6 +135,19 @@ public class Tasks implements Startable, Stoppable, Killable {
         return findExecutor(category);
     }
 
+    /**
+     * Removes a temporary <tt>synchronizer</tt> key which was created via <tt>ExecutionBuilder.minInterval</tt>.
+     *
+     * @param synchronizer the synchronizer to remove
+     * @return <tt>true</tt> if the synchronizer was known and has been removed, <tt>false</tt> if it wasn't known at
+     * all.
+     *
+     * @see ExecutionBuilder#minInterval(Object, Duration)
+     */
+    public boolean forgetSynchronizer(String synchronizer) {
+        return scheduleTable.remove(synchronizer) != null;
+    }
+
     /*
      * Executes a given TaskWrapper by fetching or creating the appropriate executor and submitting the wrapper.
      */

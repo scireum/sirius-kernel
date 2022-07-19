@@ -202,11 +202,15 @@ public class ExecutionBuilder {
      * {@code synchronizer}.
      * <p>
      * If the execution is requested 'too early' the scheduler will put the task into a queue and defer its execution.
-     * If a task for the same synchronizer is deferred already, this task will be dropped completely.
+     * If a task for the same synchronizer is deferred already, this task will be dropped completely. Note, that the
+     * synchronizer is remembered internally. If a temporary synchronizer was used, <tt>forgetSynchronizer</tt> should
+     * be called to remove all tracking data from internal data
+     * structures.
      *
      * @param synchronizer            the object to synchronize on
      * @param minimalIntervalDuration the minimal duration of the interval
      * @return this for fluent builder calls.
+     * @see Tasks#forgetSynchronizer(String)
      */
     public ExecutionBuilder minInterval(Object synchronizer, Duration minimalIntervalDuration) {
         this.wrapper.intervalMinLength =
