@@ -81,7 +81,7 @@ steps:
     settings:
       webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
       channel: scireum-dev
-      template: "{{Repo.Name}}: {{Build.Tag}}"
+      template: "A new version is available: **{{Repo.Name}}**: {{Build.Tag}}"
     when:
       event:
         - tag
