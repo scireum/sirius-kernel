@@ -318,8 +318,8 @@ public class NLS {
     }
 
     /**
-     * Returns a translated text for the given <tt>property</tt> in the given language, falling back to the default language.
-     * or an empty optional if no translation was found.
+     * Returns a translated text for the given <tt>property</tt> in the given language, falling back to the default
+     * language, or an empty optional if no translation was found.
      * <p>
      * The same fallback rules as for {@link #get(String, String)} apply.
      *
