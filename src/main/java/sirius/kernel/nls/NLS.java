@@ -339,11 +339,17 @@ public class NLS {
         if (translation == null) {
             return Optional.empty();
         }
+
         String targetLanguage = Strings.isEmpty(lang) ? getCurrentLang() : lang;
-        String fallbackLanguage = getFallbackLanguage();
-        if (translation.hasTranslation(targetLanguage) || translation.hasTranslation(fallbackLanguage)) {
-            return Optional.of(translation.translate(targetLanguage, fallbackLanguage));
+        if (translation.hasTranslation(targetLanguage)) {
+            return Optional.of(translation.translateWithoutFallback(targetLanguage));
         }
+
+        String fallbackLanguage = getFallbackLanguage();
+        if (translation.hasTranslation(fallbackLanguage)) {
+            return Optional.of(translation.translateWithoutFallback(fallbackLanguage));
+        }
+
         return Optional.empty();
     }
 
