@@ -318,8 +318,8 @@ public class NLS {
     }
 
     /**
-     * Returns a translated text for the given <tt>property</tt> in the given language, falling back to the default language.
-     * or an empty optional if no translation was found.
+     * Returns a translated text for the given <tt>property</tt> in the given language, falling back to the default
+     * language, or an empty optional if no translation was found.
      * <p>
      * The same fallback rules as for {@link #get(String, String)} apply.
      *
@@ -339,11 +339,17 @@ public class NLS {
         if (translation == null) {
             return Optional.empty();
         }
+
         String targetLanguage = Strings.isEmpty(lang) ? getCurrentLang() : lang;
         if (translation.hasTranslation(targetLanguage)) {
-            return Optional.of(translation.translate(Strings.isEmpty(lang) ? getCurrentLang() : lang,
-                                                     getFallbackLanguage()));
+            return Optional.of(translation.translateWithoutFallback(targetLanguage));
         }
+
+        String fallbackLanguage = getFallbackLanguage();
+        if (translation.hasTranslation(fallbackLanguage)) {
+            return Optional.of(translation.translateWithoutFallback(fallbackLanguage));
+        }
+
         return Optional.empty();
     }
 
