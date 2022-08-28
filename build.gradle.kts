@@ -31,6 +31,8 @@ dependencies {
 
     // Provides the tools to load the system configuration
     api("com.typesafe:config:1.4.1")
+    // scireum parsii
+    api("com.scireum:parsii:5.0.1")
     // Useful helper classes by Google
     api("com.google.guava:guava:31.0.1-jre")
     // Required logging bridge to make slf4j log to our logging system
