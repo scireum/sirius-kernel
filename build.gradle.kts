@@ -27,8 +27,6 @@ plugins {
 apply(plugin = "com.scireum.sirius-parent")
 
 dependencies {
-    api("org.apache.commons:commons-math3:3.6.1")
-
     // Provides the tools to load the system configuration
     api("com.typesafe:config:1.4.1")
     // scireum parsii
