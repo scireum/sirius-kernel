@@ -39,8 +39,13 @@ dependencies {
     api("org.slf4j:slf4j-jdk14:1.7.32")
     // JSR305 annotations like @Nonnull etc
     api("com.google.code.findbugs:jsr305:3.0.2")
+
     // Used to auto-start Docker environments
-    api("com.palantir.docker.compose:docker-compose-rule-core:1.7.0")
+    api("com.palantir.docker.compose:docker-compose-rule-core:1.8.0")
+    // Required, as the version provided by docker-compose-rule-core has security issues
+    api("commons-io:commons-io:2.11.0")
+    // Required, as the version provided by docker-compose-rule-core has security issues
+    api("com.fasterxml.jackson.core:jackson-databind:2.13.2.1")
 
     testImplementation("org.junit.platform:junit-platform-runner:1.9.0")
 }
