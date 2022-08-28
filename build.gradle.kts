@@ -15,7 +15,7 @@ buildscript {
         maven("https://mvn.scireum.com")
     }
     dependencies {
-        classpath("com.scireum:sirius-parent:1.0-SNAPSHOT")
+        classpath("com.scireum:sirius-parent:1.0-RC1")
     }
 }
 
@@ -39,5 +39,7 @@ dependencies {
     api("com.google.code.findbugs:jsr305:3.0.2")
     // Used to auto-start Docker environments
     api("com.palantir.docker.compose:docker-compose-rule-core:1.7.0")
+
+    testImplementation("org.junit.platform:junit-platform-runner:1.9.0")
 }
 
