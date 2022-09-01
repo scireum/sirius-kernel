@@ -9,6 +9,7 @@
 package sirius.kernel.di;
 
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.std.Named;
 import sirius.kernel.di.std.Priorized;
 
 import javax.annotation.Nonnull;
@@ -52,6 +53,20 @@ public interface GlobalContext {
      */
     @Nullable
     <P> P getPart(@Nonnull String uniqueName, @Nonnull Class<P> clazz);
+
+    /**
+     * Returns the instance of <tt>implementationClass</tt> which has been registered for <tt>lookupClass</tt>.
+     * <p>
+     * This is more of an edge case, were we know that an instance of a given class has been registered, but not for
+     * its own class, but (at least) for the given <tt>lookupClass</tt>.
+     *
+     * @param lookupClass         the class for which the requested part has been registered
+     * @param implementationClass the actual class of the part to fetch
+     * @param <P>                 the generic type of the implementation class
+     * @return the registered instance ir <tt>null</tt> if none was present
+     */
+    @Nullable
+    <P> P getPartByType(@Nonnull Class<? extends Named> lookupClass, @Nonnull Class<P> implementationClass);
 
     /**
      * Like {@link #getPart(String, Class)} this method tried to find the part with the given name, registered for the

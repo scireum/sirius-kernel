@@ -14,9 +14,11 @@ import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.std.Named;
 import sirius.kernel.di.std.Priorized;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -240,6 +242,18 @@ class PartRegistry implements MutableGlobalContext {
             return null;
         }
         return (P) partsOfClass.get(uniqueName);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    @Override
+    public <P> P getPartByType(@Nonnull Class<? extends Named> lookupClass, @Nonnull Class<P> implementationClass) {
+        Map<String, Object> partsOfClass = namedParts.get(lookupClass);
+        if (partsOfClass == null) {
+            return null;
+        }
+
+        return (P) partsOfClass.values().stream().filter(implementationClass::isInstance).findFirst().orElse(null);
     }
 
     @Override
