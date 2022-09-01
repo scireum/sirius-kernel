@@ -63,7 +63,7 @@ public interface GlobalContext {
      * @param lookupClass         the class for which the requested part has been registered
      * @param implementationClass the actual class of the part to fetch
      * @param <P>                 the generic type of the implementation class
-     * @return the registered instance ir <tt>null</tt> if none was present
+     * @return the registered instance or <tt>null</tt> if none was present
      */
     @Nullable
     <P> P getPartByType(@Nonnull Class<? extends Named> lookupClass, @Nonnull Class<P> implementationClass);
