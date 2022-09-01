@@ -57,7 +57,7 @@ public interface GlobalContext {
     /**
      * Returns the instance of <tt>implementationClass</tt> which has been registered for <tt>lookupClass</tt>.
      * <p>
-     * This is more of an edge case, were we know that an instance of a given class has been registered, but not for
+     * This is more of an edge case, where we know that an instance of a given class has been registered, but not for
      * its own class, but (at least) for the given <tt>lookupClass</tt>.
      *
      * @param lookupClass         the class for which the requested part has been registered
