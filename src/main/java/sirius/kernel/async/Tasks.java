@@ -135,6 +135,19 @@ public class Tasks implements Startable, Stoppable, Killable {
         return findExecutor(category);
     }
 
+    /**
+     * Removes a temporary <tt>synchronizer</tt> key which was created via <tt>ExecutionBuilder.minInterval</tt>.
+     *
+     * @param synchronizer the synchronizer to remove
+     * @return <tt>true</tt> if the synchronizer was known and has been removed, <tt>false</tt> if it wasn't known at
+     * all.
+     *
+     * @see ExecutionBuilder#minInterval(Object, Duration)
+     */
+    public boolean forgetSynchronizer(String synchronizer) {
+        return scheduleTable.remove(synchronizer) != null;
+    }
+
     /*
      * Executes a given TaskWrapper by fetching or creating the appropriate executor and submitting the wrapper.
      */
@@ -394,13 +407,13 @@ public class Tasks implements Startable, Stoppable, Killable {
         for (Map.Entry<String, AsyncExecutor> e : executors.entrySet()) {
             AsyncExecutor exec = e.getValue();
             if (!exec.isTerminated()) {
-                blockUnitExecutorTerminates(e.getKey(), exec);
+                blockUntilExecutorTerminates(e.getKey(), exec);
             }
         }
         executors.clear();
     }
 
-    private void blockUnitExecutorTerminates(String name, AsyncExecutor exec) {
+    private void blockUntilExecutorTerminates(String name, AsyncExecutor exec) {
         LOG.INFO("Waiting for async executor '%s' to terminate...", name);
         try {
             if (!exec.awaitTermination(EXECUTOR_SHUTDOWN_WAIT.getSeconds(), TimeUnit.SECONDS)) {

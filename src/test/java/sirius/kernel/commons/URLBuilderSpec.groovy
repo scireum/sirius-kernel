@@ -84,7 +84,6 @@ class URLBuilderSpec extends BaseSpecification {
         urlBuilder.addParameter("test", "test value")
         then:
         urlBuilder.build() == "http://sirius-lib.net?test=test+value"
-
     }
 
     def "a single parameter is added and url encoded correctly"() {
@@ -123,6 +122,14 @@ class URLBuilderSpec extends BaseSpecification {
         urlBuilder.addPart("late")
         then:
         thrown IllegalStateException
+    }
+
+    def "baseurl with query part can be extended with another parameter"() {
+        when:
+        def urlBuilder = new URLBuilder("http://sirius-lib.net?already=there")
+        urlBuilder.addParameter("test", "test value")
+        then:
+        urlBuilder.build() == "http://sirius-lib.net?already=there&test=test+value"
     }
 
 }

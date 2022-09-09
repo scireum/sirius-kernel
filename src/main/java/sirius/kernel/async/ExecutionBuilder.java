@@ -56,7 +56,7 @@ public class ExecutionBuilder {
         boolean fork;
 
         /**
-         * What to do if the we drop the task because the system is overloaded
+         * What to do if we drop the task because the system is overloaded
          */
         Runnable dropHandler;
 
@@ -71,7 +71,7 @@ public class ExecutionBuilder {
         Future promise = new Future();
 
         /**
-         * Contains the inertnally computed task number
+         * Contains the internally computed task number
          */
         long jobNumber;
 
@@ -82,7 +82,7 @@ public class ExecutionBuilder {
         Average durationAverage;
 
         /**
-         * If a synchorinzer is present this can be used to limit the call frequency of a task
+         * If a synchronizer is present this can be used to limit the call frequency of a task
          */
         long intervalMinLength;
 
@@ -202,11 +202,15 @@ public class ExecutionBuilder {
      * {@code synchronizer}.
      * <p>
      * If the execution is requested 'too early' the scheduler will put the task into a queue and defer its execution.
-     * If a task for the same synchronizer is deferred already, this task will be dropped completely.
+     * If a task for the same synchronizer is deferred already, this task will be dropped completely. Note, that the
+     * synchronizer is remembered internally. If a temporary synchronizer was used, <tt>forgetSynchronizer</tt> should
+     * be called to remove all tracking data from internal data
+     * structures.
      *
      * @param synchronizer            the object to synchronize on
      * @param minimalIntervalDuration the minimal duration of the interval
      * @return this for fluent builder calls.
+     * @see Tasks#forgetSynchronizer(String)
      */
     public ExecutionBuilder minInterval(Object synchronizer, Duration minimalIntervalDuration) {
         this.wrapper.intervalMinLength =

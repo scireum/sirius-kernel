@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serial;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -32,6 +34,7 @@ public class Exec {
      * Can be used to log errors and infos when executing external programs.
      */
     public static final Log LOG = Log.get("exec");
+    private static final String[] EMPTY_ARRAY = new String[0];
 
     private Exec() {
     }
@@ -60,17 +63,13 @@ public class Exec {
                 Thread.currentThread()
                       .setName(StreamEater.class.getSimpleName() + "-" + Thread.currentThread().getId());
                 String line = br.readLine();
-                synchronized (logger) {
-                    while (line != null) {
-                        logger.append(line);
-                        logger.append("\n");
-                        line = br.readLine();
-                    }
+                while (line != null) {
+                    logger.append(line);
+                    logger.append("\n");
+                    line = br.readLine();
                 }
             } catch (IOException e) {
-                synchronized (logger) {
-                    logger.append(NLS.toUserString(e));
-                }
+                logger.append(NLS.toUserString(e));
                 exHolder.set(e);
             } finally {
                 this.completionSynchronizer.release();
@@ -170,18 +169,17 @@ public class Exec {
             throws ExecException {
         StringBuilder logger = new StringBuilder();
         try (Operation op = new Operation(() -> command, opTimeout)) {
-            Process p = Runtime.getRuntime().exec(command, null, directory);
-            Semaphore completionSynchronizer = new Semaphore(2);
-            StreamEater errEater = StreamEater.eat(p.getErrorStream(), logger, completionSynchronizer);
+            Process p = new ProcessBuilder().command(parseCommandToArray(command))
+                                            .directory(directory)
+                                            .redirectErrorStream(true)
+                                            .start();
+            Semaphore completionSynchronizer = new Semaphore(1);
             StreamEater outEater = StreamEater.eat(p.getInputStream(), logger, completionSynchronizer);
             doExec(ignoreExitCodes, logger, p);
 
             // Wait for the stream eaters to complete...
-            completionSynchronizer.acquire(2);
+            completionSynchronizer.acquire(1);
 
-            if (errEater.exHolder.get() != null) {
-                throw new ExecException(errEater.exHolder.get(), logger.toString());
-            }
             if (outEater.exHolder.get() != null) {
                 throw new ExecException(outEater.exHolder.get(), logger.toString());
             }
@@ -192,6 +190,14 @@ public class Exec {
         } catch (Exception e) {
             throw new ExecException(e, logger.toString());
         }
+    }
+
+    private static String[] parseCommandToArray(String command) {
+        List<String> commandList = new ArrayList<>();
+        CommandParser commandParser = new CommandParser(command);
+        commandList.add(commandParser.parseCommand());
+        commandList.addAll(commandParser.getArgs());
+        return commandList.toArray(EMPTY_ARRAY);
     }
 
     private static void doExec(boolean ignoreExitCodes, StringBuilder logger, Process p) throws ExecException {

@@ -89,7 +89,7 @@ public class Sirius {
      * @return {@code true} if the framework runs in development mode, {@code false} otherwise.
      */
     public static boolean isDev() {
-        return setup.getMode() == Setup.Mode.DEVELOP;
+        return setup != null && setup.getMode() == Setup.Mode.DEVELOP;
     }
 
     /**
@@ -98,7 +98,7 @@ public class Sirius {
      * @return {@code true} if the framework runs in test mode, {@code false} otherwise.
      */
     public static boolean isTest() {
-        return setup.getMode() == Setup.Mode.TEST;
+        return setup != null && setup.getMode() == Setup.Mode.TEST;
     }
 
     /**
@@ -107,7 +107,7 @@ public class Sirius {
      * @return {@code true} if the framework runs in staging mode, {@code false} otherwise
      */
     public static boolean isStaging() {
-        return setup.getMode() == Setup.Mode.STAGING;
+        return setup != null && setup.getMode() == Setup.Mode.STAGING;
     }
 
     /**
@@ -125,13 +125,13 @@ public class Sirius {
      * @return {@code true} if the framework runs in production mode, {@code false} otherwise.
      */
     public static boolean isProd() {
-        return setup.getMode() == Setup.Mode.PROD;
+        return setup != null && setup.getMode() == Setup.Mode.PROD;
     }
 
     /**
      * Determines if the framework is up and running.
      * <p>
-     * This flag will be set to <tt>true</tt> once the framework is being setup and will be immediatelly
+     * This flag will be set to <tt>true</tt> once the framework is being setup and will be immediately
      * set to <tt>false</tt> one the framework starts to shut down.
      *
      * @return <tt>true</tt> once the framework is setup and running and not shutting down yet.

@@ -9,12 +9,15 @@
 package sirius.kernel.settings;
 
 import com.typesafe.config.ConfigObject;
+import sirius.kernel.Sirius;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,28 +59,26 @@ public class Extension extends Settings implements Comparable<Extension> {
         }
     }
 
-    /**
-     * Returns the {@link Value} defined for the given key.
-     * <p>
-     * In contrast to {@link #get(String)} this will not perform an automatic translation
-     * if the value starts with a dollar sign.
-     *
-     * @param path the access path to retrieve the value
-     * @return the value wrapping the contents for the given path. This will never by <tt>null</tt>,
-     * but might be empty: {@link Value#isNull()}
-     */
-    @Nonnull
-    public Value getRaw(String path) {
-        if (configObject.containsKey(path)) {
-            return Value.of(getConfig().getValue(path).unwrapped());
-        }
-        return Value.of(null);
-    }
-
     @Override
     @Nonnull
     public Value get(String path) {
-        return getRaw(path).translate();
+        // This method will be removed soon so that the original behaviour of Settings.get takes its place.
+        // Automatic translation will then be replaced by manual using getTranslatedString.
+        Value value = getRaw(path);
+        if (value.isFilled() && value.is(String.class)) {
+            if (!Sirius.isProd() && value.asString().startsWith("$") && !value.startsWith("${")) {
+                Log.SYSTEM.WARN(
+                        "Extension.get with automatic translation was used for %s of %s for key %s\n%s\n\nThis has been deprecated. use getTranslatedString as automatic translation will be disabled.",
+                        getId(),
+                        getType(),
+                        path,
+                        ExecutionPoint.snapshot());
+            }
+
+            return Value.of(NLS.smartGet(value.asString(), null));
+        }
+
+        return value;
     }
 
     @Override
@@ -100,10 +101,10 @@ public class Extension extends Settings implements Comparable<Extension> {
      * <tt>default</tt> which provides a value, this is used.
      * <p>
      * Returning a {@link Value} instead of a plain object provides lots of conversion methods on the one hand
-     * and also guarantees a non null result on the other hand, since a <tt>Value</tt> can be empty.
+     * and also guarantees a non-null result on the other hand, since a <tt>Value</tt> can be empty.
      *
      * @param path the access path to retrieve the value
-     * @return the value wrapping the contents for the given path. This will never by <tt>null</tt>.
+     * @return the value wrapping the contents for the given path. This will never be <tt>null</tt>.
      * @throws sirius.kernel.health.HandledException if no value was found for the given <tt>path</tt>
      */
     @Nonnull
@@ -124,11 +125,11 @@ public class Extension extends Settings implements Comparable<Extension> {
     /**
      * Creates a new instance of the class which is named in <tt>classProperty</tt>
      * <p>
-     * Tries to lookup the value for <tt>classProperty</tt>, fetches the corresponding class and creates a new
+     * Tries to look up the value for <tt>classProperty</tt>, fetches the corresponding class and creates a new
      * instance for it.
      * <p>
      * Returning a {@link Value} instead of a plain object provides lots of conversion methods on the one hand
-     * and also guarantees a non null result on the other hand, since a <tt>Value</tt> can be empty.
+     * and also guarantees a non-null result on the other hand, since a <tt>Value</tt> can be empty.
      *
      * @param classProperty the property which is used to retrieve the class name
      * @return a new instance of the given class
@@ -191,9 +192,9 @@ public class Extension extends Settings implements Comparable<Extension> {
     }
 
     /**
-     * Determined if this extension is an artifically created default extension.
+     * Determined if this extension is an artificially created default extension.
      *
-     * @return <tt>true</tt> if this is an artifically created default extension used by
+     * @return <tt>true</tt> if this is an artificially created default extension used by
      * {@link ExtendedSettings#getExtension(String, String)} if nothing was found
      */
     public boolean isDefault() {

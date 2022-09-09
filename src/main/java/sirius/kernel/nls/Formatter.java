@@ -35,7 +35,7 @@ import java.util.function.Function;
  * {@code
  *         System.out.println(
  *              Formatter.create("Hello ${programmer}")
- *                       .set("programmer, "Obi Wan")
+ *                       .set("programmer", "Obi Wan")
  *                       .format());
  * }
  * </pre>

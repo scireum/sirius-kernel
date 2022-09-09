@@ -17,7 +17,7 @@ clone:
 
 steps:
   - name: compile
-    image: scireum/sirius-build-jdk17
+    image: scireum/sirius-build-jdk18
     commands:
       - mvn clean compile
     volumes: *scireum_volumes
@@ -28,24 +28,15 @@ steps:
         - push
 
   - name: cron_unit_tests
-    image: scireum/sirius-build-jdk17
+    image: scireum/sirius-build-jdk18
     commands:
       - mvn clean test
     volumes: *scireum_volumes
     when:
       event:
-      - cron
+        - cron
 
-  - name: test
-    image: scireum/sirius-build-jdk17
-    commands:
-      - mvn clean test -Dtest.excluded.groups=nightly
-    volumes: *scireum_volumes
-    when:
-      event:
-      - pull_request
-
-  - name: memoio
+  - name: cron_report_failures
     image: plugins/slack
     settings:
       webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
@@ -54,26 +45,43 @@ steps:
       status:
         - failure
       event:
-      include:
-        - tag
         - cron
 
+  - name: test
+    image: scireum/sirius-build-jdk18
+    commands:
+      - mvn clean test -Dtest.excluded.groups=nightly
+    volumes: *scireum_volumes
+    when:
+      event:
+        - pull_request
+
   - name: deploy
-    image: scireum/sirius-build-jdk17
+    image: scireum/sirius-build-jdk18
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
       - mvn clean deploy -DskipTests
     volumes: *scireum_volumes
     when:
       event:
-      - tag
+        - tag
 
   - name: sonar
-    image: scireum/sirius-build-jdk17
+    image: scireum/sirius-build-jdk18
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
       - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.projectKey=${DRONE_REPO_NAME}
     volumes: *scireum_volumes
+    when:
+      event:
+        - tag
+
+  - name: notify-tag-build
+    image: plugins/slack
+    settings:
+      webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
+      channel: scireum-dev
+      template: "A new version is available: **{{Repo.Name}}**: {{Build.Tag}}"
     when:
       event:
         - tag
