@@ -8,12 +8,7 @@
 
 package sirius.kernel.health;
 
-import com.google.common.collect.Lists;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
 import sirius.kernel.Sirius;
-import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.PartCollection;
@@ -22,6 +17,13 @@ import sirius.kernel.nls.NLS;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * The logging facade used by the system.
@@ -39,17 +41,21 @@ import java.util.List;
  * <li>WARN</li>
  * <li>ERROR</li>
  * </ul>
- * <p>
- * Internally uses log4j to perform all logging operations. Still it is recommended to only log through this facade
- * and not to rely on any log4j specific behaviour.
  */
 @SuppressWarnings("squid:S00100")
 @Explain("We have these special method names so they stand out from the business logic.")
 public class Log {
 
     private final Logger logger;
-    private Boolean fineLogging;
-    private static final List<Log> all = Lists.newCopyOnWriteArrayList();
+    private static final List<Log> all = new CopyOnWriteArrayList<>();
+
+    /**
+     * Keeps a hard reference to each {@link Logger} which level has been changed manually.
+     * <p>
+     * This is required as the wonderful Java logging implementation doesn't retain one. Therefore the logger
+     * might get garbage collected <i>and a new logger with the same name</i> is returned.
+     */
+    private static final Map<String, Logger> loggerHardReferences = new ConcurrentHashMap<>();
 
     /**
      * Provides a generic logger for application log messages.
@@ -77,9 +83,9 @@ public class Log {
     public static final Log BACKGROUND = Log.get("background");
 
     /**
-     * Used to cut endless loops while feeding taps
+     * Used to cut endless loops while feeding taps.
      */
-    private static ThreadLocal<Boolean> frozen = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> frozen = new ThreadLocal<>();
 
     @Parts(LogTap.class)
     private static PartCollection<LogTap> taps;
@@ -104,7 +110,14 @@ public class Log {
     @SuppressWarnings("squid:S2250")
     @Explain("Loggers are only created once, so there is no performance hotspot")
     public static synchronized Log get(String name) {
+        Optional<Log> existingInstance =
+                all.stream().filter(logger -> Strings.areEqual(logger.getName(), name)).findFirst();
+        if (existingInstance.isPresent()) {
+            return existingInstance.get();
+        }
+
         Log result = new Log(Logger.getLogger(name));
+
         all.add(result);
         if (!name.matches("[a-z0-9\\-]+")) {
             result.WARN("Invalid logger name: %s. Only numbers, lowercase letters and - are allowed!%n", name);
@@ -131,86 +144,78 @@ public class Log {
      * @param level  the desired log level
      */
     public static void setLevel(String logger, Level level) {
-        // Setup log4j
-        Logger.getLogger(logger).setLevel(level);
-
-        // Setup java.util.logging
-        java.util.logging.Logger.getLogger(logger).setLevel(convertLog4jLevel(level));
-
-        // Clear cached "isFINE" flag to be consistently re-computed on the next access.
-        for (Log log : all) {
-            if (log.getName().equals(logger)) {
-                log.fineLogging = null;
-            }
-        }
+        loggerHardReferences.computeIfAbsent(logger, Logger::getLogger).setLevel(level);
     }
 
     /**
-     * Converts a given java.util.logging.Level to a log4j level.
+     * Provides a robust and fail-safe way of parsing a log-level.
+     * <p>
+     * This normally parses the levels as named by {@link Level}. However, we also support other level names
+     * (e.g. those used by log4j). If everything else fails, we return <tt>Level.INFO</tt>. As logging during
+     * the setup of the logging system is kind of dangerous, we prefer this fail-safe approach with a sane
+     * default over elaborate error reporting.
      *
-     * @param juliLevel the java.util.logging level
-     * @return the converted equivalent for log4j
+     * @param levelName the name of the level to parse.
+     * @return a log level which matches the given level name
      */
-    public static Level convertJuliLevel(java.util.logging.Level juliLevel) {
-        if (juliLevel.equals(java.util.logging.Level.FINEST)) {
-            return Level.TRACE;
-        }
-        if (juliLevel.equals(java.util.logging.Level.FINER)) {
-            return Level.DEBUG;
-        }
-        if (juliLevel.equals(java.util.logging.Level.FINE)) {
-            return Level.DEBUG;
-        }
-        if (juliLevel.equals(java.util.logging.Level.INFO)) {
+    public static Level parseLevel(String levelName) {
+        if (Strings.isEmpty(levelName)) {
             return Level.INFO;
         }
-        if (juliLevel.equals(java.util.logging.Level.WARNING)) {
-            return Level.WARN;
-        }
-        if (juliLevel.equals(java.util.logging.Level.SEVERE)) {
-            return Level.ERROR;
-        }
-        if (juliLevel.equals(java.util.logging.Level.ALL)) {
-            return Level.ALL;
-        }
-        if (juliLevel.equals(java.util.logging.Level.OFF)) {
-            return Level.OFF;
-        }
-        return Level.DEBUG;
+
+        return switch (levelName.toUpperCase()) {
+            case "FINE", "DEBUG", "TRACE" -> Level.FINE;
+            case "WARNING", "WARN" -> Level.WARNING;
+            case "SEVERE", "ERROR", "PROBLEM" -> Level.SEVERE;
+            case "OFF", "DISABLED" -> Level.OFF;
+            case "ALL" -> Level.ALL;
+            default -> Level.INFO;
+        };
     }
 
-    /**
-     * Converts a given log4j to a java.util.logging.Level level.
-     *
-     * @param log4jLevel the log4j level
-     * @return the converted equivalent java.util.logging
-     */
-    public static java.util.logging.Level convertLog4jLevel(Level log4jLevel) {
-        if (log4jLevel.equals(Level.TRACE)) {
-            return java.util.logging.Level.FINEST;
+    private void log(Level level, Object msg) {
+        StackTraceElement caller = new Throwable().getStackTrace()[2];
+
+        LogRecord logRecord = createLogRecord(level, msg, caller);
+        if (msg instanceof Throwable) {
+            logRecord.setThrown((Throwable) msg);
         }
-        if (log4jLevel.equals(Level.DEBUG)) {
-            return java.util.logging.Level.FINER;
+
+        logger.log(logRecord);
+        tap(msg, caller, level);
+    }
+
+    private LogRecord createLogRecord(Level level, Object msg, StackTraceElement caller) {
+        LogRecord logRecord = new LogRecord(level, msg.toString());
+        logRecord.setLoggerName(logger.getName());
+        logRecord.setSourceClassName(caller.getFileName() + ":" + caller.getLineNumber());
+        return logRecord;
+    }
+
+    private void tap(Object msg, StackTraceElement caller, Level level) {
+        if (Boolean.TRUE.equals(frozen.get())) {
+            return;
         }
-        if (log4jLevel.equals(Level.INFO)) {
-            return java.util.logging.Level.INFO;
+        if (taps == null) {
+            return;
         }
-        if (log4jLevel.equals(Level.WARN)) {
-            return java.util.logging.Level.WARNING;
+
+        try {
+            frozen.set(Boolean.TRUE);
+            for (LogTap tap : taps) {
+                try {
+                    tap.handleLogMessage(new LogMessage(NLS.toUserString(msg),
+                                                        level,
+                                                        this,
+                                                        caller,
+                                                        Thread.currentThread().getName()));
+                } catch (Exception e) {
+                    // Ignored - if we can't log s.th. let's just give up...
+                }
+            }
+        } finally {
+            frozen.set(Boolean.FALSE);
         }
-        if (log4jLevel.equals(Level.ERROR)) {
-            return java.util.logging.Level.SEVERE;
-        }
-        if (log4jLevel.equals(Level.FATAL)) {
-            return java.util.logging.Level.SEVERE;
-        }
-        if (log4jLevel.equals(Level.ALL)) {
-            return java.util.logging.Level.ALL;
-        }
-        if (log4jLevel.equals(Level.OFF)) {
-            return java.util.logging.Level.OFF;
-        }
-        return java.util.logging.Level.FINE;
     }
 
     /**
@@ -222,25 +227,11 @@ public class Log {
      * @param msg the message to be logged
      */
     public void INFO(Object msg) {
-        if (msg == null) {
+        if (msg == null || !logger.isLoggable(Level.INFO)) {
             return;
         }
-        if (logger.isInfoEnabled()) {
-            fixMDC();
-            if (msg instanceof Throwable) {
-                logger.info(((Throwable) msg).getMessage(), (Throwable) msg);
-            } else {
-                logger.info(msg.toString());
-            }
-            tap(msg, Level.INFO);
-        }
-    }
 
-    private void fixMDC() {
-        if (logger.isDebugEnabled() || Sirius.isDev() || Sirius.isStartedAsTest()) {
-            CallContext callContext = CallContext.getCurrent();
-            MDC.put("flow", "|" + callContext.getWatch().elapsedMillis() + "ms");
-        }
+        log(Level.INFO, msg);
     }
 
     /**
@@ -257,30 +248,6 @@ public class Log {
         }
     }
 
-    private void tap(Object msg, Level level) {
-        if (Boolean.TRUE.equals(frozen.get())) {
-            return;
-        }
-        try {
-            frozen.set(Boolean.TRUE);
-            if (taps != null) {
-                for (LogTap tap : taps) {
-                    invokeTap(msg, level, tap);
-                }
-            }
-        } finally {
-            frozen.set(Boolean.FALSE);
-        }
-    }
-
-    private void invokeTap(Object msg, Level level, LogTap tap) {
-        try {
-            tap.handleLogMessage(new LogMessage(NLS.toUserString(msg), level, this, Thread.currentThread().getName()));
-        } catch (Exception e) {
-            // Ignored - if we can't log s.th. let's just give up...
-        }
-    }
-
     /**
      * Formats the given message at the INFO level using the supplied parameters.
      * <p>
@@ -290,11 +257,8 @@ public class Log {
      * @param params the parameters used to format the resulting log message
      */
     public void INFO(String msg, Object... params) {
-        if (logger.isInfoEnabled()) {
-            String effectiveMessage = Strings.apply(msg, params);
-            fixMDC();
-            logger.info(effectiveMessage);
-            tap(effectiveMessage, Level.INFO);
+        if (logger.isLoggable(Level.INFO)) {
+            log(Level.INFO, Strings.apply(msg, params));
         }
     }
 
@@ -308,15 +272,11 @@ public class Log {
      * @param msg the message to be logged
      */
     public void FINE(Object msg) {
-        if (logger.isDebugEnabled()) {
-            fixMDC();
-            if (msg instanceof Throwable) {
-                logger.debug(((Throwable) msg).getMessage(), (Throwable) msg);
-            } else {
-                logger.debug(NLS.toUserString(msg));
-            }
-            tap(msg, Level.DEBUG);
+        if (msg == null || !logger.isLoggable(Level.FINE)) {
+            return;
         }
+
+        log(Level.FINE, msg);
     }
 
     /**
@@ -329,11 +289,8 @@ public class Log {
      * @param params the parameters used to format the resulting log message
      */
     public void FINE(String msg, Object... params) {
-        if (logger.isDebugEnabled()) {
-            String effectiveMessage = Strings.apply(msg, params);
-            fixMDC();
-            logger.debug(effectiveMessage);
-            tap(effectiveMessage, Level.DEBUG);
+        if (logger.isLoggable(Level.FINE)) {
+            log(Level.FINE, Strings.apply(msg, params));
         }
     }
 
@@ -346,15 +303,11 @@ public class Log {
      * @param msg the message to be logged
      */
     public void WARN(Object msg) {
-        if (Level.WARN.isGreaterOrEqual(logger.getEffectiveLevel())) {
-            fixMDC();
-            if (msg instanceof Throwable) {
-                logger.warn(((Throwable) msg).getMessage(), (Throwable) msg);
-            } else {
-                logger.warn(NLS.toUserString(msg));
-            }
-            tap(msg, Level.WARN);
+        if (msg == null || !logger.isLoggable(Level.WARNING)) {
+            return;
         }
+
+        log(Level.WARNING, msg);
     }
 
     /**
@@ -366,11 +319,8 @@ public class Log {
      * @param params the parameters used to format the resulting log message
      */
     public void WARN(String msg, Object... params) {
-        if (Level.WARN.isGreaterOrEqual(logger.getEffectiveLevel())) {
-            String effectiveMessage = Strings.apply(msg, params);
-            fixMDC();
-            logger.warn(effectiveMessage);
-            tap(effectiveMessage, Level.WARN);
+        if (logger.isLoggable(Level.WARNING)) {
+            log(Level.WARNING, Strings.apply(msg, params));
         }
     }
 
@@ -384,15 +334,11 @@ public class Log {
      * @param msg the message to be logged
      */
     public void SEVERE(Object msg) {
-        if (Level.ERROR.isGreaterOrEqual(logger.getEffectiveLevel())) {
-            fixMDC();
-            if (msg instanceof Throwable) {
-                logger.error(((Throwable) msg).getMessage(), (Throwable) msg);
-            } else {
-                logger.error(NLS.toUserString(msg));
-            }
-            tap(msg, Level.ERROR);
+        if (msg == null || !logger.isLoggable(Level.SEVERE)) {
+            return;
         }
+
+        log(Level.SEVERE, msg);
     }
 
     /**
@@ -406,10 +352,7 @@ public class Log {
      * @return <tt>true</tt> if this logger logs FINE message, <tt>false</tt> otherwise
      */
     public boolean isFINE() {
-        if (fineLogging == null) {
-            fineLogging = logger.isDebugEnabled();
-        }
-        return fineLogging;
+        return logger.isLoggable(Level.FINE);
     }
 
     /**
@@ -427,6 +370,6 @@ public class Log {
      * @return the effective log level
      */
     public Level getLevel() {
-        return logger.getEffectiveLevel();
+        return logger.getLevel() != null ? logger.getLevel() : Level.INFO;
     }
 }

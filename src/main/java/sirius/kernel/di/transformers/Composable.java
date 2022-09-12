@@ -8,11 +8,11 @@
 
 package sirius.kernel.di.transformers;
 
-import com.google.common.collect.Maps;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 public class Composable implements Transformable {
 
-    private Object source;
+    private final Object source;
     protected Map<Class<?>, Object> components;
 
     private static final Object NULL = new Object();
@@ -123,7 +123,7 @@ public class Composable implements Transformable {
      */
     public <T> void attach(Class<? extends T> type, T component) {
         if (components == null) {
-            components = Maps.newHashMap();
+            components = new HashMap<>();
         }
         components.put(type, component);
     }

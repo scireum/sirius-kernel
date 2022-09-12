@@ -37,7 +37,7 @@ public class ConfigBuilder {
     /**
      * Contains the root scope
      */
-    private Scope config = new Scope();
+    private final Scope config = new Scope();
 
     /**
      * Adds a variable to the config.
@@ -92,8 +92,8 @@ public class ConfigBuilder {
     private static class Scope extends Node {
 
         private boolean isRoot = false;
-        private Map<String, Variable> variables = new LinkedHashMap<>();
-        private Map<String, Scope> scopes = new LinkedHashMap<>();
+        private final Map<String, Variable> variables = new LinkedHashMap<>();
+        private final Map<String, Scope> scopes = new LinkedHashMap<>();
 
         /**
          * Creates a new root scope.
@@ -182,13 +182,13 @@ public class ConfigBuilder {
                         variablesStringBuilder.append("\n");
                     }
 
-                    variablesStringBuilder.append(scope.toString());
+                    variablesStringBuilder.append(scope);
                 } else {
                     if (scopeStringBuilder.length() > 0) {
                         scopeStringBuilder.append("\n\n");
                     }
 
-                    scopeStringBuilder.append(scope.toString());
+                    scopeStringBuilder.append(scope);
                 }
             }
 
@@ -237,7 +237,7 @@ public class ConfigBuilder {
      * Provides the variables
      */
     private static class Variable extends Node {
-        private String value;
+        private final String value;
 
         /**
          * Create a new variable with the given name and value.

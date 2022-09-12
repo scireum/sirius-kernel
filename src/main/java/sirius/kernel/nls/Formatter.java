@@ -8,13 +8,13 @@
 
 package sirius.kernel.nls;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import sirius.kernel.commons.Strings;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 /**
@@ -35,7 +35,7 @@ import java.util.function.Function;
  * {@code
  *         System.out.println(
  *              Formatter.create("Hello ${programmer}")
- *                       .set("programmer, "Obi Wan")
+ *                       .set("programmer", "Obi Wan")
  *                       .format());
  * }
  * </pre>
@@ -46,8 +46,7 @@ import java.util.function.Function;
  */
 public class Formatter {
     private boolean urlEncode = false;
-    private boolean smartFormat = false;
-    private Map<String, String> replacement = Maps.newTreeMap();
+    private final Map<String, String> replacement = new TreeMap<>();
     private Function<String, Optional<String>> parameterProvider;
     private boolean ignoreMissingPrameters;
     private String pattern;
@@ -87,7 +86,6 @@ public class Formatter {
     public static Formatter create(String pattern) {
         Formatter result = new Formatter();
         result.pattern = pattern;
-        result.lang = NLS.getCurrentLang();
         return result;
     }
 
@@ -114,8 +112,25 @@ public class Formatter {
      * @return <tt>this</tt> to permit fluent method chains
      */
     public Formatter set(String property, Object value) {
-        setDirect(property, NLS.toUserString(value, lang), urlEncode);
+        if (value == null) {
+            setDirect(property, "");
+        } else if (value instanceof String) {
+            // We have to trim here to emulate the call to NLS.toUserString, but we can do this
+            // here without having to resolve the current language...
+            setDirect(property, ((String) value).trim());
+        } else {
+            setDirect(property, NLS.toUserString(value, fetchLang()));
+        }
+
         return this;
+    }
+
+    private String fetchLang() {
+        if (lang == null) {
+            this.lang = NLS.getCurrentLang();
+        }
+
+        return lang;
     }
 
     /**
@@ -129,7 +144,17 @@ public class Formatter {
      * @return <tt>this</tt> to permit fluent method chains
      */
     public Formatter setUnencoded(String property, Object value) {
-        return setDirect(property, NLS.toUserString(value, lang), false);
+        if (value == null) {
+            setDirectUnencoded(property, "");
+        } else if (value instanceof String) {
+            // We have to trim here to emulate the call to NLS.toUserString, but we can do this
+            // here without having to resolve the current language...
+            setDirectUnencoded(property, ((String) value).trim());
+        } else {
+            setDirectUnencoded(property, NLS.toUserString(value, fetchLang()));
+        }
+
+        return this;
     }
 
     /**
@@ -150,6 +175,65 @@ public class Formatter {
     }
 
     /**
+     * Sets the whole context as parameters in this formatter.
+     * <p>
+     * Calls <tt>#setDirect</tt> for each entry in the given map. Note that only
+     * <tt>toString</tt> is invoked on the value, therefore all strings remain untrimmend.
+     *
+     * @param ctx a <tt>Map</tt> which provides a set of entries to replace.
+     * @return <tt>this</tt> to permit fluent method chains
+     */
+    public Formatter setDirect(Map<String, Object> ctx) {
+        if (ctx == null) {
+            return this;
+        }
+
+        for (Map.Entry<String, Object> e : ctx.entrySet()) {
+            Object value = e.getValue();
+            if (value == null) {
+                setDirect(e.getKey(), "");
+            } else {
+                setDirect(e.getKey(), value.toString());
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     * Directly sets the given string value for the given property.
+     * <p>
+     * Sets the given string as replacement value for the named parameter. The value will not be sent through
+     * {@link NLS#toUserString(Object)} and therefore not trimmed etc.
+     *
+     * @param property the parameter in the template string which should be replaced
+     * @param value    the value which should be used as replacement
+     * @return <tt>this</tt> to permit fluent method chains
+     */
+    public Formatter setDirect(String property, String value) {
+        replacement.put(property, urlEncode ? Strings.urlEncode(value) : value);
+        return this;
+    }
+
+    /**
+     * Directly sets the given string value for the given property without performing any URL encoding.
+     * <p>
+     * Sets the given string as replacement value for the named parameter. The value will not be sent through
+     * {@link NLS#toUserString(Object)} and therefore not trimmed etc.
+     * <p>
+     * Note that this will not perform any URL encoding, even if {@link #createURLFormatter(String)} was used to
+     * create this formatter.
+     *
+     * @param property the parameter in the template string which should be replaced
+     * @param value    the value which should be used as replacement
+     * @return <tt>this</tt> to permit fluent method chains
+     */
+    public Formatter setDirectUnencoded(String property, String value) {
+        replacement.put(property, value);
+        return this;
+    }
+
+    /**
      * Directly sets the given string value for the given property.
      * <p>
      * Sets the given string as replacement value for the named parameter. The value will not be sent through
@@ -161,7 +245,9 @@ public class Formatter {
      *                  this method won't perform any url encoding, even if the formatter was created
      *                  using <tt>#createURLFormatter</tt>
      * @return <tt>this</tt> to permit fluent method chains
+     * @deprecated Use either {@link #setDirect(String, String)} or {@link #setDirectUnencoded(String, String)}
      */
+    @Deprecated(forRemoval = true)
     public Formatter setDirect(String property, String value, boolean urlEncode) {
         replacement.put(property, urlEncode ? Strings.urlEncode(value) : value);
         return this;
@@ -238,7 +324,7 @@ public class Formatter {
      * result in one stack level.
      */
     private String format(boolean smart) {
-        List<Block> blocks = Lists.newArrayList();
+        List<Block> blocks = new ArrayList<>();
         Block currentBlock = new Block();
         blocks.add(currentBlock);
         int index = 0;

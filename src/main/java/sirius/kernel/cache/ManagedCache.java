@@ -13,6 +13,7 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Callback;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.health.Counter;
 import sirius.kernel.health.Exceptions;
@@ -21,11 +22,15 @@ import sirius.kernel.settings.Extension;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -52,6 +57,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     protected final ValueVerifier<V> verifier;
     protected long verificationInterval;
     protected Callback<Tuple<K, V>> removeListener;
+    protected Map<String, BiPredicate<String, CacheEntry<K, V>>> removers = new HashMap<>();
 
     private static final String EXTENSION_TYPE_CACHE = "cache";
     private static final String CONFIG_KEY_MAX_SIZE = "maxSize";
@@ -303,6 +309,16 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         return new ArrayList<>(data.asMap().values());
     }
 
+    /**
+     * Removes all cached values for which the predicate returns true.
+     *
+     * @param predicate the predicate used to determine if a value should be removed from the cache.
+     * @deprecated Because in coherenct cache environments this can lead to stale cache entries if a cache on
+     * one nodes has a different set of keys than another, as the scan always runs locally.
+     * Use {@link #addRemover(String, BiPredicate)} and {@link #removeAll(String, String)} which scans each node
+     * individually.
+     */
+    @Deprecated(since = "2021/07/01")
     @Override
     public void removeIf(@Nonnull Predicate<CacheEntry<K, V>> predicate) {
         if (data == null) {
@@ -313,13 +329,46 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     }
 
     @Override
+    public Cache<K, V> addRemover(String discriminator, BiPredicate<String, CacheEntry<K, V>> test) {
+        if (removers.containsKey(discriminator)) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "A discriminator '%s' for removing entries from '%s' is already present!",
+                    discriminator,
+                    name));
+        }
+
+        removers.put(discriminator, test);
+        return this;
+    }
+
+    @Override
+    public CacheRemoverBuilder<K, V, CacheEntry<K, V>> addRemover(@Nonnull String discriminator) {
+        return ManagedCacheRemoverBuilder.create(this, discriminator);
+    }
+
+    @Override
+    public void removeAll(String discriminator, String testInput) {
+        BiPredicate<String, CacheEntry<K, V>> predicate = removers.get(discriminator);
+
+        if (predicate == null) {
+            throw new IllegalArgumentException(Strings.apply("Unknown discriminator '%s' for cache '%s'",
+                                                             discriminator,
+                                                             name));
+        }
+
+        if (data != null) {
+            data.asMap().values().removeIf(entry -> predicate.test(testInput, entry));
+        }
+    }
+
+    @Override
     public List<Long> getUseHistory() {
-        return usesHistory;
+        return Collections.unmodifiableList(usesHistory);
     }
 
     @Override
     public List<Long> getHitRateHistory() {
-        return hitRateHistory;
+        return Collections.unmodifiableList(hitRateHistory);
     }
 
     @Override

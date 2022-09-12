@@ -12,14 +12,17 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * Wraps a given reader and removes a BOM (byte order mark) if present.
+ * Wraps a given reader and removes a Unicode BOM (byte order mark) if present.
  * <p>
- * MS Excel places such BOM in UTF-8 encoded CSV files (which is invalid). Therefore such bytes have to be removed.
+ * As Java sadly is incapable of handling these bytes, we discard them here. Note that in order to write a BOM,
+ * {@link Streams#UNICODE_BOM_CHARACTER} can be used.
+ *
+ * @see CSVWriter#writeUnicodeBOM()
  */
 public class BOMReader extends Reader {
 
     private boolean bomSkipped = false;
-    private Reader delegate;
+    private final Reader delegate;
 
     /**
      * Creates a new reader wrapping the given one.

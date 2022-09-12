@@ -8,8 +8,6 @@
 
 package sirius.kernel.health.metrics;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.DataCollector;
@@ -20,8 +18,10 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.timer.EveryMinute;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,12 +47,12 @@ public class Metrics implements EveryMinute {
     /**
      * Contains all limits as defined in the system config
      */
-    private Map<String, Limit> limits = Maps.newHashMap();
+    private final Map<String, Limit> limits = new HashMap<>();
 
     /**
      * Contains the last value of each metric in order to compute differential metrics
      */
-    private Map<String, Double> differentials = Maps.newHashMap();
+    private final Map<String, Double> differentials = new HashMap<>();
 
     @Part
     private Tasks tasks;
@@ -60,7 +60,7 @@ public class Metrics implements EveryMinute {
     /**
      * Contains all collected metrics
      */
-    private List<Metric> metricsList = Lists.newArrayList();
+    private List<Metric> metricsList = new ArrayList<>();
 
     /**
      * Internal structure to combine the three limits available for each metric: gray, warning (yellow), error (red).
@@ -81,7 +81,7 @@ public class Metrics implements EveryMinute {
      */
     private class MetricCollectorAdapter implements MetricsCollector {
 
-        private DataCollector<Metric> collector;
+        private final DataCollector<Metric> collector;
 
         private MetricCollectorAdapter(DataCollector<Metric> collector) {
             this.collector = collector;

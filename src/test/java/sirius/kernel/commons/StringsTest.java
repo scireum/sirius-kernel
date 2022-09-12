@@ -1,15 +1,16 @@
 package sirius.kernel.commons;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class StringsTest {
+class StringsTest {
 
     @Test
-    public void isFilled() {
+    void isFilled() {
         assertTrue(Strings.isFilled("Test"));
         assertTrue(Strings.isFilled(" "));
         assertFalse(Strings.isFilled(null));
@@ -17,7 +18,7 @@ public class StringsTest {
     }
 
     @Test
-    public void isEmpty() {
+    void isEmpty() {
         assertFalse(Strings.isEmpty("Test"));
         assertFalse(Strings.isEmpty(" "));
         assertTrue(Strings.isEmpty(null));
@@ -25,7 +26,7 @@ public class StringsTest {
     }
 
     @Test
-    public void equalIgnoreCase() {
+    void equalIgnoreCase() {
         assertTrue(Strings.equalIgnoreCase("A", "a"));
         assertFalse(Strings.equalIgnoreCase("A", "b"));
         assertTrue(Strings.equalIgnoreCase("", null));
@@ -34,7 +35,7 @@ public class StringsTest {
     }
 
     @Test
-    public void areEqual() {
+    void areEqual() {
         assertTrue(Strings.areEqual("A", "A"));
         assertFalse(Strings.areEqual("a", "A"));
         assertFalse(Strings.areEqual("a", "A"));
@@ -45,7 +46,7 @@ public class StringsTest {
     }
 
     @Test
-    public void areTrimmedEqual() {
+    void areTrimmedEqual() {
         assertTrue(Strings.areTrimmedEqual("A ", "A"));
         assertFalse(Strings.areTrimmedEqual("a", "A  "));
         assertTrue(Strings.areTrimmedEqual("", null));
@@ -54,20 +55,20 @@ public class StringsTest {
     }
 
     @Test
-    public void toStringMethod() {
+    void toStringMethod() {
         assertEquals("A", Strings.toString("A"));
         assertEquals("", Strings.toString(""));
         assertNull(Strings.toString(null));
     }
 
     @Test
-    public void apply() {
+    void apply() {
         assertEquals("B A", Strings.apply("%s A", "B"));
         assertEquals("A null", Strings.apply("A %s", (String) null));
     }
 
     @Test
-    public void firstFilled() {
+    void firstFilled() {
         assertEquals("A", Strings.firstFilled("A"));
         assertEquals("A", Strings.firstFilled("A", "B"));
         assertEquals("A", Strings.firstFilled(null, "A"));
@@ -79,12 +80,17 @@ public class StringsTest {
     }
 
     @Test
-    public void urlEncode() {
+    void urlEncode() {
         assertEquals("A%3FTEST%26B%C3%84%C3%96%C3%9C", Strings.urlEncode("A?TEST&BÄÖÜ"));
     }
 
     @Test
-    public void split() {
+    void urlDecode() {
+        assertEquals("A?TEST&BÄÖÜ", Strings.urlDecode("A%3FTEST%26B%C3%84%C3%96%C3%9C"));
+    }
+
+    @Test
+    void split() {
         assertEquals(Tuple.create("A", "B"), Strings.split("A|B", "|"));
         assertEquals(Tuple.create("A", "&B"), Strings.split("A&&B", "&"));
         assertEquals(Tuple.create("A", "B"), Strings.split("A&&B", "&&"));
@@ -94,7 +100,19 @@ public class StringsTest {
     }
 
     @Test
-    public void join() {
+    void splitSmart() {
+        assertEquals(List.of("a"), Strings.splitSmart("a", 2));
+        assertEquals(List.of(), Strings.splitSmart("", 0));
+        assertEquals(List.of(), Strings.splitSmart("", 2));
+        assertEquals(List.of("das ist", "ein", "Test"), Strings.splitSmart("das ist ein Test", 7));
+        assertEquals(List.of("lange-w", "örter-w", "erden-a", "uch-get", "rennt"),
+                     Strings.splitSmart("lange-wörter-werden-auch-getrennt", 7));
+        assertEquals(List.of("Ein langer Text kann in eine Zeile"),
+                     Strings.splitSmart("Ein langer Text kann in eine Zeile", 40));
+    }
+
+    @Test
+    void join() {
         assertEquals("A,B,C", Strings.join(",", "A", "B", "C"));
         assertEquals("A,C", Strings.join(",", "A", null, "", "C"));
         assertEquals("A", Strings.join(",", "A"));
@@ -103,7 +121,7 @@ public class StringsTest {
     }
 
     @Test
-    public void replaceAll() {
+    void replaceAll() {
         assertEquals("A&lt;B&amp;C&amp;&amp;D&amp;;&amp;E",
                      Strings.replaceAll(Pattern.compile("&([a-zA-Z0-9]{0,6};?)"),
                                         "A&lt;B&C&&D&;&E",
@@ -111,7 +129,7 @@ public class StringsTest {
     }
 
     @Test
-    public void leftPad() {
+    void leftPad() {
         assertEquals("   A", Strings.leftPad("A", " ", 4));
         assertEquals("    A", Strings.leftPad("A", "  ", 5));
         assertEquals("    A", Strings.leftPad("A", "  ", 4));
@@ -119,7 +137,7 @@ public class StringsTest {
     }
 
     @Test
-    public void rightPad() {
+    void rightPad() {
         assertEquals("A   ", Strings.rightPad("A", " ", 4));
         assertEquals("A    ", Strings.rightPad("A", "  ", 5));
         assertEquals("A    ", Strings.rightPad("A", "  ", 4));
@@ -127,7 +145,7 @@ public class StringsTest {
     }
 
     @Test
-    public void reduceCharacters() {
+    void reduceCharacters() {
         assertEquals("Hello", Strings.reduceCharacters("Hello"));
         assertSame("Hello", Strings.reduceCharacters("Hello"));
         assertEquals("Hello", Strings.reduceCharacters("Héllo"));

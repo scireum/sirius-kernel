@@ -8,7 +8,6 @@
 
 package sirius.kernel.health;
 
-import com.google.common.collect.Maps;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
@@ -18,8 +17,11 @@ import sirius.kernel.di.std.Parts;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Central point for handling all system errors and exceptions.
@@ -48,6 +50,9 @@ public class Exceptions {
      */
     protected static final Log DEPRECATION_LOG = Log.get("deprecated");
 
+    private static final String PARAM_RAW_MESSAGE = "message";
+    private static final String MESSAGE_MODE_RAW = "_raw";
+
     /*
      * Filled by the Injector - contains all handles which participate in the exception handling process
      */
@@ -57,7 +62,7 @@ public class Exceptions {
     /*
      * Used to cut endless loops while handling errors
      */
-    private static ThreadLocal<Boolean> frozen = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> frozen = new ThreadLocal<>();
 
     private Exceptions() {
     }
@@ -92,7 +97,8 @@ public class Exceptions {
         private Object[] systemErrorMessageParams;
         private boolean processError = true;
         private String key = "HandledException.exception";
-        private Map<String, Object> params = Maps.newTreeMap();
+        private final Map<String, Object> params = new TreeMap<>();
+        private final Map<ExceptionHint, Object> hints = new HashMap<>();
 
         /**
          * Use {@link Exceptions#handle()} to create an <tt>ErrorHandler</tt>
@@ -145,6 +151,18 @@ public class Exceptions {
         }
 
         /**
+         * Directly specifies the message for the exception.
+         * <p>
+         * This will neither perform any NLS lookups nor append or prepend any text to the given message.
+         *
+         * @param message the message to use for the generated exception
+         * @return <tt>this</tt> in order to fluently call more methods on this handler
+         */
+        public ErrorHandler withDirectMessage(String message) {
+            return withNLSKey(MESSAGE_MODE_RAW).set(PARAM_RAW_MESSAGE, message);
+        }
+
+        /**
          * Sets an untranslated error message, used by rare system errors.
          * <p>
          * Still a translated message will be created, which notifies the user about the system error and provides
@@ -158,7 +176,7 @@ public class Exceptions {
          */
         public ErrorHandler withSystemErrorMessage(String englishMessagePattern, Object... params) {
             this.systemErrorMessage = englishMessagePattern;
-            this.systemErrorMessageParams = params;
+            this.systemErrorMessageParams = params == null ? null : params.clone();
             return this;
         }
 
@@ -177,6 +195,18 @@ public class Exceptions {
         }
 
         /**
+         * Adds a hint which can later be retrieved from the generated {@link HandledException}.
+         *
+         * @param hint  the name of the hint
+         * @param value the value to store
+         * @return <tt>this</tt> in order to fluently call more methods on this handler
+         */
+        public ErrorHandler hint(ExceptionHint hint, Object value) {
+            this.hints.put(hint, value);
+            return this;
+        }
+
+        /**
          * Generates and logs the resulting <tt>HandledException</tt>.
          * <p>
          * The generated exception can be either thrown (it subclasses RuntimeException and therefore
@@ -185,8 +215,8 @@ public class Exceptions {
          * @return a <tt>HandledException</tt> which notifies surrounding calls that an error occurred, which has
          * already been taken care of.
          */
-        @SuppressWarnings("squid:S1148")
-        @Explain("This log statement is our last restor when we're in deep trouble.")
+        @SuppressWarnings({"squid:S1148", "CallToPrintStackTrace"})
+        @Explain("This log statement is our last resort when we're in deep trouble.")
         public HandledException handle() {
             if (ex instanceof HandledException) {
                 return (HandledException) ex;
@@ -201,7 +231,7 @@ public class Exceptions {
 
             try {
                 String message = computeMessage();
-                HandledException result = new HandledException(message, ex);
+                HandledException result = new HandledException(message, hints, ex);
                 if (processError) {
                     log.SEVERE(result);
                     notifyHandlers(result);
@@ -216,7 +246,7 @@ public class Exceptions {
                                             + t.getMessage()
                                             + " ("
                                             + t.getClass().getName()
-                                            + ")", t);
+                                            + ")", Collections.emptyMap(), t);
             }
         }
 
@@ -226,6 +256,8 @@ public class Exceptions {
                 return NLS.fmtr("HandledException.systemError")
                           .set("error", Strings.apply(systemErrorMessage, extendParams(ex, systemErrorMessageParams)))
                           .format();
+            } else if (MESSAGE_MODE_RAW.equals(key) && params.containsKey(PARAM_RAW_MESSAGE)) {
+                return String.valueOf(params.get(PARAM_RAW_MESSAGE));
             } else {
                 // Add exception infos
                 set("errorMessage", ex == null ? NLS.get("HandledException.unknownError") : ex.getMessage());

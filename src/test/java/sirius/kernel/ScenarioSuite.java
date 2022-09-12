@@ -9,6 +9,7 @@
 package sirius.kernel;
 
 import com.googlecode.junittoolbox.WildcardPatternSuite;
+import org.junit.jupiter.api.Tag;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
@@ -20,9 +21,7 @@ import org.spockframework.runtime.SpecInfoBuilder;
 import org.spockframework.runtime.Sputnik;
 import org.spockframework.runtime.model.FeatureInfo;
 import org.spockframework.runtime.model.SpecInfo;
-import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Value;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -45,8 +44,8 @@ import java.util.stream.Stream;
  */
 public class ScenarioSuite extends WildcardPatternSuite {
 
-    private static Map<String, Boolean> scopeSettings = new HashMap<>();
-    private List<Scenario> scenarios;
+    private static final Map<String, Boolean> scopeSettings = new HashMap<>();
+    private final List<Scenario> scenarios;
 
     private static class ScenarioRunner extends Runner {
 
@@ -54,10 +53,10 @@ public class ScenarioSuite extends WildcardPatternSuite {
                 Description.createTestDescription(Sirius.class, "Framework setup");
         public static final Description FRAMEWORK_TEARDOWN =
                 Description.createTestDescription(Sirius.class, "Framework teardown");
-        private String scenarioFile;
-        private String includes;
-        private String excludes;
-        private List<Runner> allTests;
+        private final String scenarioFile;
+        private final String includes;
+        private final String excludes;
+        private final List<Runner> allTests;
 
         protected ScenarioRunner(String scenarioFile, String includes, String excludes, List<Runner> allTests) {
             this.scenarioFile = scenarioFile;
@@ -105,6 +104,10 @@ public class ScenarioSuite extends WildcardPatternSuite {
             System.setProperty(Sirius.SIRIUS_TEST_SCENARIO_PROPERTY, scenarioFile == null ? "" : scenarioFile);
             runNotifier.fireTestStarted(FRAMEWORK_SETUP);
             try {
+                // In case of a configured scenario, ensure framework shutdown
+                if (scenarioFile != null) {
+                    TestHelper.performTearDown();
+                }
                 TestHelper.setUp(ScenarioSuite.class);
             } catch (Exception e) {
                 runNotifier.fireTestFailure(new Failure(FRAMEWORK_SETUP, e));
@@ -131,9 +134,11 @@ public class ScenarioSuite extends WildcardPatternSuite {
                 return;
             }
 
-            // Ignore tests if their Scope isn't enabled.
-            Scope scope = runner.getDescription().getTestClass().getAnnotation(Scope.class);
-            if (scope != null && !isScopeEnabled(scope.value())) {
+            // Ignore tests with nightly tags.
+            // CAVEAT: this only work when annotated on class level, like the former scope
+            // This interception breaks surefires test counting
+            Tag tag = runner.getDescription().getTestClass().getAnnotation(Tag.class);
+            if (tag != null && !isScopeEnabled(tag.value())) {
                 runNotifier.fireTestIgnored(runner.getDescription());
                 return;
             }
@@ -181,7 +186,7 @@ public class ScenarioSuite extends WildcardPatternSuite {
      * Use {@literal @RunWith(ScenarioSuite)} for a test suite.
      *
      * @param klass   the test suite to execute
-     * @param builder the builder used to builde the suite
+     * @param builder the builder used to build the suite
      * @throws InitializationError in case of an error during initialization
      */
     public ScenarioSuite(Class<?> klass, RunnerBuilder builder) throws InitializationError {
@@ -196,12 +201,11 @@ public class ScenarioSuite extends WildcardPatternSuite {
         result.add(new ScenarioRunner(null, null, null, tests));
         if (scenarios != null) {
             scenarios.stream()
-                     .filter(scenario -> isScopeEnabled(scenario.scope()))
                      .map(scenario -> new ScenarioRunner(scenario.file(),
                                                          scenario.includes(),
                                                          scenario.excludes(),
                                                          tests))
-                     .collect(Lambdas.into(result));
+                     .forEach(result::add);
         }
 
         return result;
@@ -210,8 +214,8 @@ public class ScenarioSuite extends WildcardPatternSuite {
     /**
      * Determines if the given test scope is enabled.
      * <p>
-     * This is either done by sepcifying <tt>-Dtest.SCOPE=true</tt> or
-     * <tt>-Dtest.all=true</tt>.
+     * This evaluates against a JUnit groups that must be active. We test this by checking for exclusion
+     * of the group.
      *
      * @param scope the scope to check
      * @return <tt>true</tt> if the scope is enabled, <tt>false</tt> otherwise
@@ -222,8 +226,9 @@ public class ScenarioSuite extends WildcardPatternSuite {
         }
 
         return scopeSettings.computeIfAbsent(scope, ignored -> {
-            return Value.of(System.getProperty("test." + scope))
-                        .asBoolean(Value.of(System.getProperty("test.all")).asBoolean());
+            // NOTE: this is potentially dangerous, as it works on one potentiall input property and not the
+            // actual system activated groups, but should work until spock will be removed
+            return !System.getProperty("test.excluded.groups", "").contains(scope);
         });
     }
 }

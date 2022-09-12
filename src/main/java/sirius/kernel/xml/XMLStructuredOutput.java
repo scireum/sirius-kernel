@@ -8,9 +8,9 @@
 
 package sirius.kernel.xml;
 
-import com.google.common.base.Charsets;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.health.Exceptions;
 
 import javax.annotation.CheckReturnValue;
@@ -25,6 +25,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Represents a {@link StructuredOutput} emitting XML data.
@@ -33,7 +34,7 @@ import java.nio.charset.Charset;
  */
 public class XMLStructuredOutput extends AbstractStructuredOutput {
 
-    private TransformerHandler hd;
+    private final TransformerHandler transformerHandler;
     protected OutputStream out;
     private int opensCalled = 0;
 
@@ -53,7 +54,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      * @param doctype the doc type used in the XML header
      */
     public XMLStructuredOutput(@Nonnull OutputStream output, @Nullable String doctype) {
-        this(output, Charsets.UTF_8, doctype);
+        this(output, StandardCharsets.UTF_8, doctype);
     }
 
     /**
@@ -63,39 +64,66 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
      * @param encoding the charset used to encode the output
      * @param doctype  the doc type used in the XML header
      */
+    @SuppressWarnings("HttpUrlsUsage")
+    @Explain("This is a namespace and not a real URL")
     public XMLStructuredOutput(@Nonnull OutputStream output, @Nonnull Charset encoding, @Nullable String doctype) {
         try {
             this.out = output;
             StreamResult streamResult = new StreamResult(out);
             SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
-            hd = tf.newTransformerHandler();
-            Transformer serializer = hd.getTransformer();
+            transformerHandler = tf.newTransformerHandler();
+            Transformer serializer = transformerHandler.getTransformer();
             if (doctype != null) {
                 serializer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctype);
             }
             serializer.setOutputProperty(OutputKeys.ENCODING, encoding.name());
             serializer.setOutputProperty(OutputKeys.INDENT, "yes");
             serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            hd.setResult(streamResult);
-            hd.startDocument();
+            transformerHandler.setResult(streamResult);
+            transformerHandler.startDocument();
         } catch (Exception e) {
             throw Exceptions.handle(e);
         }
     }
 
+    /**
+     * Provides a convenient way for {@link #beginArray(String)} prepending a namespace.
+     *
+     * @param namespace the namespace
+     * @param name      the name of the array
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput beginNamespacedArray(@Nonnull String namespace, @Nonnull String name) {
+        return beginArray(namespace + ":" + name);
+    }
+
     @Override
     protected void endArray(String name) {
         try {
-            hd.endElement("", "", name);
+            transformerHandler.endElement("", "", name);
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
     }
 
+    /**
+     * Provides a convenient way for {@link #beginObject(String, Attribute...)} prepending a namespace.
+     *
+     * @param namespace  the namespace
+     * @param name       the name of the object to create
+     * @param attributes the attributes to add to the object
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput beginNamespacedObject(@Nonnull String namespace,
+                                                  @Nonnull String name,
+                                                  Attribute... attributes) {
+        return beginObject(namespace + ":" + name, attributes);
+    }
+
     @Override
     protected void endObject(String name) {
         try {
-            hd.endElement("", "", name);
+            transformerHandler.endElement("", "", name);
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
@@ -112,6 +140,17 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
+     * Provides a convenient way for {@link #beginResult(String)} prepending a namespace.
+     *
+     * @param namespace the namespace
+     * @param name      the unqualified name
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput beginNamespacedResult(@Nonnull String namespace, @Nonnull String name) {
+        return beginResult(namespace + ":" + name);
+    }
+
+    /**
      * Starts the output with the given root element.
      *
      * @param rootElement the name of the root element of the generated document.
@@ -120,7 +159,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     public StructuredOutput beginOutput(@Nonnull String rootElement) {
         if (opensCalled == 0) {
             try {
-                hd.startDocument();
+                transformerHandler.startDocument();
             } catch (SAXException e) {
                 throw Exceptions.handle(e);
             }
@@ -141,7 +180,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     public StructuredOutput beginOutput(@Nonnull String rootElement, Attribute... attr) {
         if (opensCalled == 0) {
             try {
-                hd.startDocument();
+                transformerHandler.startDocument();
             } catch (SAXException e) {
                 throw Exceptions.handle(e);
             }
@@ -150,6 +189,20 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         beginObject(rootElement, attr);
 
         return this;
+    }
+
+    /**
+     * Provides a convenient way for {@link #beginOutput(String, Attribute...)} prepending a namespace.
+     *
+     * @param namespace   the namespace
+     * @param rootElement the name of the root element of the generated document
+     * @param attr        the attributes for the root element
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput beginNamespacedOutput(@Nonnull String namespace,
+                                                  @Nonnull String rootElement,
+                                                  Attribute... attr) {
+        return beginOutput(namespace + ":" + rootElement, attr);
     }
 
     /**
@@ -162,7 +215,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     public TagBuilder buildBegin(@Nonnull String rootElement) {
         if (opensCalled == 0) {
             try {
-                hd.startDocument();
+                transformerHandler.startDocument();
             } catch (SAXException e) {
                 throw Exceptions.handle(e);
             }
@@ -179,7 +232,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         if (opensCalled-- == 1) {
             super.endResult();
             try {
-                hd.endDocument();
+                transformerHandler.endDocument();
                 out.close();
             } catch (SAXException | IOException e) {
                 throw Exceptions.handle(e);
@@ -195,7 +248,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     @Override
     protected void startArray(String name) {
         try {
-            hd.startElement("", "", name, null);
+            transformerHandler.startElement("", "", name, null);
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
@@ -211,7 +264,7 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
                     attrs.addAttribute("", "", attr.getName(), "CDATA", String.valueOf(attr.getValue()));
                 }
             }
-            hd.startElement("", "", name, attrs);
+            transformerHandler.startElement("", "", name, attrs);
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
@@ -220,15 +273,58 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     @Override
     protected void writeProperty(String name, Object value) {
         try {
-            hd.startElement("", "", name, null);
+            transformerHandler.startElement("", "", name, null);
             if (value != null) {
-                String val = value.toString();
-                hd.characters(val.toCharArray(), 0, val.length());
+                String val = transformToStringRepresentation(value);
+                transformerHandler.characters(val.toCharArray(), 0, val.length());
             }
-            hd.endElement("", "", name);
+            transformerHandler.endElement("", "", name);
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
+    }
+
+    @Override
+    protected void writeAmountProperty(String name, String amount) {
+        writeProperty(name, amount);
+    }
+
+    /**
+     * Provides a convenient way for {@link #property(String, Object, Attribute...)} prepending a namespace.
+     *
+     * @param namespace  the namespace
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput namespacedProperty(@Nonnull String namespace,
+                                               @Nonnull String name,
+                                               @Nullable Object data,
+                                               Attribute... attributes) {
+        return property(namespace + ":" + name, data, attributes);
+    }
+
+    /**
+     * Provides a convenient way for {@link #property(String, Object, Attribute...)} prepending a namespace.
+     * <p>
+     * This will create a property only if the specified data object is not null.
+     * Else no property is created.
+     *
+     * @param namespace  the namespace
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput namespacedPropertyIfFilled(@Nonnull String namespace,
+                                                       @Nonnull String name,
+                                                       @Nullable Object data,
+                                                       Attribute... attributes) {
+        if (data != null) {
+            property(namespace + ":" + name, data, attributes);
+        }
+        return this;
     }
 
     /**
@@ -249,6 +345,66 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
+     * Adds a property containing attributes to the current object.
+     *
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes for the element
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput property(String name, Object data, Attribute... attributes) {
+        startObject(name, attributes);
+        text(data);
+        endObject(name);
+        return this;
+    }
+
+    /**
+     * Adds a property containing attributes to the current object.
+     * <p>
+     * This will create a property only if the specified data object is not null.
+     * Else no property is created.
+     *
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes for the element
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput propertyIfFilled(String name, Object data, Attribute... attributes) {
+        if (data != null) {
+            property(name, data, attributes);
+        }
+        return this;
+    }
+
+    /**
+     * Adds a property containing attributes to the current object.
+     * <p>
+     * This will create a property with the specified data as value or empty string if the value is null.
+     *
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes for the element
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput nullsafeProperty(String name, Object data, Attribute... attributes) {
+        property(name, data != null ? data : "", attributes);
+        return this;
+    }
+
+    /**
+     * Provides a convenient way for {@link #nullsafeProperty(String, Object)} prepending a namespace.
+     *
+     * @param namespace the namespace
+     * @param name      the name of the property
+     * @param data      the value of the property
+     * @return the output itself for fluent method calls
+     */
+    public StructuredOutput nullsafeProperty(@Nonnull String namespace, @Nonnull String name, @Nullable Object data) {
+        return nullsafeProperty(namespace + ":" + name, data);
+    }
+
+    /**
      * Creates a text node for the current node.
      *
      * @param text the text to be added to the current node
@@ -257,14 +413,19 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     public StructuredOutput text(Object text) {
         try {
             if (text != null) {
-                String val = text.toString();
-                hd.characters(val.toCharArray(), 0, val.length());
+                String val = transformToStringRepresentation(text);
+                transformerHandler.characters(val.toCharArray(), 0, val.length());
             }
         } catch (SAXException e) {
             throw Exceptions.handle(e);
         }
 
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return out.toString();
     }
 
     /**

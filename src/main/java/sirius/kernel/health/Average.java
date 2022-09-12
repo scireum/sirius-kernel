@@ -21,9 +21,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Average {
 
     private static final long DEFAULT_MAX_SAMPLES = 100;
-    private AtomicLong sampleCount = new AtomicLong();
-    private AtomicLong count = new AtomicLong();
-    private AtomicDouble sum = new AtomicDouble();
+    private final AtomicLong sampleCount = new AtomicLong();
+    private final AtomicLong count = new AtomicLong();
+    private final AtomicDouble sum = new AtomicDouble();
     private final long maxSamples;
 
     /**

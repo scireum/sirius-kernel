@@ -8,7 +8,6 @@
 
 package sirius.kernel.settings;
 
-import com.google.common.collect.Lists;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
@@ -23,19 +22,24 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Priorized;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
+import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Field;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Provides a wrapper around a {@link Config} supplied by <tt>typesafe config</tt>.
@@ -52,19 +56,21 @@ public class Settings {
 
     private static final String PRIORITY = "priority";
     private static final String ID = "id";
+    private static final String TRANSLATED_STRING_DEFAULT_KEY = "default";
+    private static final String TRANSLATED_STRING_FALLBACK_KEY = "fallback";
 
     private final Config config;
-    private final boolean strict;
+    protected final boolean strict;
 
     /**
      * Creates a new wrapper for the given config.
      *
      * @param config the config to wrap
-     * @param strict determines if the config is strict. A strict config will log an error if an unkown path is
+     * @param strict determines if the config is strict. A strict config will log an error if an unknown path is
      *               requested
      */
     public Settings(Config config, boolean strict) {
-        this.config = config;
+        this.config = config.isResolved() ? config : config.resolve();
         this.strict = strict;
     }
 
@@ -88,7 +94,7 @@ public class Settings {
      * but might be empty: {@link Value#isNull()}
      */
     @Nonnull
-    public Value get(String path) {
+    public Value getRaw(String path) {
         try {
             return Value.of(getConfig().getAnyRef(path));
         } catch (ConfigException e) {
@@ -98,6 +104,21 @@ public class Settings {
 
             return Value.EMPTY;
         }
+    }
+
+    /**
+     * Returns the {@link Value} defined for the given key.
+     * <p>
+     * Note that if this config is <tt>strict</tt>, an error is logged if the requested path does not exist. However,
+     * no exception will be thrown.
+     *
+     * @param path the access path to retrieve the value
+     * @return the value wrapping the contents for the given path. This will never be <tt>null</tt>,
+     * but might be empty: {@link Value#isNull()}
+     */
+    @Nonnull
+    public Value get(String path) {
+        return getRaw(path);
     }
 
     /**
@@ -177,12 +198,13 @@ public class Settings {
      * natural order within the file. If multiple files are merged together, the behaviour of this approach is
      * undefined and <tt>priority</tt> should be used.
      *
-     * @param key the path to the config object containing a list of sub object.
+     * @param key the path to the config object containing multiple sub objects.
      * @return a list of config objects underneath the given object or an empty list if there are none
+     * @see #getConfigList(String)
      */
     @Nonnull
     public List<? extends Config> getConfigs(String key) {
-        List<Config> result = Lists.newArrayList();
+        List<Config> result = new ArrayList<>();
         Config cfg = getConfig(key);
         if (cfg != null) {
             for (Map.Entry<String, ConfigValue> e : cfg.root().entrySet()) {
@@ -209,6 +231,29 @@ public class Settings {
     }
 
     /**
+     * Returns all config objects in a list underneath the given key.
+     *
+     * @param key the path to the config object containing a list of sub objects.
+     * @return a list of config objects underneath the given object or an empty list if there are none
+     * @see #getConfigs(String)
+     * @see #getStringList(String)
+     */
+    @Nonnull
+    public List<Settings> getConfigList(String key) {
+        try {
+            return getConfig().getConfigList(key)
+                              .stream()
+                              .map(subConfig -> new Settings(subConfig, strict))
+                              .collect(Collectors.toList());
+        } catch (ConfigException e) {
+            if (strict) {
+                Exceptions.handle(e);
+            }
+            return Collections.emptyList();
+        }
+    }
+
+    /**
      * Returns the duration in milliseconds defined for the given key.
      * <p>
      * If no config is present at the given path, or it can not be converted to a duration, 0 is returned.
@@ -217,20 +262,32 @@ public class Settings {
      * @return the duration as milliseconds
      */
     public long getMilliseconds(String path) {
+        return getDuration(path).toMillis();
+    }
+
+    /**
+     * Returns the duration defined for the given key.
+     * <p>
+     * If no config is present at the given path, or it can not be converted to a duration, {@link Duration#ZERO} is returned.
+     *
+     * @param path the access path to retrieve the value
+     * @return the duration
+     */
+    public Duration getDuration(String path) {
         try {
-            return config.getDuration(path, TimeUnit.MILLISECONDS);
+            return config.getDuration(path);
         } catch (Exception e) {
             if (strict) {
                 Exceptions.handle(e);
             }
-            return 0;
+            return Duration.ZERO;
         }
     }
 
     /**
      * Returns the string for the given key.
      *
-     * @param key the key used to lookup the string value
+     * @param key the key used to look up the string value
      * @return the string value stored of the given key
      */
     @Nonnull
@@ -239,9 +296,78 @@ public class Settings {
     }
 
     /**
+     * Returns a translated string for the given key.
+     * <p>
+     * Based on the available config section at <tt>key</tt> this will perform the appropriate translation task:
+     *     <ul>
+     *         <li>
+     *             If the key doesn't exist, <tt>""</tt> will be returned. Note that if this config is <tt>strict</tt>,
+     *             an error is logged if the requested path does not exist. However, no exception will be thrown.
+     *         </li>
+     *         <li>If the key points to a plain string literal, this will be returned</li>
+     *         <li>
+     *             If the key points to a string literal starting with "$", an {@link sirius.kernel.nls.NLS#get(String)}
+     *             look up for the value will be performed.
+     *         </li>
+     *         <li>
+     *             If the key points to a config map, the value with the current language as key or the <tt>default</tt>
+     *             value will be used.
+     *         </li>
+     *     </ul>
+     * </p>
+     *
+     * @param key  the key used to look up the string value
+     * @param lang the language to fetch the translation for. Use <tt>null</tt> to indicate that the
+     *             {@link NLS#getCurrentLang() current language} should be used.
+     * @return the translated string
+     */
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public String getTranslatedString(String key, @Nullable String lang) {
+        Value value = getRaw(key);
+        if (value.isFilled() && value.is(String.class)) {
+            return NLS.smartGet(value.asString(), lang);
+        }
+
+        if (value.is(Map.class)) {
+            Map<String, String> translations = value.get(Map.class, Collections.emptyMap());
+            String effectiveLanguage = Strings.isEmpty(lang) ? NLS.getCurrentLang() : lang;
+            return Optional.ofNullable(translations.get(effectiveLanguage))
+                           .or(() -> Optional.ofNullable(translations.get(TRANSLATED_STRING_DEFAULT_KEY)))
+                           .or(() -> {
+                               Optional<String> fallbackValue =
+                                       Optional.ofNullable(translations.get(TRANSLATED_STRING_FALLBACK_KEY));
+                               fallbackValue.ifPresent(fallbackString -> Log.SYSTEM.WARN(
+                                       "Found a 'fallback' key in a translated config value (%s) with value '%s'. Please use 'default' as key name.",
+                                       key,
+                                       fallbackString));
+
+                               return fallbackValue;
+                           })
+                           .orElse("");
+        }
+
+        return value.asString("");
+    }
+
+    /**
+     * Returns a translated string for the given key.
+     * <p>
+     * This is a boilerplate for {@code getTranslatedString(key, null)}.
+     *
+     * @param key the key used to look up the string value
+     * @return the translated string
+     * @see #getTranslatedString(String, String)
+     */
+    @Nonnull
+    public String getTranslatedString(String key) {
+        return getTranslatedString(key, null);
+    }
+
+    /**
      * Returns the integer value for the given key.
      *
-     * @param key the key used to lookup the value
+     * @param key the key used to look up the value
      * @return the integer value stored in the config or 0 if an invalid value is present
      */
     public int getInt(String key) {
@@ -251,7 +377,7 @@ public class Settings {
     /**
      * Returns the list of strings for the given key.
      *
-     * @param key the key used to lookup the value
+     * @param key the key used to look up the value
      * @return a list of strings stored of the given key
      */
     @Nonnull

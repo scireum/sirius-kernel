@@ -45,7 +45,7 @@ public class DelayLine extends BackgroundLoop implements MetricProvider {
     }
 
     private final List<WaitingTask> waitingTasks = new ArrayList<>();
-    private Counter backgroundTasks = new Counter();
+    private final Counter backgroundTasks = new Counter();
 
     @Part
     private Tasks tasks;

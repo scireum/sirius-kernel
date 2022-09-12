@@ -10,7 +10,7 @@ package sirius.kernel.di.transformers
 
 import sirius.kernel.BaseSpecification
 
-class TransformersSpec extends BaseSpecification{
+class TransformersSpec extends BaseSpecification {
 
     def "Transforming two classes regularly"() {
         given:

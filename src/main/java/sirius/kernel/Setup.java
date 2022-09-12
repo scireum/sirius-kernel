@@ -8,20 +8,14 @@
 
 package sirius.kernel;
 
-import com.google.common.base.Charsets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.spi.LoggerRepository;
 import sirius.kernel.commons.Producer;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.Log;
+import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,10 +23,16 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 import java.util.regex.Pattern;
 
 /**
@@ -49,8 +49,7 @@ import java.util.regex.Pattern;
  * <ul>
  * <li>Sets the encoding to UTF-8</li>
  * <li>Sets the DNS cache to 10 seconds - by default this would be 'infinite'</li>
- * <li>Redirects all Java Logging to Log4J</li>
- * <li>Creates either a console or file appender for Log4J (PROD = file, DEV = console)</li>
+ * <li>Redirects all Java Logging to stdout</li>
  * </ul>
  */
 public class Setup {
@@ -59,13 +58,33 @@ public class Setup {
      * Determines the mode in which the framework should run. This mainly effects logging and the configuration.
      */
     public enum Mode {
-        DEV, TEST, PROD
+
+        /**
+         * Defines the IDE development mode.
+         */
+        DEVELOP,
+
+        /**
+         * Defines the test mode, commonly used by JUnit.
+         */
+        TEST,
+
+        /**
+         * Defines the staging mode.
+         */
+        STAGING,
+
+        /**
+         * Defines the productive mode.
+         */
+        PROD
     }
 
     protected ClassLoader loader;
-    protected Mode mode;
     protected Level defaultLevel = Level.INFO;
-    protected String consoleLogFormat = "[%d{yyyy-MM-dd'T'HH:mm:ss,SSS}] %-5p [%t%X{flow}] %c - %m%n";
+    protected Mode mode;
+    protected DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    protected String consoleLogFormat = "[%1$s] %4$-7s [%3$s - %2$s] %5$s%6$s%n";
 
     /**
      * Creates a new setup for the given mode and class loader.
@@ -79,29 +98,50 @@ public class Setup {
     }
 
     /**
-     * Used to set the default log level used by the root logger.
-     * <p>
-     * Note that each logger can be configured by specifying <tt>logging.[NAME]</tt> in the
-     * system configuration
-     *
-     * @param level the level to use
-     * @return the setup itself for fluent method calls
-     */
-    public Setup withDefaultLogLevel(Level level) {
-        this.defaultLevel = level;
-        return this;
-    }
-
-    /**
      * Specifies the pattern used to format log messages in the console.
      * <p>
-     * Refer to {@link org.apache.log4j.PatternLayout} for available options.
+     * We expect a pattern as understood by {@link String#format(String, Object...)}.
+     * <p>
+     * The parameters are:
+     * <ol>
+     *     <li>timestamp</li>
+     *     <li>source location</li>
+     *     <li>logger name</li>
+     *     <li>log level</li>
+     *     <li>log message</li>
+     *     <li>thrown exception</li>
+     * </ol>
      *
      * @param format the template string to use
      * @return the setup itself for fluent method calls
      */
     public Setup withConsoleLogFormat(String format) {
         this.consoleLogFormat = format;
+        return this;
+    }
+
+    /**
+     * Specifies the pattern used to format the timestamp of log messages in the console.
+     *
+     * @param formatter the formatter to use
+     * @return the setup itself for fluent method calls
+     */
+    public Setup withConsoleLogDateFormat(DateTimeFormatter formatter) {
+        this.dateTimeFormatter = formatter;
+        return this;
+    }
+
+    /**
+     * Used to set the default log level used by the root logger.
+     * <p>
+     * Note that each logger can be configured by specifying <tt>logging.[NAME]</tt> in the
+     * system configuration.
+     *
+     * @param level the level to use
+     * @return the setup itself for fluent method calls
+     */
+    public Setup withDefaultLogLevel(Level level) {
+        this.defaultLevel = level;
         return this;
     }
 
@@ -114,10 +154,10 @@ public class Setup {
      * @param loader the class loader to use
      */
     public static void createAndStartEnvironment(ClassLoader loader) {
-        Sirius.start(new Setup(getProperty("debug",
-                                           false,
-                                           "Determines if debug logs and some safety checks are enabled.").asBoolean(
-                false) ? Mode.DEV : Mode.PROD, loader));
+        Sirius.start(new Setup(getProperty("sirius_mode",
+                                           Mode.PROD,
+                                           "Determines if debug logs and some safety checks are enabled.").asEnum(Mode.class),
+                               loader));
     }
 
     /**
@@ -126,7 +166,12 @@ public class Setup {
      * @param args the command line arguments (currently ignored)
      */
     public static void main(String[] args) {
-        Sirius.start(new Setup(Mode.DEV, Setup.class.getClassLoader()));
+        try {
+            Sirius.start(new Setup(Mode.DEVELOP, Setup.class.getClassLoader()));
+        } catch (Exception e) {
+            Sirius.LOG.SEVERE("Unknown startup error: " + e.getLocalizedMessage());
+            throw e;
+        }
     }
 
     /**
@@ -184,10 +229,10 @@ public class Setup {
      * Sets UTF-8 as default encoding
      */
     protected void setupEncoding() {
-        Sirius.LOG.FINE("Setting " + Charsets.UTF_8.name() + " as default encoding (file.encoding)");
-        System.setProperty("file.encoding", Charsets.UTF_8.name());
-        Sirius.LOG.FINE("Setting " + Charsets.UTF_8.name() + " as default mime encoding (mail.mime.charset)");
-        System.setProperty("mail.mime.charset", Charsets.UTF_8.name());
+        Sirius.LOG.FINE("Setting " + StandardCharsets.UTF_8.name() + " as default encoding (file.encoding)");
+        System.setProperty("file.encoding", StandardCharsets.UTF_8.name());
+        Sirius.LOG.FINE("Setting " + StandardCharsets.UTF_8.name() + " as default mime encoding (mail.mime.charset)");
+        System.setProperty("mail.mime.charset", StandardCharsets.UTF_8.name());
     }
 
     /**
@@ -226,55 +271,44 @@ public class Setup {
      * log into the logs directory.
      */
     protected void setupLogging() {
-        final LoggerRepository repository = Logger.getRootLogger().getLoggerRepository();
-        repository.resetConfiguration();
-        Logger.getRootLogger().setLevel(defaultLevel);
-
-        ConsoleAppender console = new ConsoleAppender();
-        console.setLayout(new PatternLayout(consoleLogFormat));
-        console.setThreshold(Level.DEBUG);
-        console.activateOptions();
-        Logger.getRootLogger().addAppender(console);
-
-        redirectJavaLoggerToLog4j();
-    }
-
-    /**
-     * Redirects all java.logging output to Log4j
-     */
-    protected void redirectJavaLoggerToLog4j() {
-        final LoggerRepository repository = Logger.getRootLogger().getLoggerRepository();
-        java.util.logging.Logger rootLogger = java.util.logging.LogManager.getLogManager().getLogger("");
+        Logger rootLogger = LogManager.getLogManager().getLogger("");
         // remove old handlers
         for (Handler handler : rootLogger.getHandlers()) {
             rootLogger.removeHandler(handler);
         }
-        // add our own
-        Handler handler = new Handler() {
 
-            private Formatter formatter = new SimpleFormatter();
+        StreamHandler consoleHandler = new StdOutHandler();
+        consoleHandler.setLevel(Level.ALL);
 
-            @Override
-            public void publish(LogRecord record) {
-                repository.getLogger(record.getLoggerName() == null ? "unknown" : record.getLoggerName())
-                          .log(Log.convertJuliLevel(record.getLevel()),
-                               formatter.formatMessage(record),
-                               record.getThrown());
-            }
+        rootLogger.addHandler(consoleHandler);
+        rootLogger.setLevel(defaultLevel);
+    }
 
-            @Override
-            public void flush() {
-                // Not required
-            }
+    private class StdOutHandler extends StreamHandler {
+        @SuppressWarnings({"UseOfSystemOutOrSystemErr", "java:S106"})
+        private StdOutHandler() {
+            super(System.out, new SaneFormatter());
+        }
 
-            @Override
-            public void close() {
-                // Not required
-            }
-        };
-        handler.setLevel(java.util.logging.Level.ALL);
-        rootLogger.addHandler(handler);
-        rootLogger.setLevel(java.util.logging.Level.INFO);
+        @Override
+        public synchronized void publish(LogRecord logRecord) {
+            super.publish(logRecord);
+            flush();
+        }
+    }
+
+    private class SaneFormatter extends Formatter {
+
+        @Override
+        public String format(LogRecord logRecord) {
+            return String.format(consoleLogFormat,
+                                 dateTimeFormatter.format(LocalDateTime.now()),
+                                 logRecord.getSourceClassName(),
+                                 logRecord.getLoggerName(),
+                                 logRecord.getLevel(),
+                                 formatMessage(logRecord),
+                                 NLS.toUserString(logRecord.getThrown()));
+        }
     }
 
     @Nullable
@@ -360,45 +394,25 @@ public class Setup {
     }
 
     /**
-     * Applies the developer configuration to the given config object.
+     * Applies the corresponding configuration to the given config object.
      * <p>
-     * By default this loads and applies "develop.conf" from the file system.
+     * By default this loads and applies the given "instance.conf", "develop.conf", "staging.conf" or "productive.conf"
+     * from the file system.
      *
-     * @param config the config to enhance
-     * @return the enhanced config
+     * @param config     the config to amend
+     * @param configType the configType to look for
+     * @return the amended config
      */
     @Nonnull
-    public Config applyDeveloperConfig(@Nonnull Config config) {
-        String developConfFile = getProperty("sirius_develop_conf",
-                                             "develop.conf",
-                                             "Determines the filename of the developer config.").asString();
-        if (new File(developConfFile).exists()) {
-            return loadConfig(developConfFile, () -> ConfigFactory.parseFile(new File(developConfFile)), config);
+    public Config applyConfig(@Nonnull Config config, @Nonnull String configType) {
+        String configFile = getProperty("sirius_" + configType + "_conf",
+                                        configType + ".conf",
+                                        "Determines the filename of the develop or staging config.").asString();
+        if (new File(configFile).exists()) {
+            return loadConfig(configFile, () -> ConfigFactory.parseFile(new File(configFile)), config);
         } else {
-            Sirius.LOG.INFO("%s not present work in directory", developConfFile);
+            Sirius.LOG.INFO("%s not present work in directory", configFile);
             return config;
-        }
-    }
-
-    /**
-     * Loads the instance configuration which configures the app for the machine it is running on.
-     * <p>
-     * By default this loads "instance.conf" from the file system
-     * <p>
-     * This will later be applied to the overall system configuration and will override all other settings.
-     *
-     * @return the instance configuration or <tt>null</tt> if no config was found.
-     */
-    @Nullable
-    public Config loadInstanceConfig() {
-        String instanceConfFile = getProperty("sirius_instance_conf",
-                                              "instance.conf",
-                                              "Determines the filename of the instance config.").asString();
-        if (new File(instanceConfFile).exists()) {
-            return loadConfig(instanceConfFile, () -> ConfigFactory.parseFile(new File(instanceConfFile)), null);
-        } else {
-            Sirius.LOG.INFO("%s not present work in directory", instanceConfFile);
-            return null;
         }
     }
 

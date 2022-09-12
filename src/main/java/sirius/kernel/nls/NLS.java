@@ -8,8 +8,6 @@
 
 package sirius.kernel.nls;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
@@ -17,7 +15,6 @@ import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.AdvancedDateParser;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -47,11 +44,10 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Native Language Support used by the framework.
@@ -71,20 +67,18 @@ import java.util.Set;
  * <b>Configuration</b>
  * <ul>
  * <li><b>nls.defaultLanguage:</b> Sets the two-letter code used as default language</li>
- * <li><b>nls.language:</b> Sets an array of two-letter codes which enumerate all supported languages</li>
  * </ul>
  *
  * @see Babelfish
  */
 
 @SuppressWarnings("squid:S1192")
-@Explain("String literales here have different semantics and are therefore duplicated.")
+@Explain("String literals here have different semantics and are therefore duplicated.")
 public class NLS {
 
     private static final Babelfish blubb = new Babelfish();
 
     private static String defaultLanguage;
-    private static Set<String> supportedLanguages;
 
     private static final DateTimeFormatter MACHINE_DATE_TIME_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
@@ -94,20 +88,20 @@ public class NLS {
             DateTimeFormatter.ofPattern("H:mm[:ss]", Locale.ENGLISH);
     private static final DateTimeFormatter MACHINE_FORMAT_TIME_FORMAT =
             DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ENGLISH);
-    private static final Map<String, DateTimeFormatter> fullDateTimeFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> dateTimeFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> dateFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> shortDateFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> timeFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> parseTimeFormatters = Maps.newTreeMap();
-    private static final Map<String, DateTimeFormatter> fullTimeFormatters = Maps.newTreeMap();
+    private static final Map<String, DateTimeFormatter> fullDateTimeFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> dateTimeFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> dateFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> shortDateFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> timeFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> parseTimeFormatters = new ConcurrentHashMap<>();
+    private static final Map<String, DateTimeFormatter> fullTimeFormatters = new ConcurrentHashMap<>();
 
     private static final long SECOND = 1000;
     private static final long MINUTE = 60 * SECOND;
     private static final long HOUR = 60 * MINUTE;
     private static final long DAY = 24 * HOUR;
 
-    private static final String[] UNITS = {"Bytes", "kB", "MB", "GB", "TB", "PB"};
+    private static final String[] UNITS = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
 
     private NLS() {
     }
@@ -185,72 +179,11 @@ public class NLS {
      * By default, SIRIUS initializes with the language set in {@code nls.defaultLanguage} so a switchover
      * to the system language has to be performed manually.
      *
-     * @return the language code of the underlying operating system. If the language is not supported (not listed
-     * in {@code nls.languages}), <tt>null</tt> will be returned as
-     * {@link sirius.kernel.async.CallContext#setLang(String)} doesn't change the current language if <tt>null</tt> is
-     * passed in.
+     * @return the language code of the underlying operating system
      */
     @Nullable
     public static String getSystemLanguage() {
-        return makeLang(Locale.getDefault().getLanguage().toLowerCase());
-    }
-
-    /**
-     * Returns a list of two-letter codes enumerating all supported languages. Provided via the config in
-     * {@code nls.languages}
-     *
-     * @return a list of supported language codes
-     */
-    public static Set<String> getSupportedLanguages() {
-        if (supportedLanguages == null && Sirius.getSettings() != null) {
-            try {
-                supportedLanguages = Sirius.getSettings()
-                                           .getStringList("nls.languages")
-                                           .stream()
-                                           .map(String::toLowerCase)
-                                           .collect(Lambdas.into(Sets.newLinkedHashSet()));
-            } catch (Exception e) {
-                Exceptions.handle(e);
-            }
-        }
-        // Returns the default language or (for very early access we default to en)
-        return supportedLanguages == null ?
-               Collections.singleton("en") :
-               Collections.unmodifiableSet(supportedLanguages);
-    }
-
-    /**
-     * Determines if the given language code is supported or not.
-     *
-     * @param twoLetterLanguageCode the language as two-letter code
-     * @return <tt>true</tt> if the language is listed in <tt>nls.languages</tt>, <tt>false</tt> otherwise.
-     */
-    public static boolean isSupportedLanguage(String twoLetterLanguageCode) {
-        return getSupportedLanguages().contains(twoLetterLanguageCode);
-    }
-
-    /**
-     * Checks if the given language is supproted. Returns the default language otherwise.
-     * <p>
-     * Note that if the given lang is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
-     * to {@link sirius.kernel.async.CallContext#setLang(String)} with <tt>null</tt> as parameter won't change
-     * the language at all.
-     *
-     * @param lang the language to check
-     * @return <tt>lang</tt> if it was a supported language or the defaultLanguage otherwise, unless an empty string
-     * was passed in, in which case <tt>null</tt> is returned.
-     */
-    @Nullable
-    public static String makeLang(@Nullable String lang) {
-        if (Strings.isEmpty(lang)) {
-            return null;
-        }
-        String langAsLowerCase = lang.toLowerCase();
-        if (getSupportedLanguages().contains(langAsLowerCase)) {
-            return langAsLowerCase;
-        } else {
-            return getDefaultLanguage();
-        }
+        return Locale.getDefault().getLanguage().toLowerCase();
     }
 
     /**
@@ -385,10 +318,10 @@ public class NLS {
     }
 
     /**
-     * Returns a translated text for the given <tt>property</tt> in the given language
-     * or <tt>null</tt> if no translation was found.
+     * Returns a translated text for the given <tt>property</tt> in the given language, falling back to the default
+     * language, or an empty optional if no translation was found.
      * <p>
-     * The same fallback rules as for {@link #get(String, String)} apply. However, if no translation
+     * The same fallback rules as for {@link #get(String, String)} apply.
      *
      * @param property the key for which a translation is requested
      * @param lang     a two-letter language code for which the translation is requested
@@ -397,7 +330,7 @@ public class NLS {
      */
     @SuppressWarnings("squid:S2637")
     @Explain("Strings.isEmpty checks for null on lang")
-    public static Optional<String> getIfExists(@Nonnull String property, @Nullable String lang) {
+    public static Optional<String> getIfExists(String property, @Nullable String lang) {
         if (Strings.isEmpty(property)) {
             return Optional.empty();
         }
@@ -406,8 +339,40 @@ public class NLS {
         if (translation == null) {
             return Optional.empty();
         }
-        return Optional.of(translation.translate(Strings.isEmpty(lang) ? getCurrentLang() : lang,
-                                                 getFallbackLanguage()));
+
+        String targetLanguage = Strings.isEmpty(lang) ? getCurrentLang() : lang;
+        if (translation.hasTranslation(targetLanguage)) {
+            return Optional.of(translation.translateWithoutFallback(targetLanguage));
+        }
+
+        String fallbackLanguage = getFallbackLanguage();
+        if (translation.hasTranslation(fallbackLanguage)) {
+            return Optional.of(translation.translateWithoutFallback(fallbackLanguage));
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Checks if a translation is available for the given property and language.
+     *
+     * @param property the property key to check
+     * @param lang     the language to check for or <tt>null</tt> to use the current language
+     * @return <tt>true</tt> if a translation is present, <tt>false</tt> otherwise
+     */
+    @SuppressWarnings("squid:S2637")
+    @Explain("Strings.isEmpty checks for null on lang")
+    public static boolean exists(String property, @Nullable String lang) {
+        if (Strings.isEmpty(property)) {
+            return false;
+        }
+        Translation translation = blubb.get(property, null, false);
+        if (translation == null) {
+            return false;
+        }
+
+        return Strings.isFilled(translation.translate(Strings.isEmpty(lang) ? getCurrentLang() : lang,
+                                                      getFallbackLanguage()));
     }
 
     /**
@@ -487,7 +452,6 @@ public class NLS {
 
     /**
      * Creates a formatted using the pattern supplied by the translation value for the given <tt>property</tt>.
-     * smasmassm
      *
      * @param property the property to used to retrieve a translated pattern
      * @param lang     a two-letter language code for which the translation is requested
@@ -545,24 +509,16 @@ public class NLS {
      * or {@code ""} if an invalid index was given
      */
     public static String getDayOfWeek(int day) {
-        switch (day) {
-            case Calendar.MONDAY:
-                return CommonKeys.MONDAY.translated();
-            case Calendar.TUESDAY:
-                return CommonKeys.TUESDAY.translated();
-            case Calendar.WEDNESDAY:
-                return CommonKeys.WEDNESDAY.translated();
-            case Calendar.THURSDAY:
-                return CommonKeys.THURSDAY.translated();
-            case Calendar.FRIDAY:
-                return CommonKeys.FRIDAY.translated();
-            case Calendar.SATURDAY:
-                return CommonKeys.SATURDAY.translated();
-            case Calendar.SUNDAY:
-                return CommonKeys.SUNDAY.translated();
-            default:
-                return "";
-        }
+        return switch (day) {
+            case Calendar.MONDAY -> CommonKeys.MONDAY.translated();
+            case Calendar.TUESDAY -> CommonKeys.TUESDAY.translated();
+            case Calendar.WEDNESDAY -> CommonKeys.WEDNESDAY.translated();
+            case Calendar.THURSDAY -> CommonKeys.THURSDAY.translated();
+            case Calendar.FRIDAY -> CommonKeys.FRIDAY.translated();
+            case Calendar.SATURDAY -> CommonKeys.SATURDAY.translated();
+            case Calendar.SUNDAY -> CommonKeys.SUNDAY.translated();
+            default -> "";
+        };
     }
 
     /**
@@ -584,34 +540,21 @@ public class NLS {
      * or <tt>""</tt> if an invalid index was given
      */
     public static String getMonthName(int month) {
-        switch (month) {
-            case 1:
-                return CommonKeys.JANUARY.translated();
-            case 2:
-                return CommonKeys.FEBRUARY.translated();
-            case 3:
-                return CommonKeys.MARCH.translated();
-            case 4:
-                return CommonKeys.APRIL.translated();
-            case 5:
-                return CommonKeys.MAY.translated();
-            case 6:
-                return CommonKeys.JUNE.translated();
-            case 7:
-                return CommonKeys.JULY.translated();
-            case 8:
-                return CommonKeys.AUGUST.translated();
-            case 9:
-                return CommonKeys.SEPTEMBER.translated();
-            case 10:
-                return CommonKeys.OCTOBER.translated();
-            case 11:
-                return CommonKeys.NOVEMBER.translated();
-            case 12:
-                return CommonKeys.DECEMBER.translated();
-            default:
-                return "";
-        }
+        return switch (month) {
+            case 1 -> CommonKeys.JANUARY.translated();
+            case 2 -> CommonKeys.FEBRUARY.translated();
+            case 3 -> CommonKeys.MARCH.translated();
+            case 4 -> CommonKeys.APRIL.translated();
+            case 5 -> CommonKeys.MAY.translated();
+            case 6 -> CommonKeys.JUNE.translated();
+            case 7 -> CommonKeys.JULY.translated();
+            case 8 -> CommonKeys.AUGUST.translated();
+            case 9 -> CommonKeys.SEPTEMBER.translated();
+            case 10 -> CommonKeys.OCTOBER.translated();
+            case 11 -> CommonKeys.NOVEMBER.translated();
+            case 12 -> CommonKeys.DECEMBER.translated();
+            default -> "";
+        };
     }
 
     /**
@@ -651,7 +594,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getDateFormat(String lang) {
-        return dateFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternDate", l)));
+        return safeGetDateTimeFormat(lang, dateFormatters, "NLS.patternDate");
     }
 
     /**
@@ -661,8 +604,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getShortDateFormat(String lang) {
-        return shortDateFormatters.computeIfAbsent(lang,
-                                                   l -> DateTimeFormatter.ofPattern(get("NLS.patternShortDate", l)));
+        return safeGetDateTimeFormat(lang, shortDateFormatters, "NLS.patternShortDate");
     }
 
     /**
@@ -678,8 +620,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getTimeFormatWithSeconds(String lang) {
-        return fullTimeFormatters.computeIfAbsent(lang,
-                                                  l -> DateTimeFormatter.ofPattern(get("NLS.patternFullTime", l)));
+        return safeGetDateTimeFormat(lang, fullTimeFormatters, "NLS.patternFullTime");
     }
 
     /**
@@ -693,7 +634,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getTimeFormat(String lang) {
-        return timeFormatters.computeIfAbsent(lang, l -> DateTimeFormatter.ofPattern(get("NLS.patternTime", l)));
+        return safeGetDateTimeFormat(lang, timeFormatters, "NLS.patternTime");
     }
 
     /**
@@ -708,8 +649,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getTimeParseFormat(String lang) {
-        return parseTimeFormatters.computeIfAbsent(lang,
-                                                   l -> DateTimeFormatter.ofPattern(get("NLS.patternParseTime", l)));
+        return safeGetDateTimeFormat(lang, parseTimeFormatters, "NLS.patternParseTime");
     }
 
     /**
@@ -719,8 +659,7 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getDateTimeFormat(String lang) {
-        return fullDateTimeFormatters.computeIfAbsent(lang,
-                                                      l -> DateTimeFormatter.ofPattern(get("NLS.patternDateTime", l)));
+        return safeGetDateTimeFormat(lang, fullDateTimeFormatters, "NLS.patternDateTime");
     }
 
     /**
@@ -730,10 +669,17 @@ public class NLS {
      * @return a format initialized with the pattern described by the given language
      */
     public static DateTimeFormatter getDateTimeFormatWithoutSeconds(String lang) {
-        return dateTimeFormatters.computeIfAbsent(lang,
-                                                  l -> DateTimeFormatter.ofPattern(get(
-                                                          "NLS.patternDateTime.withoutSeconds",
-                                                          l)));
+        return safeGetDateTimeFormat(lang, dateTimeFormatters, "NLS.patternDateTime.withoutSeconds");
+    }
+
+    private static DateTimeFormatter safeGetDateTimeFormat(String lang,
+                                                           Map<String, DateTimeFormatter> formatters,
+                                                           String nlsProperty) {
+        if (Strings.isEmpty(lang)) {
+            return formatters.computeIfAbsent(getCurrentLang(),
+                                              language -> DateTimeFormatter.ofPattern(get(nlsProperty, language)));
+        }
+        return formatters.computeIfAbsent(lang, ignored -> DateTimeFormatter.ofPattern(get(nlsProperty, lang)));
     }
 
     /**
@@ -812,12 +758,11 @@ public class NLS {
         if (data instanceof Boolean) {
             return data.toString();
         }
-        if (data instanceof Temporal) {
+        if (data instanceof Temporal temporal) {
             // Convert Instant to LocalDateTime to permit a "normal" time format
-            if (data instanceof Instant) {
-                data = LocalDateTime.ofInstant((Instant) data, ZoneId.systemDefault());
+            if (data instanceof Instant instant) {
+                temporal = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
             }
-            Temporal temporal = (Temporal) data;
             if (ChronoUnit.HOURS.isSupportedBy(temporal)) {
                 if (!ChronoField.DAY_OF_MONTH.isSupportedBy(temporal)) {
                     return MACHINE_FORMAT_TIME_FORMAT.format(temporal);
@@ -835,7 +780,7 @@ public class NLS {
             return String.valueOf(data);
         }
         if (data instanceof Amount) {
-            return ((Amount) data).toString(NumberFormat.MACHINE_TWO_DECIMAL_PLACES).asString();
+            return ((Amount) data).toMachineString();
         }
         if (data instanceof BigDecimal) {
             return ((BigDecimal) data).toPlainString();
@@ -897,12 +842,11 @@ public class NLS {
                 return NLS.get(CommonKeys.NO.key(), lang);
             }
         }
-        if (data instanceof Temporal) {
+        if (data instanceof Temporal temporal) {
             // Convert Instant to LocalDateTime to permit a "normal" time format
-            if (data instanceof Instant) {
-                data = LocalDateTime.ofInstant((Instant) data, ZoneId.systemDefault());
+            if (data instanceof Instant instant) {
+                temporal = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
             }
-            Temporal temporal = (Temporal) data;
             if (ChronoUnit.HOURS.isSupportedBy(temporal)) {
                 if (!ChronoField.DAY_OF_MONTH.isSupportedBy(temporal)) {
                     return getTimeFormatWithSeconds(lang).format(temporal);
@@ -1045,9 +989,9 @@ public class NLS {
      *
      * @param clazz the expected class of the value to be parsed
      * @param value the string to be parsed
-     * @param <V>   the target type be be parsed
+     * @param <V>   the target type to be parsed
      * @return an instance of <tt>clazz</tt> representing the parsed string or <tt>null</tt> if value was empty.
-     * @throws IllegalArgumentException if the given input was not well formed or if instances of <tt>clazz</tt>
+     * @throws IllegalArgumentException if the given input was not well-formed or if instances of <tt>clazz</tt>
      *                                  cannot be created. The thrown exception has a translated error message which
      *                                  can be directly presented to the user.
      */
@@ -1102,7 +1046,7 @@ public class NLS {
             }
         }
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
-            return (V) Boolean.valueOf(Boolean.parseBoolean(value));
+            return (V) Boolean.valueOf(value);
         }
 
         return parseDatesFromMachineString(clazz, value);
@@ -1156,9 +1100,9 @@ public class NLS {
      * @param clazz the expected class of the value to be parsed
      * @param value the string to be parsed
      * @param lang  the two-letter code of the language which format should be used
-     * @param <V>   the target type be be parsed
+     * @param <V>   the target type to be parsed
      * @return an instance of <tt>clazz</tt> representing the parsed string or <tt>null</tt> if value was empty.
-     * @throws IllegalArgumentException if the given input was not well formed or if instances of <tt>clazz</tt>
+     * @throws IllegalArgumentException if the given input was not well-formed or if instances of <tt>clazz</tt>
      *                                  cannot be created. The thrown exception has a translated error message which
      *                                  can be directly presented to the user.
      */
@@ -1228,11 +1172,11 @@ public class NLS {
     }
 
     /**
-     * If there is exactly one "." in the pattern and no "," and we have less then 3 digits behind the "." we treat this
+     * If there is exactly one "." in the pattern and no "," and we have less than 3 digits behind the "." we treat this
      * as english decimal format and not as german grouping separator.
      *
      * @param value the parsed value or <tt>null</tt> if the format doesn't match
-     * @return <tt>true</tt> if the format being used is a english / technical one and not a german one where "." is the
+     * @return <tt>true</tt> if the format being used is an english / technical one and not a german one where "." is the
      * thousand separator
      */
     private static Double tryParseMachineFormat(String value) {
@@ -1254,26 +1198,27 @@ public class NLS {
 
     @SuppressWarnings("unchecked")
     private static <V> V parseDatesFromUserString(Class<V> clazz, String value, String lang) {
+        boolean invertMonthAndDay = "fr".equals(lang);
         if (LocalDate.class.equals(clazz)) {
             try {
-                AdvancedDateParser parser = new AdvancedDateParser(lang);
-                return (V) LocalDate.from(parser.parse(value).getTemporal());
+                AdvancedDateParser parser = new AdvancedDateParser(lang, invertMonthAndDay);
+                return (V) parser.parse(value).asDateTime().toLocalDate();
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
             }
         }
         if (LocalDateTime.class.equals(clazz)) {
             try {
-                AdvancedDateParser parser = new AdvancedDateParser(lang);
-                return (V) LocalDateTime.from(parser.parse(value).getTemporal());
+                AdvancedDateParser parser = new AdvancedDateParser(lang, invertMonthAndDay);
+                return (V) parser.parse(value).asDateTime();
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
             }
         }
         if (ZonedDateTime.class.equals(clazz)) {
             try {
-                AdvancedDateParser parser = new AdvancedDateParser(lang);
-                return (V) ZonedDateTime.from(parser.parse(value).getTemporal());
+                AdvancedDateParser parser = new AdvancedDateParser(lang, invertMonthAndDay);
+                return (V) ZonedDateTime.from(parser.parse(value).asDateTime());
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
             }
@@ -1287,7 +1232,7 @@ public class NLS {
         }
         if (AdvancedDateParser.DateSelection.class.equals(clazz)) {
             try {
-                AdvancedDateParser parser = new AdvancedDateParser(lang);
+                AdvancedDateParser parser = new AdvancedDateParser(lang, invertMonthAndDay);
                 return (V) parser.parse(value);
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
@@ -1302,9 +1247,9 @@ public class NLS {
      *
      * @param clazz  the expected class of the value to be parsed
      * @param string the string to be parsed
-     * @param <V>    the target type be be parsed
+     * @param <V>    the target type to be parsed
      * @return an instance of <tt>clazz</tt> representing the parsed string or <tt>null</tt> if value was empty.
-     * @throws IllegalArgumentException if the given input was not well formed or if instances of <tt>clazz</tt>
+     * @throws IllegalArgumentException if the given input was not well-formed or if instances of <tt>clazz</tt>
      *                                  cannot be created. The thrown exception has a translated error message which
      *                                  can be directly presented to the user.
      */
@@ -1313,11 +1258,11 @@ public class NLS {
     }
 
     /**
-     * Converts a given time range in milliseconds to a human readable format using the current language
+     * Converts a given time range in milliseconds to a human-readable format using the current language
      *
      * @param duration       the duration in milliseconds
      * @param includeSeconds determines whether to include seconds or to ignore everything below minutes
-     * @param includeMillis  determines whether to include milli seconds or to ignore everything below seconds
+     * @param includeMillis  determines whether to include milliseconds or to ignore everything below seconds
      * @return a string representation of the given duration in days, hours, minutes and,
      * if enabled, seconds and milliseconds
      */

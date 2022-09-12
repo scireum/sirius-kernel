@@ -8,6 +8,8 @@
 
 package sirius.kernel.timer;
 
+import sirius.kernel.di.std.AutoRegister;
+
 /**
  * Parts registered for this interface will be invoked one time per day.
  * <p>
@@ -22,7 +24,11 @@ package sirius.kernel.timer;
  * if the system is restarted within the given hour, the method might be called twice, as the time of call is not
  * persisted over restarts. If a more precise behaviour is required, the subclass must take care of handling such
  * cases.
+ * <p>
+ * Note that for cleanup and maintenance tasks one can also implement a {@link EndOfDayTask}. These tasks will
+ * also run on a daily basis but within a pre-defined time window.
  */
+@AutoRegister
 public interface EveryDay extends TimedTask {
 
     /**

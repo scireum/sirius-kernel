@@ -158,7 +158,10 @@ public class Files {
      * @param directory the directory to delete (along with all sub directories)
      * @throws IOException in case of an io error while deleting the files and directories
      */
-    public static void delete(Path directory) throws IOException {
+    public static void delete(@Nullable Path directory) throws IOException {
+        if (directory == null) {
+            return;
+        }
         if (!directory.toFile().exists()) {
             return;
         }

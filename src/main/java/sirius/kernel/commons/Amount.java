@@ -14,10 +14,13 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -31,38 +34,47 @@ import java.util.function.Supplier;
  * A textual representation can be created by calling one of the <tt>toString</tt> methods or by supplying
  * a {@link NumberFormat}.
  * <p>
+ * Note that {@link #toMachineString()} to be used to obtain a technical representation suitable for file formats
+ * like XML etc. This is also used by {@link NLS#toMachineString(Object)}. The default representation uses two
+ * decimal digits. However, if the amount has bed {@link #round(int, RoundingMode) rounded}, the given amount
+ * of decimals will be used in all subesquent call to {@link #toMachineString()}. Therefore, this can be used to
+ * control the exact formatting (e.g. when writing XML or JSON).
+ * <p>
  * Being able to be <i>empty</i>, this class handles <tt>null</tt> values gracefully, which simplifies many operations.
  *
  * @see NumberFormat
  * @see BigDecimal
  */
 @Immutable
-public class Amount implements Comparable<Amount> {
+public class Amount implements Comparable<Amount>, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 2187873067365153302L;
 
     /**
      * Represents an missing number. This is also the result of division by 0 and other forbidden operations.
      */
-    public static final Amount NOTHING = new Amount(null);
+    public static final Amount NOTHING = new Amount(null, false);
     /**
      * Representation of 100.00
      */
-    public static final Amount ONE_HUNDRED = new Amount(new BigDecimal(100));
+    public static final Amount ONE_HUNDRED = Amount.of(new BigDecimal(100));
     /**
      * Representation of 0.00
      */
-    public static final Amount ZERO = new Amount(BigDecimal.ZERO);
+    public static final Amount ZERO = Amount.of(BigDecimal.ZERO);
     /**
      * Representation of 1.00
      */
-    public static final Amount ONE = new Amount(BigDecimal.ONE);
+    public static final Amount ONE = Amount.of(BigDecimal.ONE);
     /**
      * Representation of 10.00
      */
-    public static final Amount TEN = new Amount(BigDecimal.TEN);
+    public static final Amount TEN = Amount.of(BigDecimal.TEN);
     /**
      * Representation of -1.00
      */
-    public static final Amount MINUS_ONE = new Amount(new BigDecimal(-1));
+    public static final Amount MINUS_ONE = Amount.of(new BigDecimal(-1));
     /**
      * Defines the internal precision used for all computations.
      */
@@ -72,13 +84,11 @@ public class Amount implements Comparable<Amount> {
     private static final int NEUTRAL_METRIC = 4;
 
     private final BigDecimal value;
+    private final boolean rounded;
 
-    private Amount(BigDecimal value) {
-        if (value != null) {
-            this.value = value.setScale(SCALE, RoundingMode.HALF_UP);
-        } else {
-            this.value = null;
-        }
+    private Amount(BigDecimal value, boolean rounded) {
+        this.value = value;
+        this.rounded = rounded;
     }
 
     /**
@@ -113,6 +123,9 @@ public class Amount implements Comparable<Amount> {
 
     /**
      * Converts the given value into a number.
+     * <p>
+     * Note that this will enforce a scale of {@link #SCALE} (5) for the given value to ensure a consistent
+     * behaviour. If the given value already has the desired scale set, use {@link #ofRounded(BigDecimal)}.
      *
      * @param amount the value which should be converted into an <tt>Amount</tt>
      * @return an <tt>Amount</tt> representing the given input. <tt>NOTHING</tt> if the input was empty.
@@ -122,7 +135,24 @@ public class Amount implements Comparable<Amount> {
         if (amount == null) {
             return NOTHING;
         }
-        return new Amount(amount);
+        return new Amount(amount.setScale(SCALE, RoundingMode.HALF_UP), false);
+    }
+
+    /**
+     * Converts the given value into a number.
+     * <p>
+     * Note that this keeps the scale of the given value as it presumes that it has already been
+     * set to the desired value.
+     *
+     * @param amount the value which should be converted into an <tt>Amount</tt>
+     * @return an <tt>Amount</tt> representing the given input. <tt>NOTHING</tt> if the input was empty.
+     */
+    @Nonnull
+    public static Amount ofRounded(@Nullable BigDecimal amount) {
+        if (amount == null) {
+            return NOTHING;
+        }
+        return new Amount(amount, true);
     }
 
     /**
@@ -252,9 +282,57 @@ public class Amount implements Comparable<Amount> {
      *
      * @param supplier the supplier which is used to compute a value if there is no internal value
      * @return <tt>this</tt> if there is an internal value, the computed value of <tt>supplier</tt> otherwise
+     * @deprecated This method has been deprecated. Use <tt>orElseGet()</tt> instead.
      */
     @Nonnull
+    @Deprecated(forRemoval = true)
     public Amount computeIfNull(Supplier<Amount> supplier) {
+        return orElseGet(supplier);
+    }
+
+    /**
+     * Invokes the given consumer if the internal value is not empty.
+     *
+     * @param consumer the consumer to execute
+     */
+    public void ifPresent(Consumer<Amount> consumer) {
+        if (isFilled()) {
+            consumer.accept(this);
+        }
+    }
+
+    /**
+     * Executes the given runnable if the internal value is empty.
+     *
+     * @param runnable the runnable to execute
+     */
+    public void ifEmpty(Runnable runnable) {
+        if (isEmpty()) {
+            runnable.run();
+        }
+    }
+
+    /**
+     * Returns the provided alternative {@link Amount} if the internal value is empty.
+     *
+     * @param amount the alternative Amount to return
+     * @return the original or alternative amount
+     */
+    public Amount orElse(Amount amount) {
+        if (isEmpty()) {
+            return amount;
+        }
+        return this;
+    }
+
+    /**
+     * Computes a value using the provided supplier if the internal value is empty.
+     *
+     * @param supplier the supplier which is used to compute a value if there is no internal value
+     * @return <tt>this</tt> if there is an internal value, the computed value of <tt>supplier</tt> otherwise
+     */
+    @Nonnull
+    public Amount orElseGet(Supplier<Amount> supplier) {
         if (isEmpty()) {
             return supplier.get();
         }
@@ -288,7 +366,7 @@ public class Amount implements Comparable<Amount> {
     }
 
     /**
-     * Used to multiply two percentages, like two discounts as if they where applied after each other.
+     * Used to multiply two percentages, like two discounts as if they were applied after each other.
      * <p>
      * This can be used to compute the effective discount if two discounts like 15% and 5% are applied after
      * each other. The result would be {@code (15 + 5) - (15 * 5 / 100)} which is <tt>19,25 %</tt>
@@ -296,15 +374,35 @@ public class Amount implements Comparable<Amount> {
      * @param percent the second percent value which would be applied after this percent value.
      * @return the effective percent value after both percentages would have been applied or <tt>NOTHING</tt> if
      * <tt>this</tt> is empty.
+     * @deprecated Use {@link #chainPercent(Amount)} instead which is the exact same method. This method however implies
+     * that it simply performs {@code this.times(percent.asDecimal())} <b>which it doesn't!</b>
      */
     @Nonnull
     @CheckReturnValue
+    @Deprecated(forRemoval = true)
     public Amount multiplyPercent(@Nonnull Amount percent) {
         return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
     }
 
     /**
-     * Adds the given number to <tt>this</tt>, if <tt>other</tt> is not empty. Otherwise <tt>this</tt> will be
+     * Used to multiply two percentages, like two discounts as if they were applied after each other.
+     * <p>
+     * This can be used to compute the effective discount if two discounts like 15% and 5% are applied after
+     * each other. The result would be {@code (15 + 5) - (15 * 5 / 100)} which is <tt>19,25 %</tt>
+     *
+     * @param percent the second percent value which would be applied after this percent value.
+     * @return the effective percent value after both percentages would have been applied or <tt>NOTHING</tt> if
+     * <tt>this</tt> is empty.
+     * @deprecated As this method <b>only</b> works with discounts, not with addons. As the name implies that this
+     * method works in both cases, we deprecate it here and moved the business logic into its actual place.
+     */
+    @Deprecated(forRemoval = true)
+    public Amount chainPercent(@Nonnull Amount percent) {
+        return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
+    }
+
+    /**
+     * Adds the given number to <tt>this</tt>, if <tt>other</tt> is not empty. Otherwise, <tt>this</tt> will be
      * returned.
      *
      * @param other the operand to add to this.
@@ -729,7 +827,7 @@ public class Amount implements Comparable<Amount> {
             return NOTHING;
         }
 
-        return Amount.of(value.setScale(scale, roundingMode));
+        return Amount.ofRounded(value.setScale(scale, roundingMode));
     }
 
     private Value convertToString(NumberFormat format, boolean smartRound) {
@@ -754,8 +852,7 @@ public class Amount implements Comparable<Amount> {
      *               the decimal format symbols and rounding mode
      * @return a <tt>Value</tt> containing the string representation according to the given format
      * or an empty <tt>Value</tt> if <tt>this</tt> is empty.
-     * @see Value#append(String, Object)
-     * @see Value#prepend(String, Object)
+     * @see Value#tryAppend(String, Object)
      */
     @Nonnull
     public Value toString(@Nonnull NumberFormat format) {
@@ -834,6 +931,24 @@ public class Amount implements Comparable<Amount> {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Provides a machine-readable representation of this amount.
+     *
+     * @return the amount formatted in a language independent matter and rounded to two decimal digits or an empty
+     * string if the underlying amount is empty
+     */
+    public String toMachineString() {
+        if (isEmpty()) {
+            return "";
+        }
+
+        if (rounded) {
+            return getAmount().toString();
+        } else {
+            return round(2, RoundingMode.HALF_UP).getAmount().toString();
+        }
     }
 
     /**

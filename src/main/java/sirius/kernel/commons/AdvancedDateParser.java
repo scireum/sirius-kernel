@@ -8,29 +8,38 @@
 
 package sirius.kernel.commons;
 
+import sirius.kernel.di.std.Part;
 import sirius.kernel.nls.NLS;
 
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.temporal.ChronoField;
+import java.time.temporal.IsoFields;
 import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.WeekFields;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * A flexible parser which can parse dates like DD.MM.YYYY, DD-MM-YYYY or YYYY/DD/MM along with some computations.
+ * A flexible parser for dates in various formats.
+ * <p>
+ * It can parse formats like DD.MM.YYYY, DD-MM-YYYY, MM/DD/YYYY or ISO dates like YYYY-MM-DDTHH:MM:SS along with some
+ * modifiers as decribed below.
  * <p>
  * A valid expression is defined by the following grammar:
  * <ul>
  * <li><code><b>ROOT</b> ::= (MODIFIER ",")* (":")? ("now" | DATE)? (("+" | "-") NUMBER (UNIT)?)</code></li>
  * <li><code><b>UNIT</b> ::= ("day" | "days" | "week" | "weeks" | "month" | "months" | "year" | "years")</code></li>
  * <li><code><b>NUMBER</b> ::=(0-9)+</code></li>
- * <li><code><b>DATE</b> ::= DAY_MONTH_YEAR_DATE | ENGLISH_DATE | YM_EXPRESSION</code></li>
+ * <li><code><b>DATE</b> ::= DAY_MONTH_YEAR_DATE | ENGLISH_DATE | ISO_DATE | YM_EXPRESSION</code></li>
  * <li><code><b>DAY_MONTH_YEAR_DATE</b> ::= NUMBER ("." | "-") NUMBER (("." | "-") NUMBER)? (NUMBER (":" NUMBER (":" NUMBER)?)?)?</code></li>
  * <li><code><b>ENGLISH_DATE</b> ::=  NUMBER "/" NUMBER ("/" NUMBER)? (NUMBER (":" NUMBER (":" NUMBER)?)?)? ("am" |
  * "pm")?)?</code></li>
+ * <li><code><b>ISO_DATE</b> ::=  NUMBER "-" NUMBER "-" NUMBER ("T")? (NUMBER ":" NUMBER ":" NUMBER)?</code></li>
  * <li><code><b>YM_EXPRESSION</b> ::= NUMBER</code></li>
  * <li><code><b>MODIFIER</b> ::= ("start" | "end") ("of")? ("day" | "week" | "month" | "year")</code></li>
  * </ul>
@@ -46,7 +55,6 @@ import java.util.TreeSet;
 public class AdvancedDateParser {
 
     private static final String[] EMPTY_STRING_ARRAY = {};
-    private String lang;
 
     private static final String NEGATIVE_DELTA = "-";
     private static final String POSITIVE_DELTA = "+";
@@ -57,8 +65,10 @@ public class AdvancedDateParser {
     private static final String TIME_SEPARATOR = ":";
     private static final String ENGLISH_DATE_SEPARATOR = "/";
     private static final String GERMAN_DATE_SEPARATOR = ".";
-    private static final String DUTCH_DATE_SEPARATOR = "-";
+    private static final String DASH_DATE_SEPARATOR = "-";
 
+    private final String lang;
+    private boolean invertMonthAndDay = false;
     private Tokenizer tokenizer;
     private boolean startOfDay = false;
     private boolean startOfWeek = false;
@@ -68,6 +78,9 @@ public class AdvancedDateParser {
     private boolean endOfWeek = false;
     private boolean endOfMonth = false;
     private boolean endOfYear = false;
+
+    @Part
+    private static TimeProvider timeProvider;
 
     /**
      * Creates a new parser for the given language to use.
@@ -79,17 +92,28 @@ public class AdvancedDateParser {
     }
 
     /**
+     * Creates a new parser for the given language to use.
+     *
+     * @param lang              contains the two letter language code to obtain the translations for the available
+     *                          modifiers etc.
+     * @param invertMonthAndDay determines if british dates (DD/MM/YYYY) instead of american (MM/DD/YYYY) dates should
+     *                          be parsed.
+     */
+    public AdvancedDateParser(String lang, boolean invertMonthAndDay) {
+        this.lang = lang;
+        this.invertMonthAndDay = invertMonthAndDay;
+    }
+
+    /**
      * Used to tokenize the input supplied by the user
      */
     static class Tokenizer {
 
-        private static final int END_OF_INPUT = 1;
-        private static final int NUMBER = 2;
-        private static final int IDENTIFIER = 3;
-        private static final int SPECIAL = 4;
+        enum TokenType {END_OF_INPUT, NUMBER, IDENTIFIER, SPECIAL}
+
         private final String input;
         private StringBuilder nextToken;
-        private int type;
+        private TokenType type;
         private int tokenStart = 0;
         private int position = 0;
 
@@ -97,8 +121,8 @@ public class AdvancedDateParser {
             this.input = inputString;
         }
 
-        /*
-         * Reads the next token in the input
+        /**
+         * Reads the next token in the input.
          */
         void nextToken() {
             nextToken = new StringBuilder();
@@ -117,7 +141,7 @@ public class AdvancedDateParser {
                 }
                 position++;
             }
-            type = END_OF_INPUT;
+            type = TokenType.END_OF_INPUT;
         }
 
         private boolean isWhitespace() {
@@ -138,15 +162,15 @@ public class AdvancedDateParser {
 
         private void readSpecialChars() {
             tokenStart = position;
-            type = SPECIAL;
+            type = TokenType.SPECIAL;
             nextToken.append(input.charAt(position));
             position++;
         }
 
         private void readIdentifier() {
             tokenStart = position;
-            type = IDENTIFIER;
-            //noinspection UnnecessaryParentheses
+            type = TokenType.IDENTIFIER;
+
             while (endOfInput() && isLetter()) {
                 nextToken.append(input.charAt(position));
                 position++;
@@ -155,8 +179,7 @@ public class AdvancedDateParser {
 
         private void readNumber() {
             tokenStart = position;
-            type = NUMBER;
-            //noinspection UnnecessaryParentheses
+            type = TokenType.NUMBER;
             while (endOfInput() && isDigit()) {
                 nextToken.append(input.charAt(position));
                 position++;
@@ -172,30 +195,18 @@ public class AdvancedDateParser {
                       .format();
         }
 
-        /*
-         * Returns the current token
-         */
         String getToken() {
             return nextToken.toString();
         }
 
-        /*
-         * Returns the type of the current token
-         */
-        int getType() {
+        TokenType getType() {
             return type;
         }
 
-        /*
-         * Returns the start pos of the current toke
-         */
         int getTokenStart() {
             return tokenStart;
         }
 
-        /*
-         * Returns the position of the next character checked by the tokenizer.
-         */
         int getPosition() {
             return position;
         }
@@ -228,29 +239,30 @@ public class AdvancedDateParser {
         tokenizer = new Tokenizer(input.toLowerCase());
         parseModifiers();
         // ignore ":" after modifiers
-        //noinspection UnnecessaryParentheses
-        if ((tokenizer.getType() == Tokenizer.SPECIAL) && in(MODIFIER_END)) {
+        if ((tokenizer.getType() == Tokenizer.TokenType.SPECIAL) && in(MODIFIER_END)) {
             tokenizer.nextToken();
         }
-        Calendar result = parseFixPoint();
-        parseDeltas(result);
-        applyModifiers(result);
+
+        LocalDateTime result = parseFixPoint();
+        result = parseDeltas(result);
+        result = applyModifiers(result);
         return new DateSelection(result, input);
     }
 
-    private void parseDeltas(Calendar result) throws ParseException {
-        while (tokenizer.getType() != Tokenizer.END_OF_INPUT) {
-            parseDelta(result, tokenizer);
+    private LocalDateTime parseDeltas(LocalDateTime result) throws ParseException {
+        while (tokenizer.getType() != Tokenizer.TokenType.END_OF_INPUT) {
+            result = parseDelta(result, tokenizer);
             tokenizer.nextToken();
         }
+
+        return result;
     }
 
     private void parseModifiers() throws ParseException {
         do {
             tokenizer.nextToken();
             // ignore "," between modifiers
-            //noinspection UnnecessaryParentheses,UnnecessaryParentheses
-            if ((tokenizer.getType() == Tokenizer.SPECIAL) && in(MODIFIER_SEPARATOR)) {
+            if ((tokenizer.getType() == Tokenizer.TokenType.SPECIAL) && in(MODIFIER_SEPARATOR)) {
                 tokenizer.nextToken();
             }
         } while (parseModifier());
@@ -274,63 +286,45 @@ public class AdvancedDateParser {
         return result.trim();
     }
 
-    /*
-     * Applies the parsed modifiers to the previously calculated result.
-     */
-    private void applyModifiers(Calendar result) {
-        forceConversion(result);
-        applyDateModifiers(result);
-        applyTimeModifiers(result);
+    private LocalDateTime applyModifiers(LocalDateTime result) {
+        result = applyDateModifiers(result);
+        result = applyTimeModifiers(result);
+
+        return result;
     }
 
-    private void applyTimeModifiers(Calendar result) {
+    private LocalDateTime applyTimeModifiers(LocalDateTime result) {
         if (startOfDay) {
-            result.set(Calendar.MILLISECOND, 0);
-            result.set(Calendar.SECOND, 0);
-            result.set(Calendar.MINUTE, 0);
-            result.set(Calendar.HOUR_OF_DAY, 0);
-            forceConversion(result);
+            result = result.toLocalDate().atStartOfDay();
         }
         if (endOfDay) {
-            result.set(Calendar.MILLISECOND, result.getMaximum(Calendar.MILLISECOND));
-            result.set(Calendar.SECOND, result.getMaximum(Calendar.SECOND));
-            result.set(Calendar.MINUTE, result.getMaximum(Calendar.MINUTE));
-            result.set(Calendar.HOUR_OF_DAY, result.getMaximum(Calendar.HOUR_OF_DAY));
-            forceConversion(result);
+            result = result.toLocalDate().plusDays(1).atStartOfDay().minusSeconds(1);
         }
+
+        return result;
     }
 
-    private void applyDateModifiers(Calendar result) {
+    private LocalDateTime applyDateModifiers(LocalDateTime result) {
         if (startOfYear) {
-            result.set(Calendar.DAY_OF_MONTH, 1);
-            result.set(Calendar.MONTH, Calendar.JANUARY);
-            forceConversion(result);
+            result = result.withDayOfMonth(1).withMonth(1);
         }
         if (endOfYear) {
-            result.set(Calendar.MONTH, Calendar.DECEMBER);
-            result.set(Calendar.DAY_OF_MONTH, result.getMaximum(Calendar.DAY_OF_MONTH));
-            forceConversion(result);
+            result = result.withMonth(12).withDayOfMonth(31);
         }
         if (startOfMonth) {
-            result.set(Calendar.DAY_OF_MONTH, 1);
-            forceConversion(result);
+            result = result.withDayOfMonth(1);
         }
         if (endOfMonth) {
-            result.set(Calendar.DAY_OF_MONTH, result.getActualMaximum(Calendar.DAY_OF_MONTH));
-            forceConversion(result);
+            result = result.with(TemporalAdjusters.lastDayOfMonth());
         }
         if (startOfWeek) {
-            result.set(Calendar.DAY_OF_WEEK, result.getFirstDayOfWeek());
-            forceConversion(result);
+            result = result.with(WeekFields.ISO.dayOfWeek(), 1);
         }
         if (endOfWeek) {
-            result.set(Calendar.DAY_OF_WEEK, result.getActualMaximum(Calendar.DAY_OF_WEEK));
-            forceConversion(result);
+            result = result.with(WeekFields.ISO.dayOfWeek(), 7);
         }
-    }
 
-    private void forceConversion(Calendar result) {
-        result.getTime();
+        return result;
     }
 
     private String[] getI18n(String key, String... extraKeys) {
@@ -342,7 +336,7 @@ public class AdvancedDateParser {
     }
 
     private boolean parseModifier() throws ParseException {
-        if (tokenizer.getType() != Tokenizer.IDENTIFIER) {
+        if (tokenizer.getType() != Tokenizer.TokenType.IDENTIFIER) {
             return false;
         }
         if (in(start())) {
@@ -430,45 +424,41 @@ public class AdvancedDateParser {
         return getI18n("AdvancedDateParser.start", "start");
     }
 
-    private void parseDelta(Calendar fixPoint, Tokenizer tokenizer) throws ParseException {
+    private LocalDateTime parseDelta(LocalDateTime fixPoint, Tokenizer tokenizer) throws ParseException {
         int amount = parseDeltaAmount(tokenizer);
         tokenizer.nextToken();
-        if (tokenizer.getType() == Tokenizer.END_OF_INPUT) {
-            fixPoint.add(Calendar.DAY_OF_MONTH, amount);
-            return;
+        if (tokenizer.getType() == Tokenizer.TokenType.END_OF_INPUT) {
+            fixPoint = fixPoint.plusDays(amount);
+            return fixPoint;
         }
-        applyDelta(fixPoint, amount);
+        return applyDelta(fixPoint, amount);
     }
 
-    private void applyDelta(Calendar fixPoint, int amount) throws ParseException {
+    private LocalDateTime applyDelta(LocalDateTime fixPoint, int amount) throws ParseException {
         expectKeyword(join(seconds(), minutes(), hours(), days(), weeks(), months(), years()));
         if (in(seconds())) {
-            fixPoint.add(Calendar.SECOND, amount);
-            return;
+            return fixPoint.plusSeconds(amount);
         }
         if (in(minutes())) {
-            fixPoint.add(Calendar.MINUTE, amount);
-            return;
+            return fixPoint.plusMinutes(amount);
         }
         if (in(hours())) {
-            fixPoint.add(Calendar.HOUR, amount);
-            return;
+            return fixPoint.plusHours(amount);
         }
         if (in(days())) {
-            fixPoint.add(Calendar.DAY_OF_MONTH, amount);
-            return;
+            return fixPoint.plusDays(amount);
         }
         if (in(weeks())) {
-            fixPoint.add(Calendar.WEEK_OF_YEAR, amount);
-            return;
+            return fixPoint.plusWeeks(amount);
         }
         if (in(months())) {
-            fixPoint.add(Calendar.MONTH, amount);
-            return;
+            return fixPoint.plusMonths(amount);
         }
         if (in(years())) {
-            fixPoint.add(Calendar.YEAR, amount);
+            return fixPoint.plusYears(amount);
         }
+
+        return fixPoint;
     }
 
     private int parseDeltaAmount(Tokenizer tokenizer) throws ParseException {
@@ -519,43 +509,94 @@ public class AdvancedDateParser {
         return values.toArray(EMPTY_STRING_ARRAY);
     }
 
-    private Calendar parseFixPoint() throws ParseException {
-        if (tokenizer.getType() == Tokenizer.NUMBER) {
+    private LocalDateTime parseFixPoint() throws ParseException {
+        if (tokenizer.getType() == Tokenizer.TokenType.NUMBER) {
             return parseDate(tokenizer);
         }
-        if (tokenizer.getType() == Tokenizer.SPECIAL) {
+        if (tokenizer.getType() == Tokenizer.TokenType.SPECIAL) {
             return now();
         }
-        if (tokenizer.getType() == Tokenizer.END_OF_INPUT) {
+        if (tokenizer.getType() == Tokenizer.TokenType.END_OF_INPUT) {
             return now();
         }
         if (in(calendarWeek())) {
             tokenizer.nextToken();
             expectNumber();
-            Calendar result = now();
-            result.set(Calendar.WEEK_OF_YEAR, Integer.parseInt(tokenizer.getToken()));
-            forceConversion(result);
+            LocalDateTime result = now();
+            result = result.with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, Integer.parseInt(tokenizer.getToken()));
             tokenizer.nextToken();
             return result;
         }
+
         expectKeyword(nowToken());
         tokenizer.nextToken();
-        return now();
+        LocalDateTime result = now();
+        if (tokenizer.getType() == Tokenizer.TokenType.NUMBER) {
+            result = parseTime(result);
+        }
+        return result;
     }
 
     private String[] nowToken() {
         return getI18n("AdvancedDateParser.now", "now");
     }
 
-    private Calendar now() {
-        return Calendar.getInstance();
+    private LocalDateTime now() {
+        return timeProvider.localDateTimeNow();
     }
 
     private void expectNumber() throws ParseException {
-        if (tokenizer.getType() != Tokenizer.NUMBER) {
+        if (tokenizer.getType() != Tokenizer.TokenType.NUMBER) {
             throw new ParseException(NLS.fmtr("AdvancedDateParser.errInvalidToken")
                                         .set("token", tokenizer.toString())
                                         .format(), tokenizer.getTokenStart());
+        }
+    }
+
+    private void ensureValidSecond(int second) throws ParseException {
+        if (!ChronoField.SECOND_OF_MINUTE.range().isValidIntValue(second)) {
+            throw new ParseException(NLS.fmtr("AdvancedDateParser.errInvalidSecond")
+                                        .set("secondOfMinute", second)
+                                        .format(), 0);
+        }
+    }
+
+    private void ensureValidMinute(int minute) throws ParseException {
+        if (!ChronoField.MINUTE_OF_HOUR.range().isValidIntValue(minute)) {
+            throw new ParseException(NLS.fmtr("AdvancedDateParser.errInvalidMinute")
+                                        .set("minuteOfHour", minute)
+                                        .format(), 0);
+        }
+    }
+
+    private void ensureValidHour(int hour) throws ParseException {
+        if (!ChronoField.HOUR_OF_DAY.range().isValidIntValue(hour)) {
+            throw new ParseException(NLS.fmtr("AdvancedDateParser.errInvalidHour").set("hourOfDay", hour).format(), 0);
+        }
+    }
+
+    private void ensureValidAmPmHour(int hour) throws ParseException {
+        if (!ChronoField.HOUR_OF_AMPM.range().isValidIntValue(hour)) {
+            throw new ParseException(NLS.fmtr("AdvancedDateParser.errInvalidHour").set("hourOfDay", hour).format(), 0);
+        }
+    }
+
+    private void ensureValidDayOfMonth(int year, int month, int day) throws ParseException {
+        if (!YearMonth.of(year, month).isValidDay(day)) {
+            throw new ParseException(NLS.fmtr("AdvancedDateParser.errInvalidDay").set("dayOfMonth", day).format(), 0);
+        }
+    }
+
+    private void ensureValidMonth(int month) throws ParseException {
+        if (!ChronoField.MONTH_OF_YEAR.range().isValidIntValue(month)) {
+            throw new ParseException(NLS.fmtr("AdvancedDateParser.errInvalidMonth").set("monthOfYear", month).format(),
+                                     0);
+        }
+    }
+
+    private void ensureValidYear(int year) throws ParseException {
+        if (year < 1900 || year > 2100) {
+            throw new ParseException(NLS.fmtr("AdvancedDateParser.errInvalidYear").set("year", year).format(), 0);
         }
     }
 
@@ -587,18 +628,24 @@ public class AdvancedDateParser {
         }
     }
 
-    private Calendar parseDate(Tokenizer tokenizer) throws ParseException {
+    private LocalDateTime parseDate(Tokenizer tokenizer) throws ParseException {
         expectNumber();
         int firstNumber = Integer.parseInt(tokenizer.getToken());
         tokenizer.nextToken();
         if (!GERMAN_DATE_SEPARATOR.equals(tokenizer.getToken())
-            && !DUTCH_DATE_SEPARATOR.equals(tokenizer.getToken())
+            && !DASH_DATE_SEPARATOR.equals(tokenizer.getToken())
             && !ENGLISH_DATE_SEPARATOR.equals(tokenizer.getToken())) {
             return parseYMExpression(firstNumber);
         }
-        expectKeyword(GERMAN_DATE_SEPARATOR, ENGLISH_DATE_SEPARATOR, DUTCH_DATE_SEPARATOR);
-        if (GERMAN_DATE_SEPARATOR.equals(tokenizer.getToken()) || DUTCH_DATE_SEPARATOR.equals(tokenizer.getToken())) {
+        expectKeyword(GERMAN_DATE_SEPARATOR, ENGLISH_DATE_SEPARATOR, DASH_DATE_SEPARATOR);
+        if (GERMAN_DATE_SEPARATOR.equals(tokenizer.getToken())) {
             return parseDayMonthYearDate(firstNumber);
+        } else if (DASH_DATE_SEPARATOR.equals(tokenizer.getToken())) {
+            if (firstNumber > 31) {
+                return parseISODate(firstNumber);
+            } else {
+                return parseDayMonthYearDate(firstNumber);
+            }
         } else {
             return parseEnglishDate(firstNumber);
         }
@@ -608,7 +655,7 @@ public class AdvancedDateParser {
      * Parses YM expressions: 200903 will be March 2009, 0903 will be converted
      * into the same. 9910 is October 1999.
      */
-    private Calendar parseYMExpression(int number) {
+    private LocalDateTime parseYMExpression(int number) throws ParseException {
         // Convert short format like 0801 or 9904 into the equivalent long
         // format.
         if (number < 6000) {
@@ -622,38 +669,51 @@ public class AdvancedDateParser {
         }
         int year = number / 100;
         int month = number % 100;
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.HOUR, 0);
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        cal.set(Calendar.MONTH, month - 1);
-        cal.set(Calendar.YEAR, year);
-        return cal;
+
+        ensureValidYear(year);
+        ensureValidMonth(month);
+        return LocalDate.of(year, month, 1).atStartOfDay();
     }
 
-    private Calendar parseEnglishDate(int month) throws ParseException {
+    @SuppressWarnings("java:S2234")
+    @Explain("We intentionally flip the parameters here, as the british and the american format differ this way...")
+    private LocalDateTime parseEnglishDate(int month) throws ParseException {
         tokenizer.nextToken();
         expectNumber();
         int day = Integer.parseInt(tokenizer.getToken());
         tokenizer.nextToken();
-        int year = now().get(Calendar.YEAR);
+        int year = now().getYear();
         if (in(ENGLISH_DATE_SEPARATOR)) {
             tokenizer.nextToken();
-            if (tokenizer.getType() == Tokenizer.NUMBER) {
+            if (tokenizer.getType() == Tokenizer.TokenType.NUMBER) {
                 year = Integer.parseInt(tokenizer.getToken());
                 year = fixYear(year);
                 tokenizer.nextToken();
             }
         }
-        if (tokenizer.getType() == Tokenizer.NUMBER) {
-            return parseTime(buildCalendar(day, month, year));
+
+        if (invertMonthAndDay) {
+            // The empire uses a format DD/MM/YYYY instead of the yankee version (MM/DD/YYYY), therefore
+            // we have to flip month and day here...
+            return buildDateAndParseTime(month, day, year);
+        } else {
+            return buildDateAndParseTime(day, month, year);
         }
-        return buildCalendar(day, month, year);
     }
 
-    private Calendar parseTime(Calendar result) throws ParseException {
+    private LocalDateTime buildDateAndParseTime(int day, int month, int year) throws ParseException {
+        ensureValidYear(year);
+        ensureValidMonth(month);
+        ensureValidDayOfMonth(year, month, day);
+
+        LocalDateTime result = LocalDate.of(year, month, day).atStartOfDay();
+        if (tokenizer.getType() == Tokenizer.TokenType.NUMBER) {
+            result = parseTime(result);
+        }
+        return result;
+    }
+
+    private LocalDateTime parseTime(LocalDateTime result) throws ParseException {
         int hour = Integer.parseInt(tokenizer.getToken());
         tokenizer.nextToken();
         int minute = 0;
@@ -671,53 +731,61 @@ public class AdvancedDateParser {
             tokenizer.nextToken();
         }
         if (in(AM)) {
-            result.set(Calendar.HOUR, hour);
-            result.set(Calendar.AM_PM, Calendar.AM);
+            ensureValidAmPmHour(hour);
+            result = result.with(ChronoField.AMPM_OF_DAY, 0).with(ChronoField.HOUR_OF_AMPM, hour);
             tokenizer.nextToken();
         } else if (in(PM)) {
-            result.set(Calendar.HOUR, hour);
-            result.set(Calendar.AM_PM, Calendar.PM);
-            result.set(Calendar.HOUR, hour);
+            ensureValidAmPmHour(hour);
+            result = result.with(ChronoField.AMPM_OF_DAY, 1).with(ChronoField.HOUR_OF_AMPM, hour);
             tokenizer.nextToken();
         } else {
-            result.set(Calendar.HOUR_OF_DAY, hour);
+            ensureValidHour(hour);
+            result = result.withHour(hour);
         }
-        result.set(Calendar.MINUTE, minute);
-        result.set(Calendar.SECOND, second);
+
+        ensureValidMinute(minute);
+        result = result.withMinute(minute);
+        ensureValidSecond(second);
+        result = result.withSecond(second);
         return result;
     }
 
-    private Calendar buildCalendar(int day, int month, int year) {
-        Calendar result = now();
-        result.set(Calendar.MILLISECOND, 0);
-        result.set(Calendar.SECOND, 0);
-        result.set(Calendar.MINUTE, 0);
-        result.set(Calendar.HOUR_OF_DAY, 0);
-        result.set(Calendar.YEAR, year);
-        result.set(Calendar.MONTH, month - 1);
-        result.set(Calendar.DAY_OF_MONTH, day);
-        forceConversion(result);
-        return result;
-    }
-
-    private Calendar parseDayMonthYearDate(int day) throws ParseException {
+    private LocalDateTime parseDayMonthYearDate(int day) throws ParseException {
         tokenizer.nextToken();
         expectNumber();
         int month = Integer.parseInt(tokenizer.getToken());
         tokenizer.nextToken();
-        int year = now().get(Calendar.YEAR);
-        if (in(GERMAN_DATE_SEPARATOR, DUTCH_DATE_SEPARATOR)) {
+
+        int year = now().getYear();
+
+        if (in(GERMAN_DATE_SEPARATOR, DASH_DATE_SEPARATOR)) {
             tokenizer.nextToken();
-            if (tokenizer.getType() == Tokenizer.NUMBER) {
+            if (tokenizer.getType() == Tokenizer.TokenType.NUMBER) {
                 year = Integer.parseInt(tokenizer.getToken());
                 year = fixYear(year);
                 tokenizer.nextToken();
             }
         }
-        if (tokenizer.getType() == Tokenizer.NUMBER) {
-            return parseTime(buildCalendar(day, month, year));
+
+        return buildDateAndParseTime(day, month, year);
+    }
+
+    private LocalDateTime parseISODate(int year) throws ParseException {
+        tokenizer.nextToken();
+        expectNumber();
+        int month = Integer.parseInt(tokenizer.getToken());
+        tokenizer.nextToken();
+        expectKeyword(DASH_DATE_SEPARATOR);
+        tokenizer.nextToken();
+        expectNumber();
+        int day = Integer.parseInt(tokenizer.getToken());
+        tokenizer.nextToken();
+
+        if (in("t")) {
+            tokenizer.nextToken();
         }
-        return buildCalendar(day, month, year);
+
+        return buildDateAndParseTime(day, month, year);
     }
 
     private int fixYear(int year) {
@@ -730,30 +798,25 @@ public class AdvancedDateParser {
     }
 
     /**
-     * Combines the parsed text along with the effective date (as <tt>Calendar</tt>).
+     * Combines the parsed text along with the effective date (as <tt>LocalDateTime</tt>).
      * <p>
      * The string representation of this contains the effective date in angular brackets. As there are ignored by
      * the parser, the resulting string can be re-parsed to refresh modifiers and computations.
      */
     public static class DateSelection {
 
-        private Temporal date;
-        private String dateString;
+        private final LocalDateTime date;
+        private final String dateString;
 
         /**
          * Creates a new <tt>DateSelection</tt> for the given calendar and input string.
          *
-         * @param calendar   the effective date to be used
+         * @param date       the effective date to be used
          * @param dateString the input string which yielded the given calendar
          */
-        DateSelection(Calendar calendar, String dateString) {
+        DateSelection(LocalDateTime date, String dateString) {
             super();
-            this.date = LocalDateTime.of(calendar.get(Calendar.YEAR),
-                                         calendar.get(Calendar.MONTH) + 1,
-                                         calendar.get(Calendar.DAY_OF_MONTH),
-                                         calendar.get(Calendar.HOUR_OF_DAY),
-                                         calendar.get(Calendar.MINUTE),
-                                         calendar.get(Calendar.SECOND));
+            this.date = date;
             this.dateString = dateString;
         }
 
@@ -761,8 +824,19 @@ public class AdvancedDateParser {
          * Returns the effective date as <tt>Temporal</tt>
          *
          * @return the effective date. This might be <tt>null</tt> if parsing the expression failed.
+         * @deprecated use {@link #asDateTime()} which returns the proper type (<tt>LocalDateTime</tt>).
          */
+        @Deprecated(forRemoval = true)
         public Temporal getTemporal() {
+            return date;
+        }
+
+        /**
+         * Returns the effective date as <tt>LocalDateTime</tt>
+         *
+         * @return the effective date. This might be <tt>null</tt> if parsing the expression failed.
+         */
+        public LocalDateTime asDateTime() {
             return date;
         }
 

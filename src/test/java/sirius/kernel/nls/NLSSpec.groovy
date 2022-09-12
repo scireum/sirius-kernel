@@ -153,9 +153,9 @@ class NLSSpec extends BaseSpecification {
 
         where:
         input      | output
-        "14:30:12" | new LocalTime(14, 30, 12, 0)
-        "14:30"    | new LocalTime(14, 30, 0, 0)
-        "14"       | new LocalTime(14, 0, 0, 0)
+        "14:30:12" | LocalTime.of(14, 30, 12, 0)
+        "14:30"    | LocalTime.of(14, 30, 0, 0)
+        "14"       | LocalTime.of(14, 0, 0, 0)
     }
 
     def "parseMachineString works for decimals"() {
@@ -218,7 +218,7 @@ class NLSSpec extends BaseSpecification {
         '$nls.test.translate' | "translation test"   | "en"
     }
 
-    def "test various formatters"(){
+    def "test various formatters"() {
         given:
         LocalDateTime date = LocalDateTime.of(2000, 1, 2, 3, 4, 5)
         expect:
@@ -231,5 +231,23 @@ class NLSSpec extends BaseSpecification {
         NLS.getTimeFormatWithSeconds("de").format(date) == "03:04:05"
         NLS.getTimeFormatWithSeconds("en").format(date) == "03:04:05 AM"
 
+    }
+
+    def "formatters for null language don't throw exceptions and format using the current language"() {
+        given:
+        LocalDateTime date = LocalDateTime.of(2000, 1, 2, 3, 4, 5)
+        when:
+        String currentLang = NLS.getCurrentLang()
+        then:
+        NLS.getDateFormat(null).format(date) == NLS.getDateFormat(currentLang).format(date)
+        NLS.getShortDateFormat(null).format(date) == NLS.getShortDateFormat(currentLang).format(date)
+        NLS.getTimeFormatWithSeconds(null).format(date) == NLS.getTimeFormatWithSeconds(currentLang).format(date)
+        NLS.getTimeFormat(null).format(date) == NLS.getTimeFormat(currentLang).format(date)
+        NLS.getTimeParseFormat(null).format(date) == NLS.getTimeParseFormat(currentLang).format(date)
+        NLS.getDateTimeFormat(null).format(date) == NLS.getDateTimeFormat(currentLang).format(date)
+        NLS.getDateTimeFormatWithoutSeconds(null).format(date) == NLS
+                .getDateTimeFormatWithoutSeconds(currentLang).format(date)
+        and:
+        noExceptionThrown()
     }
 }

@@ -38,12 +38,12 @@ public interface CacheCoherence {
     void removeKey(Cache<String, ?> cache, String key);
 
     /**
-     * Notifies the other nodes about a put on this node.
-     * <p>
-     * The other nodes will remove the key from their cache.
+     * Notifies the coherence manager that the appropriate delete handler should be invoked on all nodes,
+     * including the calling one.
      *
-     * @param cache the cache into which a value was put
-     * @param key   the key for which put was called
+     * @param cache         the cache to remove from
+     * @param discriminator the discriminator used to select the appropriate delete handler
+     * @param testInput     the input used by the predicate in order to determine which entities to remove
      */
-    void signalPut(Cache<String, ?> cache, String key);
+    void removeAll(Cache<String, ?> cache, String discriminator, String testInput);
 }

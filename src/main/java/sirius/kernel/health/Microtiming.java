@@ -8,10 +8,9 @@
 
 package sirius.kernel.health;
 
-import com.google.common.collect.Maps;
-
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +30,7 @@ public class Microtiming {
 
     private static volatile boolean enabled = false;
     private static volatile long lastReset;
-    private static Map<String, Timing> timings = Maps.newConcurrentMap();
+    private static final Map<String, Timing> timings = new ConcurrentHashMap<>();
 
     private Microtiming() {
     }

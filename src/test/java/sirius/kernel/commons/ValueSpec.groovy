@@ -155,31 +155,19 @@ class ValueSpec extends BaseSpecification {
         expect:
         Value.of(input).coerce(boolean.class, null) == output
         where:
-        input              | output
-        ""                 | false
-        "false"            | false
-        "true"             | true
-        false              | false
-        true               | true
-    }
-
-    def "Test translate works as expected"() {
-        expect:
-        Value.of(input).translate(lang).get() == output
-        where:
-        input                    | output                   | lang
-        'regular string'         | "regular string"         | "de"
-        '$nls.test.translate'    | "übersetzungs test"      | "de"
-        '$nls.test.translate'    | "translation test"       | "en"
-        LocalDate.of(1999, 1, 1) | LocalDate.of(1999, 1, 1) | null
-        ["test1", "test2"]       | ["test1", "test2"]       | null
+        input   | output
+        ""      | false
+        "false" | false
+        "true"  | true
+        false   | false
+        true    | true
     }
 
     def "Boxing and retrieving an amount works"() {
         expect:
         Value.of(Amount.of(0.00001)).getAmount() == Amount.of(0.00001)
     }
-    
+
     def "map() does not call the mapper on an empty Value"() {
         given:
         def count = 0
@@ -204,5 +192,32 @@ class ValueSpec extends BaseSpecification {
         Value.EMPTY.flatMap(mapper)
         then:
         count == 0
+    }
+
+    def "asOptionalInt must not throw NPE on floats"() {
+        given:
+        def value = Value.of(1.1f)
+        when:
+        value.asOptionalInt()
+        then:
+        noExceptionThrown()
+    }
+
+    def "append properly handles empty/null"() {
+        expect:
+        Value.EMPTY.append(" ", "x") == "x"
+        and:
+        Value.of("x").append(" ", null).asString() == "x"
+        and:
+        Value.of("x").append(" ", "y").asString() == "x y"
+    }
+
+    def "tryAppend only emits an output if the value is filled"() {
+        expect:
+        Value.EMPTY.tryAppend(" ", "x").isEmptyString()
+        and:
+        Value.of("x").tryAppend(" ", null).asString() == "x"
+        and:
+        Value.of("x").tryAppend(" ", "y").asString() == "x y"
     }
 }

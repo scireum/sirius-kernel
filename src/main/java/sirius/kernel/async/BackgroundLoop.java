@@ -12,6 +12,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -37,15 +38,17 @@ import java.time.LocalDateTime;
  * Note that subclasses must wear an {@link sirius.kernel.di.std.Register} annotation like this:
  * {@code @Register(classes = BackgroundLoop.class)} to be visible to the framework.
  */
+@AutoRegister
 public abstract class BackgroundLoop {
 
-    private static final double EVERY_SECOND = 1;
-    private static final double EVERY_TEN_SECONDS = 0.1;
+    protected static final double FREQUENCY_EVERY_SECOND = 1;
+    protected static final double FREQUENCY_EVERY_TEN_SECONDS = 0.1;
 
     @Part
     private Tasks tasks;
 
     @Part
+    @Nullable
     private Orchestration orchestration;
 
     @Part
@@ -53,8 +56,9 @@ public abstract class BackgroundLoop {
 
     private Future loopExecuted = new Future();
     private volatile boolean enabled = true;
-    private long lastExecutionAttempt;
+    private volatile long lastExecutionAttempt;
     private String executionInfo = "-";
+    private volatile boolean executing = false;
 
     /**
      * Returns the name of the loop.
@@ -79,7 +83,7 @@ public abstract class BackgroundLoop {
      * @return the maximal call frequency in Hertz.
      */
     public double maxCallFrequency() {
-        return Sirius.isStartedAsTest() ? EVERY_SECOND : EVERY_TEN_SECONDS;
+        return Sirius.isStartedAsTest() ? FREQUENCY_EVERY_SECOND : FREQUENCY_EVERY_TEN_SECONDS;
     }
 
     /**
@@ -135,6 +139,7 @@ public abstract class BackgroundLoop {
     private void executeWork() throws Exception {
         Future executionFuture = loopExecuted;
         loopExecuted = new Future();
+        executing = true;
         try {
             Watch w = Watch.start();
             LocalDateTime now = LocalDateTime.now();
@@ -144,6 +149,7 @@ public abstract class BackgroundLoop {
             if (orchestration != null) {
                 orchestration.backgroundLoopCompleted(getName(), executionInfo);
             }
+            executing = false;
             executionFuture.success();
         }
     }
@@ -194,6 +200,15 @@ public abstract class BackgroundLoop {
     }
 
     /**
+     * Determines whether the background loop is currently running.
+     *
+     * @return <tt>true</tt> if the background loop is running, <tt>false</tt> otherwise
+     */
+    public boolean isExecuting() {
+        return executing;
+    }
+
+    /**
      * Contains the timestamp of the last execution (or execution attempt) of this loop to detect jams.
      *
      * @return the last timestamp when an execution was attempted
@@ -212,7 +227,7 @@ public abstract class BackgroundLoop {
      */
     public static Future nextExecution(Class<? extends BackgroundLoop> type) {
         if (!Sirius.isStartedAsTest()) {
-            throw new IllegalStateException("BackgroundLoop.extExecution may only be called in tests.");
+            throw new IllegalStateException("BackgroundLoop.nextExecution may only be called in tests.");
         }
         return findLoop(type).loopExecuted;
     }

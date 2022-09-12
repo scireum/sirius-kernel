@@ -8,7 +8,12 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.health.Exceptions;
+
+import javax.xml.namespace.NamespaceContext;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -17,6 +22,7 @@ import java.net.URL;
 public class XMLCall {
 
     private Outcall outcall;
+    private NamespaceContext namespaceContext;
 
     /**
      * Creates a new XMLCall for the given url with Content-Type 'text/xml'.
@@ -26,7 +32,11 @@ public class XMLCall {
      * @throws IOException in case of an IO error
      */
     public static XMLCall to(URL url) throws IOException {
-        return to(url, "text/xml");
+        try {
+            return to(url.toURI());
+        } catch (URISyntaxException e) {
+            throw Exceptions.handle(e);
+        }
     }
 
     /**
@@ -38,8 +48,35 @@ public class XMLCall {
      * @throws IOException in case of an IO error
      */
     public static XMLCall to(URL url, String contentType) throws IOException {
+        try {
+            return to(url.toURI(), contentType);
+        } catch (URISyntaxException e) {
+            throw Exceptions.handle(e);
+        }
+    }
+
+    /**
+     * Creates a new XMLCall for the given uri with Content-Type 'text/xml'.
+     *
+     * @param uri the target URI to call
+     * @return an <tt>XMLCall</tt> which can be used to send and receive XML
+     * @throws IOException in case of an IO error
+     */
+    public static XMLCall to(URI uri) throws IOException {
+        return to(uri, "text/xml");
+    }
+
+    /**
+     * Creates a new XMLCall for the given uri.
+     *
+     * @param uri         the target URI to call
+     * @param contentType the Content-Type to use
+     * @return a new instance to perform the xml call
+     * @throws IOException in case of an IO error
+     */
+    public static XMLCall to(URI uri, String contentType) throws IOException {
         XMLCall result = new XMLCall();
-        result.outcall = new Outcall(url);
+        result.outcall = new Outcall(uri);
         result.outcall.setRequestProperty("Content-Type", contentType);
         return result;
     }
@@ -57,6 +94,19 @@ public class XMLCall {
     }
 
     /**
+     * Specifies the <tt>NamespaceContext</tt> to use for the result of this call.
+     * <p>
+     * This is required to properly execute XPATH expressions on namespaced XMLs.
+     *
+     * @param namespaceContext the namespace context to use
+     * @return the call itself for fluent method calls
+     */
+    public XMLCall withNamespaceContext(NamespaceContext namespaceContext) {
+        this.namespaceContext = namespaceContext;
+        return this;
+    }
+
+    /**
      * Returns the underlying <tt>Outcall</tt>.
      *
      * @return the underlying outcall
@@ -67,12 +117,14 @@ public class XMLCall {
 
     /**
      * Can be used to generate the XML request.
+     * <p>
+     * This will mark the underlying {@link Outcall} as a POST request.
      *
-     * @return the an input which can be used to generate an XML document which is sent to the URL
+     * @return the output which can be used to generate an XML document which is sent to the URL
      * @throws IOException in case of an IO error while sending the XML document
      */
     public XMLStructuredOutput getOutput() throws IOException {
-        return new XMLStructuredOutput(outcall.getOutput());
+        return new XMLStructuredOutput(outcall.postFromOutput());
     }
 
     /**
@@ -82,6 +134,6 @@ public class XMLCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public XMLStructuredInput getInput() throws IOException {
-        return new XMLStructuredInput(outcall.getInput(), true);
+        return new XMLStructuredInput(outcall.getResponseBody(), namespaceContext);
     }
 }

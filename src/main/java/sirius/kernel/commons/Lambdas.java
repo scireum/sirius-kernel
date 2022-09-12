@@ -47,7 +47,9 @@ public class Lambdas {
      * @param <T>        the type of the elements accepted by the collector
      * @param <C>        the type of the collection which is filled by the collector
      * @return a {@link java.util.stream.Collector} inserting all elements into the given collection
+     * @deprecated Replace with {@code stream.forEach(collection::add)}
      */
+    @Deprecated
     public static <T, C extends Collection<T>> Collector<T, ?, C> into(C collection) {
         return Collector.of(() -> collection,
                             Collection::add,

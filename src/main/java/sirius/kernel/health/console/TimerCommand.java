@@ -8,7 +8,6 @@
 
 package sirius.kernel.health.console;
 
-import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Values;
 import sirius.kernel.di.std.Part;
@@ -29,8 +28,7 @@ public class TimerCommand implements Command {
 
     private static final String LINE_FORMAT = "%20s %-30s";
 
-    private static final Set<String> ACCEPTED_PARAMS =
-            Sets.newHashSet("all", "oneMinute", "tenMinutes", "oneHour", "everyDay");
+    private static final Set<String> ACCEPTED_PARAMS = Set.of("all", "oneMinute", "tenMinutes", "oneHour", "everyDay");
 
     private static final String USAGE = "Usage: timer all|oneMinute|tenMinutes|oneHour|everyDay <hour>";
 

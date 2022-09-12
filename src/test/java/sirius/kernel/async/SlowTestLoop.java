@@ -14,7 +14,7 @@ import sirius.kernel.di.std.Register;
 import javax.annotation.Nonnull;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Register(classes = BackgroundLoop.class)
+@Register
 public class SlowTestLoop extends BackgroundLoop {
 
     public static AtomicInteger counter = new AtomicInteger();

@@ -8,6 +8,7 @@
 
 package sirius.kernel.di.std;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,6 +22,7 @@ import java.lang.annotation.Target;
  * If a configPath is set, the system configuration is used to load the value specified for this path. The system
  * then tries to find the part with that name.
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Part {

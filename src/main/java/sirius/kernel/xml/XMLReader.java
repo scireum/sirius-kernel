@@ -8,8 +8,6 @@
 
 package sirius.kernel.xml;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -17,6 +15,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -28,10 +27,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 /**
@@ -44,11 +46,12 @@ import java.util.function.Function;
  */
 public class XMLReader extends DefaultHandler {
 
-    private TaskContext taskContext;
+    private final TaskContext taskContext;
 
-    private Map<String, NodeHandler> handlers = Maps.newTreeMap();
-    private List<SAX2DOMHandler> activeHandlers = Lists.newArrayList();
-    private DocumentBuilder documentBuilder;
+    private final Map<String, NodeHandler> handlers = new TreeMap<>();
+    private final List<SAX2DOMHandler> activeHandlers = new ArrayList<>();
+    private final DocumentBuilder documentBuilder;
+    private final List<String> currentPath = new ArrayList<>();
 
     /**
      * Creates a new XMLReader.
@@ -87,6 +90,8 @@ public class XMLReader extends DefaultHandler {
     public void endElement(String uri, String localName, String name) throws SAXException {
         // Delegate to active handlers and deletes them if they are finished...
         activeHandlers.removeIf(handler -> handler.endElement(name));
+
+        currentPath.remove(currentPath.size() - 1);
     }
 
     @Override
@@ -103,13 +108,21 @@ public class XMLReader extends DefaultHandler {
         for (SAX2DOMHandler handler : activeHandlers) {
             handler.createElement(name, attributes);
         }
-        // Start a new handler is necessary
-        NodeHandler handler = handlers.get(name);
+
+        // Start a new handler if necessary
+        currentPath.add(name);
+        NodeHandler handler = handlers.get(Strings.join(currentPath, "/"));
+        if (handler == null) {
+            handler = handlers.get(name);
+        }
         if (handler != null) {
             SAX2DOMHandler saxHandler = new SAX2DOMHandler(handler, documentBuilder.newDocument());
             saxHandler.createElement(name, attributes);
-            activeHandlers.add(saxHandler);
+            if (!handler.ignoreContent()) {
+                activeHandlers.add(saxHandler);
+            }
         }
+
         // Check if the user tried to interrupt parsing....
         if (!taskContext.isActive()) {
             throw new UserInterruptException();
@@ -118,6 +131,10 @@ public class XMLReader extends DefaultHandler {
 
     /**
      * Registers a new handler for a qualified name of a node.
+     * <p>
+     * Note that this can be either the node name itself or it can be the path to the node separated by
+     * "/". Therefore &lt;foo&gt;&lt;bar&gt; would be matched by <tt>bar</tt> and by <tt>foo/bar</tt>, where
+     * the path always has precedence over the single node name.
      * <p>
      * Handlers are invoked after the complete node was read. Namespaces are ignored for now which eases
      * the processing a lot (especially for xpath related tasks). Namespaces however
@@ -146,6 +163,7 @@ public class XMLReader extends DefaultHandler {
      */
     static class UserInterruptException extends RuntimeException {
 
+        @Serial
         private static final long serialVersionUID = -7454219131982518216L;
     }
 
@@ -158,7 +176,7 @@ public class XMLReader extends DefaultHandler {
      *                     processing a malformed XML).
      */
     public void parse(InputStream stream, Function<String, InputStream> resourceLocator) throws IOException {
-        try {
+        try (stream) {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
             org.xml.sax.XMLReader reader = saxParser.getXMLReader();
@@ -176,8 +194,6 @@ public class XMLReader extends DefaultHandler {
         } catch (UserInterruptException e) {
             // IGNORED - this is used to cancel parsing if the used tried to
             // cancel a process.
-        } finally {
-            stream.close();
         }
     }
 

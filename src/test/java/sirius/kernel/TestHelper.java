@@ -40,6 +40,7 @@ public class TestHelper {
             Injector.context()
                     .getPriorizedParts(TestLifecycleParticipant.class)
                     .forEach(TestLifecycleParticipant::beforeTests);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> tearDown(testClass)));
         }
     }
 
@@ -50,13 +51,21 @@ public class TestHelper {
      */
     public static void tearDown(Class<?> testClass) {
         if (frameworkStarter == testClass) {
-            Injector.context()
-                    .getPriorizedParts(TestLifecycleParticipant.class)
-                    .forEach(TestLifecycleParticipant::afterTests);
-
-            Sirius.stop();
-
-            frameworkStarter = null;
+            performTearDown();
         }
+    }
+
+    /**
+     * Performs the framework termination. This can be used from test extensions before a fresh framework instance
+     * will to be started.
+     */
+    public static void performTearDown() {
+        Injector.context()
+                .getPriorizedParts(TestLifecycleParticipant.class)
+                .forEach(TestLifecycleParticipant::afterTests);
+        Sirius.stop();
+
+        frameworkStarter = null;
+
     }
 }

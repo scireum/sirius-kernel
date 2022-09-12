@@ -21,18 +21,23 @@ import com.palantir.docker.compose.execution.DockerCompose;
 import com.palantir.docker.compose.execution.DockerComposeExecutable;
 import com.palantir.docker.compose.execution.DockerExecutable;
 import com.palantir.docker.compose.execution.RetryingDockerCompose;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Wait;
 import sirius.kernel.di.Initializable;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.settings.PortMapper;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -44,7 +49,7 @@ import java.util.stream.Collectors;
  * Also it provides a {@link PortMapper} to map the desired production ports to the
  * ones provided by the docker containers.
  */
-@Register(classes = {Initializable.class, Killable.class})
+@Register
 public class DockerHelper extends PortMapper implements Initializable, Killable {
 
     private static final int MAX_WAIT_SECONDS = 10;
@@ -55,8 +60,13 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
     @ConfigValue("docker.hostIp")
     private String hostIp;
 
+    @ConfigValue("docker.hostPort")
+    private String hostPort;
+
+    @SuppressWarnings("FieldMayBeFinal")
+    @Explain("This is only the default, the field is filled with a config later")
     @ConfigValue("docker.file")
-    private String dockerfile;
+    private List<String> dockerfiles = Collections.emptyList();
 
     @ConfigValue("docker.retryAttempts")
     private int retryAttempts;
@@ -94,7 +104,8 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
                 machine = DockerMachine.localMachine().build();
             } else {
                 LOG.INFO("Using hostIp: %s", hostIp);
-                machine = new DockerMachine(hostIp, System.getenv());
+                String dockerHost = Strings.apply("tcp://%s:%s", hostIp, hostPort);
+                machine = DockerMachine.remoteMachine().withEnvironment(System.getenv()).host(dockerHost).build();
             }
         }
         return machine;
@@ -123,7 +134,7 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
 
     private DockerComposeExecutable dockerComposeExecutable() {
         return DockerComposeExecutable.builder()
-                                      .dockerComposeFiles(DockerComposeFiles.from(dockerfile))
+                                      .dockerComposeFiles(getDockerComposeFiles())
                                       .dockerConfiguration(this.machine())
                                       .projectName(projectName())
                                       .build();
@@ -137,9 +148,8 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
 
     @Override
     public void initialize() throws Exception {
-        determineEffectiveDockerFile();
-        if (Strings.isFilled(dockerfile)) {
-            LOG.INFO("Starting docker compose using: %s", dockerfile);
+        if (!dockerfiles.isEmpty()) {
+            LOG.INFO("Starting docker compose using: %s", dockerfiles);
             this.dockerCompose = new RetryingDockerCompose(retryAttempts,
                                                            new DefaultDockerCompose(dockerComposeExecutable(),
                                                                                     machine()));
@@ -147,6 +157,9 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
                 try {
                     LOG.INFO("Executing docker-compose pull...");
                     dockerCompose.pull();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    LOG.WARN("docker-compose pull failed: %s (%s)", e.getMessage(), e.getClass().getName());
                 } catch (Exception e) {
                     LOG.WARN("docker-compose pull failed: %s (%s)", e.getMessage(), e.getClass().getName());
                 }
@@ -154,6 +167,9 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
             try {
                 LOG.INFO("Executing docker-compose up...");
                 dockerCompose.up();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOG.WARN("docker-compose up failed: %s (%s)", e.getMessage(), e.getClass().getName());
             } catch (Exception e) {
                 LOG.WARN("docker-compose up failed: %s (%s)", e.getMessage(), e.getClass().getName());
             }
@@ -166,24 +182,43 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
         }
     }
 
-    private void determineEffectiveDockerFile() throws URISyntaxException {
+    private DockerComposeFiles getDockerComposeFiles() {
+        final String[] dockerfilesArray = dockerfiles.stream()
+                                                     .map(this::resolveDockerComposeFile)
+                                                     .filter(Objects::nonNull)
+                                                     .toArray(i -> new String[i]);
+        return DockerComposeFiles.from(dockerfilesArray);
+    }
+
+    private String resolveDockerComposeFile(String dockerfile) {
         if (Strings.isEmpty(dockerfile)) {
-            return;
+            return null;
         }
         if (new File(dockerfile).exists()) {
-            return;
+            return dockerfile;
         }
-        URL dockerResource = getClass().getResource(dockerfile.startsWith("/") ? dockerfile : "/" + dockerfile);
-        if (dockerResource != null && dockerResource.toURI() != null && new File(dockerResource.toURI()).exists()) {
-            dockerfile = new File(dockerResource.toURI()).getAbsolutePath();
-        } else {
-            dockerfile = null;
-        }
+        return Optional.of(dockerfile)
+                       .map(file -> file.startsWith("/") ? file : "/" + file)
+                       .map(file -> getClass().getResource(file))
+                       .map(resource -> {
+                           try {
+                               return resource.toURI();
+                           } catch (URISyntaxException e) {
+                               throw Exceptions.handle(e);
+                           }
+                       })
+                       .map(File::new)
+                       .filter(File::exists)
+                       .map(File::getAbsolutePath)
+                       .orElse(null);
     }
 
     private void awaitClusterHealth() {
         try {
             containers().allContainers().forEach(this::awaitContainerStart);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.SEVERE(e);
         } catch (Exception e) {
             LOG.SEVERE(e);
         }
@@ -213,7 +248,7 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
 
     @Override
     public void awaitTermination() {
-        if (Strings.isEmpty(dockerfile)) {
+        if (dockerfiles.isEmpty()) {
             return;
         }
 
@@ -222,41 +257,73 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
         }
 
         if (Sirius.isStartedAsTest()) {
-            try {
-                LOG.INFO("Executing docker-compose kill...");
-                dockerCompose.kill();
-            } catch (Exception e) {
-                LOG.WARN("docker-compose kill failed: %s (%s)", e.getMessage(), e.getClass().getName());
-            }
-            try {
-                LOG.INFO("Executing docker-compose down...");
-                dockerCompose.down();
-            } catch (Exception e) {
-                LOG.WARN("docker-compose down failed: %s (%s)", e.getMessage(), e.getClass().getName());
-            }
-            try {
-                LOG.INFO("Executing docker-compose rm...");
-                dockerCompose.rm();
-            } catch (Exception e) {
-                LOG.WARN("docker-compose rm failed: %s (%s)", e.getMessage(), e.getClass().getName());
-            }
+            kill();
+            down();
+            rm();
         } else {
             try {
                 LOG.INFO("Executing docker-compose stop...");
-                containers().allContainers().forEach(c -> {
-                    try {
-                        LOG.INFO("Executing docker-compose stop for '%s'...", c.getContainerName());
-                        dockerCompose.stop(c);
-                    } catch (Exception e) {
-                        LOG.WARN("docker-compose stop for '%s' failed: %s (%s)",
-                                 c.getContainerName(),
-                                 e.getMessage(),
-                                 e.getClass().getName());
-                    }
-                });
+                containers().allContainers().forEach(this::stop);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOG.WARN("docker-compose stop failed: %s (%s)", e.getMessage(), e.getClass().getName());
             } catch (Exception e) {
                 LOG.WARN("docker-compose stop failed: %s (%s)", e.getMessage(), e.getClass().getName());
             }
+        }
+    }
+
+    private void stop(Container c) {
+        try {
+            LOG.INFO("Executing docker-compose stop for '%s'...", c.getContainerName());
+            dockerCompose.stop(c);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.WARN("docker-compose stop for '%s' failed: %s (%s)",
+                     c.getContainerName(),
+                     e.getMessage(),
+                     e.getClass().getName());
+        } catch (Exception e) {
+            LOG.WARN("docker-compose stop for '%s' failed: %s (%s)",
+                     c.getContainerName(),
+                     e.getMessage(),
+                     e.getClass().getName());
+        }
+    }
+
+    private void rm() {
+        try {
+            LOG.INFO("Executing docker-compose rm...");
+            dockerCompose.rm();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.WARN("docker-compose rm failed: %s (%s)", e.getMessage(), e.getClass().getName());
+        } catch (Exception e) {
+            LOG.WARN("docker-compose rm failed: %s (%s)", e.getMessage(), e.getClass().getName());
+        }
+    }
+
+    private void down() {
+        try {
+            LOG.INFO("Executing docker-compose down...");
+            dockerCompose.down();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.WARN("docker-compose down failed: %s (%s)", e.getMessage(), e.getClass().getName());
+        } catch (Exception e) {
+            LOG.WARN("docker-compose down failed: %s (%s)", e.getMessage(), e.getClass().getName());
+        }
+    }
+
+    private void kill() {
+        try {
+            LOG.INFO("Executing docker-compose kill...");
+            dockerCompose.kill();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.WARN("docker-compose kill failed: %s (%s)", e.getMessage(), e.getClass().getName());
+        } catch (Exception e) {
+            LOG.WARN("docker-compose kill failed: %s (%s)", e.getMessage(), e.getClass().getName());
         }
     }
 }

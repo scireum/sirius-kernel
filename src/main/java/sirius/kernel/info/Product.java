@@ -8,10 +8,11 @@
 
 package sirius.kernel.info;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.Sirius;
 import sirius.kernel.settings.Extension;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,7 +55,7 @@ public class Product {
      */
     public static List<Module> getModules() {
         if (modules == null) {
-            List<Module> result = Lists.newArrayList();
+            List<Module> result = new ArrayList<>();
             for (Extension ext : Sirius.getSettings().getExtensions("product.modules")) {
                 result.add(new Module(ext.getId(),
                                       ext.get("version").asString(),
@@ -64,6 +65,6 @@ public class Product {
             }
             modules = result;
         }
-        return modules;
+        return Collections.unmodifiableList(modules);
     }
 }

@@ -8,6 +8,8 @@
 
 package sirius.kernel.async;
 
+import sirius.kernel.commons.RateLimit;
+
 import java.util.function.Supplier;
 
 /**
@@ -35,8 +37,33 @@ public interface TaskContextAdapter {
      * context.
      *
      * @param message the message to set as state
+     * @deprecated Use either {@link #forceUpdateState(String)} or {@link #tryUpdateState(String)}
      */
+    @Deprecated(since = "2021/07/01")
     void setState(String message);
+
+    /**
+     * Invoked if {@link TaskContext#shouldUpdateState()} is called in the attached context.
+     *
+     * @return a rate limit which limits the number of updates to a reasonable value
+     */
+    RateLimit shouldUpdateState();
+
+    /**
+     * Invoked if {@link sirius.kernel.async.TaskContext#setState(String, Object...)} is called in the attached
+     * context.
+     *
+     * @param message the message to set as state
+     */
+    void tryUpdateState(String message);
+
+    /**
+     * Invoked if {@link sirius.kernel.async.TaskContext#setState(String, Object...)} is called in the attached
+     * context.
+     *
+     * @param message the message to set as state
+     */
+    void forceUpdateState(String message);
 
     /**
      * Invoked if {@link sirius.kernel.async.TaskContext#logLimited(Object)} is called in the attached context.
@@ -60,6 +87,15 @@ public interface TaskContextAdapter {
      * @param millis  the current duration for the block being counted
      */
     void addTiming(String counter, long millis);
+
+    /**
+     * Invoked if {@link sirius.kernel.async.TaskContext#addTiming(String, long, boolean)} is called in the attached context.
+     *
+     * @param counter   the counter to increment
+     * @param millis    the current duration for the block being counted
+     * @param adminOnly whether to show the timing only to administrators instead of all users
+     */
+    void addTiming(String counter, long millis, boolean adminOnly);
 
     /**
      * Invoked if {@link TaskContext#markErroneous()} is called in the attached context.

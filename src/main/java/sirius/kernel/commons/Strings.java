@@ -8,22 +8,26 @@
 
 package sirius.kernel.commons;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Objects;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Provides various helper methods for dealing with Java <tt>Strings</tt>
@@ -73,7 +77,7 @@ public class Strings {
                                                     'w',
                                                     'z'};
 
-    private static Map<Integer, String> unicodeMapping = new TreeMap<>();
+    private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
     static {
         translateRange(0x00C0, "A", "A", "A", "A", "AE", "A", "AE", "C", "E", "E", "E", "E", "I", "I", "I", "I");
@@ -168,7 +172,7 @@ public class Strings {
         if (isEmpty(effectiveLeft)) {
             return isEmpty(effectiveRight);
         }
-        return Objects.equal(effectiveLeft, effectiveRight);
+        return Objects.equals(effectiveLeft, effectiveRight);
     }
 
     /**
@@ -232,7 +236,7 @@ public class Strings {
     }
 
     /**
-     * Returns the first non empty value of the given array.
+     * Returns the first non-empty value of the given array.
      * <p>
      * This can be used to provide a default value or to check several sources for a value, e.g.:
      * <pre>
@@ -247,6 +251,7 @@ public class Strings {
      * @return the first value of values which is filled.
      * Returns <tt>null</tt> if all are empty or if no values where passed in
      */
+    @Nullable
     public static String firstFilled(String... values) {
         if (values != null) {
             for (String s : values) {
@@ -264,13 +269,32 @@ public class Strings {
      * @param value the value to be encoded.
      * @return an url encoded representation of value, using UTF-8 as character encoding.
      */
+    @Nullable
     public static String urlEncode(@Nullable String value) {
         if (isFilled(value)) {
             try {
-                return URLEncoder.encode(value, Charsets.UTF_8.name());
+                return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
             } catch (UnsupportedEncodingException e) {
                 // Cannot happen if Java-Version is > 1.4....
                 Exceptions.ignore(e);
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Returns an url decoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
+     *
+     * @param value the value to be decoded.
+     * @return an url decoded representation of value, using UTF-8 as character encoding.
+     */
+    @Nullable
+    public static String urlDecode(@Nullable String value) {
+        if (isFilled(value)) {
+            try {
+                return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+            } catch (UnsupportedEncodingException e) {
+                throw Exceptions.handle(e);
             }
         }
         return value;
@@ -298,6 +322,51 @@ public class Strings {
             }
         }
         return result;
+    }
+
+    /**
+     * Split a string into multiple lines with a width of at most maxCharacters.
+     *
+     * @param input         the string to split
+     * @param maxCharacters the maximum amount of characters per line
+     * @return the resulting lines
+     */
+    public static List<String> splitSmart(String input, int maxCharacters) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        for (String toAdd : splitIntoWords(input, maxCharacters)) {
+            if (!current.isEmpty() && current.length() + toAdd.length() >= maxCharacters) {
+                result.add(current.toString());
+                current = new StringBuilder();
+            }
+            if (!current.isEmpty()) {
+                current.append(" ");
+            }
+            current.append(toAdd);
+        }
+        if (!current.isEmpty()) {
+            result.add(current.toString());
+        }
+        return result;
+    }
+
+    /**
+     * Split a string into words of at most maxCharacters length.
+     * <p>
+     * If a word is longer than maxCharacters, it is split into multiple parts.
+     *
+     * @param input         the input string
+     * @param maxCharacters the maximum number of characters a word may have
+     * @return a list of the words of the input string
+     */
+    private static List<String> splitIntoWords(String input, int maxCharacters) {
+        return Arrays.stream(input.split(" ")).<String>mapMulti((string, consumer) -> {
+            while (string.length() > maxCharacters) {
+                consumer.accept(string.substring(0, maxCharacters));
+                string = string.substring(maxCharacters);
+            }
+            consumer.accept(string);
+        }).filter(Strings::isFilled).collect(Collectors.toList());
     }
 
     /**
@@ -522,6 +591,7 @@ public class Strings {
      * @return a trimmed version of the string representation of the given object.
      * Returns <tt>null</tt> if an empty string was given.
      */
+    @Nullable
     public static String trim(Object object) {
         if (isEmpty(object)) {
             return null;
@@ -577,7 +647,7 @@ public class Strings {
         Matcher m = regEx.matcher(input);
         boolean result = m.find();
         if (result) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             do {
                 m.appendReplacement(sb, replacement.apply(m.group(1)));
                 result = m.find();
@@ -663,9 +733,7 @@ public class Strings {
             sb.append(input);
         }
 
-        for (int i = 0; i < numberOfPaddings; i++) {
-            sb.append(padding);
-        }
+        sb.append(padding.repeat(numberOfPaddings));
 
         if (left && input != null) {
             sb.append(input);

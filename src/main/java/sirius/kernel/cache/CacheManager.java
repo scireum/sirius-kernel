@@ -14,12 +14,15 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Provides access to all managed caches
@@ -40,11 +43,15 @@ public class CacheManager {
     /**
      * Lists all known caches.
      */
-    private static Map<String, ManagedCache<?, ?>> caches = new ConcurrentHashMap<>();
+    protected static final Map<String, ManagedCache<?, ?>> caches = new ConcurrentHashMap<>();
 
+    /**
+     * Defines the default TTL used for inline caches.
+     */
     private static final Duration INLINE_CACHE_DEFAULT_TTL = Duration.ofSeconds(10);
 
     @Part
+    @Nullable
     private static CacheCoherence cacheCoherence;
 
     /**
@@ -54,12 +61,12 @@ public class CacheManager {
     }
 
     /**
-     * Returns a list of all known caches
+     * Returns a sorted list of all known caches
      *
-     * @return a list of all caches created so far
+     * @return a sorted list of all caches created so far
      */
-    public static List<ManagedCache<?, ?>> getCaches() {
-        return new ArrayList<>(caches.values());
+    public static List<Cache<?, ?>> getCaches() {
+        return caches.values().stream().sorted(Comparator.comparing(Cache::getName)).collect(Collectors.toList());
     }
 
     /**
@@ -250,16 +257,34 @@ public class CacheManager {
     }
 
     /**
-     * Notifies the other nodes about a put on this node.
+     * Notifies the other nodes about the delete handler to invoke.
      * <p>
-     * The other nodes will remove the key from their cache.
+     * This will invoke the delete handler previously registered via {@link Cache#addRemover(String, BiPredicate)}
+     * which will then remove all matching cache entries.
      *
-     * @param cache the cache into which a value was put
-     * @param key   the key for which put was called
+     * @param cache         the cache to cleanup
+     * @param discriminator the name of the delete handler
+     * @param testInput     the input into the predicate to determine which entries to delete
      */
-    public static void signalPut(CoherentCache<?> cache, String key) {
+    public static void removeAll(CoherentCache<?> cache, String discriminator, String testInput) {
         if (cacheCoherence != null) {
-            cacheCoherence.signalPut(cache, key);
+            cacheCoherence.removeAll(cache, discriminator, testInput);
+        } else {
+            cache.removeAllLocal(discriminator, testInput);
+        }
+    }
+
+    /**
+     * Executes the delete handler locally.
+     *
+     * @param cacheName     the name of the cache to remove the entries from
+     * @param discriminator the name of the delete handler to invoke
+     * @param testInput     the input for the predicate to identify entries to delete
+     */
+    public static void coherentCacheRemoveAllLocally(String cacheName, String discriminator, String testInput) {
+        ManagedCache<?, ?> cache = caches.get(cacheName);
+        if (cache instanceof CoherentCache) {
+            ((CoherentCache<?>) cache).removeAllLocal(discriminator, testInput);
         }
     }
 

@@ -8,14 +8,13 @@
 
 package sirius.kernel.commons;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * A map like data structure which associates strings (char sequences) to values.
@@ -82,7 +81,7 @@ public class Trie<V> {
          * This will not change the internal state.
          *
          * @param c the character to continue with
-         * @return <tt>true</tt> if the current path can continued using the given character,
+         * @return <tt>true</tt> if the current path can be continued using the given character,
          * <tt>false</tt> otherwise.
          */
         boolean canContinue(char c);
@@ -90,7 +89,7 @@ public class Trie<V> {
         /**
          * Tries to continue the current path with the given character.
          * <p>
-         * If the current path can be continued, the internal state will be updated. Otherwise the internal
+         * If the current path can be continued, the internal state will be updated. Otherwise, the internal
          * state will remain unchanged - the iterator is not reset automatically.
          *
          * @param c the character to continue with
@@ -167,12 +166,12 @@ public class Trie<V> {
         /**
          * Contains a sorted list of keys
          */
-        private List<Character> keys = Lists.newArrayList();
+        private final List<Character> keys = new ArrayList<>();
 
         /**
          * Contains the list of continuations matching the keys list
          */
-        private List<Node> continuations = Lists.newArrayList();
+        private final List<Node> continuations = new ArrayList<>();
 
         /**
          * Contains the value associated with the path to this node
@@ -204,7 +203,7 @@ public class Trie<V> {
         }
 
         /**
-         * Adds a new step for the given character. Internally, a binary search is performed as the keylist
+         * Adds a new step for the given character. Internally, a binary search is performed as the key-list
          * is sorted ascending.
          */
         void addStep(char c) {
@@ -248,7 +247,7 @@ public class Trie<V> {
 
         @Override
         public Set<Character> getPossibilities() {
-            return Sets.newTreeSet(current.keys);
+            return new TreeSet<>(current.keys);
         }
 
         @Override
@@ -338,7 +337,7 @@ public class Trie<V> {
     /**
      * Retrieves all keys that are stored in this {@link Trie}.
      *
-     * @return a {@link Set} of all keys that are stored in this {@link Trie}
+     * @return an {@link Collections#unmodifiableSet(Set) unmodifiable set} of all keys that are stored in this {@link Trie}
      */
     public Set<String> keySet() {
         return getAllKeysBeginningWith("");
@@ -357,7 +356,8 @@ public class Trie<V> {
      * Performs a prefix search within this {@link Trie}'s {@link #keySet() key set}
      *
      * @param prefix to search for
-     * @return all keys that are beginning with the given <tt>prefix</tt> (may include <tt>prefix</tt> itself)
+     * @return an {@link Collections#unmodifiableSet(Set) unmodifiable set} holding all keys that are beginning with
+     * the given <tt>prefix</tt> (may include <tt>prefix</tt> itself)
      */
     public Set<String> getAllKeysBeginningWith(String prefix) {
         ContainmentIterator<V> iter = iterator();
@@ -372,7 +372,7 @@ public class Trie<V> {
     private Set<String> getAllKeysBeginningWith(String prefix, ContainmentIterator<V> iter) {
         if (iter.getPossibilities().isEmpty()) {
             if (iter.getValue() != null) {
-                return Sets.newHashSet(prefix);
+                return Collections.singleton(prefix);
             } else {
                 return Collections.emptySet();
             }
@@ -388,6 +388,6 @@ public class Trie<V> {
             iter.goBack();
         }
 
-        return result;
+        return Collections.unmodifiableSet(result);
     }
 }

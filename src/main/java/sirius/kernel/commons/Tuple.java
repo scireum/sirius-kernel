@@ -8,14 +8,13 @@
 
 package sirius.kernel.commons;
 
-import com.google.common.base.Objects;
-
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -128,12 +127,11 @@ public class Tuple<F, S> {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Tuple<?, ?>)) {
+        if (!(obj instanceof Tuple<?, ?> other)) {
             return false;
         }
-        Tuple<?, ?> other = (Tuple<?, ?>) obj;
 
-        return Objects.equal(first, other.getFirst()) && Objects.equal(second, other.getSecond());
+        return Objects.equals(first, other.getFirst()) && Objects.equals(second, other.getSecond());
     }
 
     @Override
@@ -143,7 +141,7 @@ public class Tuple<F, S> {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(first, second);
+        return Objects.hash(first, second);
     }
 
     /**
@@ -231,9 +229,7 @@ public class Tuple<F, S> {
     public static <K, V> Collector<Tuple<K, V>, Map<K, V>, Map<K, V>> toMap(Supplier<Map<K, V>> supplier,
                                                                             BinaryOperator<V> merger) {
         return Collector.of(supplier, (map, tuple) -> map.put(tuple.getFirst(), tuple.getSecond()), (a, b) -> {
-            b.entrySet()
-             .forEach(entryInB -> a.compute(entryInB.getKey(),
-                                            (key, valueOfA) -> merger.apply(valueOfA, entryInB.getValue())));
+            b.forEach((key1, value) -> a.compute(key1, (key, valueOfA) -> merger.apply(valueOfA, value)));
             return a;
         }, Function.identity(), Collector.Characteristics.IDENTITY_FINISH);
     }

@@ -8,7 +8,6 @@
 
 package sirius.kernel.xml;
 
-import com.google.common.base.Charsets;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -29,6 +28,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Uses an XMLStructuredOutput with a temporary buffer to generate XML into a String.
@@ -51,7 +51,7 @@ public class XMLGenerator extends XMLStructuredOutput {
      */
     public String generate(String encoding) {
         try {
-            return new String(((ByteArrayOutputStream) out).toByteArray(), encoding);
+            return ((ByteArrayOutputStream) out).toString(encoding);
         } catch (UnsupportedEncodingException e) {
             throw Exceptions.handle(e);
         }
@@ -63,7 +63,7 @@ public class XMLGenerator extends XMLStructuredOutput {
      * @return a string representation of the generated XML.
      */
     public String generate() {
-        return generate(Charsets.UTF_8.name());
+        return generate(StandardCharsets.UTF_8.name());
     }
 
     /**

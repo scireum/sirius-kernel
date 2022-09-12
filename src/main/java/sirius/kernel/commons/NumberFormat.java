@@ -18,17 +18,17 @@ import java.text.DecimalFormatSymbols;
 /**
  * Used to define the parameters used to create a string representation of a number.
  * <p>
- * Provides a set of default formats and also describes the parameters used to format a number. This is used
- * by {@link Amount} to create string representations.
+ * Provides a set of default formats and also describes the parameters used to format a number.
+ * This is used by {@link Amount} to create string representations.
  */
 public class NumberFormat {
 
     /**
      * Describes the default format used to create string representations of percentages.
      * <p>
-     * It therefore specifies two decimal places which are rounded {@link RoundingMode#HALF_UP}. It uses
-     * the decimal format symbols for the currently active language provided by
-     * {@link sirius.kernel.nls.NLS}. As suffix the percent sign <tt>%</tt> is used.
+     * It therefore specifies two decimal places which are rounded {@link RoundingMode#HALF_UP}.
+     * It uses the decimal format symbols for the currently active language provided by
+     * {@link sirius.kernel.nls.NLS}. A percent sign <tt>%</tt> is used as suffix
      *
      * @see sirius.kernel.nls.NLS#getDecimalFormatSymbols()
      */
@@ -58,6 +58,34 @@ public class NumberFormat {
             new NumberFormat(2, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
 
     /**
+     * Describes a format which rounds to three decimal places.
+     * <p>
+     * It specifies {@link RoundingMode#HALF_UP} as rounding mode and uses
+     * the decimal format symbols for machine formats, provided by
+     * {@link sirius.kernel.nls.NLS}.
+     *
+     * @see sirius.kernel.nls.NLS#getMachineFormatSymbols()
+     */
+    public static final NumberFormat MACHINE_THREE_DECIMAL_PLACES =
+            new NumberFormat(3, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
+
+    /**
+     * Describes a format which rounds to up to five decimal places.
+     * <p>
+     * It specifies {@link RoundingMode#HALF_UP} as rounding mode and uses
+     * the decimal format symbols for machine formats, provided by
+     * {@link sirius.kernel.nls.NLS}.
+     * <p>
+     * This method is intended to return a machine representation without loosing any data while formatting. As most
+     * probably five decimal places are too much to output, this should be used in conjuction with
+     * {@link Amount#toSmartRoundedString(NumberFormat)}.
+     *
+     * @see sirius.kernel.nls.NLS#getMachineFormatSymbols()
+     */
+    public static final NumberFormat MACHINE_FIVE_DECIMAL_PLACES =
+            new NumberFormat(5, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
+
+    /**
      * Describes a format which rounds to integer numbers (no decimal places).
      * <p>
      * It specifies {@link RoundingMode#HALF_UP} as rounding mode and uses
@@ -80,11 +108,11 @@ public class NumberFormat {
     public static final NumberFormat MACHINE_NO_DECIMAL_PLACES =
             new NumberFormat(0, RoundingMode.HALF_UP, NLS.getMachineFormatSymbols(), false, null);
 
-    private String suffix;
-    private int scale;
-    private boolean useGrouping;
-    private RoundingMode roundingMode;
-    private DecimalFormatSymbols formatSymbols;
+    private final String suffix;
+    private final int scale;
+    private final boolean useGrouping;
+    private final RoundingMode roundingMode;
+    private final DecimalFormatSymbols formatSymbols;
 
     /**
      * Creates a new number format used to format {@link Amount amounts}.

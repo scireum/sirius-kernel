@@ -8,8 +8,6 @@
 
 package sirius.kernel.xml;
 
-import javax.xml.xpath.XPathExpressionException;
-
 /**
  * Represents structured data like XML or JSON which was read from a web service or other source.
  */
@@ -19,7 +17,6 @@ public interface StructuredInput {
      *
      * @param xpath the xpath used to query the node
      * @return the node returned by the given xpath expression
-     * @throws XPathExpressionException if an invalid xpath was given
      */
-    StructuredNode getNode(String xpath) throws XPathExpressionException;
+    StructuredNode getNode(String xpath);
 }

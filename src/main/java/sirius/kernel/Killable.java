@@ -8,6 +8,7 @@
 
 package sirius.kernel;
 
+import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Priorized;
 
 /**
@@ -21,6 +22,7 @@ import sirius.kernel.di.std.Priorized;
  * task is completed.</li>
  * </ul>
  */
+@AutoRegister
 public interface Killable extends Priorized {
 
     @Override

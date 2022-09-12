@@ -54,7 +54,7 @@ public class MultiMap<K, V> {
      * @return a new instance of <tt>MultiMap</tt> which is not thread safe.
      */
     public static <K, V> MultiMap<K, V> create() {
-        return new MultiMap<>(new HashMap<K, Collection<V>>());
+        return new MultiMap<>(new HashMap<>());
     }
 
     /**
@@ -65,7 +65,7 @@ public class MultiMap<K, V> {
      * @return a new instance of <tt>MultiMap</tt> which is not thread safe.
      */
     public static <K, V> MultiMap<K, V> createOrdered() {
-        return new MultiMap<>(new LinkedHashMap<K, Collection<V>>());
+        return new MultiMap<>(new LinkedHashMap<>());
     }
 
     /**

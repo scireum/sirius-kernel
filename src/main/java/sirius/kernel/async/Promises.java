@@ -10,6 +10,7 @@ package sirius.kernel.async;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -85,8 +86,8 @@ public class Promises {
      * <p>
      * Note that all values need to have the same type.
      * <p>
-     * If only the completion of all promises matters in contrast to their actual result, a {@link Barrier} can also
-     * be used. This also permits to wait for promises of different types.
+     * If only the completion of all promises matters in contrast to their actual result, a {@link CombinedFuture} can also
+     * be used. This also permits waiting for promises of different types.
      *
      * @param list the list of promises to convert.
      * @param <V>  the type of each promise.
@@ -94,6 +95,15 @@ public class Promises {
      */
     public static <V> Promise<List<V>> parallel(List<Promise<V>> list) {
         final Promise<List<V>> result = new Promise<>();
+
+        if (list.isEmpty()) {
+            result.success(Collections.emptyList());
+            return result;
+        }
+
+        if (list.size() == 1) {
+            return list.get(0).map(Collections::singletonList);
+        }
 
         // Create a list with the correct length
         final List<V> resultList = new ArrayList<>();
@@ -104,8 +114,8 @@ public class Promises {
         // Keep track when we're finished
         final CountDownLatch latch = new CountDownLatch(list.size());
 
-        // Iterate over all promises and create a completion handler, which either forwards a failure or which placesy
-        // a successfully computed in the created result list
+        // Iterate over all promises and create a completion handler, which either forwards a failure or which places
+        // a successfully computed value in the created result list
         int index = 0;
         for (Promise<V> promise : list) {
             final int currentIndex = index;

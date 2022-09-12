@@ -8,8 +8,7 @@
 
 package sirius.kernel.info;
 
-import com.google.common.base.Charsets;
-import com.google.common.hash.Hashing;
+import sirius.kernel.commons.Hasher;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
 
@@ -23,11 +22,12 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class Module {
 
-    private String name;
-    private String version;
-    private String build;
-    private String date;
-    private String vcs;
+    private final String name;
+    private final String version;
+    private final String build;
+    private final String date;
+    private final String vcs;
+    private String details;
 
     private static final String RANDOM_REPLACEMENT = String.valueOf(ThreadLocalRandom.current().nextInt());
 
@@ -54,11 +54,42 @@ public class Module {
      * @return a string containing the version, build number and VCS tag of this module
      */
     public String getDetails() {
-        return Strings.apply("Version: %s, Build: %s (%s), Revision: %s",
-                             fix(version, "DEV"),
-                             fix(build, "-"),
-                             fix(date, NLS.toMachineString(LocalDate.now())),
-                             fix(vcs, "-"));
+        if (details == null) {
+            details = Strings.apply("Version: %s, Build: %s (%s), Revision: %s",
+                                    getVersion(),
+                                    getBuild(),
+                                    fix(date, NLS.toMachineString(LocalDate.now())),
+                                    getVCS());
+        }
+
+        return details;
+    }
+
+    /**
+     * Returns the raw version string.
+     *
+     * @return the software version of this module
+     */
+    public String getVersion() {
+        return fix(version, "DEV");
+    }
+
+    /**
+     * Returns the raw build number.
+     *
+     * @return the build number of this module version
+     */
+    public String getBuild() {
+        return fix(build, "-");
+    }
+
+    /**
+     * Returns the raw commit id.
+     *
+     * @return the commit id of this module version
+     */
+    public String getVCS() {
+        return fix(vcs, "-");
     }
 
     /**
@@ -70,9 +101,7 @@ public class Module {
      * @return a unique version string per release or instance
      */
     public String getUniqueVersionString() {
-        return Hashing.md5()
-                      .hashString(fix(vcs, RANDOM_REPLACEMENT) + fix(build, RANDOM_REPLACEMENT), Charsets.UTF_8)
-                      .toString();
+        return Hasher.md5().hash(fix(vcs, RANDOM_REPLACEMENT) + fix(build, RANDOM_REPLACEMENT)).toHexString();
     }
 
     /**

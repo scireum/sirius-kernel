@@ -11,6 +11,7 @@ package sirius.kernel.health.metrics;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.NumberFormat;
+import sirius.kernel.commons.Strings;
 
 import java.util.Objects;
 
@@ -22,11 +23,11 @@ import java.util.Objects;
  */
 public class Metric implements Comparable<Metric> {
 
-    private String code;
+    private final String code;
     private final String unit;
-    private String label;
-    private double value;
-    private MetricState state;
+    private final String label;
+    private final double value;
+    private final MetricState state;
 
     /**
      * Creates a new metric using the given values
@@ -47,7 +48,8 @@ public class Metric implements Comparable<Metric> {
 
     /**
      * Returns the unique code of the metric.
-     * @return the ocde of this metric.
+     *
+     * @return the code of this metric.
      */
     public String getCode() {
         return code;
@@ -101,29 +103,31 @@ public class Metric implements Comparable<Metric> {
     @Override
     @SuppressWarnings("squid:S1698")
     @Explain("Indentity against this is safe and a shortcut to speed up comparisons")
-    public int compareTo(Metric o) {
-        if (o == null) {
+    public int compareTo(Metric other) {
+        if (other == null) {
             return -1;
         }
-        if (o == this) {
+        if (other == this) {
             return 0;
         }
-        if (o.state != state) {
-            return o.state.ordinal() - state.ordinal();
+        if (other.state != state) {
+            return other.state.ordinal() - state.ordinal();
         }
-        return code.compareTo(o.code);
+        if (!Strings.areEqual(label, other.label)) {
+            return label.compareTo(other.label);
+        }
+        return code.compareTo(other.code);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
         }
-        if (!(o instanceof Metric)) {
+        if (!(other instanceof Metric otherMetric)) {
             return false;
         }
-        Metric metric = (Metric) o;
-        return Objects.equals(code, metric.code) && state == metric.state;
+        return Objects.equals(code, otherMetric.code) && state == otherMetric.state;
     }
 
     @Override

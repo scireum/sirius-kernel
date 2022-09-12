@@ -8,11 +8,8 @@
 
 package sirius.kernel;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.log4j.Level;
 import sirius.kernel.async.Future;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
@@ -30,8 +27,11 @@ import sirius.kernel.settings.ExtendedSettings;
 import javax.annotation.Nullable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
+import java.net.URLConnection;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -57,8 +57,8 @@ public class Sirius {
     private static Setup setup;
     private static Config config;
     private static ExtendedSettings settings;
-    private static Map<String, Boolean> frameworks = Maps.newHashMap();
-    private static List<String> customizations = Lists.newArrayList();
+    private static Map<String, Boolean> frameworks = new HashMap<>();
+    private static List<String> customizations = new ArrayList<>();
     private static Classpath classpath;
     private static volatile boolean started = false;
     private static volatile boolean initialized = false;
@@ -66,13 +66,7 @@ public class Sirius {
 
     protected static final Log LOG = Log.get("sirius");
 
-    private static final String DEBUG_LOGGER_NAME = "debug";
-
-    /**
-     * This debug logger will be logging all messages when {@link sirius.kernel.Sirius#isDev()} is true. Otherwise,
-     * this logger is set to "OFF".
-     */
-    public static final Log DEBUG = Log.get(DEBUG_LOGGER_NAME);
+    private static final String CONFIG_INSTANCE = "instance";
 
     @PriorityParts(Startable.class)
     private static List<Startable> lifecycleStartParticipants;
@@ -90,12 +84,30 @@ public class Sirius {
     }
 
     /**
-     * Determines if the framework is running in development or in production mode.
+     * Determines if the framework is running in development mode.
      *
-     * @return {@code true} is the framework runs in development mode, false otherwise.
+     * @return {@code true} if the framework runs in development mode, {@code false} otherwise.
      */
     public static boolean isDev() {
-        return setup.getMode() == Setup.Mode.DEV;
+        return setup != null && setup.getMode() == Setup.Mode.DEVELOP;
+    }
+
+    /**
+     * Determines if the framework is running in test mode.
+     *
+     * @return {@code true} if the framework runs in test mode, {@code false} otherwise.
+     */
+    public static boolean isTest() {
+        return setup != null && setup.getMode() == Setup.Mode.TEST;
+    }
+
+    /**
+     * Determines if the framework is running in staging mode.
+     *
+     * @return {@code true} if the framework runs in staging mode, {@code false} otherwise
+     */
+    public static boolean isStaging() {
+        return setup != null && setup.getMode() == Setup.Mode.STAGING;
     }
 
     /**
@@ -108,18 +120,18 @@ public class Sirius {
     }
 
     /**
-     * Determines if the framework is running in development or in production mode.
+     * Determines if the framework is running in production mode.
      *
-     * @return {@code true} is the framework runs in production mode, false otherwise.
+     * @return {@code true} if the framework runs in production mode, {@code false} otherwise.
      */
     public static boolean isProd() {
-        return !isDev();
+        return setup != null && setup.getMode() == Setup.Mode.PROD;
     }
 
     /**
      * Determines if the framework is up and running.
      * <p>
-     * This flag will be set to <tt>true</tt> once the framework is being setup and will be immediatelly
+     * This flag will be set to <tt>true</tt> once the framework is being setup and will be immediately
      * set to <tt>false</tt> one the framework starts to shut down.
      *
      * @return <tt>true</tt> once the framework is setup and running and not shutting down yet.
@@ -134,12 +146,6 @@ public class Sirius {
      * loggers
      */
     private static void setupLogLevels() {
-        if (Sirius.isDev()) {
-            Log.setLevel(DEBUG_LOGGER_NAME, Level.ALL);
-        } else {
-            Log.setLevel(DEBUG_LOGGER_NAME, Level.OFF);
-        }
-
         if (config.hasPath("log")) {
             LOG.WARN("Found 'log' in the system configuration - use 'logging' to configure loggers!");
         }
@@ -159,7 +165,7 @@ public class Sirius {
         Config logging = config.getConfig("logging");
         for (Map.Entry<String, com.typesafe.config.ConfigValue> entry : logging.entrySet()) {
             LOG.INFO("* Setting %s to: %s", entry.getKey(), logging.getString(entry.getKey()));
-            Log.setLevel(entry.getKey(), Level.toLevel(logging.getString(entry.getKey())));
+            Log.setLevel(entry.getKey(), Log.parseLevel(logging.getString(entry.getKey())));
         }
     }
 
@@ -169,7 +175,7 @@ public class Sirius {
      */
     private static void setupFrameworks() {
         Config frameworkConfig = config.getConfig("sirius.frameworks");
-        Map<String, Boolean> frameworkStatus = Maps.newHashMap();
+        Map<String, Boolean> frameworkStatus = new HashMap<>();
         int total = 0;
         int numEnabled = 0;
         LOG.DEBUG_INFO("Scanning framework status (sirius.frameworks):");
@@ -286,11 +292,8 @@ public class Sirius {
         } else {
             // instance.conf and develop.conf are not used to tests to permit uniform behaviour on local
             // machines and build servers...
-            if (Sirius.isDev()) {
-                config = setup.applyDeveloperConfig(config);
-            }
-
-            instanceConfig = setup.loadInstanceConfig();
+            config = setup.applyConfig(config, setup.getMode().toString().toLowerCase());
+            instanceConfig = setup.applyConfig(config, CONFIG_INSTANCE);
         }
 
         // Setup customer customizations...
@@ -368,11 +371,13 @@ public class Sirius {
     }
 
     private static void setupClasspath() {
+        if (Sirius.isDev()) {
+            // in a local dev environment we disable caching jar connections to hotswap libs especially templates
+            URLConnection.setDefaultUseCaches("jar", false);
+        }
         classpath = new Classpath(setup.getLoader(), "component.marker", customizations);
 
-        classpath.getComponentRoots().forEach(url -> {
-            LOG.INFO("Classpath: %s", url);
-        });
+        classpath.getComponentRoots().forEach(url -> LOG.INFO("Classpath: %s", url));
     }
 
     private static void handleConfigError(String file, Exception e) {

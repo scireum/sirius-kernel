@@ -8,12 +8,12 @@
 
 package sirius.kernel.commons;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.async.TaskContext;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -41,7 +41,7 @@ import java.util.function.Consumer;
  */
 public class CSVReader {
 
-    private Reader input;
+    private final Reader input;
     private char separator = ';';
     private char quotation = '"';
     private boolean ignoreWhitespaces = true;
@@ -180,7 +180,7 @@ public class CSVReader {
      * input as quotet columns may contain line breaks.
      */
     private void readRow() throws IOException {
-        List<String> row = Lists.newArrayList();
+        List<String> row = new ArrayList<>();
         while (!isEOF() && !isAtNewline()) {
             row.add(readField());
             if (buffer == separator) {

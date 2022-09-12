@@ -8,6 +8,7 @@
 
 package sirius.kernel.di.transformers;
 
+import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Priorized;
 
 import javax.annotation.Nonnull;
@@ -16,12 +17,17 @@ import javax.annotation.Nullable;
 /**
  * Transforms a <tt>Transformable</tt> into a given target type.
  * <p>
- * Used by {@link Transformers} to transform a certain type into another one. This
- * permits to transform existing classes into interfaces or other classes without modifying them.
+ * Used by {@link Transformers} to transform a certain type into another one. This permits to transform existing
+ * classes into interfaces or other classes without modifying them.
+ * <p>
+ * Note, if a transformer simply invokes the constructor of the target class, passing in the source instance,
+ * the {@link AutoTransform} annotation can directly be placed on the target class (along with the appropriate
+ * public constructor). The framework will then synthesize an appropriate transformer automatically.
  *
  * @param <S> the source type which is supported as input of the transformation
  * @param <T> the target type which is supported as output of the transformation
  */
+@AutoRegister
 public interface Transformer<S, T> extends Priorized {
 
     /**

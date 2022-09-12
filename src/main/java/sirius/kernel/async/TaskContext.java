@@ -12,7 +12,6 @@ import sirius.kernel.commons.RateLimit;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -40,14 +39,12 @@ public class TaskContext implements SubContext {
      * @see #setJob(String)
      */
     public static final String MDC_SYSTEM = "system";
-    private static final int STATE_UPDATE_INTERVAL = 5;
 
     private TaskContextAdapter adapter;
     private String system = GENERIC;
     private String subSystem = GENERIC;
     private String job = GENERIC;
-    private CallContext parent;
-    private RateLimit stateUpdate = RateLimit.timeInterval(STATE_UPDATE_INTERVAL, TimeUnit.SECONDS);
+    private final CallContext parent;
 
     @Part
     private static Tasks tasks;
@@ -110,7 +107,7 @@ public class TaskContext implements SubContext {
      */
     public void logAsCurrentState(String message, Object... args) {
         log(message, args);
-        setState(message, args);
+        tryUpdateState(message, args);
     }
 
     /**
@@ -118,9 +115,37 @@ public class TaskContext implements SubContext {
      *
      * @param newState the message to set as state
      * @param args     the parameters used to format the state message (see {@link Strings#apply(String, Object...)})
+     * @deprecated Use either {@link #tryUpdateState(String, Object...)} or {@link #forceUpdateState(String, Object...)}
      */
+    @Deprecated(forRemoval = true)
     public void setState(String newState, Object... args) {
         adapter.setState(Strings.apply(newState, args));
+    }
+
+    /**
+     * Tries to update the state message.
+     * <p>
+     * This will employ a rate limiting and suppress updates which are too frequent (as updating the state might
+     * be quite a task in downstream frameworks like <tt>Processes</tt> of <tt>sirius-biz</tt>.
+     *
+     * @param newState the message to set as state
+     * @param args     the parameters used to format the state message (see {@link Strings#apply(String, Object...)})
+     */
+    public void tryUpdateState(String newState, Object... args) {
+        adapter.tryUpdateState(Strings.apply(newState, args));
+    }
+
+    /**
+     * Forces the update of the state message.
+     * <p>
+     * This will not care about any rate limiting (unlike {@link #tryUpdateState(String, Object...)}) and always force
+     * an update.
+     *
+     * @param newState the message to set as state
+     * @param args     the parameters used to format the state message (see {@link Strings#apply(String, Object...)})
+     */
+    public void forceUpdateState(String newState, Object... args) {
+        adapter.forceUpdateState(Strings.apply(newState, args));
     }
 
     /**
@@ -164,7 +189,23 @@ public class TaskContext implements SubContext {
      * @param millis  the current duration for the block being counted
      */
     public void addTiming(String counter, long millis) {
-        adapter.addTiming(counter, millis);
+        adapter.addTiming(counter, millis, false);
+    }
+
+    /**
+     * Increments the given performance counter by one and supplies a loop duration in milliseconds.
+     * <p>
+     * The avarage value will be computed for the given counter and gives the user a rough estimate what the current
+     * task is doing.
+     * <p>
+     * Note that the default implementation will simply ignore the provided timings.
+     *
+     * @param counter   the counter to increment
+     * @param millis    the current duration for the block being counted
+     * @param adminOnly whether to show the timing only to administrators instead of all users
+     */
+    public void addTiming(String counter, long millis, boolean adminOnly) {
+        adapter.addTiming(counter, millis, adminOnly);
     }
 
     /**
@@ -176,7 +217,7 @@ public class TaskContext implements SubContext {
      * @return a rate limit which limits the number of updates to a reasonable value
      */
     public RateLimit shouldUpdateState() {
-        return stateUpdate;
+        return adapter.shouldUpdateState();
     }
 
     /**

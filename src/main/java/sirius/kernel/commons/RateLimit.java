@@ -8,6 +8,7 @@
 
 package sirius.kernel.commons;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,6 +31,7 @@ import java.util.concurrent.TimeUnit;
  * }
  * </pre>
  */
+@ThreadSafe
 public class RateLimit {
 
     private enum Mode {
@@ -103,7 +105,7 @@ public class RateLimit {
      *
      * @return <tt>true</tt> if the call or time based rate limiting permit another call, fl<tt>false</tt> otherwise
      */
-    public boolean check() {
+    public synchronized boolean check() {
         if (mode == Mode.CALL_BASED) {
             if (--state <= 0) {
                 state = interval;
