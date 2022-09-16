@@ -113,10 +113,10 @@ class PartRegistry implements MutableGlobalContext {
 
     @Nonnull
     @Override
-    public <P extends Priorized> List<P> getPriorizedParts(@Nonnull Class<? extends P> partInterface) {
+    public <P extends Priorized> List<? extends P> getPriorizedParts(@Nonnull Class<? extends P> partInterface) {
         return getParts(partInterface).stream()
                                       .sorted(Comparator.comparingInt(Priorized::getPriority))
-                                      .collect(Collectors.toList());
+                                      .toList();
     }
 
     @SuppressWarnings("unchecked")

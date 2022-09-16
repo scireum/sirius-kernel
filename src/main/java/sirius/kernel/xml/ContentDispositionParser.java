@@ -82,7 +82,7 @@ public class ContentDispositionParser {
      * \\s*filename\\s*=\\s*= -> Zero or more whitespaces followed by filename followed
      * by zero or more whitespaces and the equal sign.
      * <p>
-     * As we want to extract the the content of filename="THIS", we use:
+     * As we want to extract the content of filename="THIS", we use:
      * <p>
      * \\s* -> Zero or more whitespaces
      * <p>

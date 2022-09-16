@@ -368,7 +368,7 @@ public class SOAPClient {
                                                    .map(entry -> Attribute.set(PREFIX_XMLNS,
                                                                                entry.getKey(),
                                                                                entry.getValue()))
-                                                   .collect(Collectors.toList());
+                                                   .toList();
         }
 
         return namespaceDefinitions;

@@ -244,11 +244,11 @@ public class CSVWriter implements Closeable {
             return "";
         }
 
-        if (object instanceof String) {
+        if (object instanceof String string) {
             if (trim) {
-                return ((String) object).trim();
+                return string.trim();
             } else {
-                return (String) object;
+                return string;
             }
         }
 

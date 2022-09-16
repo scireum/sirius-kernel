@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * Provides access to all managed caches
@@ -65,8 +64,8 @@ public class CacheManager {
      *
      * @return a sorted list of all caches created so far
      */
-    public static List<Cache<?, ?>> getCaches() {
-        return caches.values().stream().sorted(Comparator.comparing(Cache::getName)).collect(Collectors.toList());
+    public static List<? extends Cache<?, ?>> getCaches() {
+        return caches.values().stream().sorted(Comparator.comparing(Cache::getName)).toList();
     }
 
     /**

@@ -166,8 +166,8 @@ public class ExtendedSettings extends Settings {
         for (Map.Entry<String, ConfigValue> entry : cfg.entrySet()) {
             String key = entry.getKey();
             if (!Extension.DEFAULT.equals(key) && !key.contains(".")) {
-                if (entry.getValue() instanceof ConfigObject) {
-                    extensions.add(new Extension(type, key, (ConfigObject) entry.getValue(), defaultObject));
+                if (entry.getValue() instanceof ConfigObject configObject) {
+                    extensions.add(new Extension(type, key, configObject, defaultObject));
                 } else {
                     Extension.LOG.WARN("Malformed extension within '%s'. Expected a config object but found: %s",
                                        type,

@@ -114,10 +114,10 @@ public class Formatter {
     public Formatter set(String property, Object value) {
         if (value == null) {
             setDirect(property, "");
-        } else if (value instanceof String) {
+        } else if (value instanceof String string) {
             // We have to trim here to emulate the call to NLS.toUserString, but we can do this
             // here without having to resolve the current language...
-            setDirect(property, ((String) value).trim());
+            setDirect(property, string.trim());
         } else {
             setDirect(property, NLS.toUserString(value, fetchLang()));
         }
@@ -146,10 +146,10 @@ public class Formatter {
     public Formatter setUnencoded(String property, Object value) {
         if (value == null) {
             setDirectUnencoded(property, "");
-        } else if (value instanceof String) {
+        } else if (value instanceof String string) {
             // We have to trim here to emulate the call to NLS.toUserString, but we can do this
             // here without having to resolve the current language...
-            setDirectUnencoded(property, ((String) value).trim());
+            setDirectUnencoded(property, string.trim());
         } else {
             setDirectUnencoded(property, NLS.toUserString(value, fetchLang()));
         }
@@ -256,7 +256,7 @@ public class Formatter {
     /**
      * Adds a provider which can supply the formatter with parameter values.
      * <p>
-     * As long as an non empty <tt>Optional</tt> is used, the returned value will be used. Otherwise the value provided
+     * As long as a non-empty <tt>Optional</tt> is used, the returned value will be used. Otherwise, the value provided
      * via one of the <tt>set</tt> methods is used.
      *
      * @param parameterProvider the provider used to determine the value for a given parameter

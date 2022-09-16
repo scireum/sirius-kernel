@@ -111,7 +111,7 @@ public class Microtiming {
      * last call to <tt>getTimings()</tt>
      */
     public static List<Timing> getTimings() {
-        return timings.values().stream().filter(Timing::readAndUnmark).collect(Collectors.toList());
+        return timings.values().stream().filter(Timing::readAndUnmark).toList();
     }
 
     /**
