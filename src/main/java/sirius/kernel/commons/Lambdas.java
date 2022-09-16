@@ -41,24 +41,6 @@ public class Lambdas {
     }
 
     /**
-     * Used to collect the results of a stream operation into an existing collection.
-     *
-     * @param collection the target collection
-     * @param <T>        the type of the elements accepted by the collector
-     * @param <C>        the type of the collection which is filled by the collector
-     * @return a {@link java.util.stream.Collector} inserting all elements into the given collection
-     * @deprecated Replace with {@code stream.forEach(collection::add)}
-     */
-    @Deprecated
-    public static <T, C extends Collection<T>> Collector<T, ?, C> into(C collection) {
-        return Collector.of(() -> collection,
-                            Collection::add,
-                            Lambdas::unsupportedBiOperation,
-                            Function.identity(),
-                            Collector.Characteristics.IDENTITY_FINISH);
-    }
-
-    /**
      * Can be used to group a given stream by identity and count the occurrences of each entity.
      *
      * @param <K> the type of the key by which the values are grouped

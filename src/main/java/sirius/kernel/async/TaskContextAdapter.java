@@ -33,16 +33,6 @@ public interface TaskContextAdapter {
     void trace(String message);
 
     /**
-     * Invoked if {@link sirius.kernel.async.TaskContext#setState(String, Object...)} is called in the attached
-     * context.
-     *
-     * @param message the message to set as state
-     * @deprecated Use either {@link #forceUpdateState(String)} or {@link #tryUpdateState(String)}
-     */
-    @Deprecated(since = "2021/07/01")
-    void setState(String message);
-
-    /**
      * Invoked if {@link TaskContext#shouldUpdateState()} is called in the attached context.
      *
      * @return a rate limit which limits the number of updates to a reasonable value
@@ -50,7 +40,7 @@ public interface TaskContextAdapter {
     RateLimit shouldUpdateState();
 
     /**
-     * Invoked if {@link sirius.kernel.async.TaskContext#setState(String, Object...)} is called in the attached
+     * Invoked if {@link sirius.kernel.async.TaskContext#tryUpdateState(String, Object...)} is called in the attached
      * context.
      *
      * @param message the message to set as state
@@ -58,7 +48,7 @@ public interface TaskContextAdapter {
     void tryUpdateState(String message);
 
     /**
-     * Invoked if {@link sirius.kernel.async.TaskContext#setState(String, Object...)} is called in the attached
+     * Invoked if {@link sirius.kernel.async.TaskContext#forceUpdateState(String, Object...)} is called in the attached
      * context.
      *
      * @param message the message to set as state
