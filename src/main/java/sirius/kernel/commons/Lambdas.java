@@ -8,7 +8,6 @@
 
 package sirius.kernel.commons;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;

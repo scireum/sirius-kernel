@@ -33,7 +33,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * An instance of PartRegistry is kept by {@link sirius.kernel.di.Injector} to track all registered
@@ -114,9 +113,7 @@ class PartRegistry implements MutableGlobalContext {
     @Nonnull
     @Override
     public <P extends Priorized> List<? extends P> getPriorizedParts(@Nonnull Class<? extends P> partInterface) {
-        return getParts(partInterface).stream()
-                                      .sorted(Comparator.comparingInt(Priorized::getPriority))
-                                      .toList();
+        return getParts(partInterface).stream().sorted(Comparator.comparingInt(Priorized::getPriority)).toList();
     }
 
     @SuppressWarnings("unchecked")
