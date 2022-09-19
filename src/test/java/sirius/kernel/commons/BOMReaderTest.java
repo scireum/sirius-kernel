@@ -10,6 +10,8 @@ package sirius.kernel.commons;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 class BOMReaderTest {
 
     private static final byte[] WITH_UTF8_BOM = {(byte) 239, (byte) 187, (byte) 191, 'H', 'E', 'L', 'L', 'O'};
-    private static final byte[] WITHOUT_BOM = {'H', 'E', 'L', 'L', 'O'};
 
     @Test
     void readBOM() throws IOException {
@@ -47,27 +48,12 @@ class BOMReaderTest {
         Assertions.assertEquals('E', in.read());
     }
 
-    @Test
-    void readArray1BOM() throws IOException {
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 5})
+    void readArrayBOM(int length) throws IOException {
         BOMReader in = new BOMReader(new InputStreamReader(new ByteArrayInputStream(WITH_UTF8_BOM)));
-        char[] buf = new char[1];
-        Assertions.assertEquals(1, in.read(buf));
-        Assertions.assertEquals('H', buf[0]);
-    }
-
-    @Test
-    void readArray2BOM() throws IOException {
-        BOMReader in = new BOMReader(new InputStreamReader(new ByteArrayInputStream(WITH_UTF8_BOM)));
-        char[] buf = new char[2];
-        Assertions.assertEquals(2, in.read(buf));
-        Assertions.assertEquals('H', buf[0]);
-    }
-
-    @Test
-    void readArray10BOM() throws IOException {
-        BOMReader in = new BOMReader(new InputStreamReader(new ByteArrayInputStream(WITH_UTF8_BOM)));
-        char[] buf = new char[10];
-        Assertions.assertEquals(5, in.read(buf));
+        char[] buf = new char[length];
+        Assertions.assertEquals(length, in.read(buf));
         Assertions.assertEquals('H', buf[0]);
     }
 

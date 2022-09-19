@@ -11,7 +11,6 @@ package sirius.kernel.health;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Performance measurement framework which can be used in development as well as in production systems.
@@ -111,7 +110,7 @@ public class Microtiming {
      * last call to <tt>getTimings()</tt>
      */
     public static List<Timing> getTimings() {
-        return timings.values().stream().filter(Timing::readAndUnmark).collect(Collectors.toList());
+        return timings.values().stream().filter(Timing::readAndUnmark).toList();
     }
 
     /**

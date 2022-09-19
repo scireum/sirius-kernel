@@ -84,9 +84,9 @@ public class AutoTransformLoadAction implements ClassLoadAction {
             try {
                 T result = createInstance(source);
 
-                if (source instanceof Composable && additionalTargetTypes != null) {
+                if (source instanceof Composable composable && additionalTargetTypes != null) {
                     for (Class<?> additionalTarget : additionalTargetTypes) {
-                        ((Composable) source).attach(additionalTarget, result);
+                        composable.attach(additionalTarget, result);
                     }
                 }
 
@@ -172,9 +172,10 @@ public class AutoTransformLoadAction implements ClassLoadAction {
 
     /**
      * Merge the @AutoTransform `target` with the `targets`, so both can be used.
-     *
+     * <p>
      * See also {@link AutoTransform#target()} and {@link AutoTransform#targets()}.
-     * @param target the target class, or {@link Object Object.class} if none
+     *
+     * @param target  the target class, or {@link Object Object.class} if none
      * @param targets the list of target classes, potentially empty
      * @return an array, containing both the targets and the target
      */

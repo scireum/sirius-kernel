@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 /**
  * Provides a cache which can be used to store and access values.
@@ -193,18 +192,6 @@ public interface Cache<K, V> {
      * @param testInput     the input to pass into the predicate
      */
     void removeAll(@Nonnull String discriminator, String testInput);
-
-    /**
-     * Removes all cached values for which the predicate returns true.
-     *
-     * @param predicate the predicate used to determine if a value should be removed from the cache.
-     * @deprecated Because in coherenct cache environments this can lead to stale cache entries if a cache on
-     * one nodes has a different set of keys than another, as the scan always runs locally.
-     * Use {@link #addRemover(String, BiPredicate)} and {@link #removeAll(String, String)} which scans each node
-     * individually.
-     */
-    @Deprecated(since = "2021/07/01")
-    void removeIf(@Nonnull Predicate<CacheEntry<K, V>> predicate);
 
     /**
      * Provides access to the keys stored in this cache

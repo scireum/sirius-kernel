@@ -114,10 +114,10 @@ public class Formatter {
     public Formatter set(String property, Object value) {
         if (value == null) {
             setDirect(property, "");
-        } else if (value instanceof String) {
+        } else if (value instanceof String string) {
             // We have to trim here to emulate the call to NLS.toUserString, but we can do this
             // here without having to resolve the current language...
-            setDirect(property, ((String) value).trim());
+            setDirect(property, string.trim());
         } else {
             setDirect(property, NLS.toUserString(value, fetchLang()));
         }
@@ -146,10 +146,10 @@ public class Formatter {
     public Formatter setUnencoded(String property, Object value) {
         if (value == null) {
             setDirectUnencoded(property, "");
-        } else if (value instanceof String) {
+        } else if (value instanceof String string) {
             // We have to trim here to emulate the call to NLS.toUserString, but we can do this
             // here without having to resolve the current language...
-            setDirectUnencoded(property, ((String) value).trim());
+            setDirectUnencoded(property, string.trim());
         } else {
             setDirectUnencoded(property, NLS.toUserString(value, fetchLang()));
         }
@@ -234,29 +234,9 @@ public class Formatter {
     }
 
     /**
-     * Directly sets the given string value for the given property.
-     * <p>
-     * Sets the given string as replacement value for the named parameter. The value will not be sent through
-     * {@link NLS#toUserString(Object)} and therefore not trimmed etc.
-     *
-     * @param property  the parameter in the template string which should be replaced
-     * @param value     the value which should be used as replacement
-     * @param urlEncode determines if url encoding should be applied. If the parameter is set to <tt>false</tt>,
-     *                  this method won't perform any url encoding, even if the formatter was created
-     *                  using <tt>#createURLFormatter</tt>
-     * @return <tt>this</tt> to permit fluent method chains
-     * @deprecated Use either {@link #setDirect(String, String)} or {@link #setDirectUnencoded(String, String)}
-     */
-    @Deprecated(forRemoval = true)
-    public Formatter setDirect(String property, String value, boolean urlEncode) {
-        replacement.put(property, urlEncode ? Strings.urlEncode(value) : value);
-        return this;
-    }
-
-    /**
      * Adds a provider which can supply the formatter with parameter values.
      * <p>
-     * As long as an non empty <tt>Optional</tt> is used, the returned value will be used. Otherwise the value provided
+     * As long as a non-empty <tt>Optional</tt> is used, the returned value will be used. Otherwise, the value provided
      * via one of the <tt>set</tt> methods is used.
      *
      * @param parameterProvider the provider used to determine the value for a given parameter

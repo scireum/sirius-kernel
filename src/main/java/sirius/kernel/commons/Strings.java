@@ -359,6 +359,8 @@ public class Strings {
      * @param maxCharacters the maximum number of characters a word may have
      * @return a list of the words of the input string
      */
+    @SuppressWarnings("java:S6204")
+    @Explain("We provide a mutable list here, as we cannot predict the callers intentions.")
     private static List<String> splitIntoWords(String input, int maxCharacters) {
         return Arrays.stream(input.split(" ")).<String>mapMulti((string, consumer) -> {
             while (string.length() > maxCharacters) {

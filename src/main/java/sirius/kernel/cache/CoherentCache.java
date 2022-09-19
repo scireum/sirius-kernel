@@ -8,10 +8,7 @@
 
 package sirius.kernel.cache;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 /**
  * Provides a cache implementation which supports cache coherence by roaming <tt>clear</tt> and <tt>remove</tt> calls.
@@ -66,24 +63,5 @@ class CoherentCache<V> extends ManagedCache<String, V> {
 
     protected void removeAllLocal(String discriminator, String testInput) {
         super.removeAll(discriminator, testInput);
-    }
-
-    /**
-     * Removes all cached values for which the predicate returns true.
-     *
-     * @param predicate the predicate used to determine if a value should be removed from the cache.
-     * @deprecated Because in coherenct cache environments this can lead to stale cache entries if a cache on
-     * one nodes has a different set of keys than another, as the scan always runs locally.
-     * Use {@link #addRemover(String, BiPredicate)} and {@link #removeAll(String, String)} which scans each node
-     * individually.
-     */
-    @Deprecated(forRemoval = true)
-    @Override
-    public void removeIf(@Nonnull Predicate<CacheEntry<String, V>> predicate) {
-        if (data == null) {
-            return;
-        }
-
-        data.asMap().values().stream().filter(predicate).map(CacheEntry::getKey).forEach(this::remove);
     }
 }

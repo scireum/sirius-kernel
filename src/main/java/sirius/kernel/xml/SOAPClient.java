@@ -30,22 +30,21 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 /**
  * Provides a streamlined SOAP client.
  * <p>
  * Permits to talk to external systems using the SOAP protocol. Note that this client can and should be re-used.
- * Therefore once it is initialized (all <tt>withXXX</tt> methods have been called), this is also completely thread
+ * Therefore, once it is initialized (all <tt>withXXX</tt> methods have been called), this is also completely thread
  * safe.
  * <p>
  * Note that namespace prefixes should be declared via {@link #withNamespace(String, String)}. These are also
- * transferred to the XPATH expressions of the returned output. Therefore a constant and custom namespace
+ * transferred to the XPATH expressions of the returned output. Therefore, a constant and custom namespace
  * prefix can be used, independently of what is returned by the server (as long as the namespace URI matches).
  * Note however, that when generating the request, fully qualified tag names with matching prefixes have to
  * be provided.
  * <p>
- * By default the namespace "soapenv" ({@link #SOAP_NAMESPACE_URI} is defined and bound to {@link #SOAP_NAMESPACE_URI}.
+ * By default, the namespace "soapenv" ({@link #SOAP_NAMESPACE_URI} is defined and bound to {@link #SOAP_NAMESPACE_URI}.
  * This can also be changed using {@link #withNamespace(String, String)} if necessary.
  * <p>
  * Most probably a client will be setup per API or external system like:
@@ -368,7 +367,7 @@ public class SOAPClient {
                                                    .map(entry -> Attribute.set(PREFIX_XMLNS,
                                                                                entry.getKey(),
                                                                                entry.getValue()))
-                                                   .collect(Collectors.toList());
+                                                   .toList();
         }
 
         return namespaceDefinitions;

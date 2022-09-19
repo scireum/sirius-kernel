@@ -243,8 +243,8 @@ public class StructuredNode {
             if (result == null) {
                 return null;
             }
-            if (result instanceof Node) {
-                return ((Node) result).getTextContent();
+            if (result instanceof Node child) {
+                return child.getTextContent();
             }
 
             return result.toString();
@@ -331,8 +331,8 @@ public class StructuredNode {
             if (result == null) {
                 return null;
             }
-            if (result instanceof Node) {
-                return serializeNodeAsXML((Node) result, includeOuter);
+            if (result instanceof Node child) {
+                return serializeNodeAsXML(child, includeOuter);
             }
             return result.toString().trim();
         } catch (XPathExpressionException e) {

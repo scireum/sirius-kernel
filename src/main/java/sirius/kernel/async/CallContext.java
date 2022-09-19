@@ -60,6 +60,7 @@ public class CallContext {
     public static final String MDC_PARENT = "parent";
 
     private static final ThreadLocal<CallContext> currentContext = new ThreadLocal<>();
+
     private static final Map<Long, CallContext> contextMap = new ConcurrentHashMap<>();
     private static String nodeName = null;
     private static final Counter interactionCounter = new Counter();
@@ -67,9 +68,10 @@ public class CallContext {
     private final Map<String, Object> mdc = new ConcurrentHashMap<>();
 
     /*
-     * Needs to be synchronized as a CallContext might be shared across several sub tasks
+     * Needs to be synchronized as a CallContext might be shared across several sub-tasks
      */
-    private final Map<Class<? extends SubContext>, SubContext> subContext = Collections.synchronizedMap(new HashMap<>());
+    private final Map<Class<? extends SubContext>, SubContext> subContext =
+            Collections.synchronizedMap(new HashMap<>());
     private Watch watch = Watch.start();
     private String lang;
     private Consumer<CallContext> lazyLanguageInstaller;
@@ -216,7 +218,7 @@ public class CallContext {
         if (ctx != null) {
             ctx.detachContext();
         }
-        currentContext.set(null);
+        currentContext.remove();
         contextMap.remove(Thread.currentThread().getId());
     }
 

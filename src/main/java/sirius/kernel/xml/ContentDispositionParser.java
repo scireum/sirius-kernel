@@ -12,6 +12,7 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 
@@ -82,7 +83,7 @@ public class ContentDispositionParser {
      * \\s*filename\\s*=\\s*= -> Zero or more whitespaces followed by filename followed
      * by zero or more whitespaces and the equal sign.
      * <p>
-     * As we want to extract the the content of filename="THIS", we use:
+     * As we want to extract the content of filename="THIS", we use:
      * <p>
      * \\s* -> Zero or more whitespaces
      * <p>
@@ -104,6 +105,8 @@ public class ContentDispositionParser {
      * attachment; filename="_.jpg"; filename*=iso-8859-1'en'file%27%20%27name.jpg
      * attachment; filename="_.jpg"; filename*=iso-8859-1'en'file%27%20%27name.jpg
      */
+    @SuppressWarnings("java:S5998")
+    @Explain("Catastrophic backtracking is prevented by limiting the input length for this regex.")
     private static final Pattern CONTENT_DISPOSITION_PATTERN = Pattern.compile(CONTENT_DISPOSITION_TYPE
                                                                                + ".*\\s*filename\\s*=\\s*(\"((?:\\\\.|[^\"\\\\])*)\"|[^;]*)\\s*"
                                                                                + "(?:;"
@@ -137,6 +140,13 @@ public class ContentDispositionParser {
     private static final Pattern encodedSymbolPattern =
             Pattern.compile("%[0-9a-f]{2}|[0-9a-z!#$&+-.^_`|~]", Pattern.CASE_INSENSITIVE);
 
+    /**
+     * Limits the maximal header length to parse.
+     * <p>
+     * Note that any longer header will lead to an exception so that we detect that the limit was actually hit.
+     */
+    private static final int MAX_CONTENT_DISPOSITION_LENGTH = 512;
+
     private ContentDispositionParser() {
         // static helper class with no public constructor
     }
@@ -153,6 +163,12 @@ public class ContentDispositionParser {
     public static Optional<String> parseFileName(String contentDisposition) {
         if (Strings.isEmpty(contentDisposition)) {
             return Optional.empty();
+        }
+        if (contentDisposition.length() > MAX_CONTENT_DISPOSITION_LENGTH) {
+            // We use this circuit breaker, as the regex used to parse the header is subject to catastrophic backtracking
+            // and might otherwise crash the JVM for overly long inputs...
+            throw new IllegalArgumentException("Cannot parse an overly long content-disposition header: "
+                                               + contentDisposition);
         }
         try {
             return parseContentDispositionWithFileName(contentDisposition).or(() -> parseContentDispositionWithFileNameAsterisk(

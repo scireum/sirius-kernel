@@ -218,8 +218,8 @@ public class Exceptions {
         @SuppressWarnings({"squid:S1148", "CallToPrintStackTrace"})
         @Explain("This log statement is our last resort when we're in deep trouble.")
         public HandledException handle() {
-            if (ex instanceof HandledException) {
-                return (HandledException) ex;
+            if (ex instanceof HandledException handledException) {
+                return handledException;
             }
 
             if (Exceptions.getRootCause(ex) instanceof HandledException) {
@@ -291,7 +291,7 @@ public class Exceptions {
                     }
                 }
             } finally {
-                frozen.set(Boolean.FALSE);
+                frozen.remove();
             }
         }
 
@@ -340,8 +340,14 @@ public class Exceptions {
             if (element == null) {
                 return null;
             }
-            return element.getClassName() + "." + element.getMethodName() + " (" + element.getFileName() + ":" + element
-                    .getLineNumber() + ")";
+            return element.getClassName()
+                   + "."
+                   + element.getMethodName()
+                   + " ("
+                   + element.getFileName()
+                   + ":"
+                   + element.getLineNumber()
+                   + ")";
         }
 
         @Override

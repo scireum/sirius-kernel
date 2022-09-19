@@ -752,8 +752,8 @@ public class NLS {
         if (data == null) {
             return "";
         }
-        if (data instanceof String) {
-            return ((String) data).trim();
+        if (data instanceof String string) {
+            return string.trim();
         }
         if (data instanceof Boolean) {
             return data.toString();
@@ -779,11 +779,11 @@ public class NLS {
         if (data instanceof Long) {
             return String.valueOf(data);
         }
-        if (data instanceof Amount) {
-            return ((Amount) data).toMachineString();
+        if (data instanceof Amount amount) {
+            return amount.toMachineString();
         }
-        if (data instanceof BigDecimal) {
-            return ((BigDecimal) data).toPlainString();
+        if (data instanceof BigDecimal bigDecimal) {
+            return bigDecimal.toPlainString();
         }
         if (data instanceof Double) {
             return String.valueOf(data);
@@ -794,8 +794,8 @@ public class NLS {
         if (data instanceof Float) {
             return String.valueOf(data);
         }
-        if (data instanceof Throwable) {
-            return writeThreadStrace((Throwable) data);
+        if (data instanceof Throwable throwable) {
+            return writeThreadStrace(throwable);
         }
         return String.valueOf(data);
     }
@@ -832,11 +832,11 @@ public class NLS {
         if (data == null) {
             return "";
         }
-        if (data instanceof String) {
-            return ((String) data).trim();
+        if (data instanceof String string) {
+            return string.trim();
         }
-        if (data instanceof Boolean) {
-            if (((Boolean) data).booleanValue()) {
+        if (data instanceof Boolean bool) {
+            if (bool.booleanValue()) {
                 return NLS.get(CommonKeys.YES.key(), lang);
             } else {
                 return NLS.get(CommonKeys.NO.key(), lang);
@@ -863,8 +863,8 @@ public class NLS {
         if (data instanceof Long) {
             return String.valueOf(data);
         }
-        if (data instanceof BigDecimal) {
-            return getDecimalFormat(lang).format(((BigDecimal) data).doubleValue());
+        if (data instanceof BigDecimal bigDecimal) {
+            return getDecimalFormat(lang).format(bigDecimal.doubleValue());
         }
         if (data instanceof Double) {
             return getDecimalFormat(lang).format(data);
@@ -872,8 +872,8 @@ public class NLS {
         if (data instanceof Float) {
             return getDecimalFormat(lang).format(data);
         }
-        if (data instanceof Throwable) {
-            return writeThreadStrace((Throwable) data);
+        if (data instanceof Throwable throwable) {
+            return writeThreadStrace(throwable);
         }
         return String.valueOf(data);
     }
