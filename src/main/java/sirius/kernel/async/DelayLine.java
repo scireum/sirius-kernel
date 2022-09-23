@@ -137,7 +137,8 @@ public class DelayLine extends BackgroundLoop implements MetricProvider {
             collector.differentialMetric("kernel_delay_line_tasks",
                                          "delay-line-tasks",
                                          "Delay-Line Tasks",
-                                         backgroundTasks.getCount(), Metric.UNIT_PER_MIN);
+                                         backgroundTasks.getCount(),
+                                         Metric.UNIT_PER_MIN);
         }
 
         long length;
