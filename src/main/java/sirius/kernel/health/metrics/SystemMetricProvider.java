@@ -64,7 +64,7 @@ public class SystemMetricProvider implements MetricProvider {
                                  "jvm-old-heap",
                                  "JVM Heap (" + pool.getName() + ")",
                                  100d * pool.getUsage().getUsed() / pool.getUsage().getMax(),
-                                 "%");
+                                 Metric.UNIT_PERCENT);
             }
         }
     }
@@ -74,18 +74,22 @@ public class SystemMetricProvider implements MetricProvider {
         collector.metric("jvm-heap",
                          "JVM Heap",
                          heapMemoryUsage.getUsed() * 100d / heapMemoryUsage.getMax(),
-                         "%",
+                         Metric.UNIT_PERCENT,
                          MetricState.GREEN);
         collector.metric("jvm-heap-max",
                          "JVM Heap Max",
-                         heapMemoryUsage.getMax() / 1024d / 1024d,
-                         "MB",
+                         Metric.bytesToMebibytes(heapMemoryUsage.getMax()),
+                         Metric.UNIT_MIB,
                          MetricState.GRAY);
     }
 
     private void reportOffHeapUsage(MetricsCollector collector) {
         long memoryUsage = ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage().getUsed();
-        collector.metric("jvm-non-heap", "JVM Non Heap", memoryUsage / 1024d / 1024d, "MB", MetricState.GRAY);
+        collector.metric("jvm-non-heap",
+                         "JVM Non Heap",
+                         Metric.bytesToMebibytes(memoryUsage),
+                         Metric.UNIT_MIB,
+                         MetricState.GRAY);
     }
 
     private void gatherGCMetrics(MetricsCollector collector) {
@@ -96,7 +100,7 @@ public class SystemMetricProvider implements MetricProvider {
             collectionRuns += gc.getCollectionCount();
         }
 
-        collector.differentialMetric("jvm_gc_runs", "jvm-gc-runs", "GCs ", collectionRuns, "/min");
+        collector.differentialMetric("jvm_gc_runs", "jvm-gc-runs", "GCs ", collectionRuns, Metric.UNIT_PER_MIN);
 
         if (lastGCMeasurement > 0) {
             long wallClockTimeMillis = System.currentTimeMillis() - lastGCMeasurement;
@@ -106,7 +110,7 @@ public class SystemMetricProvider implements MetricProvider {
                                          "jvm-gc-utilization",
                                          "GC Utilization",
                                          gcUtilization,
-                                         "%");
+                                         Metric.UNIT_PERCENT);
         }
 
         lastGCTime = collectionTimeMillis;
@@ -118,22 +122,22 @@ public class SystemMetricProvider implements MetricProvider {
                                      "sys-interactions",
                                      "Interactions",
                                      CallContext.getInteractionCounter().getCount(),
-                                     "/min");
+                                     Metric.UNIT_PER_MIN);
         collector.differentialMetric("kernel_log_entries",
                                      "sys-logs",
                                      "Log Messages",
                                      monitor.getNumLogMessages(),
-                                     "/min");
+                                     Metric.UNIT_PER_MIN);
         collector.differentialMetric("kernel_incidents",
                                      "sys-incidents",
                                      "Incidents",
                                      monitor.getNumIncidents(),
-                                     "/min");
+                                     Metric.UNIT_PER_MIN);
         collector.differentialMetric("kernel_unique_incidents",
                                      "sys-unique-incidents",
                                      "Unique Incidents",
                                      monitor.getNumUniqueIncidents(),
-                                     "/min");
+                                     Metric.UNIT_PER_MIN);
     }
 
     private void gatherBlockingLoops(MetricsCollector collector) {
@@ -165,22 +169,22 @@ public class SystemMetricProvider implements MetricProvider {
                          "sys-outcall-count",
                          "Outcall: Number of requests",
                          Outcall.getTimeToFirstByte().getCount(),
-                         "/min");
+                         Metric.UNIT_PER_MIN);
         collector.metric("outcall_avg_ttfb",
                          "sys-outcall-avg-ttfb",
                          "Outcall: Avg. time to first byte",
                          Outcall.getTimeToFirstByte().getAndClear(),
-                         "ms");
+                         Metric.UNIT_MS);
 
         collector.metric("soap_call_count",
                          "sys-soapcall-count",
                          "SOAP: Number of calls",
                          SOAPClient.getResponseTime().getCount(),
-                         "/min");
+                         Metric.UNIT_PER_MIN);
         collector.metric("soap_avg_response_time",
                          "sys-soap-avg-response-time",
                          "SOAP: Avg. response time",
                          SOAPClient.getResponseTime().getAndClear(),
-                         "ms");
+                         Metric.UNIT_MS);
     }
 }

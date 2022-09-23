@@ -11,6 +11,7 @@ package sirius.kernel.async;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Counter;
+import sirius.kernel.health.metrics.Metric;
 import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
 
@@ -136,8 +137,7 @@ public class DelayLine extends BackgroundLoop implements MetricProvider {
             collector.differentialMetric("kernel_delay_line_tasks",
                                          "delay-line-tasks",
                                          "Delay-Line Tasks",
-                                         backgroundTasks.getCount(),
-                                         "1/min");
+                                         backgroundTasks.getCount(), Metric.UNIT_PER_MIN);
         }
 
         long length;
