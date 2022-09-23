@@ -28,7 +28,8 @@ public interface MetricsCollector {
      * @param limitType the name used to retrieve the limits from the system config
      * @param label     the name of the metric
      * @param value     the measured value of the metric
-     * @param unit      the unit used by value. Can be <tt>null</tt> if there is no unit
+     * @param unit      the unit used by value. Can be <tt>null</tt> if there is no unit. Preferably, use one of the
+     *                  units provided in {@link Metric}
      */
     void metric(@Nonnull String code,
                 @Nonnull String limitType,
@@ -42,7 +43,8 @@ public interface MetricsCollector {
      * @param code  the unique id used for the metric
      * @param label the name of the metric
      * @param value the measured value of the metric
-     * @param unit  the unit used by value. Can be <tt>null</tt> if there is no unit
+     * @param unit  the unit used by value. Can be <tt>null</tt> if there is no unit. Preferably, use one of the
+     *              units provided in {@link Metric}
      * @param state the interpretation of the measured value
      */
     void metric(@Nonnull String code, String label, double value, String unit, MetricState state);
@@ -57,7 +59,8 @@ public interface MetricsCollector {
      * @param limitType    the name used to fetch the limits from the system configuration
      * @param label        the name of the metric
      * @param currentValue the current value
-     * @param unit         the unit used to measure the difference between the last and the current value
+     * @param unit         the unit used to measure the difference between the last and the current value.
+     *                     Preferably, use one of the units provided in {@link Metric}
      */
     void differentialMetric(String code, @Nonnull String limitType, String label, double currentValue, String unit);
 }
