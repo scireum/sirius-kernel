@@ -73,7 +73,7 @@ public class URLBuilder {
     /**
      * Adds a path part to the url.
      * <p>
-     * Once the first parameter has been added, the path can no longer be modified. Also the part itself can (but
+     * Once the first parameter has been added, the path can no longer be modified. Also, the part itself can (but
      * shouldn't) contain parameters, usually led by an initial question mark.
      *
      * @param uriPartsToAdd the uri part to add. This should not contain a leading '/' as it is added automatically. If
