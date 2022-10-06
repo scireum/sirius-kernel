@@ -83,11 +83,11 @@ public class Outcall {
 
     /**
      * Date time formatter as per
-     * <a href="https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.1.1">RFC 7231 section 7.1.1.1.</a>
+     * <a href="https://datatracker.ietf.org/doc/html/rfc9110#section-5.6.7">RFC 9110 section 5.6.7.</a>
      * <p>
      * In contrast to {@link DateTimeFormatter#RFC_1123_DATE_TIME}, the day must use two digits.
      */
-    public static final DateTimeFormatter RFC7231_INSTANT =
+    public static final DateTimeFormatter RFC9110_INSTANT =
             new DateTimeFormatterBuilder().appendPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
                                           .toFormatter()
                                           .withLocale(Locale.ENGLISH)
@@ -252,7 +252,7 @@ public class Outcall {
      */
     public Outcall setIfModifiedSince(LocalDateTime ifModifiedSince) {
         setRequestProperty(HEADER_IF_MODIFIED_SINCE,
-                           ifModifiedSince.atZone(ZoneId.systemDefault()).format(RFC7231_INSTANT));
+                           ifModifiedSince.atZone(ZoneId.systemDefault()).format(RFC9110_INSTANT));
         return this;
     }
 
