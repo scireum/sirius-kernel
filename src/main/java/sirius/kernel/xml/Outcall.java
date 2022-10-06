@@ -85,7 +85,8 @@ public class Outcall {
      * Date time formatter as per
      * <a href="https://datatracker.ietf.org/doc/html/rfc9110#section-5.6.7">RFC 9110 section 5.6.7.</a>
      * <p>
-     * In contrast to {@link DateTimeFormatter#RFC_1123_DATE_TIME}, the day must use two digits.
+     * In contrast to {@link DateTimeFormatter#RFC_1123_DATE_TIME}, the day must use two digits and the date must be
+     * represented in GMT (which is equal to UTC for the purpose of HTTP).
      */
     public static final DateTimeFormatter RFC9110_INSTANT =
             new DateTimeFormatterBuilder().appendPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
