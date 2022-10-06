@@ -57,6 +57,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -87,6 +88,14 @@ public class Outcall {
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
     private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
     private static final int MAX_REDIRECTS = 5;
+
+    /**
+     * Date time formatter as per RFC 7231 (section 7.1.1.1.).
+     * <p>
+     * In contrast to {@link DateTimeFormatter#RFC_1123_DATE_TIME}, the day must use two digits.
+     */
+    private static final DateTimeFormatter MODIFIED_DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O", Locale.ENGLISH);
 
     /**
      * Keeps track of hosts for which we ran into a connect timeout.
@@ -236,7 +245,7 @@ public class Outcall {
      */
     public Outcall setIfModifiedSince(LocalDateTime ifModifiedSince) {
         setRequestProperty(HEADER_IF_MODIFIED_SINCE,
-                           ifModifiedSince.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.RFC_1123_DATE_TIME));
+                           ifModifiedSince.atOffset(ZoneOffset.UTC).format(MODIFIED_DATE_FORMATTER));
         return this;
     }
 
