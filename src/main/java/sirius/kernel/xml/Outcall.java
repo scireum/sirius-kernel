@@ -55,7 +55,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.Map;
@@ -79,6 +81,19 @@ public class Outcall {
     public static final String HEADER_ACCEPT = "Accept";
     public static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
 
+    /**
+     * Date time formatter as per
+     * <a href="https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.1.1">RFC 7231 section 7.1.1.1.</a>
+     * <p>
+     * In contrast to {@link DateTimeFormatter#RFC_1123_DATE_TIME}, the day must use two digits.
+     */
+    public static final DateTimeFormatter RFC7231_INSTANT =
+            new DateTimeFormatterBuilder().appendPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
+                                          .toFormatter()
+                                          .withLocale(Locale.ENGLISH)
+                                          .withChronology(IsoChronology.INSTANCE)
+                                          .withZone(ZoneOffset.UTC);
+
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_LOCATION = "Location";
@@ -88,14 +103,6 @@ public class Outcall {
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
     private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
     private static final int MAX_REDIRECTS = 5;
-
-    /**
-     * Date time formatter as per RFC 7231 (section 7.1.1.1.).
-     * <p>
-     * In contrast to {@link DateTimeFormatter#RFC_1123_DATE_TIME}, the day must use two digits.
-     */
-    private static final DateTimeFormatter MODIFIED_DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O", Locale.ENGLISH);
 
     /**
      * Keeps track of hosts for which we ran into a connect timeout.
@@ -245,7 +252,7 @@ public class Outcall {
      */
     public Outcall setIfModifiedSince(LocalDateTime ifModifiedSince) {
         setRequestProperty(HEADER_IF_MODIFIED_SINCE,
-                           ifModifiedSince.atOffset(ZoneOffset.UTC).format(MODIFIED_DATE_FORMATTER));
+                           ifModifiedSince.atZone(ZoneId.systemDefault()).format(RFC7231_INSTANT));
         return this;
     }
 
