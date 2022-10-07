@@ -55,8 +55,11 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,6 +80,20 @@ public class Outcall {
     public static final String HEADER_USER_AGENT = "User-Agent";
     public static final String HEADER_ACCEPT = "Accept";
     public static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
+
+    /**
+     * Date time formatter as per
+     * <a href="https://datatracker.ietf.org/doc/html/rfc2616#section-3.3.1">RFC 2616 section 3.3.1</a>
+     * <p>
+     * In contrast to {@link DateTimeFormatter#RFC_1123_DATE_TIME}, the day must use two digits and the date must be
+     * represented in GMT (which is equal to UTC for the purpose of HTTP).
+     */
+    public static final DateTimeFormatter RFC2616_INSTANT =
+            new DateTimeFormatterBuilder().appendPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
+                                          .toFormatter()
+                                          .withLocale(Locale.ENGLISH)
+                                          .withChronology(IsoChronology.INSTANCE)
+                                          .withZone(ZoneOffset.UTC);
 
     private static final String REQUEST_METHOD_HEAD = "HEAD";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
@@ -236,7 +253,7 @@ public class Outcall {
      */
     public Outcall setIfModifiedSince(LocalDateTime ifModifiedSince) {
         setRequestProperty(HEADER_IF_MODIFIED_SINCE,
-                           ifModifiedSince.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.RFC_1123_DATE_TIME));
+                           ifModifiedSince.atZone(ZoneId.systemDefault()).format(RFC2616_INSTANT));
         return this;
     }
 
