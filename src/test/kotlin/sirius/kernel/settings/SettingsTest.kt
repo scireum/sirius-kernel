@@ -17,8 +17,8 @@ class SettingsTest {
     @Test
     fun `Settings#getTranslatedString works as expected`() {
         val settings = Settings(
-                ConfigFactory.parseString(
-                        """
+            ConfigFactory.parseString(
+                """
             directKey = "test"
             intKey = 5
             translatedKey = "${'$'}testKey"
@@ -28,7 +28,7 @@ class SettingsTest {
                 default: "fallback"
             }
         """
-                ), false
+            ), false
         )
 
         Assertions.assertEquals("", settings.getTranslatedString("unknown", "en"))

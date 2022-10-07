@@ -5,6 +5,7 @@
  * Copyright by scireum GmbH
  * http://www.scireum.de - info@scireum.de
  */
+
 package sirius.kernel.commons
 
 import org.junit.jupiter.api.Test

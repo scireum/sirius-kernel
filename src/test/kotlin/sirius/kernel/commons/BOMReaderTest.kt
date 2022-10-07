@@ -5,6 +5,7 @@
  * Copyright by scireum GmbH
  * http://www.scireum.de - info@scireum.de
  */
+
 package sirius.kernel.commons
 
 import org.junit.jupiter.api.Test
@@ -20,13 +21,14 @@ class BOMReaderTest {
             239.toByte(),
             187.toByte(),
             191.toByte(),
-            'H'.toByte(),
-            'E'.toByte(),
-            'L'.toByte(),
-            'L'.toByte(),
-            'O'.toByte()
+            'H'.code.toByte(),
+            'E'.code.toByte(),
+            'L'.code.toByte(),
+            'L'.code.toByte(),
+            'O'.code.toByte()
         )
-        private val WITHOUT_BOM = byteArrayOf('H'.toByte(), 'E'.toByte(), 'L'.toByte(), 'L'.toByte(), 'O'.toByte())
+        private val WITHOUT_BOM =
+            byteArrayOf('H'.code.toByte(), 'E'.code.toByte(), 'L'.code.toByte(), 'L'.code.toByte(), 'O'.code.toByte())
     }
 
     @Test
