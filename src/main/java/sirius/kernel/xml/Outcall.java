@@ -83,12 +83,12 @@ public class Outcall {
 
     /**
      * Date time formatter as per
-     * <a href="https://datatracker.ietf.org/doc/html/rfc9110#section-5.6.7">RFC 9110 section 5.6.7.</a>
+     * <a href="https://datatracker.ietf.org/doc/html/rfc2616#section-3.3.1">RFC 2616 section 3.3.1</a>
      * <p>
      * In contrast to {@link DateTimeFormatter#RFC_1123_DATE_TIME}, the day must use two digits and the date must be
      * represented in GMT (which is equal to UTC for the purpose of HTTP).
      */
-    public static final DateTimeFormatter RFC9110_INSTANT =
+    public static final DateTimeFormatter RFC2616_INSTANT =
             new DateTimeFormatterBuilder().appendPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
                                           .toFormatter()
                                           .withLocale(Locale.ENGLISH)
@@ -253,7 +253,7 @@ public class Outcall {
      */
     public Outcall setIfModifiedSince(LocalDateTime ifModifiedSince) {
         setRequestProperty(HEADER_IF_MODIFIED_SINCE,
-                           ifModifiedSince.atZone(ZoneId.systemDefault()).format(RFC9110_INSTANT));
+                           ifModifiedSince.atZone(ZoneId.systemDefault()).format(RFC2616_INSTANT));
         return this;
     }
 
