@@ -14,7 +14,7 @@ import kotlin.test.assertNull
 
 class FilesTest {
     @Test
-    fun testgetFileExtension() {
+    fun testGetFileExtension() {
         assertEquals("txt", Files.getFileExtension("text.txt"))
         assertEquals("txt", Files.getFileExtension("/foo/bar/text.txt"))
         assertEquals("txt", Files.getFileExtension("/foo/bar/text.foo.txt"))
@@ -24,7 +24,7 @@ class FilesTest {
     }
 
     @Test
-    fun testgetBasepath() {
+    fun testGetBasepath() {
         assertEquals("/foo", Files.getBasepath("/foo/test.txt"))
         assertEquals("/foo", Files.getBasepath("/foo/bar"))
         assertEquals("/foo/bar", Files.getBasepath("/foo/bar/test.txt"))
@@ -37,7 +37,7 @@ class FilesTest {
     }
 
     @Test
-    fun testgetFilenameAndExtension() {
+    fun testGetFilenameAndExtension() {
         assertEquals("test.txt", Files.getFilenameAndExtension("/foo/bar/test.txt"))
         assertEquals("test.txt", Files.getFilenameAndExtension("test.txt"))
         assertEquals("test.txt", Files.getFilenameAndExtension("bar/test.txt"))
@@ -49,7 +49,7 @@ class FilesTest {
     }
 
     @Test
-    fun testgetFilenameWithoutExtension() {
+    fun testGetFilenameWithoutExtension() {
         assertEquals("test", Files.getFilenameWithoutExtension("test.txt"))
         assertEquals("test", Files.getFilenameWithoutExtension("test"))
         assertEquals("test", Files.getFilenameWithoutExtension("/bar/test.txt"))
