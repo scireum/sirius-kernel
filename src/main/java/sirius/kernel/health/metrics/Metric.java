@@ -18,10 +18,30 @@ import java.util.Objects;
 /**
  * Represents a measured value, recorded by the metrics framework.
  * <p>
- * Basically this combines a name along with a value and unit. Additionally an interpretation of the value is
+ * Basically this combines a name along with a value and unit. Additionally, an interpretation of the value is
  * given as state.
  */
 public class Metric implements Comparable<Metric> {
+
+    /**
+     * Contains the default unit symbol to use for metrics reported "per minute".
+     */
+    public static final String UNIT_PER_MIN = "/min";
+
+    /**
+     * Contains the default unit symbol to use for metrics reported in "mebibytes" (divided by 1024).
+     */
+    public static final String UNIT_MIB = "MiB";
+
+    /**
+     * Contains the default unit symbol to use for metrics reported in milliseconds.
+     */
+    public static final String UNIT_MS = "ms";
+
+    /**
+     * Contains the default unit symbol to use for metrics reported in percent.
+     */
+    public static final String UNIT_PERCENT = "%";
 
     private final String code;
     private final String unit;
@@ -44,6 +64,16 @@ public class Metric implements Comparable<Metric> {
         this.label = label;
         this.value = Double.isNaN(value) ? 0 : value;
         this.state = state;
+    }
+
+    /**
+     * Provides a conversion from bytes to MiB, as this is commonly used for metrics.
+     *
+     * @param bytes the number of bytes to convert
+     * @return the converted value in <tt>MiB</tt>
+     */
+    public static double bytesToMebibytes(long bytes) {
+        return bytes / 1024d / 1024d;
     }
 
     /**
@@ -102,7 +132,7 @@ public class Metric implements Comparable<Metric> {
 
     @Override
     @SuppressWarnings("squid:S1698")
-    @Explain("Indentity against this is safe and a shortcut to speed up comparisons")
+    @Explain("Identity against this is safe and a shortcut to speed up comparisons")
     public int compareTo(Metric other) {
         if (other == null) {
             return -1;

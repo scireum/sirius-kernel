@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 /**
  * Implementation of <tt>Cache</tt> used by the <tt>CacheManager</tt>
@@ -307,25 +306,6 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
             init();
         }
         return new ArrayList<>(data.asMap().values());
-    }
-
-    /**
-     * Removes all cached values for which the predicate returns true.
-     *
-     * @param predicate the predicate used to determine if a value should be removed from the cache.
-     * @deprecated Because in coherenct cache environments this can lead to stale cache entries if a cache on
-     * one nodes has a different set of keys than another, as the scan always runs locally.
-     * Use {@link #addRemover(String, BiPredicate)} and {@link #removeAll(String, String)} which scans each node
-     * individually.
-     */
-    @Deprecated(since = "2021/07/01")
-    @Override
-    public void removeIf(@Nonnull Predicate<CacheEntry<K, V>> predicate) {
-        if (data == null) {
-            return;
-        }
-
-        data.asMap().values().removeIf(predicate);
     }
 
     @Override

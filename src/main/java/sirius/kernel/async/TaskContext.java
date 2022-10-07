@@ -111,18 +111,6 @@ public class TaskContext implements SubContext {
     }
 
     /**
-     * Sets the new state of the current task.
-     *
-     * @param newState the message to set as state
-     * @param args     the parameters used to format the state message (see {@link Strings#apply(String, Object...)})
-     * @deprecated Use either {@link #tryUpdateState(String, Object...)} or {@link #forceUpdateState(String, Object...)}
-     */
-    @Deprecated(forRemoval = true)
-    public void setState(String newState, Object... args) {
-        adapter.setState(Strings.apply(newState, args));
-    }
-
-    /**
      * Tries to update the state message.
      * <p>
      * This will employ a rate limiting and suppress updates which are too frequent (as updating the state might

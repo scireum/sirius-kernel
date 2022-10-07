@@ -12,10 +12,7 @@ import sirius.kernel.BaseSpecification
 import sirius.kernel.async.CallContext
 import sirius.kernel.commons.Amount
 
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
+import java.time.*
 
 class NLSSpec extends BaseSpecification {
 
@@ -86,8 +83,8 @@ class NLSSpec extends BaseSpecification {
 
     def "toUserString() formats an Instant successfully"() {
         given:
-        def date = LocalDateTime.now()
         def instant = Instant.now()
+        def date = instant.atZone(ZoneId.systemDefault()).toLocalDateTime()
         and:
         CallContext.getCurrent().setLang("de")
         when:

@@ -134,14 +134,15 @@ public class RegisterLoadAction implements ClassLoadAction {
                                         Register registerAnnotation,
                                         Object part) {
         String name = registerAnnotation.name();
-        if (part instanceof Named) {
+        if (part instanceof Named named) {
             if (Strings.isFilled(name)) {
                 Injector.LOG.WARN(
                         "%s implements Named and still provides a name in the @Register annotation. Using value "
                         + "provided by Named.getName()...",
                         clazz.getName());
             }
-            name = ((Named) part).getName();
+
+            name = named.getName();
             if (Strings.isEmpty(name)) {
                 Injector.LOG.WARN("%s implements Named but Named.getName() returned an empty string...",
                                   clazz.getName());

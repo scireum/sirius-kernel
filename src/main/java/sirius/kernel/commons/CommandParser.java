@@ -8,7 +8,7 @@
 
 package sirius.kernel.commons;
 
-import parsii.tokenizer.LookaheadReader;
+import sirius.kernel.tokenizer.LookaheadReader;
 
 import javax.annotation.Nullable;
 import java.io.StringReader;

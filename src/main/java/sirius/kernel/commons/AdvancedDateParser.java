@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.temporal.ChronoField;
 import java.time.temporal.IsoFields;
-import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
 import java.util.Arrays;
@@ -818,17 +817,6 @@ public class AdvancedDateParser {
             super();
             this.date = date;
             this.dateString = dateString;
-        }
-
-        /**
-         * Returns the effective date as <tt>Temporal</tt>
-         *
-         * @return the effective date. This might be <tt>null</tt> if parsing the expression failed.
-         * @deprecated use {@link #asDateTime()} which returns the proper type (<tt>LocalDateTime</tt>).
-         */
-        @Deprecated(forRemoval = true)
-        public Temporal getTemporal() {
-            return date;
         }
 
         /**

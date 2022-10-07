@@ -177,8 +177,8 @@ public class Log {
         StackTraceElement caller = new Throwable().getStackTrace()[2];
 
         LogRecord logRecord = createLogRecord(level, msg, caller);
-        if (msg instanceof Throwable) {
-            logRecord.setThrown((Throwable) msg);
+        if (msg instanceof Throwable throwable) {
+            logRecord.setThrown(throwable);
         }
 
         logger.log(logRecord);
@@ -214,7 +214,7 @@ public class Log {
                 }
             }
         } finally {
-            frozen.set(Boolean.FALSE);
+            frozen.remove();
         }
     }
 

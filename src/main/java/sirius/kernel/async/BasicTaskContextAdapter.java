@@ -47,19 +47,6 @@ public class BasicTaskContextAdapter implements TaskContextAdapter {
         }
     }
 
-    /**
-     * Invoked if {@link sirius.kernel.async.TaskContext#setState(String, Object...)} is called in the attached
-     * context.
-     *
-     * @param message the message to set as state
-     * @deprecated Use either {@link #forceUpdateState(String)} or {@link #tryUpdateState(String)}
-     */
-    @Override
-    @Deprecated(forRemoval = true)
-    public void setState(String message) {
-        this.state = message;
-    }
-
     @Override
     public RateLimit shouldUpdateState() {
         return stateUpdate;
