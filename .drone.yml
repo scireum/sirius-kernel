@@ -19,7 +19,7 @@ steps:
   - name: compile
     image: scireum/sirius-build-jdk18
     commands:
-      - mvn clean compile
+      - ./gradlew clean assemble
     volumes: *scireum_volumes
     when:
       branch:
@@ -30,7 +30,7 @@ steps:
   - name: cron_unit_tests
     image: scireum/sirius-build-jdk18
     commands:
-      - mvn clean test
+      - ./gradlew clean test
     volumes: *scireum_volumes
     when:
       event:
@@ -50,7 +50,7 @@ steps:
   - name: test
     image: scireum/sirius-build-jdk18
     commands:
-      - mvn clean test -Dtest.excluded.groups=nightly
+      - ./gradlew clean testWithoutNightly
     volumes: *scireum_volumes
     when:
       event:
