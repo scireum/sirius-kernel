@@ -33,16 +33,16 @@ class BOMReaderTest {
     @Throws(IOException::class)
     fun readBOM() {
         val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITH_UTF8_BOM)))
-        assertEquals('H'.toLong(), reader.read().toLong())
-        assertEquals('E'.toLong(), reader.read().toLong())
+        assertEquals('H'.code.toLong(), reader.read().toLong())
+        assertEquals('E'.code.toLong(), reader.read().toLong())
     }
 
     @Test
     @Throws(IOException::class)
     fun readWithoutBOM() {
         val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITHOUT_BOM)))
-        assertEquals('H'.toLong(), reader.read().toLong())
-        assertEquals('E'.toLong(), reader.read().toLong())
+        assertEquals('H'.code.toLong(), reader.read().toLong())
+        assertEquals('E'.code.toLong(), reader.read().toLong())
     }
 
     @Test
@@ -51,7 +51,7 @@ class BOMReaderTest {
         val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITH_UTF8_BOM)))
         val buffer = CharArray(1)
         assertEquals(1, reader.read(buffer).toLong())
-        assertEquals('H'.toLong(), buffer[0].toLong())
+        assertEquals('H'.code.toLong(), buffer[0].code.toLong())
     }
 
     @Test
@@ -60,7 +60,7 @@ class BOMReaderTest {
         val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITH_UTF8_BOM)))
         val buffer = CharArray(2)
         assertEquals(2, reader.read(buffer).toLong())
-        assertEquals('H'.toLong(), buffer[0].toLong())
+        assertEquals('H'.code.toLong(), buffer[0].code.toLong())
     }
 
     @Test
@@ -69,7 +69,7 @@ class BOMReaderTest {
         val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITH_UTF8_BOM)))
         val buffer = CharArray(10)
         assertEquals(5, reader.read(buffer).toLong())
-        assertEquals('H'.toLong(), buffer[0].toLong())
+        assertEquals('H'.code.toLong(), buffer[0].code.toLong())
     }
 
     @Test
@@ -78,6 +78,6 @@ class BOMReaderTest {
         val reader = BOMReader(InputStreamReader(ByteArrayInputStream(WITH_UTF8_BOM)))
         val buffer = CharArray(2)
         assertEquals(2, reader.read(buffer).toLong())
-        assertEquals('H'.toLong(), buffer[0].toLong())
+        assertEquals('H'.code.toLong(), buffer[0].code.toLong())
     }
 }
