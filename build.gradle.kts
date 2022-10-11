@@ -15,13 +15,13 @@ buildscript {
         maven("https://mvn.scireum.com")
     }
     dependencies {
-        classpath("com.scireum:sirius-parent:1.0-RC2")
+        classpath("com.scireum:sirius-parent:1.0-RC3")
     }
 }
 
-
 plugins {
     id("java-library")
+    id("org.sonarqube") version "3.4.0.2513"
 }
 
 apply(plugin = "com.scireum.sirius-parent")
@@ -49,3 +49,8 @@ dependencies {
     api("org.yaml:snakeyaml:1.32")
 }
 
+sonarqube {
+    properties {
+        property("sonar.sourceEncoding", "UTF-8")
+    }
+}
