@@ -70,7 +70,7 @@ steps:
     image: scireum/sirius-build-jdk18
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' build.gradle.kts
-      - ./gradlew clean test sonarqube -Dsonar.projectKey=sirius-kernel -Dsonar.host.url=https://sonarqube.scireum.com/ -Dsonar.login=${sonar_login}
+      - ./gradlew clean test sonarqube -Dsonar.projectKey=${DRONE_REPO_NAME} -Dsonar.host.url=https://sonarqube.scireum.com/ -Dsonar.login=${sonar_login}
     volumes: *scireum_volumes
     when:
       event:
