@@ -69,8 +69,8 @@ steps:
   - name: sonar
     image: scireum/sirius-build-jdk18
     commands:
-      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
-      - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.projectKey=${DRONE_REPO_NAME}
+      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' build.gradle.kts
+      - ./gradlew clean test sonarqube -Dsonar.projectKey=${DRONE_REPO_NAME} -Dsonar.host.url=https://sonarqube.scireum.com/ -Dsonar.login=${sonar_login}
     volumes: *scireum_volumes
     when:
       event:
