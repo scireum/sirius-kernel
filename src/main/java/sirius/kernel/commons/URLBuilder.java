@@ -103,7 +103,7 @@ public class URLBuilder {
             questionMark.toggle();
         }
 
-        url.append(StringUtils.strip(uriPartToAdd, "/"));
+        url.append(StringUtils.strip(uriPartToAdd, PATH_SEPARATOR));
 
         return this;
     }
