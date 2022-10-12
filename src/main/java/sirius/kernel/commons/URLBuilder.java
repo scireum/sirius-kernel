@@ -80,7 +80,7 @@ public class URLBuilder {
      * Once the first parameter has been added, the path can no longer be modified. Also, the part itself can (but
      * shouldn't) contain parameters, usually led by an initial question mark.
      *
-     * @param uriPartToAdd the uri part to add. Included trailing or leading '/' are handled automatically.
+     * @param uriPartToAdd the URI part to add. Included trailing or leading '/' are handled automatically.
      *                     If this contains a '?' to add parameters, no more parts can be added afterwards.
      * @return the builder itself for fluent method calls
      */
@@ -114,7 +114,7 @@ public class URLBuilder {
      * Once the first parameter has been added, the path can no longer be modified. Also, the part itself can (but
      * shouldn't) contain parameters, usually led by an initial question mark.
      *
-     * @param uriPartsToAdd the uri parts to add. Included trailing or leading '/' are handled automatically.
+     * @param uriPartsToAdd the URI parts to add. Included trailing or leading '/' are handled automatically.
      *                      If this contains a '?' to add parameters, no more parts can be added afterwards.
      * @return the builder itself for fluent method calls
      */
@@ -129,7 +129,7 @@ public class URLBuilder {
      * Once the first parameter has been added, the path can no longer be modified. Also, the part itself can (but
      * shouldn't) contain parameters, usually led by an initial question mark.
      *
-     * @param uriPartsToAdd the uri part to add. This should not contain a leading '/' as it is added automatically. If
+     * @param uriPartsToAdd the URI part to add. This should not contain a leading '/' as it is added automatically. If
      *                      an array (vararg) is given, all components are appended to the internal {@link
      *                      StringBuilder} without any additional characters. If this contains a '?' to add parameters,
      *                      no more parts can be added.
