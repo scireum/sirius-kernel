@@ -8,12 +8,15 @@
 
 package sirius.kernel.commons;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 
 /**
  * Used to successively build URLs.
@@ -33,12 +36,13 @@ public class URLBuilder {
     public static final String PROTOCOL_HTTPS = "https";
 
     private static final String QUERY_SEPARATOR = "?";
+    private static final String PATH_SEPARATOR = "/";
 
     private final StringBuilder url;
     private final Monoflop questionMark = Monoflop.create();
 
     /**
-     * Creates a new instance pre filled with the given baseURL.
+     * Creates a new instance pre-filled with the given baseURL.
      *
      * @param baseURL the base url to stat with in a form like <tt>http://somehost.com</tt> or
      *                <tt>http://somehost.com?some=parameter</tt>
@@ -50,7 +54,7 @@ public class URLBuilder {
             questionMark.toggle();
         }
 
-        if (baseURL.endsWith("/")) {
+        if (baseURL.endsWith(PATH_SEPARATOR)) {
             url.append(baseURL, 0, baseURL.length() - 1);
         } else {
             url.append(baseURL);
@@ -76,14 +80,65 @@ public class URLBuilder {
      * Once the first parameter has been added, the path can no longer be modified. Also, the part itself can (but
      * shouldn't) contain parameters, usually led by an initial question mark.
      *
+     * @param uriPartToAdd the uri part to add. Included trailing or leading '/' are handled automatically.
+     *                     If this contains a '?' to add parameters, no more parts can be added afterwards.
+     * @return the builder itself for fluent method calls
+     */
+    public URLBuilder addSafePart(@Nullable String uriPartToAdd) {
+        if (Strings.isEmpty(uriPartToAdd)) {
+            return this;
+        }
+
+        if (questionMark.isToggled()) {
+            throw new IllegalStateException(Strings.apply("Cannot add '%s'! Parameters where already added to: '%s'.",
+                                                          uriPartToAdd,
+                                                          url));
+        }
+
+        if (!PATH_SEPARATOR.equals(url.substring(url.length() - 1, url.length()))) {
+            url.append(PATH_SEPARATOR);
+        }
+
+        if (uriPartToAdd.contains(QUERY_SEPARATOR)) {
+            questionMark.toggle();
+        }
+
+        url.append(StringUtils.strip(uriPartToAdd, "/"));
+
+        return this;
+    }
+
+    /**
+     * Adds multiple path parts to the url.
+     * <p>
+     * Once the first parameter has been added, the path can no longer be modified. Also, the part itself can (but
+     * shouldn't) contain parameters, usually led by an initial question mark.
+     *
+     * @param uriPartsToAdd the uri parts to add. Included trailing or leading '/' are handled automatically.
+     *                      If this contains a '?' to add parameters, no more parts can be added afterwards.
+     * @return the builder itself for fluent method calls
+     */
+    public URLBuilder addSafeParts(@Nullable String... uriPartsToAdd) {
+        Arrays.stream(uriPartsToAdd).forEach(this::addSafePart);
+        return this;
+    }
+
+    /**
+     * Adds a path part to the url.
+     * <p>
+     * Once the first parameter has been added, the path can no longer be modified. Also, the part itself can (but
+     * shouldn't) contain parameters, usually led by an initial question mark.
+     *
      * @param uriPartsToAdd the uri part to add. This should not contain a leading '/' as it is added automatically. If
      *                      an array (vararg) is given, all components are appended to the internal {@link
      *                      StringBuilder} without any additional characters. If this contains a '?' to add parameters,
      *                      no more parts can be added.
      * @return the builder itself for fluent method calls
+     * @deprecated use {@link #addSafePart(String)} or {@link #addSafeParts(String...)} instead.
      */
+    @Deprecated(forRemoval = true)
     public URLBuilder addPart(@Nonnull String... uriPartsToAdd) {
-        url.append("/");
+        url.append(PATH_SEPARATOR);
         for (String uriPart : uriPartsToAdd) {
             if (Strings.isFilled(uriPart)) {
                 if (questionMark.isToggled()) {
