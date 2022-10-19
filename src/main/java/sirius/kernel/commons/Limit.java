@@ -44,7 +44,7 @@ public class Limit {
     /**
      * Represents a limit which has no upper limit and does not skip any items.
      * <p>
-     * Although a limit is modified internally, we can use a constant here because a unlimited limit has
+     * Although a limit is modified internally, we can use a constant here because an unlimited limit has
      * not internal state.
      */
     public static final Limit UNLIMITED = new Limit(0, null);

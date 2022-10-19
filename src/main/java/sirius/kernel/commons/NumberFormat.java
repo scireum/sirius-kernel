@@ -77,7 +77,7 @@ public class NumberFormat {
      * {@link sirius.kernel.nls.NLS}.
      * <p>
      * This method is intended to return a machine representation without loosing any data while formatting. As most
-     * probably five decimal places are too much to output, this should be used in conjuction with
+     * probably five decimal places are too much to output, this should be used in conjunction with
      * {@link Amount#toSmartRoundedString(NumberFormat)}.
      *
      * @see sirius.kernel.nls.NLS#getMachineFormatSymbols()
@@ -179,7 +179,7 @@ public class NumberFormat {
     }
 
     /**
-     * Determines if grouping separaters (by thousands) should be placed or not.
+     * Determines if grouping separators (by thousands) should be placed or not.
      *
      * @return <tt>true</tt> if grouping separators are used, <tt>false</tt> otherwise
      */
