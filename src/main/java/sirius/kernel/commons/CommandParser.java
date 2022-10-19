@@ -70,7 +70,7 @@ public class CommandParser {
     /**
      * Returns the arguments as array.
      *
-     * @return the arguments as returend by {@link #getArgs()} readily converted into an array.
+     * @return the arguments as returned by {@link #getArgs()} readily converted into an array.
      */
     public String[] getArgArray() {
         return getArgs().toArray(EMPTY_STRING_ARRAY);
