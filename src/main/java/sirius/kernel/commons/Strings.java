@@ -333,6 +333,9 @@ public class Strings {
      */
     public static List<String> splitSmart(String input, int maxCharacters) {
         List<String> result = new ArrayList<>();
+        if (Strings.isEmpty(input)) {
+            return result;
+        }
         StringBuilder current = new StringBuilder();
         for (String toAdd : splitIntoWords(input, maxCharacters)) {
             if (!current.isEmpty() && current.length() + toAdd.length() >= maxCharacters) {

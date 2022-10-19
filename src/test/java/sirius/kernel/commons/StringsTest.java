@@ -102,6 +102,8 @@ class StringsTest {
     @Test
     void splitSmart() {
         assertEquals(List.of("a"), Strings.splitSmart("a", 2));
+        assertEquals(List.of(), Strings.splitSmart(null, 0));
+        assertEquals(List.of(), Strings.splitSmart(null, 2));
         assertEquals(List.of(), Strings.splitSmart("", 0));
         assertEquals(List.of(), Strings.splitSmart("", 2));
         assertEquals(List.of("das ist", "ein", "Test"), Strings.splitSmart("das ist ein Test", 7));
