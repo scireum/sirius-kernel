@@ -19,6 +19,7 @@ import sirius.kernel.health.Log;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
@@ -316,20 +317,7 @@ public class SOAPClient {
                 request = Strings.apply("Calling %s %s\n%s", effectiveEndpoint, actionPrefix + action, output);
             }
 
-            StructuredNode result = null;
-            try {
-                result = call.getInput().getNode(".");
-            } finally {
-                watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
-                if (LOG.isFINE()) {
-                    LOG.FINE(
-                            "---------- call ----------\n%s\n---------- response ----------\n%s---------- end ----------",
-                            request,
-                            result != null ?
-                            result :
-                            Strings.apply("HTTP-Response-Code: %s\n", call.getOutcall().getResponseCode()));
-                }
-            }
+            StructuredNode result = getResultNodeAndFineLog(action, watch, effectiveEndpoint, call, request);
 
             StructuredNode fault = result.queryNode("soapenv:Body/soapenv:Fault");
             if (fault != null) {
@@ -341,6 +329,35 @@ public class SOAPClient {
             throw exception;
         } catch (Exception exception) {
             return handleGeneralFault(watch, action, effectiveEndpoint, exception);
+        }
+    }
+
+    private StructuredNode getResultNodeAndFineLog(String action,
+                                                   Watch watch,
+                                                   URL effectiveEndpoint,
+                                                   XMLCall call,
+                                                   String request) throws IOException {
+        StructuredNode result = null;
+        try {
+            result = call.getInput().getNode(".");
+            return result;
+        } finally {
+            watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
+            if (LOG.isFINE()) {
+                LOG.FINE("""
+                                 ---------- call ----------
+                                 %s
+                                 ---------- response ----------
+                                 %s
+                                 ---------- end ----------
+                                 """,
+                         request,
+                         result != null ?
+                         result :
+                         Strings.apply("HTTP-Response-Code: %s\n%s",
+                                       call.getOutcall().getResponseCode(),
+                                       call.getRawInput()));
+            }
         }
     }
 
