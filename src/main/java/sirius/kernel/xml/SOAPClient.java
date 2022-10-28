@@ -316,13 +316,19 @@ public class SOAPClient {
                 request = Strings.apply("Calling %s %s\n%s", effectiveEndpoint, actionPrefix + action, output);
             }
 
-            StructuredNode result = call.getInput().getNode(".");
-            watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
-
-            if (LOG.isFINE()) {
-                LOG.FINE("---------- call ----------\n%s\n---------- response ----------\n%s---------- end ----------",
-                         request,
-                         result.toString());
+            StructuredNode result = null;
+            try {
+                result = call.getInput().getNode(".");
+            } finally {
+                watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
+                if (LOG.isFINE()) {
+                    LOG.FINE(
+                            "---------- call ----------\n%s\n---------- response ----------\n%s---------- end ----------",
+                            request,
+                            result != null ?
+                            result :
+                            Strings.apply("HTTP-Response-Code: %s\n", call.getOutcall().getResponseCode()));
+                }
             }
 
             StructuredNode fault = result.queryNode("soapenv:Body/soapenv:Fault");
