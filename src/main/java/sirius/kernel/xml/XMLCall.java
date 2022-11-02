@@ -12,7 +12,6 @@ import sirius.kernel.health.Exceptions;
 
 import javax.xml.namespace.NamespaceContext;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -144,9 +143,7 @@ public class XMLCall {
      * @return the result of the call
      * @throws IOException in case of an IO error while receiving the result
      */
-    public String getRawInput() throws IOException {
-        try (InputStream body = outcall.getResponse().body()) {
-            return new String(body.readAllBytes());
-        }
+    public XMLStructuredInput getRawInput() throws IOException {
+        return new XMLStructuredInput(outcall.getResponse().body(), namespaceContext);
     }
 }
