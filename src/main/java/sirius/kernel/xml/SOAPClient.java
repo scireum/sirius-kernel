@@ -19,6 +19,7 @@ import sirius.kernel.health.Log;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
@@ -312,29 +313,26 @@ public class SOAPClient {
             XMLStructuredOutput output = call.getOutput();
             createEnvelope(output, headBuilder, bodyBuilder);
 
-            StructuredNode result = null;
-            try {
-                result = call.getInput().getNode(".");
-            } finally {
-                watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
-                if (LOG.isFINE()) {
-                    LOG.FINE("""
-                                     ---------- call ----------
-                                     Calling %s %s
-                                                                  
-                                     %s
-                                     ---------- response ----------
-                                     HTTP-Response-Code: %s
-                                                                  
-                                     %s
-                                     ---------- end ----------
-                                     """,
-                             effectiveEndpoint,
-                             soapAction,
-                             output,
-                             call.getOutcall().getResponseCode(),
-                             result != null ? result : call.getRawInput());
-                }
+            StructuredNode result = call.getRawInput().getNode(".");
+            int responseCode = call.getOutcall().getResponseCode();
+
+            watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
+
+            LOG.FINE("""
+                             ---------- call ----------
+                             Calling %s %s
+                                                          
+                             %s
+                             ---------- response ----------
+                             HTTP-Response-Code: %s
+                                                          
+                             %s
+                             ---------- end ----------
+                             """, effectiveEndpoint, soapAction, output, responseCode, result);
+
+            if (call.getOutcall().isErroneous()) {
+                throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
+                                                    responseCode));
             }
 
             StructuredNode fault = result.queryNode("soapenv:Body/soapenv:Fault");
