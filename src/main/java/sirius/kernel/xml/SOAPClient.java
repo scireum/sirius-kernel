@@ -19,6 +19,7 @@ import sirius.kernel.health.Log;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
@@ -134,7 +135,7 @@ public class SOAPClient {
     }
 
     /**
-     * Defines a XML namespace prefix.
+     * Defines an XML namespace prefix.
      * <p>
      * This will be defined in the request, so that tags using this prefix can be sent to the server. This will be
      * also made available to  the result of a call so that XPATH expressions can refer to this prefix (independently
@@ -205,7 +206,7 @@ public class SOAPClient {
     /**
      * Permits to supply a set of default parameters.
      * <p>
-     * When building a simple parameter object via {@link #call(String, String)}, this can be use to supply one or
+     * When building a simple parameter object via {@link #call(String, String)}, this can be used to supply one or
      * more default parameters for all requests.
      *
      * @param parameterProvider the consumer which can be supplied with additional parameters
@@ -236,7 +237,7 @@ public class SOAPClient {
     /**
      * Determines if SOAP faults should be thrown as {@link SOAPFaultException}.
      * <p>
-     * Otherwise a SOAP fault will be handled as {@link HandledException}. The <tt>SOAPFaultException</tt> will
+     * Otherwise, a SOAP fault will be handled as {@link HandledException}. The <tt>SOAPFaultException</tt> will
      * still be the root cause of the <tt>HandledException</tt> so that the underlying cause can still be detected.
      *
      * @return the client itself for fluent method calls
@@ -268,7 +269,7 @@ public class SOAPClient {
      * Invokes the given SOAP action by specifying a custom SOAP body.
      *
      * @param action      the action to invoke
-     * @param bodyBuilder the builder used to setup the body of the SOAP envelope
+     * @param bodyBuilder the builder used to set up the body of the SOAP envelope
      * @return the SOAP envelope of the response
      * @throws SOAPFaultException                    in case of a reported SOAP fault
      * @throws sirius.kernel.health.HandledException in case of any other problem (i.e. IO errors)
@@ -281,8 +282,8 @@ public class SOAPClient {
      * Invokes the given SOAP action by specifying a custom SOAP header and body.
      *
      * @param action      the action to invoke
-     * @param headBuilder the builder used to setup the head of the SOAP envelope
-     * @param bodyBuilder the builder used to setup the body of the SOAP envelope
+     * @param headBuilder the builder used to set up the head of the SOAP envelope
+     * @param bodyBuilder the builder used to set up the body of the SOAP envelope
      * @return the SOAP envelope of the response
      * @throws SOAPFaultException in case of a reported SOAP fault
      * @throws HandledException   in case of any other problem (i.e. IO errors)
@@ -306,23 +307,32 @@ public class SOAPClient {
                 call.getOutcall().trustSelfSignedCertificates();
             }
 
-            call.addHeader(HEADER_SOAP_ACTION, actionPrefix + action);
+            String soapAction = actionPrefix + action;
+            call.addHeader(HEADER_SOAP_ACTION, soapAction);
 
             XMLStructuredOutput output = call.getOutput();
             createEnvelope(output, headBuilder, bodyBuilder);
 
-            String request = "";
-            if (LOG.isFINE()) {
-                request = Strings.apply("Calling %s %s\n%s", effectiveEndpoint, actionPrefix + action, output);
-            }
+            StructuredNode result = call.getRawInput().getNode(".");
+            int responseCode = call.getOutcall().getResponseCode();
 
-            StructuredNode result = call.getInput().getNode(".");
             watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
 
-            if (LOG.isFINE()) {
-                LOG.FINE("---------- call ----------\n%s\n---------- response ----------\n%s---------- end ----------",
-                         request,
-                         result.toString());
+            LOG.FINE("""
+                             ---------- call ----------
+                             Calling %s %s
+                                                          
+                             %s
+                             ---------- response ----------
+                             HTTP-Response-Code: %s
+                                                          
+                             %s
+                             ---------- end ----------
+                             """, effectiveEndpoint, soapAction, output, responseCode, result);
+
+            if (call.getOutcall().isErroneous()) {
+                throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
+                                                    responseCode));
             }
 
             StructuredNode fault = result.queryNode("soapenv:Body/soapenv:Fault");
@@ -376,12 +386,12 @@ public class SOAPClient {
     /**
      * Handles the given SOAP fault.
      * <p>
-     * This method can be overwritten by sublasses to provide additional logging / tracing.
+     * This method can be overwritten by subclasses to provide additional logging / tracing.
      *
      * @param watch             the watch which record the total duration of the SOAP call
      * @param action            the action which was invoked
      * @param effectiveEndpoint the endpoint which has been addressed
-     * @param fault             the fault that occured
+     * @param fault             the fault that occurred
      * @return an alternative response to return in case that no exception is thrown
      * @throws SOAPFaultException in case the client is configured to do so
      * @throws HandledException   as the default way of handling SOAP faults when no <tt>SOAPFaultException</tt> is
@@ -403,7 +413,7 @@ public class SOAPClient {
                                                   .to(LOG)
                                                   .error(soapFaultException)
                                                   .withSystemErrorMessage(
-                                                          "A SOAP fault (%s) occured when executing '%s' against '%s': %s",
+                                                          "A SOAP fault (%s) occurred when executing '%s' against '%s': %s",
                                                           soapFaultException.getFaultCode(),
                                                           action,
                                                           effectiveEndpoint)
@@ -414,7 +424,7 @@ public class SOAPClient {
     /**
      * Processes a successfully received SOAP result.
      * <p>
-     * By default this simply invokes the <tt>resultTransformer</tt>, but it can be overwritten by subclasses for
+     * By default, this simply invokes the <tt>resultTransformer</tt>, but it can be overwritten by subclasses for
      * additional logging / tracing. This can also modify the result being returned or throw an exception in stead.
      *
      * @param watch             the watch which record the total duration of the SOAP call
@@ -428,14 +438,14 @@ public class SOAPClient {
     }
 
     /**
-     * Handles the given exception which occured when performing a SOAP call.
+     * Handles the given exception which occurred when performing a SOAP call.
      * <p>
-     * This method can be overwritten by sublasses to provide additional logging / tracing.
+     * This method can be overwritten by subclasses to provide additional logging / tracing.
      *
      * @param watch             the watch which record the total duration of the SOAP call
      * @param action            the action which was invoked
      * @param effectiveEndpoint the endpoint which has been addressed
-     * @param exception         the error that occured
+     * @param exception         the error that occurred
      * @return an alternative response to return in case that no exception is thrown
      * @throws HandledException the default approach is to create an appropriate exception and pass it to the
      *                          {@link #exceptionFilter}.
@@ -448,7 +458,7 @@ public class SOAPClient {
                                               .to(LOG)
                                               .error(exception)
                                               .withSystemErrorMessage(
-                                                      "An error occured when executing '%s' against '%s': %s (%s)",
+                                                      "An error occurred when executing '%s' against '%s': %s (%s)",
                                                       action,
                                                       effectiveEndpoint)
                                               .handle());

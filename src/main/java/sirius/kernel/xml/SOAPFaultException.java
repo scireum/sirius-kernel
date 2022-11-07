@@ -28,7 +28,7 @@ public class SOAPFaultException extends RuntimeException {
      *
      * @param action            the action which was attempted
      * @param effectiveEndpoint the effective endpoint which has been addressed
-     * @param faultCode         the code of the fault that occured
+     * @param faultCode         the code of the fault that occurred
      * @param faultMessage      the message of the fault
      */
     public SOAPFaultException(String action, URL effectiveEndpoint, String faultCode, String faultMessage) {
