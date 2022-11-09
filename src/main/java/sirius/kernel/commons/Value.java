@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -814,7 +815,8 @@ public class Value {
             return false;
         }
 
-        return NLS.parseUserString(Boolean.class, String.valueOf(data).trim());
+        return Objects.requireNonNullElse(NLS.parseUserString(Boolean.class, String.valueOf(data).trim()),
+                                          defaultValue);
     }
 
     /**
