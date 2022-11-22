@@ -9,13 +9,14 @@
 package sirius.kernel.health.console;
 
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Values;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.timer.EveryDay;
 import sirius.kernel.timer.Timers;
 
 import javax.annotation.Nonnull;
+import java.util.Comparator;
 import java.util.Set;
 
 /**
@@ -72,11 +73,14 @@ public class TimerCommand implements Command {
         output.blankLine();
         output.line("Daily Tasks");
         output.separator();
-        for (EveryDay task : ts.getDailyTasks()) {
-            output.apply("%30s: %2sh",
-                         task.getConfigKeyName(),
-                         Sirius.getSettings().getInt(Timers.TIMER_DAILY_PREFIX + task.getConfigKeyName()));
-        }
+
+        ts.getDailyTasks()
+          .stream()
+          .map(task -> Tuple.create(Sirius.getSettings().getInt(Timers.TIMER_DAILY_PREFIX + task.getConfigKeyName()),
+                                    task.getConfigKeyName()))
+          .sorted(Comparator.comparingInt(Tuple::getFirst))
+          .forEach(hourAndTask -> output.apply("%2sh: %s", hourAndTask.getFirst(), hourAndTask.getSecond()));
+
         output.separator();
     }
 
