@@ -16,6 +16,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Named;
 import sirius.kernel.di.std.Priorized;
+import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -148,28 +149,37 @@ class PartRegistry implements MutableGlobalContext {
      * Called to initialize all field of the given class in the given object
      */
     private void wireClass(Class<?> clazz, Object object) {
-        for (Field field : clazz.getDeclaredFields()) {
-            if (!Modifier.isFinal(field.getModifiers()) && (object != null
-                                                            || Modifier.isStatic(field.getModifiers()))) {
-                getParts(FieldAnnotationProcessor.class).stream()
-                                                        .filter(p -> field.isAnnotationPresent(p.getTrigger()))
-                                                        .forEach(p -> {
-                                                            try {
-                                                                field.setAccessible(true);
-                                                                p.handle(this, object, field);
-                                                            } catch (Exception e) {
-                                                                Injector.LOG.WARN(
-                                                                        "Cannot process annotation %s on %s.%s: %s "
-                                                                        + "(%s)",
-                                                                        p.getTrigger().getName(),
-                                                                        field.getDeclaringClass().getName(),
-                                                                        field.getName(),
-                                                                        e.getMessage(),
-                                                                        e.getClass().getName());
-                                                            }
-                                                        });
+        try {
+            for (Field field : clazz.getDeclaredFields()) {
+                if (!Modifier.isFinal(field.getModifiers()) && (object != null
+                                                                || Modifier.isStatic(field.getModifiers()))) {
+                    wireField(object, field);
+                }
             }
+        } catch (NoClassDefFoundError e) {
+            // These errors probably come from a missing driver or the like and can most probably be ignored...
+            Exceptions.ignore(e);
         }
+    }
+
+    private void wireField(Object object, Field field) {
+        getParts(FieldAnnotationProcessor.class).stream()
+                                                .filter(p -> field.isAnnotationPresent(p.getTrigger()))
+                                                .forEach(p -> {
+                                                    try {
+                                                        field.setAccessible(true);
+                                                        p.handle(this, object, field);
+                                                    } catch (Exception e) {
+                                                        Injector.LOG.WARN(
+                                                                "Cannot process annotation %s on %s.%s: %s "
+                                                                + "(%s)",
+                                                                p.getTrigger().getName(),
+                                                                field.getDeclaringClass().getName(),
+                                                                field.getName(),
+                                                                e.getMessage(),
+                                                                e.getClass().getName());
+                                                    }
+                                                });
     }
 
     @Override
