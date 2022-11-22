@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  * To process all annotations of a given Java object, {@link GlobalContext#wire(Object)} can be used. This will
  * be automatically called for each part which is auto-instantiated by a <tt>ClassLoadAction</tt>.
  * <p>
- * Also all annotations on static fields are processed on system startup. This is a simple trick to pass a
+ * Also, all annotations on static fields are processed on system startup. This is a simple trick to pass a
  * part to objects which are frequently created and destroyed.
  */
 public class Injector {
