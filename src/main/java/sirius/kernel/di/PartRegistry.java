@@ -16,7 +16,6 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Named;
 import sirius.kernel.di.std.Priorized;
-import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -157,8 +156,21 @@ class PartRegistry implements MutableGlobalContext {
                 }
             }
         } catch (NoClassDefFoundError e) {
-            // These errors probably come from a missing driver or the like and can most probably be ignored...
-            Exceptions.ignore(e);
+            if (object == null) {
+                // This is a static initialization as most probably ok (as all classes are loaded at this stage, even
+                // if they remain unused..)
+                Injector.LOG.INFO("Skipping static initialization of %s, as referenced class %s is missing...",
+                                  clazz.getName(),
+                                  e.getMessage());
+            } else {
+                // This seems odd, as a part has been loaded and registered - no classes should be missing here...
+                Injector.LOG.WARN(
+                        "Skipping initialization of part %s (%s) for class %s, as referenced class %s is missing...",
+                        object,
+                        object.getClass().getName(),
+                        clazz.getName(),
+                        e.getMessage());
+            }
         }
     }
 
@@ -170,14 +182,13 @@ class PartRegistry implements MutableGlobalContext {
                                                         field.setAccessible(true);
                                                         p.handle(this, object, field);
                                                     } catch (Exception e) {
-                                                        Injector.LOG.WARN(
-                                                                "Cannot process annotation %s on %s.%s: %s "
-                                                                + "(%s)",
-                                                                p.getTrigger().getName(),
-                                                                field.getDeclaringClass().getName(),
-                                                                field.getName(),
-                                                                e.getMessage(),
-                                                                e.getClass().getName());
+                                                        Injector.LOG.WARN("Cannot process annotation %s on %s.%s: %s "
+                                                                          + "(%s)",
+                                                                          p.getTrigger().getName(),
+                                                                          field.getDeclaringClass().getName(),
+                                                                          field.getName(),
+                                                                          e.getMessage(),
+                                                                          e.getClass().getName());
                                                     }
                                                 });
     }
