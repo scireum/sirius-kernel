@@ -65,7 +65,7 @@ public class Context implements Map<String, Object> {
     /**
      * Provides the value associated with the given key as {@link Value}
      *
-     * @param key the key for which the value should ne returned
+     * @param key the key for which the value should be returned
      * @return a value wrapping the internally associated value for the given key
      */
     @Nonnull
@@ -128,8 +128,8 @@ public class Context implements Map<String, Object> {
     /**
      * Loads all entries from the given context for which no own entry is present.
      * <p>
-     * Note that even a <tt>null</tt> entry is enogh to not load the entry from the given other.
-     * Use {@link #removeNulls()} to remove such entries before hand.
+     * Note that even a <tt>null</tt> entry is enough to not load the entry from the given other.
+     * Use {@link #removeNulls()} to remove such entries beforehand.
      *
      * @param other the context to load entries from
      * @return the context itself for fluent method calls

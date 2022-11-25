@@ -63,7 +63,6 @@ class AmountSpec extends BaseSpecification {
         Amount.TEN == Amount.ONE_HUNDRED.divideBy(Amount.TEN)
         Amount.of(2) == Amount.ONE.increasePercent(Amount.ONE_HUNDRED)
         Amount.of(0.5) == Amount.ONE.decreasePercent(Amount.of(50))
-        Amount.of(19) == Amount.TEN.multiplyPercent(Amount.TEN)
     }
 
     def "fill and orElseGet are only evaluated if no value is present"() {
@@ -265,22 +264,6 @@ class AmountSpec extends BaseSpecification {
         a              | b              | result
         4.2            | Amount.TEN     | 3.78
         Amount.ZERO    | 42             | Amount.ZERO
-        42             | Amount.ZERO    | 42
-        Amount.NOTHING | 42             | Amount.NOTHING
-        42             | Amount.NOTHING | 42
-    }
-
-    def "multiplyPercent() works as expected"() {
-        given:
-        Amount amountA = a instanceof Amount ? a : Amount.of(a)
-        Amount amountB = b instanceof Amount ? b : Amount.of(b)
-        Amount amountResult = result instanceof Amount ? result : Amount.of(result)
-        expect:
-        amountA.multiplyPercent(amountB) == amountResult
-        where:
-        a              | b              | result
-        4.2            | Amount.TEN     | 13.78
-        Amount.ZERO    | 42             | 42
         42             | Amount.ZERO    | 42
         Amount.NOTHING | 42             | Amount.NOTHING
         42             | Amount.NOTHING | 42

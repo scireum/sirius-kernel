@@ -14,7 +14,6 @@ import javax.xml.namespace.NamespaceContext;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -66,7 +65,7 @@ public class BasicNamespaceContext implements NamespaceContext {
                           .stream()
                           .filter(entry -> Strings.areEqual(entry.getValue(), namespaceURI))
                           .map(Map.Entry::getKey)
-                          .collect(Collectors.toList())
+                          .toList()
                           .iterator();
     }
 }

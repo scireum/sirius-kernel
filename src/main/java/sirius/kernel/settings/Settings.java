@@ -239,6 +239,8 @@ public class Settings {
      * @see #getStringList(String)
      */
     @Nonnull
+    @SuppressWarnings("java:S6204")
+    @Explain("We provide a mutable list here, as we cannot predict the callers intentions.")
     public List<Settings> getConfigList(String key) {
         try {
             return getConfig().getConfigList(key)

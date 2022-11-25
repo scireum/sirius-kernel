@@ -11,7 +11,6 @@ package sirius.kernel.commons;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -32,6 +31,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -815,7 +815,8 @@ public class Value {
             return false;
         }
 
-        return NLS.parseUserString(Boolean.class, String.valueOf(data).trim());
+        return Objects.requireNonNullElse(NLS.parseUserString(Boolean.class, String.valueOf(data).trim()),
+                                          defaultValue);
     }
 
     /**
@@ -1917,46 +1918,5 @@ public class Value {
     @Override
     public int hashCode() {
         return data == null ? 0 : data.hashCode();
-    }
-
-    /**
-     * Returns a <tt>Value</tt> containing a translated value using the string representation
-     * of the wrapped value as key.
-     *
-     * @return a <tt>Value</tt> containing a translated value by calling {@link NLS#get(String)}
-     * if the string representation of the wrapped value starts with {@code $}.
-     * The dollar sign is skipped when passing the key to <tt>NLS</tt>. Otherwise <tt>this</tt> is returned.
-     * @see NLS#get(String)
-     * @deprecated Use {@link sirius.kernel.settings.Settings#getTranslatedString(String)} if this value is
-     * loaded from a Config/Settings. Otherwise use {@link NLS#smartGet(String)}
-     */
-    @Nonnull
-    @CheckReturnValue
-    @Deprecated
-    public Value translate() {
-        return translate(null);
-    }
-
-    /**
-     * Returns a <tt>Value</tt> containing a translated value using the string representation
-     * of the wrapped value as key.
-     *
-     * @param lang a two-letter language code for which the translation is requested
-     * @return a <tt>Value</tt> containing a translated value by calling {@link NLS#get(String, String)}
-     * if the string representation of the wrapped value starts with {@code $}.
-     * The dollar sign is skipped when passing the key to <tt>NLS</tt>. Otherwise <tt>this</tt> is returned.
-     * @see NLS#get(String, String)
-     * @deprecated Use {@link sirius.kernel.settings.Settings#getTranslatedString(String, String)} if this value is
-     * loaded from a Config/Settings. Otherwise use {@link NLS#smartGet(String, String)}
-     */
-    @Nonnull
-    @CheckReturnValue
-    @Deprecated
-    public Value translate(String lang) {
-        if (isFilled() && is(String.class)) {
-            return Value.of(NLS.smartGet(asString(), lang));
-        } else {
-            return this;
-        }
     }
 }

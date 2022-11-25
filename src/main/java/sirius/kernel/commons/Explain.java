@@ -12,7 +12,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Can be used in conjuncion with {@link SuppressWarnings} to provide an explanation.
+ * Can be used in conjunction with {@link SuppressWarnings} to provide an explanation.
  * <p>
  * This should be used to provide an explanation when findbugs or other inspections are suppressed.
  */

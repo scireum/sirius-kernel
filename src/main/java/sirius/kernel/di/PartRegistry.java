@@ -33,7 +33,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * An instance of PartRegistry is kept by {@link sirius.kernel.di.Injector} to track all registered
@@ -113,10 +112,8 @@ class PartRegistry implements MutableGlobalContext {
 
     @Nonnull
     @Override
-    public <P extends Priorized> List<P> getPriorizedParts(@Nonnull Class<? extends P> partInterface) {
-        return getParts(partInterface).stream()
-                                      .sorted(Comparator.comparingInt(Priorized::getPriority))
-                                      .collect(Collectors.toList());
+    public <P extends Priorized> List<? extends P> getPriorizedParts(@Nonnull Class<? extends P> partInterface) {
+        return getParts(partInterface).stream().sorted(Comparator.comparingInt(Priorized::getPriority)).toList();
     }
 
     @SuppressWarnings("unchecked")
@@ -151,28 +148,49 @@ class PartRegistry implements MutableGlobalContext {
      * Called to initialize all field of the given class in the given object
      */
     private void wireClass(Class<?> clazz, Object object) {
-        for (Field field : clazz.getDeclaredFields()) {
-            if (!Modifier.isFinal(field.getModifiers()) && (object != null
-                                                            || Modifier.isStatic(field.getModifiers()))) {
-                getParts(FieldAnnotationProcessor.class).stream()
-                                                        .filter(p -> field.isAnnotationPresent(p.getTrigger()))
-                                                        .forEach(p -> {
-                                                            try {
-                                                                field.setAccessible(true);
-                                                                p.handle(this, object, field);
-                                                            } catch (Exception e) {
-                                                                Injector.LOG.WARN(
-                                                                        "Cannot process annotation %s on %s.%s: %s "
-                                                                        + "(%s)",
-                                                                        p.getTrigger().getName(),
-                                                                        field.getDeclaringClass().getName(),
-                                                                        field.getName(),
-                                                                        e.getMessage(),
-                                                                        e.getClass().getName());
-                                                            }
-                                                        });
+        try {
+            for (Field field : clazz.getDeclaredFields()) {
+                if (!Modifier.isFinal(field.getModifiers()) && (object != null
+                                                                || Modifier.isStatic(field.getModifiers()))) {
+                    wireField(object, field);
+                }
+            }
+        } catch (NoClassDefFoundError e) {
+            if (object == null) {
+                // This is a static initialization as most probably ok (as all classes are loaded at this stage, even
+                // if they remain unused..)
+                Injector.LOG.INFO("Skipping static initialization of %s, as referenced class %s is missing...",
+                                  clazz.getName(),
+                                  e.getMessage());
+            } else {
+                // This seems odd, as a part has been loaded and registered - no classes should be missing here...
+                Injector.LOG.WARN(
+                        "Skipping initialization of part %s (%s) for class %s, as referenced class %s is missing...",
+                        object,
+                        object.getClass().getName(),
+                        clazz.getName(),
+                        e.getMessage());
             }
         }
+    }
+
+    private void wireField(Object object, Field field) {
+        getParts(FieldAnnotationProcessor.class).stream()
+                                                .filter(p -> field.isAnnotationPresent(p.getTrigger()))
+                                                .forEach(p -> {
+                                                    try {
+                                                        field.setAccessible(true);
+                                                        p.handle(this, object, field);
+                                                    } catch (Exception e) {
+                                                        Injector.LOG.WARN("Cannot process annotation %s on %s.%s: %s "
+                                                                          + "(%s)",
+                                                                          p.getTrigger().getName(),
+                                                                          field.getDeclaringClass().getName(),
+                                                                          field.getName(),
+                                                                          e.getMessage(),
+                                                                          e.getClass().getName());
+                                                    }
+                                                });
     }
 
     @Override

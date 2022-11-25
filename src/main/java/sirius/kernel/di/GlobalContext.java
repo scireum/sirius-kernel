@@ -115,7 +115,7 @@ public interface GlobalContext {
      * an empty list is returned
      */
     @Nonnull
-    <P extends Priorized> List<P> getPriorizedParts(@Nonnull Class<? extends P> partInterface);
+    <P extends Priorized> List<? extends P> getPriorizedParts(@Nonnull Class<? extends P> partInterface);
 
     /**
      * Returns all parts which are currently registered for the given lookup class and have a name attached.

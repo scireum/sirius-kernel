@@ -278,19 +278,6 @@ public class Amount implements Comparable<Amount>, Serializable {
     }
 
     /**
-     * If this actual number if empty, the given supplier is used to compute one. Otherwise this will be returned.
-     *
-     * @param supplier the supplier which is used to compute a value if there is no internal value
-     * @return <tt>this</tt> if there is an internal value, the computed value of <tt>supplier</tt> otherwise
-     * @deprecated This method has been deprecated. Use <tt>orElseGet()</tt> instead.
-     */
-    @Nonnull
-    @Deprecated(forRemoval = true)
-    public Amount computeIfNull(Supplier<Amount> supplier) {
-        return orElseGet(supplier);
-    }
-
-    /**
      * Invokes the given consumer if the internal value is not empty.
      *
      * @param consumer the consumer to execute
@@ -363,42 +350,6 @@ public class Amount implements Comparable<Amount>, Serializable {
     @CheckReturnValue
     public Amount decreasePercent(@Nonnull Amount decrease) {
         return times(ONE.subtract(decrease.asDecimal()));
-    }
-
-    /**
-     * Used to multiply two percentages, like two discounts as if they were applied after each other.
-     * <p>
-     * This can be used to compute the effective discount if two discounts like 15% and 5% are applied after
-     * each other. The result would be {@code (15 + 5) - (15 * 5 / 100)} which is <tt>19,25 %</tt>
-     *
-     * @param percent the second percent value which would be applied after this percent value.
-     * @return the effective percent value after both percentages would have been applied or <tt>NOTHING</tt> if
-     * <tt>this</tt> is empty.
-     * @deprecated Use {@link #chainPercent(Amount)} instead which is the exact same method. This method however implies
-     * that it simply performs {@code this.times(percent.asDecimal())} <b>which it doesn't!</b>
-     */
-    @Nonnull
-    @CheckReturnValue
-    @Deprecated(forRemoval = true)
-    public Amount multiplyPercent(@Nonnull Amount percent) {
-        return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
-    }
-
-    /**
-     * Used to multiply two percentages, like two discounts as if they were applied after each other.
-     * <p>
-     * This can be used to compute the effective discount if two discounts like 15% and 5% are applied after
-     * each other. The result would be {@code (15 + 5) - (15 * 5 / 100)} which is <tt>19,25 %</tt>
-     *
-     * @param percent the second percent value which would be applied after this percent value.
-     * @return the effective percent value after both percentages would have been applied or <tt>NOTHING</tt> if
-     * <tt>this</tt> is empty.
-     * @deprecated As this method <b>only</b> works with discounts, not with addons. As the name implies that this
-     * method works in both cases, we deprecate it here and moved the business logic into its actual place.
-     */
-    @Deprecated(forRemoval = true)
-    public Amount chainPercent(@Nonnull Amount percent) {
-        return add(percent).subtract(this.times(percent).divideBy(ONE_HUNDRED));
     }
 
     /**

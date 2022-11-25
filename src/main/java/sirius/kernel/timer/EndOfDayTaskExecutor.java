@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Executes all {@link EndOfDayTask end of day tasks} in the given timeframe.
@@ -150,7 +149,7 @@ public class EndOfDayTaskExecutor implements EveryDay {
                             .stream()
                             .map(this::getInfo)
                             .sorted(Comparator.comparing(info -> info.getTask().getName()))
-                            .collect(Collectors.toList());
+                            .toList();
     }
 
     /**

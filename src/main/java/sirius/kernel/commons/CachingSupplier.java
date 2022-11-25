@@ -26,7 +26,7 @@ public class CachingSupplier<T> implements Supplier<T> {
     /**
      * Creates a new instance with the operation to delay.
      *
-     * @param supplier the supplier to invoke when necessarry
+     * @param supplier the supplier to invoke when necessary
      */
     public CachingSupplier(Supplier<T> supplier) {
         this.supplier = supplier;
