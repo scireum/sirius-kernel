@@ -46,7 +46,7 @@ dependencies {
     // Required, as the version provided by docker-compose-rule-core has security issues
     api("com.fasterxml.jackson.core:jackson-databind:2.14.0-rc1")
     // Required, as the version provided by docker-compose-rule-core has security issues
-    api("org.yaml:snakeyaml:1.32")
+    api("org.yaml:snakeyaml:1.33")
 }
 
 sonarqube {
