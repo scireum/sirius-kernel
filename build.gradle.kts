@@ -6,9 +6,6 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-group = "com.scireum.sirius-kernel"
-version = "DEVELOPMENT-SNAPSHOT"
-
 buildscript {
     repositories {
         mavenLocal()
