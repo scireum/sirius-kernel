@@ -257,7 +257,7 @@ public class Tuple<F, S> {
      * @param supplier factory for generating the result map
      * @param <K>      key type of the tuples being processed
      * @param <V>      value type of the tuples being processed
-     * @return a <tt>Collector</tt> which transforms a stream of tuples into a multi map
+     * @return a <tt>Collector</tt> which transforms a stream of tuples into a multimap
      */
     public static <K, V> Collector<Tuple<K, V>, MultiMap<K, V>, MultiMap<K, V>> toMultiMap(Supplier<MultiMap<K, V>> supplier) {
         return Collector.of(supplier,

@@ -136,4 +136,14 @@ public class XMLCall {
     public XMLStructuredInput getInput() throws IOException {
         return new XMLStructuredInput(outcall.getResponseBody(), namespaceContext);
     }
+
+    /**
+     * Provides access to the raw answer of the call.
+     *
+     * @return the result of the call
+     * @throws IOException in case of an IO error while receiving the result
+     */
+    public XMLStructuredInput getRawInput() throws IOException {
+        return new XMLStructuredInput(outcall.getResponse().body(), namespaceContext);
+    }
 }

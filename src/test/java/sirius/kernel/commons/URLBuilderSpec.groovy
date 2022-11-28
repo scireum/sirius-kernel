@@ -51,14 +51,15 @@ class URLBuilderSpec extends BaseSpecification {
     def "adding a single part is handled correctly"() {
         when:
         def urlBuilder = new URLBuilder(URLBuilder.PROTOCOL_HTTP, "sirius-lib.net")
-        urlBuilder.addPart(part)
+        urlBuilder.addSafePart(part)
         then:
         urlBuilder.build() == expectedUrl
 
         where:
         part                      | expectedUrl
-        ""                        | "http://sirius-lib.net/"
+        ""                        | "http://sirius-lib.net"
         "example"                 | "http://sirius-lib.net/example"
+        "/example/"               | "http://sirius-lib.net/example"
         "file.jpg"                | "http://sirius-lib.net/file.jpg"
         "example/second/file.jpg" | "http://sirius-lib.net/example/second/file.jpg"
     }
@@ -66,16 +67,17 @@ class URLBuilderSpec extends BaseSpecification {
     def "adding multiple parts through varargs is handled correctly"() {
         when:
         def urlBuilder = new URLBuilder(URLBuilder.PROTOCOL_HTTP, "sirius-lib.net")
-        urlBuilder.addPart(*part)
+        urlBuilder.addSafeParts(*part)
         then:
         urlBuilder.build() == expectedUrl
 
         where:
-        part                                                 | expectedUrl
-        ["", "", "", ""]                                     | "http://sirius-lib.net/"
-        ["example", "/", "file", ".", "jpg"]                 | "http://sirius-lib.net/example/file.jpg"
-        ["very", "long", "example"]                          | "http://sirius-lib.net/verylongexample"
-        ["example", "", "/", "", "file", "", ".", "", "jpg"] | "http://sirius-lib.net/example/file.jpg"
+        part                                 | expectedUrl
+        ["", "", "", ""]                     | "http://sirius-lib.net"
+        ["example", "/", "file.jpg"]         | "http://sirius-lib.net/example/file.jpg"
+        ["very", "long", "example"]          | "http://sirius-lib.net/very/long/example"
+        ["/very/", "//long//", "/example/"]  | "http://sirius-lib.net/very/long/example"
+        ["example", "", "/", "", "file.jpg"] | "http://sirius-lib.net/example/file.jpg"
     }
 
     def "the standard method for adding parameters encodes the value"() {
@@ -119,7 +121,7 @@ class URLBuilderSpec extends BaseSpecification {
         when:
         def urlBuilder = new URLBuilder(URLBuilder.PROTOCOL_HTTP, "sirius-lib.net")
         urlBuilder.addParameter("test", "value")
-        urlBuilder.addPart("late")
+        urlBuilder.addSafePart("late")
         then:
         thrown IllegalStateException
     }

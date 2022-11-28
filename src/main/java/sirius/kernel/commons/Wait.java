@@ -73,7 +73,7 @@ public class Wait {
     }
 
     /**
-     * Waits for an random amount of millisecond within the given bounds.
+     * Waits for a random amount of millisecond within the given bounds.
      * <p>
      * Note that minWaitMillis may be negative. This can be used to only block the thread in a given percentage of
      * all calls. So if the thread should wait between 0 and 500ms in 50% of all calls

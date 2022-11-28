@@ -218,7 +218,7 @@ public class Strings {
      * Formats the given pattern string <tt>format</tt> with the given <tt>arguments</tt>.
      * <p>
      * This is just a delegate to {@link String#format(String, Object...)}. It is however defined in this class to
-     * forces all framework parts to use the same formatting mechanism (and not <tt>MessageFormat</tt> etc.).
+     * force all framework parts to use the same formatting mechanism (and not <tt>MessageFormat</tt> etc.).
      * <p>
      * This method is intended to be used for format short strings or non-translated log messages etc. For more
      * complex messages and especially for translated strings, a {@link sirius.kernel.nls.Formatter} should be
@@ -333,6 +333,9 @@ public class Strings {
      */
     public static List<String> splitSmart(String input, int maxCharacters) {
         List<String> result = new ArrayList<>();
+        if (Strings.isEmpty(input)) {
+            return result;
+        }
         StringBuilder current = new StringBuilder();
         for (String toAdd : splitIntoWords(input, maxCharacters)) {
             if (!current.isEmpty() && current.length() + toAdd.length() >= maxCharacters) {
@@ -707,7 +710,7 @@ public class Strings {
     /**
      * Pads the given string either on the left or on the right side, to the min length using the given padding.
      * <p>
-     * Altough this method looks a bit complex and using a boolean parameter to determine which side to pad is fishy,
+     * Although this method looks a bit complex and using a boolean parameter to determine which side to pad is fishy,
      * this approach maximizes efficiency by using a single <tt>StringBuilder</tt> (if required at all).
      *
      * @param input     the input to pad
