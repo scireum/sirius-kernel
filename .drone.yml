@@ -66,7 +66,6 @@ steps:
         from_secret: maven_public_username
       MAVEN_PASSWORD:
         from_secret: maven_public_password
-      HELLO_DRONE: Hello
     volumes: *scireum_volumes
     when:
       event:

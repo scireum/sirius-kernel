@@ -44,8 +44,6 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-databind:2.14.0-rc1")
     // Required, as the version provided by docker-compose-rule-core has security issues
     api("org.yaml:snakeyaml:1.33")
-
-    println("Does drone say hi? ${System.getenv("HELLO_DRONE")}")
 }
 
 sonarqube {
