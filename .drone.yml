@@ -60,11 +60,11 @@ steps:
     image: scireum/sirius-build-jdk18
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' gradle.properties
-      - ./gradlew clean publish -DmvnUsername=$${MAVEN_PUBLIC_USERNAME} -DmvnPassword=$${MAVEN_PUBLIC_PASSWORD} -DmvnRepository=https://mvn.scireum.com
+      - ./gradlew clean publish
     environment:
-      MAVEN_PUBLIC_USERNAME:
+      MAVEN_USERNAME:
         from_secret: maven_public_username
-      MAVEN_PUBLIC_PASSWORD:
+      MAVEN_PASSWORD:
         from_secret: maven_public_password
     volumes: *scireum_volumes
     when:
