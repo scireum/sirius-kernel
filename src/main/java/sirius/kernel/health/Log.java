@@ -235,8 +235,8 @@ public class Log {
     }
 
     /**
-     * Used to log the given message <tt>msg</tt> at <b>INFO</b> level if debug mode is enabled
-     * ({@link sirius.kernel.Sirius#isDev()}). Otherwise the message will be logged as <b>FINE</b>.
+     * Used to log {@code msg} at {@code INFO} level if {@link Sirius#isDev() debug mode is enabled}.
+     * Otherwise, the message will be logged as {@code FINE}.
      *
      * @param msg the message to log
      */
@@ -246,6 +246,17 @@ public class Log {
         } else {
             FINE(msg);
         }
+    }
+
+    /**
+     * Used to log {@code msg} at {@code INFO} level if {@link Sirius#isDev() debug mode is enabled}.
+     * Otherwise, the message will be logged as {@code FINE}.
+     *
+     * @param msg    the message to log, possibly with placeholders
+     * @param params the items to fill into msg's placeholders
+     */
+    public void DEBUG_INFO(String msg, Object... params) {
+        DEBUG_INFO(Strings.apply(msg, params));
     }
 
     /**
