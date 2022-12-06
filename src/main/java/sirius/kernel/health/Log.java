@@ -235,16 +235,16 @@ public class Log {
     }
 
     /**
-     * Used to log {@code mesasge} at {@code INFO} level if {@link Sirius#isDev() debug mode is enabled}.
+     * Used to log {@code message} at {@code INFO} level if {@link Sirius#isDev() debug mode is enabled}.
      * Otherwise, the message will be logged as {@code FINE}.
      *
-     * @param mesasge the message to log
+     * @param message the message to log
      */
-    public void DEBUG_INFO(Object mesasge) {
+    public void DEBUG_INFO(Object message) {
         if (Sirius.isDev()) {
-            INFO(mesasge);
+            INFO(message);
         } else {
-            FINE(mesasge);
+            FINE(message);
         }
     }
 
