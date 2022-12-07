@@ -443,10 +443,7 @@ public class CallContext {
      * @param language the two-letter language code for this thread.
      */
     public void setLang(@Nullable String language) {
-        if (Strings.isFilled(language)) {
-            this.language = language;
-            this.lazyLanguageInstaller = null;
-        }
+        return setLanguage(language);
     }
 
     /**
