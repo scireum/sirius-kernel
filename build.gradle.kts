@@ -6,16 +6,13 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-group = "com.scireum.sirius-kernel"
-version = "DEVELOPMENT-SNAPSHOT"
-
 buildscript {
     repositories {
         mavenLocal()
         maven("https://mvn.scireum.com")
     }
     dependencies {
-        classpath("com.scireum:sirius-parent:1.0-RC3")
+        classpath("com.scireum:sirius-parent:1.0-RC5")
     }
 }
 

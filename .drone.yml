@@ -59,8 +59,13 @@ steps:
   - name: deploy
     image: scireum/sirius-build-jdk18
     commands:
-      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
-      - mvn clean deploy -DskipTests
+      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' gradle.properties
+      - ./gradlew clean publish
+    environment:
+      MAVEN_USERNAME:
+        from_secret: maven_public_username
+      MAVEN_PASSWORD:
+        from_secret: maven_public_password
     volumes: *scireum_volumes
     when:
       event:
@@ -69,7 +74,7 @@ steps:
   - name: sonar
     image: scireum/sirius-build-jdk18
     commands:
-      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' build.gradle.kts
+      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' gradle.properties
       - ./gradlew clean test sonarqube -Dsonar.projectKey=${DRONE_REPO_NAME} -Dsonar.host.url=https://sonarqube.scireum.com/ -Dsonar.login=${sonar_login}
     volumes: *scireum_volumes
     when:
