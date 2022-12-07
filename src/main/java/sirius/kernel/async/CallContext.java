@@ -536,6 +536,15 @@ public class CallContext {
         this.fallbackLanguage = fallbackLanguage;
     }
 
+    /**
+     * Sets the current fallback language for the current thread.
+     *
+     * @param fallbackLanguage the two-letter language code for this thread.
+     */
+    public void setFallbackLang(@Nullable String fallbackLanguage) {
+        setFallbackLanguage(fallbackLanguage);
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
