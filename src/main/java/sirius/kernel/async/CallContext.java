@@ -73,9 +73,9 @@ public class CallContext {
     private final Map<Class<? extends SubContext>, SubContext> subContext =
             Collections.synchronizedMap(new HashMap<>());
     private Watch watch = Watch.start();
-    private String lang;
+    private String language;
     private Consumer<CallContext> lazyLanguageInstaller;
-    private String fallbackLang;
+    private String fallbackLanguage;
 
     /**
      * Returns the name of this computation node.
@@ -194,9 +194,9 @@ public class CallContext {
         newCtx.watch = watch;
         newCtx.addToMDC(MDC_PARENT, getMDCValue(TaskContext.MDC_SYSTEM).asString());
         subContext.forEach((key, value) -> newCtx.subContext.put(key, value.fork()));
-        newCtx.lang = lang;
+        newCtx.language = language;
         newCtx.lazyLanguageInstaller = lazyLanguageInstaller;
-        newCtx.fallbackLang = fallbackLang;
+        newCtx.fallbackLanguage = fallbackLanguage;
         return newCtx;
     }
 
@@ -361,15 +361,24 @@ public class CallContext {
      *
      * @return a two-letter language code used for the current thread.
      */
-    public String getLang() {
-        if (lang == null) {
+    public String getLanguage() {
+        if (language == null) {
             invokeLazyLanguageInstaller();
-            if (lang == null) {
-                lang = NLS.getDefaultLanguage();
+            if (language == null) {
+                language = NLS.getDefaultLanguage();
             }
         }
 
-        return lang;
+        return language;
+    }
+
+    /**
+     * Returns the current language determined for the current thread.
+     *
+     * @return a two-letter language code used for the current thread.
+     */
+    public String getLang() {
+        return getLanguage();
     }
 
     private void invokeLazyLanguageInstaller() {
@@ -395,8 +404,18 @@ public class CallContext {
      * @return a two-letter language code used for the current thread.
      */
     @Nullable
+    public String getFallbackLanguage() {
+        return fallbackLanguage;
+    }
+
+    /**
+     * Returns the current fallback language determined for the current thread.
+     *
+     * @return a two-letter language code used for the current thread.
+     */
+    @Nullable
     public String getFallbackLang() {
-        return fallbackLang;
+        return getFallbackLanguage();
     }
 
     /**
@@ -405,12 +424,41 @@ public class CallContext {
      * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
      * </p>
      *
-     * @param lang the two-letter language code for this thread.
+     * @param language the two-letter language code for this thread.
      */
-    public void setLang(@Nullable String lang) {
-        if (Strings.isFilled(lang)) {
-            this.lang = lang;
+    public void setLanguage(@Nullable String language) {
+        if (Strings.isFilled(language)) {
+            this.language = language;
             this.lazyLanguageInstaller = null;
+        }
+    }
+
+    /**
+     * Sets the current language for the current thread.
+     * <p>
+     * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
+     * </p>
+     *
+     * @param language the two-letter language code for this thread.
+     */
+    public void setLang(@Nullable String language) {
+        if (Strings.isFilled(language)) {
+            this.language = language;
+            this.lazyLanguageInstaller = null;
+        }
+    }
+
+    /**
+     * Sets the current language for the current thread, only if no other language has been set already.
+     * <p>
+     * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
+     * </p>
+     *
+     * @param language the two-letter language code for this thread.
+     */
+    public void setLanguageIfEmpty(@Nullable String language) {
+        if (Strings.isEmpty(this.language)) {
+            setLanguage(language);
         }
     }
 
@@ -423,9 +471,26 @@ public class CallContext {
      * @param lang the two-letter language code for this thread.
      */
     public void setLangIfEmpty(@Nullable String lang) {
-        if (Strings.isEmpty(this.lang)) {
-            setLang(lang);
-        }
+        setLanguageIfEmpty(lang);
+    }
+
+    /**
+     * Adds a language supplier.
+     * <p>
+     * In certain circumstances the current language might be influenced by something which is hard to compute.
+     * For example a web request in <b>sirius-web</b> might either provide a user with a language attached via
+     * its session or it might contain a language header which itself isn't quite easy to parse.
+     * <p>
+     * Worst of all, in many cases, the current language might not be used at all.
+     * <p>
+     * Therefore, we permit lazy computations which are only evaluated as required.
+     *
+     * @param languageInstaller a callback which installs the appropriate language into the given call context
+     *                          (is passed again to support {@link #fork() forking}).
+     */
+    public void deferredSetLanguage(@Nonnull Consumer<CallContext> languageInstaller) {
+        this.language = null;
+        this.lazyLanguageInstaller = languageInstaller;
     }
 
     /**
@@ -443,26 +508,34 @@ public class CallContext {
      *                          (is passed again to support {@link #fork() forking}).
      */
     public void deferredSetLang(@Nonnull Consumer<CallContext> languageInstaller) {
-        this.lang = null;
-        this.lazyLanguageInstaller = languageInstaller;
+        deferredSetLanguage(languageInstaller);
+    }
+
+    /**
+     * Sets the language back to <tt>null</tt>.
+     * <p>
+     * This method should only be used to re-initialize the language. Use {@link #setLanguage(String)} to specify a new language.
+     */
+    public void resetLanguage() {
+        language = null;
     }
 
     /**
      * Sets the lang back to <tt>null</tt>.
      * <p>
-     * This method should only be used to re-initialize the language. Use {@link #setLang(String)} to specify a new language.
+     * This method should only be used to re-initialize the language. Use {@link #setLanguage(String)} to specify a new language.
      */
     public void resetLang() {
-        lang = null;
+        resetLanguage();
     }
 
     /**
      * Sets the current fallback language for the current thread.
      *
-     * @param fallbackLang the two-letter language code for this thread.
+     * @param fallbackLanguage the two-letter language code for this thread.
      */
-    public void setFallbackLang(@Nullable String fallbackLang) {
-        this.fallbackLang = fallbackLang;
+    public void setFallbackLanguage(@Nullable String fallbackLanguage) {
+        this.fallbackLanguage = fallbackLanguage;
     }
 
     @Override

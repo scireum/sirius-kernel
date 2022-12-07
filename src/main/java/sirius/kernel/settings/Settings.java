@@ -318,22 +318,22 @@ public class Settings {
      *     </ul>
      * </p>
      *
-     * @param key  the key used to look up the string value
-     * @param lang the language to fetch the translation for. Use <tt>null</tt> to indicate that the
-     *             {@link NLS#getCurrentLang() current language} should be used.
+     * @param key      the key used to look up the string value
+     * @param language the language to fetch the translation for. Use <tt>null</tt> to indicate that the
+     *                 {@link NLS#getCurrentLanguage() current language} should be used.
      * @return the translated string
      */
     @SuppressWarnings("unchecked")
     @Nonnull
-    public String getTranslatedString(String key, @Nullable String lang) {
+    public String getTranslatedString(String key, @Nullable String language) {
         Value value = getRaw(key);
         if (value.isFilled() && value.is(String.class)) {
-            return NLS.smartGet(value.asString(), lang);
+            return NLS.smartGet(value.asString(), language);
         }
 
         if (value.is(Map.class)) {
             Map<String, String> translations = value.get(Map.class, Collections.emptyMap());
-            String effectiveLanguage = Strings.isEmpty(lang) ? NLS.getCurrentLang() : lang;
+            String effectiveLanguage = Strings.isEmpty(language) ? NLS.getCurrentLanguage() : language;
             return Optional.ofNullable(translations.get(effectiveLanguage))
                            .or(() -> Optional.ofNullable(translations.get(TRANSLATED_STRING_DEFAULT_KEY)))
                            .or(() -> {

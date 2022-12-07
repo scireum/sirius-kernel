@@ -50,7 +50,7 @@ public class Formatter {
     private Function<String, Optional<String>> parameterProvider;
     private boolean ignoreMissingPrameters;
     private String pattern;
-    private String lang;
+    private String language;
 
     /**
      * Use the static factory methods <tt>create</tt> to obtain a new instance.
@@ -64,14 +64,14 @@ public class Formatter {
      * <p>
      * The given language will be used when converting non-string parameters.
      *
-     * @param pattern specifies the pattern to be used for creating the output
-     * @param lang    specifies the language used when converting non-string parameters.
+     * @param pattern  specifies the pattern to be used for creating the output
+     * @param language specifies the language used when converting non-string parameters.
      * @return <tt>this</tt> for fluently calling <tt>set</tt> methods.
      */
-    public static Formatter create(String pattern, String lang) {
+    public static Formatter create(String pattern, String language) {
         Formatter result = new Formatter();
         result.pattern = pattern;
-        result.lang = lang;
+        result.language = language;
         return result;
     }
 
@@ -119,18 +119,18 @@ public class Formatter {
             // here without having to resolve the current language...
             setDirect(property, string.trim());
         } else {
-            setDirect(property, NLS.toUserString(value, fetchLang()));
+            setDirect(property, NLS.toUserString(value, fetchLanguage()));
         }
 
         return this;
     }
 
-    private String fetchLang() {
-        if (lang == null) {
-            this.lang = NLS.getCurrentLang();
+    private String fetchLanguage() {
+        if (language == null) {
+            language = NLS.getCurrentLanguage();
         }
 
-        return lang;
+        return language;
     }
 
     /**
@@ -151,7 +151,7 @@ public class Formatter {
             // here without having to resolve the current language...
             setDirectUnencoded(property, string.trim());
         } else {
-            setDirectUnencoded(property, NLS.toUserString(value, fetchLang()));
+            setDirectUnencoded(property, NLS.toUserString(value, fetchLanguage()));
         }
 
         return this;
