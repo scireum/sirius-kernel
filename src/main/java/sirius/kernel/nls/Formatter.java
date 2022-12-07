@@ -26,7 +26,7 @@ import java.util.function.Function;
  * <p>
  * Non string objects which are passed in as parameters, will be converted using {@link NLS#toUserString(Object)}
  * <p>
- * A formatter is neither thread safe nor intended for reuse. Instead a formatter is created, supplied with the
+ * A formatter is neither thread safe nor intended for reuse. Instead, a formatter is created, supplied with the
  * relevant parameters by chaining calls to <tt>set</tt> and then discarded after getting the result string via
  * <tt>format</tt>.
  * <p>
@@ -48,7 +48,7 @@ public class Formatter {
     private boolean urlEncode = false;
     private final Map<String, String> replacement = new TreeMap<>();
     private Function<String, Optional<String>> parameterProvider;
-    private boolean ignoreMissingPrameters;
+    private boolean ignoreMissingParameters;
     private String pattern;
     private String language;
 
@@ -178,7 +178,7 @@ public class Formatter {
      * Sets the whole context as parameters in this formatter.
      * <p>
      * Calls <tt>#setDirect</tt> for each entry in the given map. Note that only
-     * <tt>toString</tt> is invoked on the value, therefore all strings remain untrimmend.
+     * <tt>toString</tt> is invoked on the value, therefore all strings remain untrimmed.
      *
      * @param ctx a <tt>Map</tt> which provides a set of entries to replace.
      * @return <tt>this</tt> to permit fluent method chains
@@ -250,13 +250,13 @@ public class Formatter {
     /**
      * Automatically ignores missing parameters.
      * <p>
-     * By default an exception is thrown when a completely unknown parameter is being referenced. By calling this method
+     * By default, an exception is thrown when a completely unknown parameter is being referenced. By calling this method
      * the parameter is simply assumed to be empty ("").
      *
      * @return <tt>this</tt> to permit fluent method chains
      */
     public Formatter ignoreMissingParameters() {
-        this.ignoreMissingPrameters = true;
+        this.ignoreMissingParameters = true;
         return this;
     }
 
@@ -353,14 +353,14 @@ public class Formatter {
 
     private String obtainParameterValue(int position, String parameter) {
         if (parameterProvider != null) {
-            Optional<String> optinalValue = parameterProvider.apply(parameter);
-            if (optinalValue.isPresent()) {
-                return optinalValue.get();
+            Optional<String> optionalValue = parameterProvider.apply(parameter);
+            if (optionalValue.isPresent()) {
+                return optionalValue.get();
             }
         }
 
         return replacement.computeIfAbsent(parameter, ignored -> {
-            if (ignoreMissingPrameters) {
+            if (ignoreMissingParameters) {
                 return "";
             } else {
                 throw new IllegalArgumentException(Strings.apply("Unknown value '%s' used at index %d in '%s'",

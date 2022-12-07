@@ -57,7 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * default language ({@link #getDefaultLanguage()}. Most of the methods come in two versions, one which accepts a
  * <tt>lang</tt> parameter and another which uses the currently active language.
  * <p>
- * Additionally this class provides conversion methods to and from <tt>String</tt>. The most prominent ones are
+ * Additionally, this class provides conversion methods to and from <tt>String</tt>. The most prominent ones are
  * {@link #toUserString(Object)} and {@link #toMachineString(Object)} along with their equivalent parse methods.
  * Although some conversions, especially <tt>toMachineString</tt> or <tt>formatSize</tt> are not language dependent,
  * those are kept in this class, to keep all conversion methods together.
@@ -156,7 +156,7 @@ public class NLS {
     }
 
     /**
-     * Returns the two-letter code of the fall back language. Provided via the {@link CallContext}. If the value is
+     * Returns the two-letter code of the fallback language. Provided via the {@link CallContext}. If the value is
      * empty, {@link NLS#getDefaultLanguage} is returned.
      *
      * @return the language code of the fallback language
@@ -477,11 +477,11 @@ public class NLS {
      * <p>
      * Can be used to signal that a string needs no internationalization as it is only used on rare cases etc.
      *
-     * @param s the text which will be used as output
-     * @return the given value for s
+     * @param text the text which will be used as output
+     * @return the given value for text
      */
-    public static String nonNLS(String s) {
-        return s;
+    public static String nonNLS(String text) {
+        return text;
     }
 
     /**
@@ -625,7 +625,7 @@ public class NLS {
      * as it is more reluctant (or use {@link #parseUserString(Class, String)}).
      * <p>
      * The pattern in this case will conform to the PHP 5 patterns as these are used by some JavaScript
-     * libraries like jQuery timepicker. (See http://php.net/manual/en/function.date.php).
+     * libraries like jQuery timepicker. (See <a href="https://php.net/manual/en/function.date.php">PHP Manual - Date</a>).
      *
      * @param language the language for which the format is requested
      * @return a format initialized with the pattern described by the given language
@@ -746,9 +746,9 @@ public class NLS {
      * @return a decimal format symbols instance used for formatting numbers as "machine" strings
      */
     public static DecimalFormatSymbols getMachineFormatSymbols() {
-        DecimalFormatSymbols sym = new DecimalFormatSymbols();
-        sym.setDecimalSeparator('.');
-        return sym;
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setDecimalSeparator('.');
+        return symbols;
     }
 
     /**
@@ -814,10 +814,10 @@ public class NLS {
 
     private static String writeThreadStrace(Throwable data) {
         StringWriter writer = new StringWriter();
-        PrintWriter pw = new PrintWriter(writer);
-        data.printStackTrace(pw);
+        PrintWriter printer = new PrintWriter(writer);
+        data.printStackTrace(printer);
         String result = writer.toString();
-        pw.close();
+        printer.close();
         return result;
     }
 
@@ -1175,11 +1175,12 @@ public class NLS {
             }
 
             return getDecimalFormat(language).parse(value).doubleValue();
-        } catch (ParseException e) {
-            Exceptions.ignore(e);
+        } catch (ParseException exception) {
+            Exceptions.ignore(exception);
             return Double.valueOf(value);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
+                                               exception);
         }
     }
 
@@ -1215,39 +1216,39 @@ public class NLS {
             try {
                 AdvancedDateParser parser = new AdvancedDateParser(language, invertMonthAndDay);
                 return (V) parser.parse(value).asDateTime().toLocalDate();
-            } catch (ParseException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
+            } catch (ParseException exception) {
+                throw new IllegalArgumentException(exception.getMessage(), exception);
             }
         }
         if (LocalDateTime.class.equals(clazz)) {
             try {
                 AdvancedDateParser parser = new AdvancedDateParser(language, invertMonthAndDay);
                 return (V) parser.parse(value).asDateTime();
-            } catch (ParseException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
+            } catch (ParseException exception) {
+                throw new IllegalArgumentException(exception.getMessage(), exception);
             }
         }
         if (ZonedDateTime.class.equals(clazz)) {
             try {
                 AdvancedDateParser parser = new AdvancedDateParser(language, invertMonthAndDay);
                 return (V) ZonedDateTime.from(parser.parse(value).asDateTime());
-            } catch (ParseException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
+            } catch (ParseException exception) {
+                throw new IllegalArgumentException(exception.getMessage(), exception);
             }
         }
         if (LocalTime.class.equals(clazz)) {
             try {
                 return (V) LocalTime.from(NLS.getTimeParseFormat(language).parse(value.toUpperCase()));
-            } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidTime").set("value", value).format(), e);
+            } catch (DateTimeParseException exception) {
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidTime").set("value", value).format(), exception);
             }
         }
         if (AdvancedDateParser.DateSelection.class.equals(clazz)) {
             try {
                 AdvancedDateParser parser = new AdvancedDateParser(language, invertMonthAndDay);
                 return (V) parser.parse(value);
-            } catch (ParseException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
+            } catch (ParseException exception) {
+                throw new IllegalArgumentException(exception.getMessage(), exception);
             }
         }
 
@@ -1349,7 +1350,7 @@ public class NLS {
     /**
      * Converts a file or byte size.
      * <p>
-     * Supports sizes up to petabyte. Uses conventional SI-prefixed abbreviations like kB, MB.
+     * This supports sizes up to petabyte. Uses conventional SI-prefixed abbreviations like kB, MB.
      *
      * @param size the size to format in bytes
      * @return an english representation (using dot as decimal separator) along with one of the known abbreviations:
