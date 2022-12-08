@@ -443,7 +443,7 @@ public class CallContext {
      * @param language the two-letter language code for this thread.
      */
     public void setLang(@Nullable String language) {
-        return setLanguage(language);
+        setLanguage(language);
     }
 
     /**
