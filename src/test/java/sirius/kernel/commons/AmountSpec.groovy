@@ -22,7 +22,7 @@ class AmountSpec extends BaseSpecification {
 
     def "Amount.of converts various types correctly"() {
         when:
-        CallContext.getCurrent().setLang("en")
+        CallContext.getCurrent().setLanguage("en")
         then:
         Amount.ONE == x
 
@@ -98,7 +98,7 @@ class AmountSpec extends BaseSpecification {
 
     def "formatting works as expected"() {
         when:
-        CallContext.getCurrent().setLang("en")
+        CallContext.getCurrent().setLanguage("en")
         then:
         Amount.ofMachineString("0.1").toPercent().toPercentString() == "10 %"
         Amount.of(1.23).toRoundedString() == "1"

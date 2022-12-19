@@ -36,13 +36,13 @@ import java.util.function.Supplier;
 /**
  * A CallContext is attached to each thread managed by sirius.
  * <p>
- * It provides access to different sub-contexts via {@link #get(Class)}. Also, it provides acces to the mapped
+ * It provides access to different sub-contexts via {@link #get(Class)}. Also, it provides access to the mapped
  * diagnostic context (MDC). This can be filled by various parts of the framework (like which request-uri is
  * currently being processed, which user is currently active etc.) and will be attached to each error. Also, each
  * context comes with a new "flow-id". This can be used to trace an execution across different threads and even
  * across different cluster nodes.
  * <p>
- * Tasks which fork async subtasks will automatically pass on their current context. Therefore essential information
+ * Tasks which fork async subtasks will automatically pass on their current context. Therefore, essential information
  * can be passed along, without having to provide a method parameter for each value. Since sub-contexts can be of any
  * type, this concept can be enhanced by additional frameworks or application programs.
  */
@@ -68,14 +68,14 @@ public class CallContext {
     private final Map<String, Object> mdc = new ConcurrentHashMap<>();
 
     /*
-     * Needs to be synchronized as a CallContext might be shared across several sub-tasks
+     * Needs to be synchronized as a CallContext might be shared across several sub-tasks.
      */
-    private final Map<Class<? extends SubContext>, SubContext> subContext =
+    private final Map<Class<? extends SubContext>, SubContext> subContexts =
             Collections.synchronizedMap(new HashMap<>());
     private Watch watch = Watch.start();
-    private String lang;
+    private String language;
     private Consumer<CallContext> lazyLanguageInstaller;
-    private String fallbackLang;
+    private String fallbackLanguage;
 
     /**
      * Returns the name of this computation node.
@@ -93,8 +93,8 @@ public class CallContext {
             if (Strings.isEmpty(nodeName)) {
                 try {
                     nodeName = InetAddress.getLocalHost().getHostName();
-                } catch (UnknownHostException e) {
-                    Exceptions.ignore(e);
+                } catch (UnknownHostException exception) {
+                    Exceptions.ignore(exception);
                     Tasks.LOG.WARN(Strings.apply(
                             "Cannot determine hostname - consider setting 'sirius.nodeName' in the configuration."));
                     nodeName = "unknown";
@@ -113,8 +113,8 @@ public class CallContext {
      */
     @Nonnull
     public static Optional<CallContext> getContext(long threadId) {
-        CallContext ctxRef = contextMap.get(threadId);
-        return Optional.ofNullable(ctxRef);
+        CallContext context = contextMap.get(threadId);
+        return Optional.ofNullable(context);
     }
 
     /**
@@ -136,26 +136,26 @@ public class CallContext {
      */
     @Nonnull
     public static CallContext getCurrent() {
-        CallContext ctx = getCurrentIfAvailable();
-        if (ctx == null) {
+        CallContext context = getCurrentIfAvailable();
+        if (context == null) {
             return initialize();
         }
 
-        return ctx;
+        return context;
     }
 
     /*
      * Initializes a new context, either with a new flow-id or with the given one.
      */
     private static CallContext initialize(boolean install, String externalFlowId) {
-        CallContext ctx = new CallContext();
-        ctx.addToMDC(MDC_FLOW, externalFlowId);
+        CallContext context = new CallContext();
+        context.addToMDC(MDC_FLOW, externalFlowId);
         interactionCounter.inc();
         if (install) {
-            setCurrent(ctx);
+            setCurrent(context);
         }
 
-        return ctx;
+        return context;
     }
 
     /**
@@ -190,14 +190,14 @@ public class CallContext {
      * @see SubContext#fork()
      */
     public CallContext fork() {
-        CallContext newCtx = initialize(false, getMDCValue(MDC_FLOW).asString());
-        newCtx.watch = watch;
-        newCtx.addToMDC(MDC_PARENT, getMDCValue(TaskContext.MDC_SYSTEM).asString());
-        subContext.forEach((key, value) -> newCtx.subContext.put(key, value.fork()));
-        newCtx.lang = lang;
-        newCtx.lazyLanguageInstaller = lazyLanguageInstaller;
-        newCtx.fallbackLang = fallbackLang;
-        return newCtx;
+        CallContext forkedContext = initialize(false, getMDCValue(MDC_FLOW).asString());
+        forkedContext.watch = watch;
+        forkedContext.addToMDC(MDC_PARENT, getMDCValue(TaskContext.MDC_SYSTEM).asString());
+        subContexts.forEach((key, value) -> forkedContext.subContexts.put(key, value.fork()));
+        forkedContext.language = language;
+        forkedContext.lazyLanguageInstaller = lazyLanguageInstaller;
+        forkedContext.fallbackLanguage = fallbackLanguage;
+        return forkedContext;
     }
 
     /**
@@ -211,12 +211,12 @@ public class CallContext {
     }
 
     /**
-     * Detaches this CallContext from the current thread
+     * Detaches this CallContext from the current thread.
      */
     public static void detach() {
-        CallContext ctx = currentContext.get();
-        if (ctx != null) {
-            ctx.detachContext();
+        CallContext context = currentContext.get();
+        if (context != null) {
+            context.detachContext();
         }
         currentContext.remove();
         contextMap.remove(Thread.currentThread().getId());
@@ -228,13 +228,14 @@ public class CallContext {
      * This will notify all sub contexts ({@link SubContext}) that this context essentially ended.
      */
     public void detachContext() {
-        for (SubContext ctx : subContext.values()) {
+        for (SubContext subContext : subContexts.values()) {
             try {
-                ctx.detach();
-            } catch (Exception e) {
+                subContext.detach();
+            } catch (Exception exception) {
                 Exceptions.handle()
-                          .error(e)
-                          .withSystemErrorMessage("Error detaching sub context '%s': %s (%s)", ctx.getClass().getName())
+                          .error(exception)
+                          .withSystemErrorMessage("Error detaching sub context '%s': %s (%s)",
+                                                  subContext.getClass().getName())
                           .handle();
             }
         }
@@ -277,7 +278,7 @@ public class CallContext {
      * Returns the Watch representing the execution time.
      *
      * @return a Watch, representing the duration since the creation of the <b>CallContext</b>. Due to CallContexts
-     * being passed to forked sub tasks, the returned duration can be longer than the execution time within the
+     * being passed to forked sub-tasks, the returned duration can be longer than the execution time within the
      * current thread.
      */
     public Watch getWatch() {
@@ -326,10 +327,10 @@ public class CallContext {
     @SuppressWarnings("unchecked")
     public <C extends SubContext> C get(Class<C> contextType) {
         try {
-            SubContext result = subContext.get(contextType);
+            SubContext result = subContexts.get(contextType);
             if (result == null) {
                 result = contextType.getDeclaredConstructor().newInstance();
-                subContext.put(contextType, result);
+                subContexts.put(contextType, result);
             }
 
             return (C) result;
@@ -345,7 +346,7 @@ public class CallContext {
     /**
      * Installs the given sub context.
      * <p>
-     * This should only be used if required (e.g. in test environments to replace/mock objects). Otherwise a
+     * This should only be used if required (e.g. in test environments to replace/mock objects). Otherwise, a
      * call to {@link #get(Class)} will initialize the requested sub context.
      *
      * @param contextType the type of the context to set
@@ -353,7 +354,23 @@ public class CallContext {
      * @param <C>         the type of the sub-context
      */
     public <C extends SubContext> void set(Class<C> contextType, C instance) {
-        subContext.put(contextType, instance);
+        subContexts.put(contextType, instance);
+    }
+
+    /**
+     * Returns the current language determined for the current thread.
+     *
+     * @return a two-letter language code used for the current thread.
+     */
+    public String getLanguage() {
+        if (language == null) {
+            invokeLazyLanguageInstaller();
+            if (language == null) {
+                language = NLS.getDefaultLanguage();
+            }
+        }
+
+        return language;
     }
 
     /**
@@ -362,14 +379,7 @@ public class CallContext {
      * @return a two-letter language code used for the current thread.
      */
     public String getLang() {
-        if (lang == null) {
-            invokeLazyLanguageInstaller();
-            if (lang == null) {
-                lang = NLS.getDefaultLanguage();
-            }
-        }
-
-        return lang;
+        return getLanguage();
     }
 
     private void invokeLazyLanguageInstaller() {
@@ -380,7 +390,7 @@ public class CallContext {
             this.lazyLanguageInstaller = null;
             try {
                 localCopy.accept(this);
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 Exceptions.handle()
                           .to(Log.SYSTEM)
                           .withSystemErrorMessage("An error occurred while computing the current language: %s (%s)")
@@ -395,8 +405,18 @@ public class CallContext {
      * @return a two-letter language code used for the current thread.
      */
     @Nullable
+    public String getFallbackLanguage() {
+        return fallbackLanguage;
+    }
+
+    /**
+     * Returns the current fallback language determined for the current thread.
+     *
+     * @return a two-letter language code used for the current thread.
+     */
+    @Nullable
     public String getFallbackLang() {
-        return fallbackLang;
+        return getFallbackLanguage();
     }
 
     /**
@@ -405,12 +425,38 @@ public class CallContext {
      * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
      * </p>
      *
-     * @param lang the two-letter language code for this thread.
+     * @param language the two-letter language code for this thread.
      */
-    public void setLang(@Nullable String lang) {
-        if (Strings.isFilled(lang)) {
-            this.lang = lang;
+    public void setLanguage(@Nullable String language) {
+        if (Strings.isFilled(language)) {
+            this.language = language;
             this.lazyLanguageInstaller = null;
+        }
+    }
+
+    /**
+     * Sets the current language for the current thread.
+     * <p>
+     * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
+     * </p>
+     *
+     * @param language the two-letter language code for this thread.
+     */
+    public void setLang(@Nullable String language) {
+        setLanguage(language);
+    }
+
+    /**
+     * Sets the current language for the current thread, only if no other language has been set already.
+     * <p>
+     * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
+     * </p>
+     *
+     * @param language the two-letter language code for this thread.
+     */
+    public void setLanguageIfEmpty(@Nullable String language) {
+        if (Strings.isEmpty(this.language)) {
+            setLanguage(language);
         }
     }
 
@@ -420,12 +466,10 @@ public class CallContext {
      * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
      * </p>
      *
-     * @param lang the two-letter language code for this thread.
+     * @param language the two-letter language code for this thread.
      */
-    public void setLangIfEmpty(@Nullable String lang) {
-        if (Strings.isEmpty(this.lang)) {
-            setLang(lang);
-        }
+    public void setLangIfEmpty(@Nullable String language) {
+        setLanguageIfEmpty(language);
     }
 
     /**
@@ -433,7 +477,26 @@ public class CallContext {
      * <p>
      * In certain circumstances the current language might be influenced by something which is hard to compute.
      * For example a web request in <b>sirius-web</b> might either provide a user with a language attached via
-     * its session or it might contain a language header which itself isn't quite easy to parse.
+     * its session, or it might contain a language header which itself isn't quite easy to parse.
+     * <p>
+     * Worst of all, in many cases, the current language might not be used at all.
+     * <p>
+     * Therefore, we permit lazy computations which are only evaluated as required.
+     *
+     * @param languageInstaller a callback which installs the appropriate language into the given call context
+     *                          (is passed again to support {@link #fork() forking}).
+     */
+    public void deferredSetLanguage(@Nonnull Consumer<CallContext> languageInstaller) {
+        this.language = null;
+        this.lazyLanguageInstaller = languageInstaller;
+    }
+
+    /**
+     * Adds a language supplier.
+     * <p>
+     * In certain circumstances the current language might be influenced by something which is hard to compute.
+     * For example a web request in <b>sirius-web</b> might either provide a user with a language attached via
+     * its session, or it might contain a language header which itself isn't quite easy to parse.
      * <p>
      * Worst of all, in many cases, the current language might not be used at all.
      * <p>
@@ -443,38 +506,55 @@ public class CallContext {
      *                          (is passed again to support {@link #fork() forking}).
      */
     public void deferredSetLang(@Nonnull Consumer<CallContext> languageInstaller) {
-        this.lang = null;
-        this.lazyLanguageInstaller = languageInstaller;
+        deferredSetLanguage(languageInstaller);
+    }
+
+    /**
+     * Sets the language back to <tt>null</tt>.
+     * <p>
+     * This method should only be used to re-initialize the language. Use {@link #setLanguage(String)} to specify a new language.
+     */
+    public void resetLanguage() {
+        language = null;
     }
 
     /**
      * Sets the lang back to <tt>null</tt>.
      * <p>
-     * This method should only be used to re-initialize the language. Use {@link #setLang(String)} to specify a new language.
+     * This method should only be used to re-initialize the language. Use {@link #setLanguage(String)} to specify a new language.
      */
     public void resetLang() {
-        lang = null;
+        resetLanguage();
     }
 
     /**
      * Sets the current fallback language for the current thread.
      *
-     * @param fallbackLang the two-letter language code for this thread.
+     * @param fallbackLanguage the two-letter language code for this thread.
      */
-    public void setFallbackLang(@Nullable String fallbackLang) {
-        this.fallbackLang = fallbackLang;
+    public void setFallbackLanguage(@Nullable String fallbackLanguage) {
+        this.fallbackLanguage = fallbackLanguage;
+    }
+
+    /**
+     * Sets the current fallback language for the current thread.
+     *
+     * @param fallbackLanguage the two-letter language code for this thread.
+     */
+    public void setFallbackLang(@Nullable String fallbackLanguage) {
+        setFallbackLanguage(fallbackLanguage);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (Tuple<String, String> e : getMDC()) {
-            sb.append(e.getFirst());
-            sb.append(": ");
-            sb.append(e.getSecond());
-            sb.append("\n");
+        StringBuilder builder = new StringBuilder();
+        for (Tuple<String, String> entry : getMDC()) {
+            builder.append(entry.getFirst());
+            builder.append(": ");
+            builder.append(entry.getSecond());
+            builder.append("\n");
         }
 
-        return sb.toString();
+        return builder.toString();
     }
 }
