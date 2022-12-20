@@ -122,8 +122,10 @@ public class NLS {
      *
      * @return a two-letter code of the currently active language, as defined in
      * {@link sirius.kernel.async.CallContext#getLanguage()}
+     * @deprecated call {@link #getCurrentLanguage()} instead.
      */
     @Nonnull
+    @Deprecated
     public static String getCurrentLang() {
         return getCurrentLanguage();
     }
