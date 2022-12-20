@@ -377,8 +377,10 @@ public class CallContext {
      * Returns the current language determined for the current thread.
      *
      * @return a two-letter language code used for the current thread.
+     * @deprecated call {@link #getLanguage()} instead.
      */
-    public String getLang() {
+    @Deprecated
+    public final String getLang() {
         return getLanguage();
     }
 
@@ -413,9 +415,11 @@ public class CallContext {
      * Returns the current fallback language determined for the current thread.
      *
      * @return a two-letter language code used for the current thread.
+     * @deprecated call {@link #getFallbackLang()} instead.
      */
     @Nullable
-    public String getFallbackLang() {
+    @Deprecated
+    public final String getFallbackLang() {
         return getFallbackLanguage();
     }
 
@@ -441,8 +445,10 @@ public class CallContext {
      * </p>
      *
      * @param language the two-letter language code for this thread.
+     * @deprecated call {@link #setLanguage(String)} instead.
      */
-    public void setLang(@Nullable String language) {
+    @Deprecated
+    public final void setLang(@Nullable String language) {
         setLanguage(language);
     }
 
@@ -467,8 +473,10 @@ public class CallContext {
      * </p>
      *
      * @param language the two-letter language code for this thread.
+     * @deprecated call {@link #setLanguageIfEmpty(String)} instead.
      */
-    public void setLangIfEmpty(@Nullable String language) {
+    @Deprecated
+    public final void setLangIfEmpty(@Nullable String language) {
         setLanguageIfEmpty(language);
     }
 
@@ -504,8 +512,10 @@ public class CallContext {
      *
      * @param languageInstaller a callback which installs the appropriate language into the given call context
      *                          (is passed again to support {@link #fork() forking}).
+     * @deprecated call {@link #deferredSetLanguage(Consumer)} instead.
      */
-    public void deferredSetLang(@Nonnull Consumer<CallContext> languageInstaller) {
+    @Deprecated
+    public final void deferredSetLang(@Nonnull Consumer<CallContext> languageInstaller) {
         deferredSetLanguage(languageInstaller);
     }
 
@@ -522,8 +532,11 @@ public class CallContext {
      * Sets the lang back to <tt>null</tt>.
      * <p>
      * This method should only be used to re-initialize the language. Use {@link #setLanguage(String)} to specify a new language.
+     *
+     * @deprecated call {@link #resetLanguage()} instead.
      */
-    public void resetLang() {
+    @Deprecated
+    public final void resetLang() {
         resetLanguage();
     }
 
@@ -540,8 +553,10 @@ public class CallContext {
      * Sets the current fallback language for the current thread.
      *
      * @param fallbackLanguage the two-letter language code for this thread.
+     * @deprecated call {@link #setFallbackLanguage(String)} instead.
      */
-    public void setFallbackLang(@Nullable String fallbackLanguage) {
+    @Deprecated
+    public final void setFallbackLang(@Nullable String fallbackLanguage) {
         setFallbackLanguage(fallbackLanguage);
     }
 
