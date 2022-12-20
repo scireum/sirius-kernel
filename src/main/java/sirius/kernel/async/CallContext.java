@@ -380,7 +380,7 @@ public class CallContext {
      * @deprecated call {@link #getLanguage()} instead.
      */
     @Deprecated
-    public String getLang() {
+    public final String getLang() {
         return getLanguage();
     }
 
@@ -419,7 +419,7 @@ public class CallContext {
      */
     @Nullable
     @Deprecated
-    public String getFallbackLang() {
+    public final String getFallbackLang() {
         return getFallbackLanguage();
     }
 
@@ -448,7 +448,7 @@ public class CallContext {
      * @deprecated call {@link #setLanguage(String)} instead.
      */
     @Deprecated
-    public void setLang(@Nullable String language) {
+    public final void setLang(@Nullable String language) {
         setLanguage(language);
     }
 
@@ -476,7 +476,7 @@ public class CallContext {
      * @deprecated call {@link #setLanguageIfEmpty(String)} instead.
      */
     @Deprecated
-    public void setLangIfEmpty(@Nullable String language) {
+    public final void setLangIfEmpty(@Nullable String language) {
         setLanguageIfEmpty(language);
     }
 
@@ -515,7 +515,7 @@ public class CallContext {
      * @deprecated call {@link #deferredSetLanguage(Consumer)} instead.
      */
     @Deprecated
-    public void deferredSetLang(@Nonnull Consumer<CallContext> languageInstaller) {
+    public final void deferredSetLang(@Nonnull Consumer<CallContext> languageInstaller) {
         deferredSetLanguage(languageInstaller);
     }
 
@@ -536,7 +536,7 @@ public class CallContext {
      * @deprecated call {@link #resetLanguage()} instead.
      */
     @Deprecated
-    public void resetLang() {
+    public final void resetLang() {
         resetLanguage();
     }
 
@@ -556,7 +556,7 @@ public class CallContext {
      * @deprecated call {@link #setFallbackLanguage(String)} instead.
      */
     @Deprecated
-    public void setFallbackLang(@Nullable String fallbackLanguage) {
+    public final void setFallbackLang(@Nullable String fallbackLanguage) {
         setFallbackLanguage(fallbackLanguage);
     }
 
