@@ -140,17 +140,5 @@ public class XMLCall {
         }
         throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
                                             outcall.getResponse().statusCode()));
-        //200 oder XML content-type und bei JSON 200 oder JSON content-type
-    }
-
-    /**
-     * Provides access to the raw answer of the call.
-     *
-     * @return the result of the call
-     * @throws IOException in case of an IO error while receiving the result
-     */
-    @Deprecated
-    public XMLStructuredInput getRawInput() throws IOException {
-        return new XMLStructuredInput(outcall.getResponse().body(), namespaceContext);
     }
 }
