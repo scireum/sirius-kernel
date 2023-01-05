@@ -10,7 +10,6 @@ package sirius.kernel.async;
 
 import sirius.kernel.commons.Watch;
 import sirius.kernel.health.Average;
-import sirius.kernel.health.Exceptions;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -127,7 +126,6 @@ public class ExecutionBuilder {
                     durationAverage.addValue(w.elapsedMillis());
                 }
             } catch (Exception t) {
-                Exceptions.handle(Tasks.LOG, t);
                 promise.fail(t);
             }
         }
