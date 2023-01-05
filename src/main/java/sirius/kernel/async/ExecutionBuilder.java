@@ -18,14 +18,14 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Builder pattern for forking or starting sub tasks.
+ * Builder pattern for forking or starting sub-tasks.
  * <p>
  * Used by {@link Tasks#executor(String)} to construct an execution for a given subtask. Can be used to specify whether
- * the current {@link CallContext} is forked, or if a new one is started. Also one can specify whether and how a given
+ * the current {@link CallContext} is forked, or if a new one is started. Also, one can specify whether and how a given
  * task might be dropped on system overload conditions.
  * <p>
  * Most of the time this builder will be used to either call {@link #fork(Runnable)} or {@link #start(Runnable)}
- * to either fork the current <tt>CallContext</tt> or to start a sub task with a new one. Also a drop handler can be
+ * to either fork the current <tt>CallContext</tt> or to start a sub-task with a new one. Also, a drop handler can be
  * supplied using {@link #dropOnOverload(Runnable)} to gracefully handle system overload conditions.
  */
 @ParametersAreNonnullByDefault
