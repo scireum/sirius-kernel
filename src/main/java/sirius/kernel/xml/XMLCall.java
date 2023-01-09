@@ -135,7 +135,8 @@ public class XMLCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public XMLStructuredInput getInput() throws IOException {
-        if (!outcall.isErroneous() || outcall.getHeaderField("content-type").toLowerCase().contains("xml")) {
+        String contentType = outcall.getHeaderField("content-type");
+        if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase().contains("xml"))) {
             return new XMLStructuredInput(outcall.getResponse().body(), namespaceContext);
         }
         throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
