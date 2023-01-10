@@ -8,6 +8,7 @@
 
 package sirius.kernel.xml;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 
 import javax.xml.namespace.NamespaceContext;
@@ -134,16 +135,11 @@ public class XMLCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public XMLStructuredInput getInput() throws IOException {
-        return new XMLStructuredInput(outcall.getResponseBody(), namespaceContext);
-    }
-
-    /**
-     * Provides access to the raw answer of the call.
-     *
-     * @return the result of the call
-     * @throws IOException in case of an IO error while receiving the result
-     */
-    public XMLStructuredInput getRawInput() throws IOException {
-        return new XMLStructuredInput(outcall.getResponse().body(), namespaceContext);
+        String contentType = outcall.getHeaderField("content-type");
+        if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase().contains("xml"))) {
+            return new XMLStructuredInput(outcall.getResponse().body(), namespaceContext);
+        }
+        throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
+                                            outcall.getResponse().statusCode()));
     }
 }

@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -106,7 +105,7 @@ public class Outcall {
     private static final int MAX_REDIRECTS = 5;
 
     /**
-     * Keeps track of hosts for which we ran into a connect timeout.
+     * Keeps track of hosts for which we ran into a connect-timeout.
      * <p>
      * These hosts are blacklisted for a short amount of time ({@link #connectTimeoutBlacklistDuration}) to prevent
      * cascading failures.
@@ -270,13 +269,9 @@ public class Outcall {
             return this;
         }
 
-        try {
-            String userAndPassword = user + ":" + password;
-            String encodedAuthorization = Base64.getEncoder().encodeToString(userAndPassword.getBytes(charset.name()));
-            setRequestProperty("Authorization", "Basic " + encodedAuthorization);
-        } catch (UnsupportedEncodingException e) {
-            throw new IOException(e);
-        }
+        String userAndPassword = user + ":" + password;
+        String encodedAuthorization = Base64.getEncoder().encodeToString(userAndPassword.getBytes(charset));
+        setRequestProperty("Authorization", "Basic " + encodedAuthorization);
         return this;
     }
 
@@ -307,7 +302,7 @@ public class Outcall {
      * {@link java.net.http.HttpConnectTimeoutException} is raised. A timeout of zero is
      * interpreted as an infinite timeout.
      *
-     * @param timeoutMillis specifies the connect timeout value in milliseconds
+     * @param timeoutMillis specifies the connect-timeout value in milliseconds
      */
     public void setConnectTimeout(int timeoutMillis) {
         modifyClient().connectTimeout(Duration.ofMillis(timeoutMillis));
@@ -328,7 +323,7 @@ public class Outcall {
     }
 
     /**
-     * Sets the connect and read timeout to the values specified in the config block http.outcall.timeouts.*
+     * Sets the connect-timeout and read-timeout to the values specified in the config block http.outcall.timeouts.*
      * where * equals the configKey parameter.
      * <p>
      * See the http.outcall.timeouts.soap block in component-kernel.conf for reference.
@@ -362,9 +357,9 @@ public class Outcall {
             if (monoflop.successiveCall()) {
                 parameterString.append("&");
             }
-            parameterString.append(URLEncoder.encode(entry.getKey(), charset.name()));
+            parameterString.append(URLEncoder.encode(entry.getKey(), charset));
             parameterString.append("=");
-            parameterString.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset.name()));
+            parameterString.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset));
         }
         modifyRequest().setHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
                        .POST(HttpRequest.BodyPublishers.ofString(parameterString.toString(), charset));
@@ -397,7 +392,7 @@ public class Outcall {
     }
 
     /**
-     * Sets a HTTP cookie
+     * Sets an HTTP cookie
      *
      * @param name  name of the cookie
      * @param value value of the cookie
@@ -409,7 +404,7 @@ public class Outcall {
     }
 
     /**
-     * Provides access to a output stream that writes into this call.
+     * Provides access to an output stream that writes into this call.
      * <p>
      * This will automatically mark the underlying request as a POST request,
      * with the contents written into this stream as body.
@@ -550,7 +545,7 @@ public class Outcall {
      * Returns the response header with the given name as an optional {@link LocalDateTime}.
      *
      * @param name the name of the header to fetch
-     * @return the date of the given header wrapped in an Optional or empty if the field does not exists or can not be parsed as date
+     * @return the date of the given header wrapped in an Optional or empty if the field does not exist or can not be parsed as date
      */
     public Optional<LocalDateTime> getHeaderFieldDate(String name) {
         return Optional.ofNullable(getHeaderField(name)).flatMap(value -> {
@@ -568,10 +563,13 @@ public class Outcall {
     /**
      * Tries to parse a file name from the content disposition header.
      * <p>
-     * The format of the header is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
+     * The format of the header is defined here:
+     * <p>
+     * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html">http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html</a>
+     * <p>
      * This header provides a filename for content that is going to be downloaded to the file system.
      *
-     * @return an Optional containing the file name given by the header, or Optional.empty if no file name is given
+     * @return an Optional containing the file name given by the header, or {@link Optional#empty()} if no file name is given
      */
     public Optional<String> parseFileNameFromContentDisposition() {
         return ContentDispositionParser.parseFileName(getHeaderField(HEADER_CONTENT_DISPOSITION));
