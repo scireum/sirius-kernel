@@ -178,6 +178,16 @@ public class MultiMap<K, V> {
     }
 
     /**
+     * Returns the unmodifiable set of known keys.
+     *
+     * @return returns the set of known keys, that is keys for which <tt>put</tt> was called
+     */
+    @Nonnull
+    public Set<K> unmodifiableKeySet() {
+        return Collections.unmodifiableSet(keySet());
+    }
+
+    /**
      * Provides direct access to the underlying map.
      * <p>
      * For the sake of simplicity and extensibility, the original map is returned. Therefore manipulations should
