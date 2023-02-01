@@ -42,6 +42,8 @@ public class MultiMap<K, V> {
      *
      * @param base the underlying map to use
      */
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
+    @Explain("This constructor always receives an empty map")
     protected MultiMap(Map<K, Collection<V>> base) {
         this.base = base;
     }
@@ -94,7 +96,7 @@ public class MultiMap<K, V> {
     /**
      * Adds the given value to the list of values kept for the given key.
      * <p>
-     * Note that the values for a given key don't from a <tt>Set</tt>. Therefore adding the same value twice
+     * Note that the values for a given key don't from a <tt>Set</tt>. Therefore, adding the same value twice
      * for the same key, will result in having a value list containing the added element twice.
      *
      * @param key   the key for which the value is added to the map
@@ -190,12 +192,14 @@ public class MultiMap<K, V> {
     /**
      * Provides direct access to the underlying map.
      * <p>
-     * For the sake of simplicity and extensibility, the original map is returned. Therefore manipulations should
+     * For the sake of simplicity and extensibility, the original map is returned. Therefore, manipulations should
      * be well considered.
      *
      * @return the underlying <tt>Map</tt> of this instance.
      */
     @Nonnull
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
+    @Explain("A mutable map is returned by intention")
     public Map<K, Collection<V>> getUnderlyingMap() {
         return base;
     }
@@ -203,7 +207,7 @@ public class MultiMap<K, V> {
     /**
      * Returns a list of all values for all keys.
      * <p>
-     * Note that this list has no <tt>Set</tt> like behaviour. Therefore the same value might occur several times
+     * Note that this list has no <tt>Set</tt> like behaviour. Therefore, the same value might occur several times
      * if it was added more than once for the same or for different keys.
      *
      * @return a list of all values stored for all keys
@@ -261,8 +265,7 @@ public class MultiMap<K, V> {
     public static <K, V> Collector<V, MultiMap<K, V>, MultiMap<K, V>> groupingBy(Supplier<MultiMap<K, V>> supplier,
                                                                                  Function<V, K> classifier) {
         return Collector.of(supplier,
-                            (map, value) -> map.put(classifier.apply(value), value),
-                            (a, b) -> a.merge(b),
+                            (map, value) -> map.put(classifier.apply(value), value), MultiMap::merge,
                             Function.identity(),
                             Collector.Characteristics.IDENTITY_FINISH);
     }
@@ -282,8 +285,7 @@ public class MultiMap<K, V> {
     public static <K, V> Collector<V, MultiMap<K, V>, MultiMap<K, V>> groupingByMultiple(Supplier<MultiMap<K, V>> supplier,
                                                                                          Function<V, Collection<K>> classifier) {
         return Collector.of(supplier,
-                            (map, value) -> classifier.apply(value).forEach(key -> map.put(key, value)),
-                            (a, b) -> a.merge(b),
+                            (map, value) -> classifier.apply(value).forEach(key -> map.put(key, value)), MultiMap::merge,
                             Function.identity(),
                             Collector.Characteristics.IDENTITY_FINISH);
     }
