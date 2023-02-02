@@ -1284,39 +1284,35 @@ public class NLS {
     public static String convertDuration(long duration, boolean includeSeconds, boolean includeMillis) {
         StringBuilder result = new StringBuilder();
         if (duration > DAY) {
-            appendDurationValue(result, "NLS.day", "NLS.days", duration / DAY);
+            appendDurationValue(result, "NLS.days", duration / DAY);
             duration = duration % DAY;
         }
         if (duration > HOUR) {
-            appendDurationValue(result, "NLS.hour", "NLS.hours", duration / HOUR);
+            appendDurationValue(result, "NLS.hours", duration / HOUR);
             duration = duration % HOUR;
         }
         if (duration > MINUTE || (!includeSeconds && duration > 0)) {
-            appendDurationValue(result, "NLS.minute", "NLS.minutes", duration / MINUTE);
+            appendDurationValue(result, "NLS.minutes", duration / MINUTE);
             duration = duration % MINUTE;
         }
         if (includeSeconds) {
             if (duration > SECOND || (!includeMillis && duration > 0)) {
-                appendDurationValue(result, "NLS.second", "NLS.seconds", duration / SECOND);
+                appendDurationValue(result, "NLS.seconds", duration / SECOND);
                 duration = duration % SECOND;
             }
             if (includeMillis && duration > 0) {
-                appendDurationValue(result, "NLS.millisecond", "NLS.milliseconds", duration);
+                appendDurationValue(result, "NLS.milliseconds", duration);
             }
         }
 
         return result.toString();
     }
 
-    private static void appendDurationValue(StringBuilder result, String oneKey, String manyKey, long value) {
+    private static void appendDurationValue(StringBuilder result, String key, long value) {
         if (result.length() > 0) {
             result.append(", ");
         }
-        if (value == 1) {
-            result.append(Strings.apply(NLS.get(oneKey), 1));
-        } else {
-            result.append(Strings.apply(NLS.get(manyKey), value));
-        }
+        result.append(get(key, (int) value));
     }
 
     /**
