@@ -855,6 +855,9 @@ public class Value {
             if (data instanceof BigDecimal bigDecimal) {
                 return (int) bigDecimal.longValue();
             }
+            if (data instanceof Amount amount) {
+                return (int) amount.getAmount().longValue();
+            }
             return Integer.parseInt(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
@@ -886,6 +889,9 @@ public class Value {
             }
             if (data instanceof BigDecimal bigDecimal) {
                 return (int) bigDecimal.longValue();
+            }
+            if (data instanceof Amount amount) {
+                return (int) amount.getAmount().longValue();
             }
             return Integer.parseInt(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -922,6 +928,9 @@ public class Value {
             if (data instanceof BigDecimal bigDecimal) {
                 return bigDecimal.longValue();
             }
+            if (data instanceof Amount amount) {
+                return amount.getAmount().longValue();
+            }
             return Long.parseLong(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
@@ -950,6 +959,9 @@ public class Value {
             }
             if (data instanceof Long longValue) {
                 return longValue;
+            }
+            if (data instanceof Amount amount) {
+                return amount.getAmount().longValue();
             }
             return Long.parseLong(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -988,6 +1000,9 @@ public class Value {
             }
             if (data instanceof BigDecimal bigDecimal) {
                 return bigDecimal.doubleValue();
+            }
+            if (data instanceof Amount amount) {
+                return (int) amount.getAmount().doubleValue();
             }
             return Double.parseDouble(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
