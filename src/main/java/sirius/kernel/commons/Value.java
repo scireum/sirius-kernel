@@ -855,7 +855,6 @@ public class Value {
             if (data instanceof BigDecimal bigDecimal) {
                 return (int) bigDecimal.longValue();
             }
-
             return Integer.parseInt(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
             Exceptions.ignore(e);
@@ -885,8 +884,8 @@ public class Value {
             if (data instanceof Integer integer) {
                 return integer;
             }
-            if (data instanceof BigDecimal) {
-                return (int) ((BigDecimal) data).longValue();
+            if (data instanceof BigDecimal bigDecimal) {
+                return (int) bigDecimal.longValue();
             }
             return Integer.parseInt(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
