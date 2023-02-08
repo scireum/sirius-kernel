@@ -856,7 +856,7 @@ public class Value {
                 return (int) bigDecimal.longValue();
             }
             if (data instanceof Amount amount) {
-                return (int) amount.getAmount().longValue();
+                return amount.getAmount().intValue();
             }
             return Integer.parseInt(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -888,10 +888,10 @@ public class Value {
                 return integer;
             }
             if (data instanceof BigDecimal bigDecimal) {
-                return (int) bigDecimal.longValue();
+                return bigDecimal.intValue();
             }
             if (data instanceof Amount amount) {
-                return (int) amount.getAmount().longValue();
+                return amount.getAmount().intValue();
             }
             return Integer.parseInt(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -1002,7 +1002,7 @@ public class Value {
                 return bigDecimal.doubleValue();
             }
             if (data instanceof Amount amount) {
-                return (int) amount.getAmount().doubleValue();
+                return amount.getAmount().doubleValue();
             }
             return Double.parseDouble(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
