@@ -856,7 +856,7 @@ public class Value {
                 return integer;
             }
             if (data instanceof BigDecimal bigDecimal) {
-                return (int) bigDecimal.longValue();
+                return bigDecimal.intValue();
             }
             if (data instanceof Amount amount) {
                 return amount.getAmount().intValue();
