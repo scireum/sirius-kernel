@@ -114,6 +114,8 @@ public class Exceptions {
 
         /**
          * Specifies which exception leaded to the error being handled.
+         * <p>
+         * Note: When used, an additional '- %s (%s)' has to be added at the end of the error message provided when concatenating a {@link ErrorHandler#withSystemErrorMessage(String, Object...)} call.
          *
          * @param e the exception which needs to be attached to this error handler
          * @return <tt>this</tt> in order to fluently call more methods on this handler
