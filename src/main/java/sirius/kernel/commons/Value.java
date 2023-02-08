@@ -837,6 +837,9 @@ public class Value {
      * If the wrapped value is an <tt>Integer</tt> or <tt>BigDecimal</tt>, it is either directly returned or converted
      * by calling {@link java.math.BigDecimal#longValue()}.
      * <p>
+     * For {@link Amount} instances, scale will be lost and no proper rounding will be applied. The nested amount will
+     * just be treated as {@code BigDecimal} as described above.
+     * <p>
      * Otherwise {@link Integer#parseInt(String)} is called on the string representation of the wrapped value. If
      * parsing fails, or if the wrapped value was <tt>null</tt>, the <tt>defaultValue</tt> will be returned.
      *
@@ -872,6 +875,9 @@ public class Value {
      * If the wrapped value is an <tt>Integer</tt> or <tt>BigDecimal</tt>, it is either directly returned or converted
      * by calling {@link java.math.BigDecimal#longValue()}.
      * <p>
+     * For {@link Amount} instances, scale will be lost and no proper rounding will be applied. The nested amount will
+     * just be treated as {@code BigDecimal} as described above.
+     * <p>
      * Otherwise {@link Integer#parseInt(String)} is called on the string representation of the wrapped value. If
      * parsing fails, or if the wrapped value was <tt>null</tt>, <tt>null</tt> will be returned.
      *
@@ -906,6 +912,9 @@ public class Value {
      * <p>
      * If the wrapped value is a <tt>Long</tt>, <tt>Integer</tt> or <tt>BigDecimal</tt>,
      * it is either directly returned or converted by calling {@link java.math.BigDecimal#longValue()}.
+     * <p>
+     * For {@link Amount} instances, scale will be lost and no proper rounding will be applied. The nested amount will
+     * just be treated as {@code BigDecimal} as described above.
      * <p>
      * Otherwise {@link Long#parseLong(String)} is called on the string representation of the wrapped value. If
      * parsing fails, or if the wrapped value was <tt>null</tt>, the <tt>defaultValue</tt> will be returned.
@@ -945,6 +954,9 @@ public class Value {
      * If the wrapped value is a <tt>Long</tt>, <tt>Integer</tt> or <tt>BigDecimal</tt>, it is either directly
      * returned or by calling {@link java.math.BigDecimal#longValue()}.
      * <p>
+     * For {@link Amount} instances, scale will be lost and no proper rounding will be applied. The nested amount will
+     * just be treated as {@code BigDecimal} as described above.
+     * <p>
      * Otherwise {@link Long#parseLong(String)} is called on the string representation of the wrapped value. If
      * parsing fails, or if the wrapped value was <tt>null</tt>, <tt>null</tt> will be returned.
      *
@@ -976,6 +988,9 @@ public class Value {
      * <p>
      * If the wrapped value is a <tt>Double</tt>, <tt>Long</tt>, <tt>Integer</tt> or <tt>BigDecimal</tt>,
      * it is either directly returned or converted by calling {@link java.math.BigDecimal#doubleValue()}.
+     * <p>
+     * For {@link Amount} instances, scale will be lost and no proper rounding will be applied. The nested amount will
+     * just be treated as {@code BigDecimal} as described above.
      * <p>
      * Otherwise {@link Double#parseDouble(String)} is called on the string representation of the wrapped value. If
      * parsing fails, or if the wrapped value was <tt>null</tt>, the <tt>defaultValue</tt> will be returned.
