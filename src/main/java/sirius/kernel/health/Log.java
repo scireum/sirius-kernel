@@ -173,26 +173,26 @@ public class Log {
         };
     }
 
-    private void log(Level level, Object msg) {
+    private void log(Level level, Object message) {
         StackTraceElement caller = new Throwable().getStackTrace()[2];
 
-        LogRecord logRecord = createLogRecord(level, msg, caller);
-        if (msg instanceof Throwable throwable) {
+        LogRecord logRecord = createLogRecord(level, message, caller);
+        if (message instanceof Throwable throwable) {
             logRecord.setThrown(throwable);
         }
 
         logger.log(logRecord);
-        tap(msg, caller, level);
+        tap(message, caller, level);
     }
 
-    private LogRecord createLogRecord(Level level, Object msg, StackTraceElement caller) {
-        LogRecord logRecord = new LogRecord(level, msg.toString());
+    private LogRecord createLogRecord(Level level, Object message, StackTraceElement caller) {
+        LogRecord logRecord = new LogRecord(level, message.toString());
         logRecord.setLoggerName(logger.getName());
         logRecord.setSourceClassName(caller.getFileName() + ":" + caller.getLineNumber());
         return logRecord;
     }
 
-    private void tap(Object msg, StackTraceElement caller, Level level) {
+    private void tap(Object message, StackTraceElement caller, Level level) {
         if (Boolean.TRUE.equals(frozen.get())) {
             return;
         }
@@ -204,7 +204,7 @@ public class Log {
             frozen.set(Boolean.TRUE);
             for (LogTap tap : taps) {
                 try {
-                    tap.handleLogMessage(new LogMessage(NLS.toUserString(msg),
+                    tap.handleLogMessage(new LogMessage(NLS.toUserString(message),
                                                         level,
                                                         this,
                                                         caller,
@@ -224,28 +224,39 @@ public class Log {
      * The given object is converted to a string if necessary. The INFO level should be used for informative
      * messages to the system operator which occur at a low rate
      *
-     * @param msg the message to be logged
+     * @param message the message to be logged
      */
-    public void INFO(Object msg) {
-        if (msg == null || !logger.isLoggable(Level.INFO)) {
+    public void INFO(Object message) {
+        if (message == null || !logger.isLoggable(Level.INFO)) {
             return;
         }
 
-        log(Level.INFO, msg);
+        log(Level.INFO, message);
     }
 
     /**
-     * Used to log the given message <tt>msg</tt> at <b>INFO</b> level if debug mode is enabled
-     * ({@link sirius.kernel.Sirius#isDev()}). Otherwise the message will be logged as <b>FINE</b>.
+     * Used to log {@code message} at {@code INFO} level if {@link Sirius#isDev() debug mode is enabled}.
+     * Otherwise, the message will be logged as {@code FINE}.
      *
-     * @param msg the message to log
+     * @param message the message to log
      */
-    public void DEBUG_INFO(Object msg) {
+    public void DEBUG_INFO(Object message) {
         if (Sirius.isDev()) {
-            INFO(msg);
+            INFO(message);
         } else {
-            FINE(msg);
+            FINE(message);
         }
+    }
+
+    /**
+     * Used to log {@code message} at {@code INFO} level if {@link Sirius#isDev() debug mode is enabled}.
+     * Otherwise, the message will be logged as {@code FINE}.
+     *
+     * @param message    the message to log, possibly with placeholders
+     * @param parameters the items to fill into message's placeholders
+     */
+    public void DEBUG_INFO(String message, Object... parameters) {
+        DEBUG_INFO(Strings.apply(message, parameters));
     }
 
     /**
@@ -253,12 +264,12 @@ public class Log {
      * <p>
      * The INFO level should be used for informative messages to the system operator which occur at a low rate
      *
-     * @param msg    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
-     * @param params the parameters used to format the resulting log message
+     * @param message    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
+     * @param parameters the parameters used to format the resulting log message
      */
-    public void INFO(String msg, Object... params) {
+    public void INFO(String message, Object... parameters) {
         if (logger.isLoggable(Level.INFO)) {
-            log(Level.INFO, Strings.apply(msg, params));
+            log(Level.INFO, Strings.apply(message, parameters));
         }
     }
 
@@ -269,14 +280,14 @@ public class Log {
      * messages used when developing a system. Sill the rate should be kept bearable to enable this level in
      * production systems to narrow down errors.
      *
-     * @param msg the message to be logged
+     * @param message the message to be logged
      */
-    public void FINE(Object msg) {
-        if (msg == null || !logger.isLoggable(Level.FINE)) {
+    public void FINE(Object message) {
+        if (message == null || !logger.isLoggable(Level.FINE)) {
             return;
         }
 
-        log(Level.FINE, msg);
+        log(Level.FINE, message);
     }
 
     /**
@@ -285,12 +296,12 @@ public class Log {
      * The FINE level can be used for in depth debug or trace messages used when developing a system.
      * Sill the rate should be kept bearable to enable this level in production systems to narrow down errors.
      *
-     * @param msg    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
-     * @param params the parameters used to format the resulting log message
+     * @param message    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
+     * @param parameters the parameters used to format the resulting log message
      */
-    public void FINE(String msg, Object... params) {
+    public void FINE(String message, Object... parameters) {
         if (logger.isLoggable(Level.FINE)) {
-            log(Level.FINE, Strings.apply(msg, params));
+            log(Level.FINE, Strings.apply(message, parameters));
         }
     }
 
@@ -300,14 +311,14 @@ public class Log {
      * The given object is converted to a string if necessary. The WARN level can be used to signal unexpected
      * situations which do not (yet) result in an error or problem.
      *
-     * @param msg the message to be logged
+     * @param message the message to be logged
      */
-    public void WARN(Object msg) {
-        if (msg == null || !logger.isLoggable(Level.WARNING)) {
+    public void WARN(Object message) {
+        if (message == null || !logger.isLoggable(Level.WARNING)) {
             return;
         }
 
-        log(Level.WARNING, msg);
+        log(Level.WARNING, message);
     }
 
     /**
@@ -315,12 +326,12 @@ public class Log {
      * <p>
      * The WARN level can be used to signal unexpected situations which do not (yet) result in an error or problem.
      *
-     * @param msg    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
-     * @param params the parameters used to format the resulting log message
+     * @param message    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
+     * @param parameters the parameters used to format the resulting log message
      */
-    public void WARN(String msg, Object... params) {
+    public void WARN(String message, Object... parameters) {
         if (logger.isLoggable(Level.WARNING)) {
-            log(Level.WARNING, Strings.apply(msg, params));
+            log(Level.WARNING, Strings.apply(message, parameters));
         }
     }
 
@@ -331,14 +342,14 @@ public class Log {
      * which occurred in the system. It is recommended to handle exceptions using {@link Exceptions} - which will
      * eventually also call this method, but provides sophisticated error handling.
      *
-     * @param msg the message to be logged
+     * @param message the message to be logged
      */
-    public void SEVERE(Object msg) {
-        if (msg == null || !logger.isLoggable(Level.SEVERE)) {
+    public void SEVERE(Object message) {
+        if (message == null || !logger.isLoggable(Level.SEVERE)) {
             return;
         }
 
-        log(Level.SEVERE, msg);
+        log(Level.SEVERE, message);
     }
 
     /**
