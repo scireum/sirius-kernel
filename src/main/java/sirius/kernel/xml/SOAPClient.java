@@ -313,7 +313,7 @@ public class SOAPClient {
             XMLStructuredOutput output = call.getOutput();
             createEnvelope(output, headBuilder, bodyBuilder);
 
-            StructuredNode result = call.getRawInput().getNode(".");
+            StructuredNode result = call.getInput().getNode(".");
             int responseCode = call.getOutcall().getResponseCode();
 
             watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);

@@ -97,9 +97,9 @@ public class Settings {
     public Value getRaw(String path) {
         try {
             return Value.of(getConfig().getAnyRef(path));
-        } catch (ConfigException e) {
+        } catch (ConfigException exception) {
             if (strict) {
-                Exceptions.handle(e);
+                Exceptions.handle(exception);
             }
 
             return Value.EMPTY;
@@ -138,12 +138,12 @@ public class Settings {
      */
     @Nonnull
     public Context getContext() {
-        Context ctx = Context.create();
+        Context context = Context.create();
         for (Map.Entry<String, ConfigValue> entry : config.entrySet()) {
-            ctx.put(entry.getKey(), get(entry.getKey()).get());
+            context.put(entry.getKey(), get(entry.getKey()).get());
         }
 
-        return ctx;
+        return context;
     }
 
     /**
@@ -156,9 +156,9 @@ public class Settings {
     public Config getConfig(String key) {
         try {
             return getConfig().getConfig(key);
-        } catch (Exception e) {
+        } catch (Exception exception) {
             if (strict) {
-                Exceptions.handle(e);
+                Exceptions.handle(exception);
             }
 
             return ConfigFactory.empty();
@@ -207,21 +207,21 @@ public class Settings {
         List<Config> result = new ArrayList<>();
         Config cfg = getConfig(key);
         if (cfg != null) {
-            for (Map.Entry<String, ConfigValue> e : cfg.root().entrySet()) {
-                if (e.getValue().valueType() == ConfigValueType.OBJECT) {
-                    Config subCfg = ((ConfigObject) e.getValue()).toConfig();
-                    result.add(subCfg.withValue(ID, ConfigValueFactory.fromAnyRef(e.getKey())));
+            for (Map.Entry<String, ConfigValue> entry : cfg.root().entrySet()) {
+                if (entry.getValue().valueType() == ConfigValueType.OBJECT) {
+                    Config subConfig = ((ConfigObject) entry.getValue()).toConfig();
+                    result.add(subConfig.withValue(ID, ConfigValueFactory.fromAnyRef(entry.getKey())));
                 }
             }
         }
 
-        result.sort((a, b) -> {
-            int prioA = a.hasPath(PRIORITY) ? a.getInt(PRIORITY) : Priorized.DEFAULT_PRIORITY;
-            int prioB = b.hasPath(PRIORITY) ? b.getInt(PRIORITY) : Priorized.DEFAULT_PRIORITY;
+        result.sort((configA, configB) -> {
+            int prioA = configA.hasPath(PRIORITY) ? configA.getInt(PRIORITY) : Priorized.DEFAULT_PRIORITY;
+            int prioB = configB.hasPath(PRIORITY) ? configB.getInt(PRIORITY) : Priorized.DEFAULT_PRIORITY;
 
             if (prioA == prioB) {
-                prioA = a.origin().lineNumber();
-                prioB = b.origin().lineNumber();
+                prioA = configA.origin().lineNumber();
+                prioB = configB.origin().lineNumber();
             }
 
             return prioA - prioB;
@@ -247,9 +247,9 @@ public class Settings {
                               .stream()
                               .map(subConfig -> new Settings(subConfig, strict))
                               .collect(Collectors.toList());
-        } catch (ConfigException e) {
+        } catch (ConfigException exception) {
             if (strict) {
-                Exceptions.handle(e);
+                Exceptions.handle(exception);
             }
             return Collections.emptyList();
         }
@@ -318,22 +318,22 @@ public class Settings {
      *     </ul>
      * </p>
      *
-     * @param key  the key used to look up the string value
-     * @param lang the language to fetch the translation for. Use <tt>null</tt> to indicate that the
-     *             {@link NLS#getCurrentLang() current language} should be used.
+     * @param key      the key used to look up the string value
+     * @param language the language to fetch the translation for. Use <tt>null</tt> to indicate that the
+     *                 {@link NLS#getCurrentLanguage() current language} should be used.
      * @return the translated string
      */
     @SuppressWarnings("unchecked")
     @Nonnull
-    public String getTranslatedString(String key, @Nullable String lang) {
+    public String getTranslatedString(String key, @Nullable String language) {
         Value value = getRaw(key);
         if (value.isFilled() && value.is(String.class)) {
-            return NLS.smartGet(value.asString(), lang);
+            return NLS.smartGet(value.asString(), language);
         }
 
         if (value.is(Map.class)) {
             Map<String, String> translations = value.get(Map.class, Collections.emptyMap());
-            String effectiveLanguage = Strings.isEmpty(lang) ? NLS.getCurrentLang() : lang;
+            String effectiveLanguage = Strings.isEmpty(language) ? NLS.getCurrentLanguage() : language;
             return Optional.ofNullable(translations.get(effectiveLanguage))
                            .or(() -> Optional.ofNullable(translations.get(TRANSLATED_STRING_DEFAULT_KEY)))
                            .or(() -> {
@@ -386,9 +386,9 @@ public class Settings {
     public List<String> getStringList(String key) {
         try {
             return getConfig().getStringList(key);
-        } catch (ConfigException e) {
+        } catch (ConfigException exception) {
             if (strict) {
-                Exceptions.handle(e);
+                Exceptions.handle(exception);
             }
             return Collections.emptyList();
         }
@@ -402,7 +402,8 @@ public class Settings {
      */
     public Map<String, String> getMap(String key) {
         Map<String, String> result = new HashMap<>();
-        getConfig(key).entrySet().forEach(e -> result.put(e.getKey(), Value.of(e.getValue().unwrapped()).asString()));
+        getConfig(key).entrySet()
+                      .forEach(entry -> result.put(entry.getKey(), Value.of(entry.getValue().unwrapped()).asString()));
 
         return result;
     }
@@ -426,12 +427,12 @@ public class Settings {
             injectIntoField(target, field, key);
 
             return true;
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException exception) {
             // This should not happen, as we set the field to be accessible
             throw new IllegalArgumentException(Strings.apply("Cannot fill field '%s.%s' of type %s with a config value!",
                                                              field.getDeclaringClass().getName(),
                                                              field.getName(),
-                                                             field.getType().getName()), e);
+                                                             field.getType().getName()), exception);
         }
     }
 

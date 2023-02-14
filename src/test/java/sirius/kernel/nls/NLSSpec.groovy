@@ -52,7 +52,7 @@ class NLSSpec extends BaseSpecification {
         given:
         def date = LocalDateTime.of(2014, 8, 9, 12, 00, 59)
         and:
-        CallContext.getCurrent().setLang("de")
+        CallContext.getCurrent().setLanguage("de")
         when:
         def result = NLS.toUserString(date)
         then:
@@ -63,7 +63,7 @@ class NLSSpec extends BaseSpecification {
         given:
         def date = LocalTime.of(17, 23, 15)
         and:
-        CallContext.getCurrent().setLang("de")
+        CallContext.getCurrent().setLanguage("de")
         when:
         def result = NLS.toUserString(date)
         then:
@@ -74,7 +74,7 @@ class NLSSpec extends BaseSpecification {
         given:
         def date = LocalDate.of(2014, 8, 9)
         and:
-        CallContext.getCurrent().setLang("de")
+        CallContext.getCurrent().setLanguage("de")
         when:
         def result = NLS.toUserString(date)
         then:
@@ -86,7 +86,7 @@ class NLSSpec extends BaseSpecification {
         def instant = Instant.now()
         def date = instant.atZone(ZoneId.systemDefault()).toLocalDateTime()
         and:
-        CallContext.getCurrent().setLang("de")
+        CallContext.getCurrent().setLanguage("de")
         when:
         def dateFormatted = NLS.toUserString(date)
         def instantFormatted = NLS.toUserString(instant)
@@ -234,7 +234,7 @@ class NLSSpec extends BaseSpecification {
         given:
         LocalDateTime date = LocalDateTime.of(2000, 1, 2, 3, 4, 5)
         when:
-        String currentLang = NLS.getCurrentLang()
+        String currentLang = NLS.getCurrentLanguage()
         then:
         NLS.getDateFormat(null).format(date) == NLS.getDateFormat(currentLang).format(date)
         NLS.getShortDateFormat(null).format(date) == NLS.getShortDateFormat(currentLang).format(date)

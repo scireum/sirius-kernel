@@ -26,7 +26,7 @@ import java.util.function.Function;
  * <p>
  * Non string objects which are passed in as parameters, will be converted using {@link NLS#toUserString(Object)}
  * <p>
- * A formatter is neither thread safe nor intended for reuse. Instead a formatter is created, supplied with the
+ * A formatter is neither thread safe nor intended for reuse. Instead, a formatter is created, supplied with the
  * relevant parameters by chaining calls to <tt>set</tt> and then discarded after getting the result string via
  * <tt>format</tt>.
  * <p>
@@ -48,9 +48,9 @@ public class Formatter {
     private boolean urlEncode = false;
     private final Map<String, String> replacement = new TreeMap<>();
     private Function<String, Optional<String>> parameterProvider;
-    private boolean ignoreMissingPrameters;
+    private boolean ignoreMissingParameters;
     private String pattern;
-    private String lang;
+    private String language;
 
     /**
      * Use the static factory methods <tt>create</tt> to obtain a new instance.
@@ -64,14 +64,14 @@ public class Formatter {
      * <p>
      * The given language will be used when converting non-string parameters.
      *
-     * @param pattern specifies the pattern to be used for creating the output
-     * @param lang    specifies the language used when converting non-string parameters.
+     * @param pattern  specifies the pattern to be used for creating the output
+     * @param language specifies the language used when converting non-string parameters.
      * @return <tt>this</tt> for fluently calling <tt>set</tt> methods.
      */
-    public static Formatter create(String pattern, String lang) {
+    public static Formatter create(String pattern, String language) {
         Formatter result = new Formatter();
         result.pattern = pattern;
-        result.lang = lang;
+        result.language = language;
         return result;
     }
 
@@ -119,18 +119,18 @@ public class Formatter {
             // here without having to resolve the current language...
             setDirect(property, string.trim());
         } else {
-            setDirect(property, NLS.toUserString(value, fetchLang()));
+            setDirect(property, NLS.toUserString(value, fetchLanguage()));
         }
 
         return this;
     }
 
-    private String fetchLang() {
-        if (lang == null) {
-            this.lang = NLS.getCurrentLang();
+    private String fetchLanguage() {
+        if (language == null) {
+            language = NLS.getCurrentLanguage();
         }
 
-        return lang;
+        return language;
     }
 
     /**
@@ -151,7 +151,7 @@ public class Formatter {
             // here without having to resolve the current language...
             setDirectUnencoded(property, string.trim());
         } else {
-            setDirectUnencoded(property, NLS.toUserString(value, fetchLang()));
+            setDirectUnencoded(property, NLS.toUserString(value, fetchLanguage()));
         }
 
         return this;
@@ -178,7 +178,7 @@ public class Formatter {
      * Sets the whole context as parameters in this formatter.
      * <p>
      * Calls <tt>#setDirect</tt> for each entry in the given map. Note that only
-     * <tt>toString</tt> is invoked on the value, therefore all strings remain untrimmend.
+     * <tt>toString</tt> is invoked on the value, therefore all strings remain untrimmed.
      *
      * @param ctx a <tt>Map</tt> which provides a set of entries to replace.
      * @return <tt>this</tt> to permit fluent method chains
@@ -250,13 +250,13 @@ public class Formatter {
     /**
      * Automatically ignores missing parameters.
      * <p>
-     * By default an exception is thrown when a completely unknown parameter is being referenced. By calling this method
+     * By default, an exception is thrown when a completely unknown parameter is being referenced. By calling this method
      * the parameter is simply assumed to be empty ("").
      *
      * @return <tt>this</tt> to permit fluent method chains
      */
     public Formatter ignoreMissingParameters() {
-        this.ignoreMissingPrameters = true;
+        this.ignoreMissingParameters = true;
         return this;
     }
 
@@ -353,14 +353,14 @@ public class Formatter {
 
     private String obtainParameterValue(int position, String parameter) {
         if (parameterProvider != null) {
-            Optional<String> optinalValue = parameterProvider.apply(parameter);
-            if (optinalValue.isPresent()) {
-                return optinalValue.get();
+            Optional<String> optionalValue = parameterProvider.apply(parameter);
+            if (optionalValue.isPresent()) {
+                return optionalValue.get();
             }
         }
 
         return replacement.computeIfAbsent(parameter, ignored -> {
-            if (ignoreMissingPrameters) {
+            if (ignoreMissingParameters) {
                 return "";
             } else {
                 throw new IllegalArgumentException(Strings.apply("Unknown value '%s' used at index %d in '%s'",
