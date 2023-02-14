@@ -50,7 +50,7 @@ steps:
   - name: test
     image: scireum/sirius-build-jdk18
     commands:
-      - ./gradlew clean testWithoutNightly
+      - ./gradlew clean testWithoutNightly --info
     volumes: *scireum_volumes
     when:
       event:
@@ -75,7 +75,7 @@ steps:
     image: scireum/sirius-build-jdk18
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' gradle.properties
-      - ./gradlew clean test sonarqube -Dsonar.projectKey=${DRONE_REPO_NAME} -Dsonar.host.url=https://sonarqube.scireum.com/ -Dsonar.login=${sonar_login}
+      - ./gradlew clean test sonarqube -Dsonar.projectKey=${DRONE_REPO_NAME} -Dsonar.host.url=https://sonarqube.scireum.com/ -Dsonar.login=${sonar_login} --info
     volumes: *scireum_volumes
     when:
       event:
