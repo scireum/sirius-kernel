@@ -226,7 +226,7 @@ class ValueSpec extends BaseSpecification {
 
     def "Casting to doubles works"() {
         expect:
-        Value.of(input).asDouble(1234.56) == output
+        Math.abs(Value.of(input).asDouble(1234.56) - output) < Doubles.EPSILON
         where:
         input                | output
         99999                | 99999.0
