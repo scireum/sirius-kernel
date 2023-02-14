@@ -246,21 +246,37 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
 
     @Override
     public int intValue() {
+        if (value == null) {
+            throw new IllegalStateException("The value is empty.");
+        }
+
         return value.intValue();
     }
 
     @Override
     public long longValue() {
+        if (value == null) {
+            throw new IllegalStateException("The value is empty.");
+        }
+
         return value.longValue();
     }
 
     @Override
     public float floatValue() {
+        if (value == null) {
+            throw new IllegalStateException("The value is empty.");
+        }
+
         return value.floatValue();
     }
 
     @Override
     public double doubleValue() {
+        if (value == null) {
+            throw new IllegalStateException("The value is empty.");
+        }
+
         return value.doubleValue();
     }
 
