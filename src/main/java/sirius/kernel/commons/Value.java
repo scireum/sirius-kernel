@@ -884,9 +884,6 @@ public class Value {
             if (isNull()) {
                 return null;
             }
-            if (data instanceof Integer integer) {
-                return integer;
-            }
             if (data instanceof Number number) {
                 return number.intValue();
             }
@@ -950,9 +947,6 @@ public class Value {
         try {
             if (isNull()) {
                 return null;
-            }
-            if (data instanceof Long longValue) {
-                return longValue;
             }
             if (data instanceof Number number) {
                 return number.longValue();
