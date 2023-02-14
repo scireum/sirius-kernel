@@ -118,12 +118,18 @@ public class Value {
     }
 
     /**
-     * Determines if the wrapped value is <tt>null</tt>
+     * Determines if the wrapped value is <tt>null</tt>.
+     * <p>
+     * Note that we consider {@link Amount#NOTHING} also as <tt>null</tt>.
      *
      * @return <tt>true</tt> if the wrapped value is null, <tt>false</tt> otherwise
      */
     public boolean isNull() {
-        return data == null;
+        if (data == null) {
+            return true;
+        }
+
+        return data instanceof Amount amount && amount.isEmpty();
     }
 
     /**
