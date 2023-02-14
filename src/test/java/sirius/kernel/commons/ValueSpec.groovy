@@ -178,8 +178,10 @@ class ValueSpec extends BaseSpecification {
         99999.0           | 99999
         new Double(99999) | 99999
         Amount.of(99999)  | 99999
+        Amount.NOTHING    | 1234
         "99999"           | 99999
         "Keine Zahl"      | 1234
+        null              | 1234
     }
 
     def "Casting to integer instances works"() {
@@ -192,8 +194,10 @@ class ValueSpec extends BaseSpecification {
         99999.0           | new Integer(99999)
         new Double(99999) | new Integer(99999)
         Amount.of(99999)  | new Integer(99999)
+        Amount.NOTHING    | null
         "99999"           | new Integer(99999)
         "Keine Zahl"      | null
+        null              | null
     }
 
     def "Casting to longs works"() {
@@ -206,8 +210,10 @@ class ValueSpec extends BaseSpecification {
         99999.0           | 99999l
         new Double(99999) | 99999l
         Amount.of(99999)  | 99999l
+        Amount.NOTHING    | 1234l
         "99999"           | 99999l
         "Keine Zahl"      | 1234l
+        null              | 1234l
     }
 
     def "Casting to long instances works"() {
@@ -220,8 +226,10 @@ class ValueSpec extends BaseSpecification {
         99999.0           | new Long(99999l)
         new Double(99999) | new Long(99999l)
         Amount.of(99999)  | new Long(99999l)
+        Amount.NOTHING    | null
         "99999"           | new Long(99999l)
         "Keine Zahl"      | null
+        null              | null
     }
 
     def "Casting to doubles works"() {
@@ -234,9 +242,11 @@ class ValueSpec extends BaseSpecification {
         99999.87             | 99999.87
         new Double(99999.87) | 99999.87
         Amount.of(99999.87)  | 99999.87
+        Amount.NOTHING       | 1234.56
         "99999"              | 99999.0
         "99999.87"           | 99999.87
         "Keine Zahl"         | 1234.56
+        null                 | 1234.56
     }
 
     def "map() does not call the mapper on an empty Value"() {
