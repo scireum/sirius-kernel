@@ -852,14 +852,8 @@ public class Value {
             if (isNull()) {
                 return defaultValue;
             }
-            if (data instanceof Integer integer) {
-                return integer;
-            }
-            if (data instanceof BigDecimal bigDecimal) {
-                return bigDecimal.intValue();
-            }
-            if (data instanceof Amount amount) {
-                return amount.getAmount().intValue();
+            if (data instanceof Number number) {
+                return number.intValue();
             }
             return Integer.parseInt(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -893,11 +887,8 @@ public class Value {
             if (data instanceof Integer integer) {
                 return integer;
             }
-            if (data instanceof BigDecimal bigDecimal) {
-                return bigDecimal.intValue();
-            }
-            if (data instanceof Amount amount) {
-                return amount.getAmount().intValue();
+            if (data instanceof Number number) {
+                return number.intValue();
             }
             return Integer.parseInt(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -928,17 +919,8 @@ public class Value {
             if (isNull()) {
                 return defaultValue;
             }
-            if (data instanceof Long longValue) {
-                return longValue;
-            }
-            if (data instanceof Integer integer) {
-                return integer;
-            }
-            if (data instanceof BigDecimal bigDecimal) {
-                return bigDecimal.longValue();
-            }
-            if (data instanceof Amount amount) {
-                return amount.getAmount().longValue();
+            if (data instanceof Number number) {
+                return number.longValue();
             }
             return Long.parseLong(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -972,8 +954,8 @@ public class Value {
             if (data instanceof Long longValue) {
                 return longValue;
             }
-            if (data instanceof Amount amount) {
-                return amount.getAmount().longValue();
+            if (data instanceof Number number) {
+                return number.longValue();
             }
             return Long.parseLong(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
@@ -1004,20 +986,8 @@ public class Value {
             if (isNull()) {
                 return defaultValue;
             }
-            if (data instanceof Double doubleValue) {
-                return doubleValue;
-            }
-            if (data instanceof Long longValue) {
-                return longValue;
-            }
-            if (data instanceof Integer integer) {
-                return integer;
-            }
-            if (data instanceof BigDecimal bigDecimal) {
-                return bigDecimal.doubleValue();
-            }
-            if (data instanceof Amount amount) {
-                return amount.getAmount().doubleValue();
+            if (data instanceof Number number) {
+                return number.doubleValue();
             }
             return Double.parseDouble(String.valueOf(data).trim());
         } catch (NumberFormatException e) {
