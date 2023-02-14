@@ -46,7 +46,7 @@ import java.util.function.Supplier;
  * @see BigDecimal
  */
 @Immutable
-public class Amount implements Comparable<Amount>, Serializable {
+public class Amount extends Number implements Comparable<Amount>, Serializable {
 
     @Serial
     private static final long serialVersionUID = 2187873067365153302L;
@@ -242,6 +242,26 @@ public class Amount implements Comparable<Amount>, Serializable {
     @Nullable
     public BigDecimal getAmount() {
         return value;
+    }
+
+    @Override
+    public int intValue() {
+        return value.intValue();
+    }
+
+    @Override
+    public long longValue() {
+        return value.longValue();
+    }
+
+    @Override
+    public float floatValue() {
+        return value.floatValue();
+    }
+
+    @Override
+    public double doubleValue() {
+        return value.doubleValue();
     }
 
     /**
