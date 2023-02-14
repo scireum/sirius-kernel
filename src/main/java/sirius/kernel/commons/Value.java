@@ -856,8 +856,8 @@ public class Value {
                 return number.intValue();
             }
             return Integer.parseInt(String.valueOf(data).trim());
-        } catch (NumberFormatException e) {
-            Exceptions.ignore(e);
+        } catch (NumberFormatException | NullPointerException ignoredException) {
+            Exceptions.ignore(ignoredException);
             return defaultValue;
         }
     }
@@ -891,8 +891,8 @@ public class Value {
                 return number.intValue();
             }
             return Integer.parseInt(String.valueOf(data).trim());
-        } catch (NumberFormatException e) {
-            Exceptions.ignore(e);
+        } catch (NumberFormatException | NullPointerException ignoredException) {
+            Exceptions.ignore(ignoredException);
             return null;
         }
     }
@@ -923,8 +923,8 @@ public class Value {
                 return number.longValue();
             }
             return Long.parseLong(String.valueOf(data).trim());
-        } catch (NumberFormatException e) {
-            Exceptions.ignore(e);
+        } catch (NumberFormatException | NullPointerException ignoredException) {
+            Exceptions.ignore(ignoredException);
             return defaultValue;
         }
     }
@@ -958,8 +958,8 @@ public class Value {
                 return number.longValue();
             }
             return Long.parseLong(String.valueOf(data).trim());
-        } catch (NumberFormatException e) {
-            Exceptions.ignore(e);
+        } catch (NumberFormatException | NullPointerException ignoredException) {
+            Exceptions.ignore(ignoredException);
             return null;
         }
     }
@@ -990,8 +990,8 @@ public class Value {
                 return number.doubleValue();
             }
             return Double.parseDouble(String.valueOf(data).trim());
-        } catch (NumberFormatException e) {
-            Exceptions.ignore(e);
+        } catch (NumberFormatException | NullPointerException ignoredException) {
+            Exceptions.ignore(ignoredException);
             return defaultValue;
         }
     }
