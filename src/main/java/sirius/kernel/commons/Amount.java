@@ -46,7 +46,7 @@ import java.util.function.Supplier;
  * @see BigDecimal
  */
 @Immutable
-public class Amount implements Comparable<Amount>, Serializable {
+public class Amount extends Number implements Comparable<Amount>, Serializable {
 
     @Serial
     private static final long serialVersionUID = 2187873067365153302L;
@@ -242,6 +242,30 @@ public class Amount implements Comparable<Amount>, Serializable {
     @Nullable
     public BigDecimal getAmount() {
         return value;
+    }
+
+    @Override
+    public int intValue() {
+        throwExceptionIfEmpty();
+        return value.intValue();
+    }
+
+    @Override
+    public long longValue() {
+        throwExceptionIfEmpty();
+        return value.longValue();
+    }
+
+    @Override
+    public float floatValue() {
+        throwExceptionIfEmpty();
+        return value.floatValue();
+    }
+
+    @Override
+    public double doubleValue() {
+        throwExceptionIfEmpty();
+        return value.doubleValue();
     }
 
     /**
@@ -912,5 +936,11 @@ public class Amount implements Comparable<Amount>, Serializable {
             return 0;
         }
         return Math.round(Math.floor(Math.log10(value.doubleValue()) + 1));
+    }
+
+    private void throwExceptionIfEmpty() {
+        if (value == null) {
+            throw new IllegalStateException("The value is empty.");
+        }
     }
 }
