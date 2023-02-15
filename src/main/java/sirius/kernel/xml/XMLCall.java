@@ -89,7 +89,7 @@ public class XMLCall {
     }
 
     /**
-     * Log the outcall to {@code logger}.
+     * Logs the outcall to {@code logger}.
      * <p>
      * The outcall is only logged when the logger is set to FINE. The default logger is "xml".
      *
