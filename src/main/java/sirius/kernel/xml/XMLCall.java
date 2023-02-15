@@ -94,7 +94,7 @@ public class XMLCall {
      * The outcall is only logged when the logger is set to FINE. The default logger is "xml".
      *
      * @param logger the logger to log to
-     * @return returns the XML call itself for fluent method calls
+     * @return the XML call itself for fluent method calls
      */
     public XMLCall withFineLogger(Log logger) {
         this.logger = logger;

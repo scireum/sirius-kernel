@@ -415,7 +415,7 @@ public class Tasks implements Startable, Stoppable, Killable {
         LOG.INFO("Waiting for async executor '%s' to terminate...", name);
         try {
             if (!exec.awaitTermination(EXECUTOR_SHUTDOWN_WAIT.getSeconds(), TimeUnit.SECONDS)) {
-                LOG.SEVERE("Executor '%s' did not terminate within 60s. Interrupting " + "tasks...", name);
+                LOG.SEVERE("Executor '%s' did not terminate within 60s. Interrupting tasks...", name);
                 exec.shutdownNow();
                 if (!exec.awaitTermination(EXECUTOR_TERMINATION_WAIT.getSeconds(), TimeUnit.SECONDS)) {
                     LOG.SEVERE("Executor '%s' did not terminate after another 30s!", name);

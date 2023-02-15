@@ -355,7 +355,7 @@ public class Log {
     /**
      * Logs the given message at the SEVERE or ERROR level.
      * <p>
-     * he ERROR level can be used to signal problems or error which occurred in the system. It is recommended to handle
+     * The ERROR level can be used to signal problems or errors which occurred in the system. It is recommended to handle
      * exceptions using {@link Exceptions} instead.
      *
      * @param message    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
