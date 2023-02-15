@@ -763,4 +763,8 @@ public class Outcall {
     public static Duration getDefaultReadTimeout() {
         return defaultReadTimeout;
     }
+
+    public boolean isPostRequest() {
+        return postFromOutput;
+    }
 }

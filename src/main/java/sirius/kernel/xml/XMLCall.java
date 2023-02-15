@@ -10,12 +10,17 @@ package sirius.kernel.xml;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
+import sirius.kernel.nls.Formatter;
 
 import javax.xml.namespace.NamespaceContext;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Simple call to send XML to a server (URL) and receive XML back.
@@ -24,6 +29,7 @@ public class XMLCall {
 
     private Outcall outcall;
     private NamespaceContext namespaceContext;
+    private Log logger = Log.get("xml");
 
     /**
      * Creates a new XMLCall for the given url with Content-Type 'text/xml'.
@@ -83,6 +89,19 @@ public class XMLCall {
     }
 
     /**
+     * Log the outcall to {@code logger}.
+     * <p>
+     * The outcall is only logged when the logger is set to FINE. The default logger is "xml".
+     *
+     * @param logger the logger to log to
+     * @return returns the XML call itself for fluent method calls
+     */
+    public XMLCall withFineLogger(Log logger) {
+        this.logger = logger;
+        return this;
+    }
+
+    /**
      * Adds a custom header field to the call
      *
      * @param name  name of the field
@@ -128,6 +147,35 @@ public class XMLCall {
         return new XMLStructuredOutput(outcall.postFromOutput());
     }
 
+    private InputStream getInputStream() throws IOException {
+        if (logger != null && logger.isFINE()) {
+            // log the request, even when parsing fails
+            try (InputStream body = outcall.getResponse().body()) {
+                String text = new String(body.readAllBytes(), StandardCharsets.UTF_8);
+                boolean isPost = outcall.isPostRequest();
+                logger.FINE(Formatter.create("""
+                                                     ---------- call ----------
+                                                     ${httpMethod} ${url} [
+                                                                                  
+                                                     ${callBody}]
+                                                     ---------- response ----------
+                                                     HTTP-Response-Code: ${responseCode}
+                                                                                  
+                                                     ${response}
+                                                     ---------- end ----------
+                                                     """)
+                                     .set("httpMethod", isPost ? "POST" : "GET")
+                                     .set("url", outcall.getRequest().uri())
+                                     .set("callBody", isPost ? getOutput() : null)
+                                     .set("responseCode", getOutcall().getResponseCode())
+                                     .set("response", text)
+                                     .smartFormat());
+                return new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+            }
+        }
+        return outcall.getResponse().body();
+    }
+
     /**
      * Provides access to the XML answer of the call.
      *
@@ -135,9 +183,10 @@ public class XMLCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public XMLStructuredInput getInput() throws IOException {
+        InputStream body = getInputStream();
         String contentType = outcall.getHeaderField("content-type");
         if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase().contains("xml"))) {
-            return new XMLStructuredInput(outcall.getResponse().body(), namespaceContext);
+            return new XMLStructuredInput(body, namespaceContext);
         }
         throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
                                             outcall.getResponse().statusCode()));
