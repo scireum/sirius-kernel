@@ -186,6 +186,7 @@ public class XMLCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public XMLStructuredInput getInput() throws IOException {
+        // call #getInputStream() before checking for errors, as #getInputStream may log the request/response
         InputStream body = getInputStream();
         String contentType = outcall.getHeaderField("content-type");
         if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase().contains("xml"))) {
