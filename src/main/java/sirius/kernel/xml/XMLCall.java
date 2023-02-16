@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Simple call to send XML to a server (URL) and receive XML back.
@@ -29,7 +28,7 @@ public class XMLCall {
 
     private Outcall outcall;
     private NamespaceContext namespaceContext;
-    private Log logger = Log.get("xml");
+    private Log debugLogger = Log.get("xml");
 
     /**
      * Creates a new XMLCall for the given url with Content-Type 'text/xml'.
@@ -89,15 +88,15 @@ public class XMLCall {
     }
 
     /**
-     * Logs the outcall to {@code logger}.
+     * Logs the request and the resulting response to the given {@code logger} using the <tt>FINE</tt> level.
      * <p>
-     * The outcall is only logged when the logger is set to FINE. The default logger is "xml".
+     * The default logger is "xml".
      *
      * @param logger the logger to log to
      * @return the XML call itself for fluent method calls
      */
     public XMLCall withFineLogger(Log logger) {
-        this.logger = logger;
+        this.debugLogger = logger;
         return this;
     }
 
@@ -148,32 +147,36 @@ public class XMLCall {
     }
 
     private InputStream getInputStream() throws IOException {
-        if (logger != null && logger.isFINE()) {
+        if (debugLogger != null && debugLogger.isFINE()) {
             // log the request, even when parsing fails
             try (InputStream body = outcall.getResponse().body()) {
-                String text = new String(body.readAllBytes(), StandardCharsets.UTF_8);
-                boolean isPost = outcall.isPostRequest();
-                logger.FINE(Formatter.create("""
-                                                     ---------- call ----------
-                                                     ${httpMethod} ${url} [
-                                                                                  
-                                                     ${callBody}]
-                                                     ---------- response ----------
-                                                     HTTP-Response-Code: ${responseCode}
-                                                                                  
-                                                     ${response}
-                                                     ---------- end ----------
-                                                     """)
-                                     .set("httpMethod", isPost ? "POST" : "GET")
-                                     .set("url", outcall.getRequest().uri())
-                                     .set("callBody", isPost ? getOutput() : null)
-                                     .set("responseCode", getOutcall().getResponseCode())
-                                     .set("response", text)
-                                     .smartFormat());
-                return new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+                byte[] bytes = body.readAllBytes();
+                logRequest(new String(bytes, outcall.getContentEncoding()));
+                return new ByteArrayInputStream(bytes);
             }
         }
         return outcall.getResponse().body();
+    }
+
+    private void logRequest(String response) throws IOException {
+        boolean isPost = outcall.isPostRequest();
+        debugLogger.FINE(Formatter.create("""
+                                                  ---------- call ----------
+                                                  ${httpMethod} ${url} [
+                                                                               
+                                                  ${callBody}]
+                                                  ---------- response ----------
+                                                  HTTP-Response-Code: ${responseCode}
+                                                                               
+                                                  ${response}
+                                                  ---------- end ----------
+                                                  """)
+                                  .set("httpMethod", isPost ? "POST" : "GET")
+                                  .set("url", outcall.getRequest().uri())
+                                  .set("callBody", isPost ? getOutput() : null)
+                                  .set("responseCode", getOutcall().getResponseCode())
+                                  .set("response", response)
+                                  .smartFormat());
     }
 
     /**
