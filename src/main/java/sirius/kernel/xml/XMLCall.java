@@ -159,7 +159,6 @@ public class XMLCall {
     }
 
     private void logRequest(String response) throws IOException {
-        boolean isPost = outcall.isPostRequest();
         debugLogger.FINE(Formatter.create("""
                                                   ---------- call ----------
                                                   ${httpMethod} ${url} [
@@ -171,9 +170,10 @@ public class XMLCall {
                                                   ${response}
                                                   ---------- end ----------
                                                   """)
-                                  .set("httpMethod", isPost ? "POST" : "GET")
+                                  .set("httpMethod", outcall.getRequest().method())
                                   .set("url", outcall.getRequest().uri())
-                                  .set("callBody", isPost ? getOutput() : null)
+                                  .set("callBody",
+                                       outcall.getRequest().bodyPublisher().isPresent() ? getOutput() : null)
                                   .set("responseCode", getOutcall().getResponseCode())
                                   .set("response", response)
                                   .smartFormat());
