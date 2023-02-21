@@ -296,7 +296,7 @@ public class SOAPClient {
 
         try (Operation op = new Operation(() -> Strings.apply("SOAP %s -> %s", action, effectiveEndpoint),
                                           Duration.ofSeconds(15))) {
-            XMLCall call = XMLCall.to(effectiveEndpoint.toURI());
+            XMLCall call = XMLCall.to(effectiveEndpoint.toURI()).withFineLogger(LOG);
             call.getOutcall().withConfiguredTimeout(SOAP_TIMEOUT_CONFIG_KEY);
             call.withNamespaceContext(namespaceContext);
             if (callEnhancer != null) {
@@ -317,18 +317,6 @@ public class SOAPClient {
             int responseCode = call.getOutcall().getResponseCode();
 
             watch.submitMicroTiming("SOAP", action + " -> " + effectiveEndpoint);
-
-            LOG.FINE("""
-                             ---------- call ----------
-                             Calling %s %s
-                                                          
-                             %s
-                             ---------- response ----------
-                             HTTP-Response-Code: %s
-                                                          
-                             %s
-                             ---------- end ----------
-                             """, effectiveEndpoint, soapAction, output, responseCode, result);
 
             if (call.getOutcall().isErroneous()) {
                 throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",

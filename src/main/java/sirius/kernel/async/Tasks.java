@@ -13,7 +13,6 @@ import sirius.kernel.Sirius;
 import sirius.kernel.Startable;
 import sirius.kernel.Stoppable;
 import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
@@ -141,7 +140,6 @@ public class Tasks implements Startable, Stoppable, Killable {
      * @param synchronizer the synchronizer to remove
      * @return <tt>true</tt> if the synchronizer was known and has been removed, <tt>false</tt> if it wasn't known at
      * all.
-     *
      * @see ExecutionBuilder#minInterval(Object, Duration)
      */
     public boolean forgetSynchronizer(String synchronizer) {
@@ -417,17 +415,16 @@ public class Tasks implements Startable, Stoppable, Killable {
         LOG.INFO("Waiting for async executor '%s' to terminate...", name);
         try {
             if (!exec.awaitTermination(EXECUTOR_SHUTDOWN_WAIT.getSeconds(), TimeUnit.SECONDS)) {
-                LOG.SEVERE(Strings.apply("Executor '%s' did not terminate within 60s. Interrupting " + "tasks...",
-                                         name));
+                LOG.SEVERE("Executor '%s' did not terminate within 60s. Interrupting tasks...", name);
                 exec.shutdownNow();
                 if (!exec.awaitTermination(EXECUTOR_TERMINATION_WAIT.getSeconds(), TimeUnit.SECONDS)) {
-                    LOG.SEVERE(Strings.apply("Executor '%s' did not terminate after another 30s!", name));
+                    LOG.SEVERE("Executor '%s' did not terminate after another 30s!", name);
                 }
             }
         } catch (InterruptedException ex) {
             Exceptions.ignore(ex);
             Thread.currentThread().interrupt();
-            LOG.SEVERE(Strings.apply("Interrupted while waiting for '%s' to terminate!", name));
+            LOG.SEVERE("Interrupted while waiting for '%s' to terminate!", name);
         }
     }
 
