@@ -14,6 +14,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.AdvancedDateParser;
 import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Doubles;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
@@ -1025,14 +1026,14 @@ public class NLS {
     private static <V> V parseBasicTypesFromMachineString(Class<V> clazz, String value) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) Integer.valueOf(value);
+                return (V) parseIntegerFromMachineString(value);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) Long.valueOf(value);
+                return (V) parseLongFromMachineString(value);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
@@ -1064,6 +1065,26 @@ public class NLS {
         }
 
         return parseDatesFromMachineString(clazz, value);
+    }
+
+    private static Integer parseIntegerFromMachineString(String value) {
+        double valueAsDouble = Double.parseDouble(value);
+        int doubleAsInteger = (int) valueAsDouble;
+        if (Doubles.areEqual(valueAsDouble, doubleAsInteger)) {
+            return doubleAsInteger;
+        } else {
+            throw new NumberFormatException("Cannot parse decimal to integer");
+        }
+    }
+
+    private static Long parseLongFromMachineString(String value) {
+        double valueAsDouble = Double.parseDouble(value);
+        long doubleAsLong = (long) valueAsDouble;
+        if (Doubles.areEqual(valueAsDouble, doubleAsLong)) {
+            return doubleAsLong;
+        } else {
+            throw new NumberFormatException("Cannot parse decimal to long");
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -1136,14 +1157,14 @@ public class NLS {
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String language) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) Integer.valueOf(value);
+                return (V) parseIntegerFromUser(value, language);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) Long.valueOf(value);
+                return (V) parseLongFromUser(value, language);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
@@ -1167,6 +1188,38 @@ public class NLS {
             return (V) Boolean.valueOf(Boolean.parseBoolean(value));
         }
         return parseDatesFromUserString(clazz, value, language);
+    }
+
+    private static Integer parseIntegerFromUser(String value, String language) {
+        try {
+            Double valueAsDouble = parseDecimalNumberFromUser(value, language);
+            int doubleAsInteger = valueAsDouble.intValue();
+            if (Doubles.areEqual(valueAsDouble, doubleAsInteger)) {
+                return doubleAsInteger;
+            } else {
+                throw new IllegalArgumentException("Cannot parse decimal to integer");
+            }
+        } catch (IllegalArgumentException exception) {
+            // This exception is managed by the caller where an appropriate
+            // IllegalArgumentException is thrown instead
+            throw new NumberFormatException("Cannot parse value to integer.");
+        }
+    }
+
+    private static Long parseLongFromUser(String value, String language) {
+        try {
+            Double valueAsDouble = parseDecimalNumberFromUser(value, language);
+            long doubleAsLong = valueAsDouble.longValue();
+            if (Doubles.areEqual(valueAsDouble, doubleAsLong)) {
+                return doubleAsLong;
+            } else {
+                throw new IllegalArgumentException("Cannot parse decimal to long");
+            }
+        } catch (IllegalArgumentException exception) {
+            // This exception is managed by the caller where an appropriate
+            // IllegalArgumentException is thrown instead
+            throw new NumberFormatException("Cannot parse value to long.");
+        }
     }
 
     private static Double parseDecimalNumberFromUser(String value, String language) {
