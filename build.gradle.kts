@@ -6,22 +6,11 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-buildscript {
-    repositories {
-        mavenLocal()
-        maven("https://mvn.scireum.com")
-    }
-    dependencies {
-        classpath("com.scireum:sirius-parent:1.0-RC7")
-    }
-}
-
 plugins {
     id("java-library")
+    id("com.scireum.sirius-parent") version "1.0-RC7"
     id("org.sonarqube") version "3.4.0.2513"
 }
-
-apply(plugin = "com.scireum.sirius-parent")
 
 dependencies {
     // Provides the tools to load the system configuration
