@@ -12,11 +12,7 @@ import sirius.kernel.BaseSpecification
 import sirius.kernel.async.CallContext
 import sirius.kernel.commons.Amount
 
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
+import java.time.*
 
 class NLSSpec extends BaseSpecification {
 
@@ -148,6 +144,26 @@ class NLSSpec extends BaseSpecification {
         NLS.parseUserString(Amount.class, input).toString() == "34,54"
     }
 
+    def "parseUserString works for integers"() {
+        expect:
+        NLS.parseUserString(Integer.class, input) == output
+
+        where:
+        input     | output
+        "42"      | 42
+        "77,0000" | 77
+    }
+
+    def "parseUserString works for longs"() {
+        expect:
+        NLS.parseUserString(Long.class, input) == output
+
+        where:
+        input     | output
+        "12"      | 12L
+        "31,0000" | 31L
+    }
+
     def "parseUserString for a LocalTime works"() {
         expect:
         NLS.parseUserString(LocalTime.class, input) == output
@@ -167,6 +183,26 @@ class NLSSpec extends BaseSpecification {
         input | output
         "0.1" | BigDecimal.ONE.divide(BigDecimal.TEN)
         "0.1" | new BigDecimal("0.1")
+    }
+
+    def "parseMachineString works for integers"() {
+        expect:
+        NLS.parseMachineString(Integer.class, input) == output
+
+        where:
+        input     | output
+        "23"      | 23
+        "90.0000" | 90
+    }
+
+    def "parseMachineString works for longs"() {
+        expect:
+        NLS.parseMachineString(Long.class, input) == output
+
+        where:
+        input     | output
+        "5"       | 5L
+        "43.0000" | 43L
     }
 
     def "getMonthNameShort correctly appends the given symbol"() {
