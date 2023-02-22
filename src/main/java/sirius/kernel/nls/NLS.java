@@ -1229,10 +1229,12 @@ public class NLS {
                 return result;
             }
 
-            return getDecimalFormat(language).parse(value).doubleValue();
-        } catch (ParseException exception) {
-            Exceptions.ignore(exception);
-            return Double.valueOf(value);
+            try {
+                return getDecimalFormat(language).parse(value).doubleValue();
+            } catch (ParseException exception) {
+                Exceptions.ignore(exception);
+                return Double.valueOf(value);
+            }
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
                                                exception);
