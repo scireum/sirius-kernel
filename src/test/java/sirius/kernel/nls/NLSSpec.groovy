@@ -164,6 +164,32 @@ class NLSSpec extends BaseSpecification {
         "31,0000" | 31L
     }
 
+    def "parseUserString works for integers considering locale"() {
+        expect:
+        NLS.parseUserString(Integer.class, input, language) == output
+
+        where:
+        input       | language | output
+        "55.000,00" | "de"     | 55000
+        "56,000.00" | "en"     | 56000
+    }
+
+    def "parseUserString fails when expected"() {
+        when:
+        NLS.parseUserString(clazz, input) == output
+
+        then:
+        def error = thrown(expecteException)
+        error.message == expectedMessage
+
+        where:
+        input  | clazz | expecteException         | expectedMessage
+        "42,1" | Integer
+                .class | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '42,1' ist ungültig."
+        "blub" | Double
+                .class | IllegalArgumentException | "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
+    }
+
     def "parseUserString for a LocalTime works"() {
         expect:
         NLS.parseUserString(LocalTime.class, input) == output
@@ -203,6 +229,22 @@ class NLSSpec extends BaseSpecification {
         input     | output
         "5"       | 5L
         "43.0000" | 43L
+    }
+
+    def "parseMachineString fails when expected"() {
+        when:
+        NLS.parseMachineString(clazz, input) == output
+
+        then:
+        def error = thrown(expecteException)
+        error.message == expectedMessage
+
+        where:
+        input  | clazz | expecteException         | expectedMessage
+        "42.1" | Integer
+                .class | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '42.1' ist ungültig."
+        "blub" | Double
+                .class | IllegalArgumentException | "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
     }
 
     def "getMonthNameShort correctly appends the given symbol"() {
