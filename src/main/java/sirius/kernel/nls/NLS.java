@@ -1027,14 +1027,14 @@ public class NLS {
     private static <V> V parseBasicTypesFromMachineString(Class<V> clazz, String value) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) extractNonFractionalPart(() -> parseMachineString(Double.class, value), true);
+                return (V) extractIntegerFromDouble(() -> parseMachineString(Double.class, value));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) extractNonFractionalPart(() -> parseMachineString(Double.class, value), false);
+                return (V) extractLongFromDouble(() -> parseMachineString(Double.class, value));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
@@ -1138,14 +1138,14 @@ public class NLS {
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String language) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) extractNonFractionalPart(() -> parseDecimalNumberFromUser(value, language), true);
+                return (V) extractIntegerFromDouble(() -> parseDecimalNumberFromUser(value, language));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) extractNonFractionalPart(() -> parseDecimalNumberFromUser(value, language), false);
+                return (V) extractLongFromDouble(() -> parseDecimalNumberFromUser(value, language));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
@@ -1191,20 +1191,37 @@ public class NLS {
     }
 
     /**
-     * Extracts the non-fraction part of a double value, if it contains non fraction.
+     * Extracts the integer part of a double value, if it contains non fraction.
      * <p>
      * The fraction is detected by checking if the absolute difference of the double value
      * and its integer or long part are not higher than {@link Doubles#EPSILON}.
      *
-     * @param doubleProvider  the supplier responsible to deliver a double value
-     * @param integerExpected <tt>true</tt> if an integer is expected as highest size
+     * @param doubleProvider the supplier responsible to deliver a double value
      * @return the non-fraction part
      * @throws NumberFormatException if the value cannot be converted or contains a fraction
      */
-    private static Long extractNonFractionalPart(DoubleSupplier doubleProvider, boolean integerExpected) {
+    private static Integer extractIntegerFromDouble(DoubleSupplier doubleProvider) {
+        long value = extractLongFromDouble(doubleProvider);
+        if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) {
+            return (int) value;
+        }
+        throw new NumberFormatException("Number does not fit in an integer");
+    }
+
+    /**
+     * Extracts the long part of a double value, if it contains non fraction.
+     * <p>
+     * The fraction is detected by checking if the absolute difference of the double value
+     * and its integer or long part are not higher than {@link Doubles#EPSILON}.
+     *
+     * @param doubleProvider the supplier responsible to deliver a double value
+     * @return the non-fraction part
+     * @throws NumberFormatException if the value cannot be converted or contains a fraction
+     */
+    private static Long extractLongFromDouble(DoubleSupplier doubleProvider) {
         try {
             double value = doubleProvider.getAsDouble();
-            long valueAsLong = integerExpected ? (int) value : (long) value;
+            long valueAsLong = (long) value;
             if (Doubles.areEqual(value, valueAsLong)) {
                 return valueAsLong;
             } else {
