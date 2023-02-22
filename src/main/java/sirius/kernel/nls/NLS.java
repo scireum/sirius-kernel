@@ -14,6 +14,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.AdvancedDateParser;
 import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Doubles;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
@@ -48,6 +49,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.DoubleSupplier;
 
 /**
  * Native Language Support used by the framework.
@@ -1183,6 +1185,32 @@ public class NLS {
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
                                                exception);
+        }
+    }
+
+    /**
+     * Extracts the non-fraction part of a double value, if it contains non fraction.
+     * <p>
+     * The fraction is detected by checking if the absolute difference of the double value
+     * and its integer or long part are not higher than {@link Doubles#EPSILON}.
+     *
+     * @param doubleProvider  the supplier responsible to deliver a double value
+     * @param integerExpected <tt>true</tt> if an integer is expected as highest size
+     * @return the non-fraction part
+     * @throws NumberFormatException if the value cannot be converted or contains a fraction
+     */
+    private static Long extractNonFractionalPart(DoubleSupplier doubleProvider, boolean integerExpected) {
+        try {
+            double value = doubleProvider.getAsDouble();
+            long valueAsLong = integerExpected ? (int) value : (long) value;
+            if (Doubles.areEqual(value, valueAsLong)) {
+                return valueAsLong;
+            } else {
+                throw new NumberFormatException("Double value contains fraction.");
+            }
+        } catch (IllegalArgumentException exception) {
+            Exceptions.ignore(exception);
+            throw new NumberFormatException("Cannot parse value as double.");
         }
     }
 
