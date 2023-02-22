@@ -183,11 +183,13 @@ class NLSSpec extends BaseSpecification {
         error.message == expectedMessage
 
         where:
-        input  | clazz | expecteException         | expectedMessage
-        "42,1" | Integer
-                .class | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '42,1' ist ungültig."
-        "blub" | Double
-                .class | IllegalArgumentException | "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
+        input        | clazz | expecteException         | expectedMessage
+        "42,1"       | Integer
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '42,1' ist ungültig."
+        "2999999999" | Integer
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '2999999999' ist ungültig."
+        "blub"       | Double
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
     }
 
     def "parseUserString for a LocalTime works"() {
@@ -240,11 +242,13 @@ class NLSSpec extends BaseSpecification {
         error.message == expectedMessage
 
         where:
-        input  | clazz | expecteException         | expectedMessage
-        "42.1" | Integer
-                .class | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '42.1' ist ungültig."
-        "blub" | Double
-                .class | IllegalArgumentException | "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
+        input        | clazz | expecteException         | expectedMessage
+        "42.1"       | Integer
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '42.1' ist ungültig."
+        "2999999999" | Integer
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '2999999999' ist ungültig."
+        "blub"       | Double
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
     }
 
     def "getMonthNameShort correctly appends the given symbol"() {
