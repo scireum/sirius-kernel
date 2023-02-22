@@ -1027,14 +1027,14 @@ public class NLS {
     private static <V> V parseBasicTypesFromMachineString(Class<V> clazz, String value) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) Integer.valueOf(value);
+                return (V) extractNonFractionalPart(() -> parseMachineString(Double.class, value), true);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) Long.valueOf(value);
+                return (V) extractNonFractionalPart(() -> parseMachineString(Double.class, value), false);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
@@ -1138,14 +1138,14 @@ public class NLS {
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String language) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) Integer.valueOf(value);
+                return (V) extractNonFractionalPart(() -> parseDecimalNumberFromUser(value, language), true);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) Long.valueOf(value);
+                return (V) extractNonFractionalPart(() -> parseDecimalNumberFromUser(value, language), false);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
