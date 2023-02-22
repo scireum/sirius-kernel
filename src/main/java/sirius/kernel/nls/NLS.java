@@ -1068,23 +1068,13 @@ public class NLS {
     }
 
     private static Integer parseIntegerFromMachineString(String value) {
-        double valueAsDouble = Double.parseDouble(value);
-        int doubleAsInteger = (int) valueAsDouble;
-        if (Doubles.areEqual(valueAsDouble, doubleAsInteger)) {
-            return doubleAsInteger;
-        } else {
-            throw new NumberFormatException("Cannot parse decimal to integer");
-        }
+        double valueAsDouble = parseMachineString(Double.class, value);
+        return (int) extractNonFactionalPart(valueAsDouble, true);
     }
 
     private static Long parseLongFromMachineString(String value) {
-        double valueAsDouble = Double.parseDouble(value);
-        long doubleAsLong = (long) valueAsDouble;
-        if (Doubles.areEqual(valueAsDouble, doubleAsLong)) {
-            return doubleAsLong;
-        } else {
-            throw new NumberFormatException("Cannot parse decimal to long");
-        }
+        double valueAsDouble = parseMachineString(Double.class, value);
+        return extractNonFactionalPart(valueAsDouble, false);
     }
 
     @SuppressWarnings("unchecked")
@@ -1193,12 +1183,7 @@ public class NLS {
     private static Integer parseIntegerFromUser(String value, String language) {
         try {
             Double valueAsDouble = parseDecimalNumberFromUser(value, language);
-            int doubleAsInteger = valueAsDouble.intValue();
-            if (Doubles.areEqual(valueAsDouble, doubleAsInteger)) {
-                return doubleAsInteger;
-            } else {
-                throw new IllegalArgumentException("Cannot parse decimal to integer");
-            }
+            return (int) extractNonFactionalPart(valueAsDouble, true);
         } catch (IllegalArgumentException exception) {
             // This exception is managed by the caller where an appropriate
             // IllegalArgumentException is thrown instead
@@ -1209,16 +1194,20 @@ public class NLS {
     private static Long parseLongFromUser(String value, String language) {
         try {
             Double valueAsDouble = parseDecimalNumberFromUser(value, language);
-            long doubleAsLong = valueAsDouble.longValue();
-            if (Doubles.areEqual(valueAsDouble, doubleAsLong)) {
-                return doubleAsLong;
-            } else {
-                throw new IllegalArgumentException("Cannot parse decimal to long");
-            }
+            return extractNonFactionalPart(valueAsDouble, false);
         } catch (IllegalArgumentException exception) {
             // This exception is managed by the caller where an appropriate
             // IllegalArgumentException is thrown instead
             throw new NumberFormatException("Cannot parse value to long.");
+        }
+    }
+
+    private static long extractNonFactionalPart(Double doubleValue, boolean integerExpected) {
+        long doubleAsLong = integerExpected ? doubleValue.intValue() : doubleValue.longValue();
+        if (Doubles.areEqual(doubleValue, doubleAsLong)) {
+            return doubleAsLong;
+        } else {
+            throw new NumberFormatException("Value with fraction detected, cannot extract only non-fractional part.");
         }
     }
 
