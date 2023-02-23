@@ -1136,15 +1136,15 @@ public class NLS {
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String language) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) extractIntegerFromDouble(() -> parseDecimalNumberFromUser(value, language));
-            } catch (NumberFormatException e) {
+                return (V) Integer.valueOf(parseDecimalNumberFromUser(value, language).intValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) extractLongFromDouble(() -> parseDecimalNumberFromUser(value, language));
-            } catch (NumberFormatException e) {
+                return (V) Long.valueOf(parseDecimalNumberFromUser(value, language).longValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
