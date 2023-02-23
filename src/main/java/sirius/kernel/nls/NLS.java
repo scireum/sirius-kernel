@@ -12,12 +12,7 @@ import sirius.kernel.Classpath;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.ExecutionPoint;
-import sirius.kernel.commons.AdvancedDateParser;
-import sirius.kernel.commons.Amount;
-import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.NumberFormat;
-import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Value;
+import sirius.kernel.commons.*;
 import sirius.kernel.di.Injector;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.timer.Timers;
@@ -31,13 +26,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
@@ -259,7 +248,7 @@ public class NLS {
     @Explain("Strings.isEmpty checks for null on language")
     public static String get(@Nonnull String property, @Nullable String language) {
         return blubb.get(property, null, true)
-                    .translate(Strings.isEmpty(language) ? getCurrentLanguage() : language, getFallbackLanguage());
+                .translate(Strings.isEmpty(language) ? getCurrentLanguage() : language, getFallbackLanguage());
     }
 
     /**
@@ -385,7 +374,7 @@ public class NLS {
         }
 
         return Strings.isFilled(translation.translate(Strings.isEmpty(language) ? getCurrentLanguage() : language,
-                                                      getFallbackLanguage()));
+                getFallbackLanguage()));
     }
 
     /**
@@ -403,7 +392,7 @@ public class NLS {
     @Explain("Strings.isEmpty checks for null on language")
     public static String safeGet(@Nonnull String property, @Nonnull String fallback, @Nullable String language) {
         return blubb.get(property, fallback, true)
-                    .translate(Strings.isEmpty(language) ? getCurrentLanguage() : language, getFallbackLanguage());
+                .translate(Strings.isEmpty(language) ? getCurrentLanguage() : language, getFallbackLanguage());
     }
 
     /**
@@ -690,8 +679,8 @@ public class NLS {
                                                            String nlsProperty) {
         if (Strings.isEmpty(language)) {
             return formatters.computeIfAbsent(getCurrentLanguage(),
-                                              effectiveLanguage -> DateTimeFormatter.ofPattern(get(nlsProperty,
-                                                                                                   effectiveLanguage)));
+                    effectiveLanguage -> DateTimeFormatter.ofPattern(get(nlsProperty,
+                            effectiveLanguage)));
         }
         return formatters.computeIfAbsent(language, ignored -> DateTimeFormatter.ofPattern(get(nlsProperty, language)));
     }
@@ -969,8 +958,8 @@ public class NLS {
         }
         if (givenDateTime.isBefore(LocalDateTime.now().plusHours(4))) {
             return NLS.fmtr("NLS.inNHours")
-                      .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
-                      .format();
+                    .set("hours", Duration.between(LocalDateTime.now(), givenDateTime).toHours())
+                    .format();
         }
         if (ChronoField.DAY_OF_MONTH.isSupportedBy(date) && !LocalDate.now().equals(LocalDate.from(date))) {
             return formatSpokenDate(date);
@@ -985,15 +974,15 @@ public class NLS {
         }
         if (givenDateTime.isAfter(LocalDateTime.now().minusMinutes(59))) {
             return NLS.fmtr("NLS.nMinutesAgo")
-                      .set("minutes", Duration.between(givenDateTime, LocalDateTime.now()).toMinutes())
-                      .format();
+                    .set("minutes", Duration.between(givenDateTime, LocalDateTime.now()).toMinutes())
+                    .format();
         }
         if (givenDateTime.isAfter(LocalDateTime.now().minusHours(2))) {
             return NLS.get("NLS.oneHourAgo");
         }
         return NLS.fmtr("NLS.nHoursAgo")
-                  .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
-                  .format();
+                .set("hours", Duration.between(givenDateTime, LocalDateTime.now()).toHours())
+                .format();
     }
 
     /**
@@ -1073,8 +1062,8 @@ public class NLS {
                 return (V) LocalDate.from(MACHINE_DATE_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                                                                             .set("format", "yyyy-MM-dd")
-                                                                             .format(), e);
+                        .set("format", "yyyy-MM-dd")
+                        .format(), e);
             }
         }
         if (LocalDateTime.class.equals(clazz)) {
@@ -1082,8 +1071,8 @@ public class NLS {
                 return (V) LocalDateTime.from(MACHINE_DATE_TIME_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                                                                             .set("format", "yyyy-MM-dd HH:mm:ss")
-                                                                             .format(), e);
+                        .set("format", "yyyy-MM-dd HH:mm:ss")
+                        .format(), e);
             }
         }
         if (ZonedDateTime.class.equals(clazz)) {
@@ -1091,8 +1080,8 @@ public class NLS {
                 return (V) ZonedDateTime.from(MACHINE_DATE_TIME_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                                                                             .set("format", "yyyy-MM-dd HH:mm:ss")
-                                                                             .format(), e);
+                        .set("format", "yyyy-MM-dd HH:mm:ss")
+                        .format(), e);
             }
         }
         if (LocalTime.class.equals(clazz)) {
@@ -1100,8 +1089,8 @@ public class NLS {
                 return (V) LocalTime.from(MACHINE_PARSE_TIME_FORMAT.parse(value));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
-                                                                             .set("format", "H:mm[:ss]")
-                                                                             .format(), e);
+                        .set("format", "H:mm[:ss]")
+                        .format(), e);
             }
         }
 
@@ -1182,7 +1171,7 @@ public class NLS {
             return Double.valueOf(value);
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
-                                               exception);
+                    exception);
         }
     }
 
@@ -1316,6 +1305,20 @@ public class NLS {
     }
 
     /**
+     * Converts the given time range in milliseconds to a time representation format typically found in digital clocks.
+     *
+     * @param duration the duration in milliseconds
+     * @return a string representation of the given duration as seen in digital clocks
+     */
+    public static String convertDurationToDigitalClockFormat(long duration) {
+        long hours = duration / HOUR;
+        long minutes = duration / MINUTE % 60;
+        long seconds = duration / SECOND % 60;
+
+        return Strings.apply("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    /**
      * Converts the given duration in milliseconds including seconds and milliseconds
      * <p>
      * This is a boilerplate method for {@link #convertDuration(long, boolean, boolean)} with
@@ -1362,7 +1365,7 @@ public class NLS {
             index++;
         }
         return Amount.of(sizeAsFloat).toSmartRoundedString(NumberFormat.MACHINE_TWO_DECIMAL_PLACES)
-               + " "
-               + UNITS[index];
+                + " "
+                + UNITS[index];
     }
 }
