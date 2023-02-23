@@ -1191,7 +1191,7 @@ public class NLS {
     }
 
     /**
-     * Extracts the integer part of a double value, if it contains non fraction.
+     * Extracts the integer part of a double value if it contains non fraction.
      * <p>
      * The fraction is detected by checking if the absolute difference of the double value
      * and its integer or long part are not higher than {@link Doubles#EPSILON}.
