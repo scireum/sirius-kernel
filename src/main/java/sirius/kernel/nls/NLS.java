@@ -1316,6 +1316,20 @@ public class NLS {
     }
 
     /**
+     * Converts the given time range in milliseconds to a time representation format typically found in digital clocks.
+     *
+     * @param duration the duration in milliseconds
+     * @return a string representation of the given duration as seen in digital clocks
+     */
+    public static String convertDurationToDigitalClockFormat(long duration) {
+        long hours = duration / HOUR;
+        long minutes = duration / MINUTE % 60;
+        long seconds = duration / SECOND % 60;
+
+        return Strings.apply("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    /**
      * Converts the given duration in milliseconds including seconds and milliseconds
      * <p>
      * This is a boilerplate method for {@link #convertDuration(long, boolean, boolean)} with
