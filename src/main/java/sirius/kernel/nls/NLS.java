@@ -1363,7 +1363,7 @@ public class NLS {
      * @return a string representation of the given duration as seen in digital clocks
      */
     public static String convertDurationToDigitalClockFormat(Duration duration) {
-        return Strings.apply("%02d:%02d:%02d", duration.get(ChronoUnit.HOURS), duration.get(ChronoUnit.MINUTES), duration.get(ChronoUnit.SECONDS));
+        return Strings.apply("%02d:%02d:%02d", duration.toHoursPart(), duration.toMinutesPart(), duration.toSecondsPart());
     }
 
     /**
