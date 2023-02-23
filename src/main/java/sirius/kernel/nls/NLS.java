@@ -1316,17 +1316,13 @@ public class NLS {
     }
 
     /**
-     * Converts the given time range in milliseconds to a time representation format typically found in digital clocks (like 12:05:17).
+     * Converts the given time range to a time representation format typically found in digital clocks (like 12:05:17).
      *
-     * @param duration the duration in milliseconds
+     * @param duration the duration
      * @return a string representation of the given duration as seen in digital clocks
      */
-    public static String convertDurationToDigitalClockFormat(long duration) {
-        long hours = duration / HOUR;
-        long minutes = duration / MINUTE % 60;
-        long seconds = duration / SECOND % 60;
-
-        return Strings.apply("%02d:%02d:%02d", hours, minutes, seconds);
+    public static String convertDurationToDigitalClockFormat(Duration duration) {
+        return Strings.apply("%02d:%02d:%02d", duration.get(ChronoUnit.HOURS), duration.get(ChronoUnit.MINUTES), duration.get(ChronoUnit.SECONDS));
     }
 
     /**
