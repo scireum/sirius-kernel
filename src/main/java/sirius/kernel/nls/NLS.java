@@ -1273,6 +1273,55 @@ public class NLS {
     }
 
     /**
+     * Converts a given time range to a human-readable format using the current language
+     *
+     * @param duration       the duration
+     * @param includeSeconds determines whether to include seconds or to ignore everything below minutes
+     * @param includeMillis  determines whether to include milliseconds or to ignore everything below seconds
+     * @return a string representation of the given duration in days, hours, minutes and,
+     * if enabled, seconds and milliseconds
+     */
+    public static String convertDuration(Duration duration, boolean includeSeconds, boolean includeMillis) {
+        StringBuilder result = new StringBuilder();
+
+        long days = duration.toDaysPart();
+        if (days > 0) {
+            appendDurationValue(result, "NLS.days", days);
+        }
+        int hours = duration.toHoursPart();
+        if (hours > 0) {
+            appendDurationValue(result, "NLS.hours", hours);
+        }
+        int minutes = duration.toMinutesPart();
+        if (minutes > 0) {
+            appendDurationValue(result, "NLS.minutes", minutes);
+        }
+        int seconds = duration.toSecondsPart();
+        if (includeSeconds && seconds > 0 || includeMillis) {
+                appendDurationValue(result, "NLS.seconds", seconds);
+        }
+        int millis = duration.toMillisPart();
+        if (includeMillis && millis > 0) {
+            appendDurationValue(result, "NLS.milliseconds", millis);
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Converts the given duration to a human-readable format including seconds and milliseconds using the current language
+     * <p>
+     * This is a boilerplate method for {@link #convertDuration(long, boolean, boolean)} with
+     * <tt>includeSeconds</tt> and <tt>includeMillis</tt> set to <tt>true</tt>.
+     *
+     * @param duration the duration
+     * @return a string representation of the given duration in days, hours, minutes, seconds and milliseconds
+     */
+    public static String convertDuration(Duration duration) {
+        return convertDuration(duration, true, true);
+    }
+
+    /**
      * Converts a given time range in milliseconds to a human-readable format using the current language
      *
      * @param duration       the duration in milliseconds
@@ -1281,31 +1330,23 @@ public class NLS {
      * @return a string representation of the given duration in days, hours, minutes and,
      * if enabled, seconds and milliseconds
      */
+    @Deprecated(forRemoval = true)
     public static String convertDuration(long duration, boolean includeSeconds, boolean includeMillis) {
-        StringBuilder result = new StringBuilder();
-        if (duration > DAY) {
-            appendDurationValue(result, "NLS.days", duration / DAY);
-            duration = duration % DAY;
-        }
-        if (duration > HOUR) {
-            appendDurationValue(result, "NLS.hours", duration / HOUR);
-            duration = duration % HOUR;
-        }
-        if (duration > MINUTE || (!includeSeconds && duration > 0)) {
-            appendDurationValue(result, "NLS.minutes", duration / MINUTE);
-            duration = duration % MINUTE;
-        }
-        if (includeSeconds) {
-            if (duration > SECOND || (!includeMillis && duration > 0)) {
-                appendDurationValue(result, "NLS.seconds", duration / SECOND);
-                duration = duration % SECOND;
-            }
-            if (includeMillis && duration > 0) {
-                appendDurationValue(result, "NLS.milliseconds", duration);
-            }
-        }
+        return convertDuration(Duration.ofMinutes(duration), includeSeconds, includeMillis);
+    }
 
-        return result.toString();
+    /**
+     * Converts the given duration to a human-readable format including seconds and milliseconds using the current language
+     * <p>
+     * This is a boilerplate method for {@link #convertDuration(long, boolean, boolean)} with
+     * <tt>includeSeconds</tt> and <tt>includeMillis</tt> set to <tt>true</tt>.
+     *
+     * @param duration the duration in milliseconds
+     * @return a string representation of the given duration in days, hours, minutes, seconds and milliseconds
+     */
+    @Deprecated(forRemoval = true)
+    public static String convertDuration(long duration) {
+        return convertDuration(Duration.ofMillis(duration));
     }
 
     private static void appendDurationValue(StringBuilder result, String key, long value) {
@@ -1323,19 +1364,6 @@ public class NLS {
      */
     public static String convertDurationToDigitalClockFormat(Duration duration) {
         return Strings.apply("%02d:%02d:%02d", duration.get(ChronoUnit.HOURS), duration.get(ChronoUnit.MINUTES), duration.get(ChronoUnit.SECONDS));
-    }
-
-    /**
-     * Converts the given duration in milliseconds including seconds and milliseconds
-     * <p>
-     * This is a boilerplate method for {@link #convertDuration(long, boolean, boolean)} with
-     * <tt>includeSeconds</tt> and <tt>includeMillis</tt> set to <tt>true</tt>.
-     *
-     * @param duration the duration in milliseconds
-     * @return a string representation of the given duration in days, hours, minutes, seconds and milliseconds
-     */
-    public static String convertDuration(long duration) {
-        return convertDuration(duration, true, true);
     }
 
     /**
