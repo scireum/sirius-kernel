@@ -1149,10 +1149,10 @@ public class NLS {
             }
         }
         if (Float.class.equals(clazz) || float.class.equals(clazz)) {
-            return (V) Float.valueOf((float) parseDecimalNumberFromUser(value, language).doubleValue());
+            return (V) Float.valueOf(parseDecimalNumberFromUser(value, language).floatValue());
         }
         if (Double.class.equals(clazz) || double.class.equals(clazz)) {
-            return (V) parseDecimalNumberFromUser(value, language);
+            return (V) Double.valueOf(parseDecimalNumberFromUser(value, language).doubleValue());
         }
         if (Amount.class.equals(clazz)) {
             return (V) Amount.of(parseDecimalNumberFromUser(value, language));
@@ -1169,18 +1169,18 @@ public class NLS {
         return parseDatesFromUserString(clazz, value, language);
     }
 
-    private static Double parseDecimalNumberFromUser(String value, String language) {
+    private static BigDecimal parseDecimalNumberFromUser(String value, String language) {
         try {
             Double result = tryParseMachineFormat(value);
             if (result != null) {
-                return result;
+                return BigDecimal.valueOf(result);
             }
 
             try {
-                return getDecimalFormat(language).parse(value).doubleValue();
+                return BigDecimal.valueOf(getDecimalFormat(language).parse(value).doubleValue());
             } catch (ParseException exception) {
                 Exceptions.ignore(exception);
-                return Double.valueOf(value);
+                return BigDecimal.valueOf(Double.valueOf(value));
             }
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
