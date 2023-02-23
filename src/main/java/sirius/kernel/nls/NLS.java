@@ -1311,7 +1311,7 @@ public class NLS {
     /**
      * Converts the given duration to a human-readable format including seconds and milliseconds using the current language
      * <p>
-     * This is a boilerplate method for {@link #convertDuration(long, boolean, boolean)} with
+     * This is a boilerplate method for {@link #convertDuration(Duration, boolean, boolean)} with
      * <tt>includeSeconds</tt> and <tt>includeMillis</tt> set to <tt>true</tt>.
      *
      * @param duration the duration
