@@ -1025,15 +1025,15 @@ public class NLS {
     private static <V> V parseBasicTypesFromMachineString(Class<V> clazz, String value) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) extractIntegerFromDouble(() -> parseMachineString(Double.class, value));
-            } catch (NumberFormatException e) {
+                return (V) Integer.valueOf(parseMachineString(BigDecimal.class, value).intValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) extractLongFromDouble(() -> parseMachineString(Double.class, value));
-            } catch (NumberFormatException e) {
+                return (V) Long.valueOf(parseMachineString(BigDecimal.class, value).longValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
