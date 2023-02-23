@@ -1316,7 +1316,7 @@ public class NLS {
     }
 
     /**
-     * Converts the given time range in milliseconds to a time representation format typically found in digital clocks.
+     * Converts the given time range in milliseconds to a time representation format typically found in digital clocks (like 12:05:17).
      *
      * @param duration the duration in milliseconds
      * @return a string representation of the given duration as seen in digital clocks
