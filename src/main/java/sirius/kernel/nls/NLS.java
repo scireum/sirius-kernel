@@ -1025,15 +1025,15 @@ public class NLS {
     private static <V> V parseBasicTypesFromMachineString(Class<V> clazz, String value) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) Integer.valueOf(value);
-            } catch (NumberFormatException e) {
+                return (V) Integer.valueOf(parseMachineString(BigDecimal.class, value).intValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) Long.valueOf(value);
-            } catch (NumberFormatException e) {
+                return (V) Long.valueOf(parseMachineString(BigDecimal.class, value).longValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
@@ -1136,23 +1136,23 @@ public class NLS {
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String language) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) Integer.valueOf(value);
-            } catch (NumberFormatException e) {
+                return (V) Integer.valueOf(parseDecimalNumberFromUser(value, language).intValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) Long.valueOf(value);
-            } catch (NumberFormatException e) {
+                return (V) Long.valueOf(parseDecimalNumberFromUser(value, language).longValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Float.class.equals(clazz) || float.class.equals(clazz)) {
-            return (V) Float.valueOf((float) parseDecimalNumberFromUser(value, language).doubleValue());
+            return (V) Float.valueOf(parseDecimalNumberFromUser(value, language).floatValue());
         }
         if (Double.class.equals(clazz) || double.class.equals(clazz)) {
-            return (V) parseDecimalNumberFromUser(value, language);
+            return (V) Double.valueOf(parseDecimalNumberFromUser(value, language).doubleValue());
         }
         if (Amount.class.equals(clazz)) {
             return (V) Amount.of(parseDecimalNumberFromUser(value, language));
@@ -1169,17 +1169,19 @@ public class NLS {
         return parseDatesFromUserString(clazz, value, language);
     }
 
-    private static Double parseDecimalNumberFromUser(String value, String language) {
+    private static BigDecimal parseDecimalNumberFromUser(String value, String language) {
         try {
             Double result = tryParseMachineFormat(value);
             if (result != null) {
-                return result;
+                return BigDecimal.valueOf(result);
             }
 
-            return getDecimalFormat(language).parse(value).doubleValue();
-        } catch (ParseException exception) {
-            Exceptions.ignore(exception);
-            return Double.valueOf(value);
+            try {
+                return BigDecimal.valueOf(getDecimalFormat(language).parse(value).doubleValue());
+            } catch (ParseException exception) {
+                Exceptions.ignore(exception);
+                return BigDecimal.valueOf(Double.valueOf(value));
+            }
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
                                                exception);
