@@ -1334,7 +1334,7 @@ public class NLS {
      */
     @Deprecated(forRemoval = true)
     public static String convertDuration(long duration, boolean includeSeconds, boolean includeMillis) {
-        return convertDuration(Duration.ofMinutes(duration), includeSeconds, includeMillis);
+        return convertDuration(Duration.ofMillis(duration), includeSeconds, includeMillis);
     }
 
     /**
