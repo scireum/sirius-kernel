@@ -1296,13 +1296,15 @@ public class NLS {
         if (minutes > 0) {
             appendDurationValue(result, "NLS.minutes", minutes);
         }
-        int seconds = duration.toSecondsPart();
-        if (includeSeconds && seconds > 0 || includeMillis) {
+        if (includeSeconds) {
+            int seconds = duration.toSecondsPart();
+            if (seconds > 0 || includeMillis) {
                 appendDurationValue(result, "NLS.seconds", seconds);
-        }
-        int millis = duration.toMillisPart();
-        if (includeMillis && millis > 0) {
-            appendDurationValue(result, "NLS.milliseconds", millis);
+            }
+            int millis = duration.toMillisPart();
+            if (includeMillis && millis > 0) {
+                appendDurationValue(result, "NLS.milliseconds", millis);
+            }
         }
 
         return result.toString();
@@ -1363,7 +1365,7 @@ public class NLS {
      * @return a string representation of the given duration as seen in digital clocks
      */
     public static String convertDurationToDigitalClockFormat(Duration duration) {
-        return Strings.apply("%02d:%02d:%02d", duration.toHoursPart(), duration.toMinutesPart(), duration.toSecondsPart());
+        return Strings.apply("%02d:%02d:%02d", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart());
     }
 
     /**
