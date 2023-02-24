@@ -334,13 +334,13 @@ class NLSSpec extends BaseSpecification {
         noExceptionThrown()
     }
 
-def "convertDurationToDigitalClockFormat() of Duration is properly formatted"() {
+    def "convertDurationToDigitalClockFormat() of Duration is properly formatted"() {
         expect:
         NLS.convertDurationToDigitalClockFormat(input) == output
         where:
         input                                               | output
-        Duration.ofMinutes(60L)                              | "01:00:00"
-        Duration.ofMinutes(60L).plusSeconds(1L)              | "01:00:01"
+        Duration.ofMinutes(60L)                             | "01:00:00"
+        Duration.ofMinutes(60L).plusSeconds(1L)             | "01:00:01"
         Duration.ofHours(1).plusMinutes(1L)                 | "01:01:00"
         Duration.ofHours(1).plusMinutes(1L).plusSeconds(1L) | "01:01:01"
         Duration.ofDays(2l)                                 | "48:00:00"
