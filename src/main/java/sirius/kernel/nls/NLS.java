@@ -1282,6 +1282,10 @@ public class NLS {
      * if enabled, seconds and milliseconds
      */
     public static String convertDuration(Duration duration, boolean includeSeconds, boolean includeMillis) {
+        if (duration == null) {
+            return "";
+        }
+
         StringBuilder result = new StringBuilder();
 
         long days = duration.toDaysPart();
@@ -1298,7 +1302,7 @@ public class NLS {
         }
         if (includeSeconds) {
             int seconds = duration.toSecondsPart();
-            if (seconds > 0 || includeMillis) {
+            if (seconds > 0) {
                 appendDurationValue(result, "NLS.seconds", seconds);
             }
             int millis = duration.toMillisPart();
