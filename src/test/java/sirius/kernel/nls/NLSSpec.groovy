@@ -12,6 +12,7 @@ import sirius.kernel.BaseSpecification
 import sirius.kernel.async.CallContext
 import sirius.kernel.commons.Amount
 
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -250,5 +251,22 @@ class NLSSpec extends BaseSpecification {
                 .getDateTimeFormatWithoutSeconds(currentLang).format(date)
         and:
         noExceptionThrown()
+    }
+
+    def "convertDurationToDigitalClockFormat() of Duration is properly formatted"() {
+        expect:
+        NLS.convertDurationToDigitalClockFormat(input) == output
+        where:
+        input                                               | output
+        Duration.ofMinutes(60)                              | "01:00:00"
+        Duration.ofMinutes(60).plusSeconds(1L)              | "01:00:01"
+        Duration.ofHours(1).plusMinutes(1L)                 | "01:01:00"
+        Duration.ofHours(1).plusMinutes(1L).plusSeconds(1L) | "01:01:01"
+        Duration.ofDays(2l)                                 | "48:00:00"
+        Duration.ofDays(2l).plusHours(1L)                   | "49:00:00"
+        Duration.ofDays(2l).plusMinutes(1L)                 | "48:01:00"
+        Duration.ofSeconds(1L)                              | "00:00:01"
+        Duration.ofMinutes(1L)                              | "00:01:00"
+        Duration.ofMinutes(1L).plusSeconds(1L)              | "00:01:01"
     }
 }
