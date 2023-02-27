@@ -333,4 +333,93 @@ class NLSSpec extends BaseSpecification {
         and:
         noExceptionThrown()
     }
+
+    def "convertDurationToDigitalClockFormat() of Duration is properly formatted"() {
+        expect:
+        NLS.convertDurationToDigitalClockFormat(input) == output
+        where:
+        input                                               | output
+        Duration.ofMinutes(60L)                             | "01:00:00"
+        Duration.ofMinutes(60L).plusSeconds(1L)             | "01:00:01"
+        Duration.ofHours(1).plusMinutes(1L)                 | "01:01:00"
+        Duration.ofHours(1).plusMinutes(1L).plusSeconds(1L) | "01:01:01"
+        Duration.ofDays(2L)                                 | "48:00:00"
+        Duration.ofDays(2L).plusHours(1L)                   | "49:00:00"
+        Duration.ofDays(2L).plusMinutes(1L)                 | "48:01:00"
+        Duration.ofSeconds(1L)                              | "00:00:01"
+        Duration.ofMinutes(1L)                              | "00:01:00"
+        Duration.ofMinutes(1L).plusSeconds(1L)              | "00:01:01"
+    }
+
+    def "convertDuration() of Duration is properly formatted"() {
+        expect:
+        NLS.convertDuration(duration, enableSeconds, enableMillis) == output
+        where:
+        duration                  | enableSeconds | enableMillis | output
+        Duration.ofMinutes(60L)   | true          | true         | "1 Stunde"
+        Duration.ofMinutes(60L)   | true          | false        | "1 Stunde"
+        Duration.ofMinutes(60L)   | false         | true         | "1 Stunde"
+        Duration.ofMinutes(60L)   | false         | false        | "1 Stunde"
+        Duration.ofHours(2L)      | true          | true         | "2 Stunden"
+        Duration.ofHours(2L)      | true          | false        | "2 Stunden"
+        Duration.ofHours(2L)      | false         | true         | "2 Stunden"
+        Duration.ofHours(2L)      | false         | false        | "2 Stunden"
+        Duration.ofMinutes(61L)   | true          | true         | "1 Stunde, 1 Minute"
+        Duration.ofMinutes(61L)   | true          | false        | "1 Stunde, 1 Minute"
+        Duration.ofMinutes(61L)   | false         | true         | "1 Stunde, 1 Minute"
+        Duration.ofMinutes(61L)   | false         | false        | "1 Stunde, 1 Minute"
+        Duration.ofSeconds(61L)   | true          | true         | "1 Minute, 1 Sekunde"
+        Duration.ofSeconds(61L)   | true          | false        | "1 Minute, 1 Sekunde"
+        Duration.ofSeconds(61L)   | false         | true         | "1 Minute"
+        Duration.ofSeconds(61L)   | false         | false        | "1 Minute"
+        Duration.ofSeconds(121L)  | false         | false        | "2 Minuten"
+        Duration.ofSeconds(122L)  | true          | false        | "2 Minuten, 2 Sekunden"
+        Duration.ofDays(122L)     | false         | false        | "122 Tage"
+        Duration.ofDays(1L)       | false         | false        | "1 Tag"
+        Duration.ofDays(1L)
+                .plusMinutes(30L) | true          | true         | "1 Tag, 30 Minuten"
+        Duration.ofDays(1L)
+                .plusHours(7)
+                .plusMinutes(30L) | true          | true         | "1 Tag, 7 Stunden, 30 Minuten"
+        Duration.ofDays(1L)
+                .plusHours(24)
+                .plusMinutes(30L) | true          | true         | "2 Tage, 30 Minuten"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L) | true          | true         | "2 Tage, 2 Stunden, 30 Minuten"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusSeconds(22L) | true          | true         | "2 Tage, 2 Stunden, 30 Minuten, 22 Sekunden"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusSeconds(22L) | false         | true         | "2 Tage, 2 Stunden, 30 Minuten"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusSeconds(22L)
+                .plusMillis(1L)   | false         | true         | "2 Tage, 2 Stunden, 30 Minuten"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusSeconds(22L)
+                .plusMillis(1L)   | true          | true         | "2 Tage, 2 Stunden, 30 Minuten, 22 Sekunden, 1 Millisekunde"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusMillis(1L)   | true          | true         | "2 Tage, 2 Stunden, 30 Minuten, 1 Millisekunde"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusMillis(33L)  | true          | true         | "2 Tage, 2 Stunden, 30 Minuten, 33 Millisekunden"
+        Duration.ofDays(0L)       | true          | true         | ""
+        null                      | true          | true         | ""
+        Duration.ofMillis(101L)   | false         | false        | ""
+        Duration.ofMillis(101L)   | true          | false        | ""
+        Duration.ofMillis(101L)   | true          | true         | "101 Millisekunden"
+        Duration.ofSeconds(33L)   | true          | true         | "33 Sekunden"
+        Duration.ofSeconds(33L)   | true          | false        | "33 Sekunden"
+        Duration.ofSeconds(33L)   | false         | false        | ""
+    }
 }

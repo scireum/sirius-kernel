@@ -10,6 +10,7 @@ package sirius.kernel.timer;
 
 import sirius.kernel.nls.NLS;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 /**
@@ -56,7 +57,7 @@ public class EndOfDayTaskInfo {
      * @return a user readable string representing the last execution duration
      */
     public String getFormattedLastDuration() {
-        return NLS.convertDuration(lastDuration, true, true);
+        return NLS.convertDuration(Duration.ofMillis(lastDuration), true, true);
     }
 
     /**
