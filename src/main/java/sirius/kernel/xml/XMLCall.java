@@ -26,7 +26,7 @@ import java.net.URL;
  */
 public class XMLCall {
 
-    private Outcall outcall;
+    protected Outcall outcall;
     private NamespaceContext namespaceContext;
     private Log debugLogger = Log.get("xml");
 
@@ -146,7 +146,7 @@ public class XMLCall {
         return new XMLStructuredOutput(outcall.postFromOutput());
     }
 
-    private InputStream getInputStream() throws IOException {
+    protected InputStream getInputStream() throws IOException {
         if (debugLogger != null && debugLogger.isFINE()) {
             // log the request, even when parsing fails
             try (InputStream body = outcall.getResponse().body()) {
@@ -158,7 +158,7 @@ public class XMLCall {
         return outcall.getResponse().body();
     }
 
-    private void logRequest(String response) throws IOException {
+    protected void logRequest(String response) throws IOException {
         debugLogger.FINE(Formatter.create("""
                                                   ---------- call ----------
                                                   ${httpMethod} ${url} [
