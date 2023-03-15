@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * Simple call to send XML to a server (URL) and receive XML back.
@@ -29,6 +31,7 @@ public class XMLCall {
     private Outcall outcall;
     private NamespaceContext namespaceContext;
     private Log debugLogger = Log.get("xml");
+    private Function<InputStream, InputStream> processor = Function.identity();
 
     /**
      * Creates a new XMLCall for the given url with Content-Type 'text/xml'.
@@ -126,6 +129,21 @@ public class XMLCall {
     }
 
     /**
+     * Specifies a custom processor that is applied to the response body before it is converted to
+     * an {@link XMLStructuredOutput}.
+     * <p>
+     * This can be used in cases where the response body is not a valid XML document yet or the content is
+     * incorrectly formatted. It is expected, that the processor transforms the input into a valid XML document.
+     *
+     * @param processor the function to apply to the response body
+     * @return the call itself for fluent method calls
+     */
+    public XMLCall withCustomProcessor(UnaryOperator<InputStream> processor) {
+        this.processor = processor;
+        return this;
+    }
+
+    /**
      * Returns the underlying <tt>Outcall</tt>.
      *
      * @return the underlying outcall
@@ -152,10 +170,10 @@ public class XMLCall {
             try (InputStream body = outcall.getResponse().body()) {
                 byte[] bytes = body.readAllBytes();
                 logRequest(new String(bytes, outcall.getContentEncoding()));
-                return new ByteArrayInputStream(bytes);
+                return processor.apply(new ByteArrayInputStream(bytes));
             }
         }
-        return outcall.getResponse().body();
+        return processor.apply(outcall.getResponse().body());
     }
 
     private void logRequest(String response) throws IOException {
