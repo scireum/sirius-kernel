@@ -26,9 +26,21 @@ import java.net.URL;
  */
 public class XMLCall {
 
-    protected Outcall outcall;
+    private final Outcall outcall;
     private NamespaceContext namespaceContext;
     private Log debugLogger = Log.get("xml");
+
+    /**
+     * Creates a new XMLCall for the given URI and Content-Type.
+     *
+     * @param uri         the target URI to call
+     * @param contentType the value of the Content-Type property for requests
+     * @throws IOException in case the URI is blacklisted
+     */
+    protected XMLCall(URI uri, String contentType) throws IOException {
+        this.outcall = new Outcall(uri);
+        this.outcall.setRequestProperty("Content-Type", contentType);
+    }
 
     /**
      * Creates a new XMLCall for the given url with Content-Type 'text/xml'.
@@ -81,10 +93,7 @@ public class XMLCall {
      * @throws IOException in case of an IO error
      */
     public static XMLCall to(URI uri, String contentType) throws IOException {
-        XMLCall result = new XMLCall();
-        result.outcall = new Outcall(uri);
-        result.outcall.setRequestProperty("Content-Type", contentType);
-        return result;
+        return new XMLCall(uri, contentType);
     }
 
     /**
