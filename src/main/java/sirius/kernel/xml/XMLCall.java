@@ -155,19 +155,31 @@ public class XMLCall {
         return new XMLStructuredOutput(outcall.postFromOutput());
     }
 
-    protected InputStream getInputStream() throws IOException {
+    private InputStream getInputStream() throws IOException {
         if (debugLogger != null && debugLogger.isFINE()) {
             // log the request, even when parsing fails
-            try (InputStream body = outcall.getResponse().body()) {
+            try (InputStream body = getResponseBody()) {
                 byte[] bytes = body.readAllBytes();
                 logRequest(new String(bytes, outcall.getContentEncoding()));
                 return new ByteArrayInputStream(bytes);
             }
         }
+        return getResponseBody();
+    }
+
+    /**
+     * Returns the XML response of the call.
+     * <p>
+     * Note, that extending classes may alter the returned input stream in order to fix issues with the XML.
+     *
+     * @return the XML response of the call
+     * @throws IOException in case of an IO error while receiving the XML document
+     */
+    protected InputStream getResponseBody() throws IOException {
         return outcall.getResponse().body();
     }
 
-    protected void logRequest(String response) throws IOException {
+    private void logRequest(String response) throws IOException {
         debugLogger.FINE(Formatter.create("""
                                                   ---------- call ----------
                                                   ${httpMethod} ${url} [
