@@ -155,6 +155,24 @@ public class XMLCall {
         return new XMLStructuredOutput(outcall.postFromOutput());
     }
 
+    /**
+     * Provides access to the XML answer of the call.
+     *
+     * @return the XML result of the call
+     * @throws IOException in case of an IO error while receiving the result
+     */
+    public XMLStructuredInput getInput() throws IOException {
+        // call #getInputStream() before checking for errors, as #getInputStream may log the request/response
+        try (InputStream body = getInputStream()) {
+            String contentType = outcall.getHeaderField("content-type");
+            if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase().contains("xml"))) {
+                return new XMLStructuredInput(body, namespaceContext);
+            }
+            throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
+                                                outcall.getResponse().statusCode()));
+        }
+    }
+
     private InputStream getInputStream() throws IOException {
         if (debugLogger != null && debugLogger.isFINE()) {
             // log the request, even when parsing fails
@@ -198,23 +216,5 @@ public class XMLCall {
                                   .set("responseCode", getOutcall().getResponseCode())
                                   .set("response", response)
                                   .smartFormat());
-    }
-
-    /**
-     * Provides access to the XML answer of the call.
-     *
-     * @return the XML result of the call
-     * @throws IOException in case of an IO error while receiving the result
-     */
-    public XMLStructuredInput getInput() throws IOException {
-        // call #getInputStream() before checking for errors, as #getInputStream may log the request/response
-        try (InputStream body = getInputStream()) {
-            String contentType = outcall.getHeaderField("content-type");
-            if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase().contains("xml"))) {
-                return new XMLStructuredInput(body, namespaceContext);
-            }
-            throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
-                                                outcall.getResponse().statusCode()));
-        }
     }
 }
