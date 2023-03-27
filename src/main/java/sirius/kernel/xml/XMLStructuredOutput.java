@@ -151,26 +151,6 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
-     * Starts the output with the given root element.
-     *
-     * @param rootElement the name of the root element of the generated document.
-     * @return the output itself for fluent method calls
-     */
-    public StructuredOutput beginOutput(@Nonnull String rootElement) {
-        if (opensCalled == 0) {
-            try {
-                transformerHandler.startDocument();
-            } catch (SAXException e) {
-                throw Exceptions.handle(e);
-            }
-        }
-        opensCalled++;
-        beginObject(rootElement);
-
-        return this;
-    }
-
-    /**
      * Starts the output with the given root element and attributes
      *
      * @param rootElement the name of the root element of the generated document.
