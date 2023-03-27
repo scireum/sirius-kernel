@@ -11,7 +11,6 @@ package sirius.kernel.xml;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import sirius.kernel.commons.Explain;
-import sirius.kernel.health.Exceptions;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -24,7 +23,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
