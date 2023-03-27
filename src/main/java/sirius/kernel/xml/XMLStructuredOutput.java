@@ -24,6 +24,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -81,8 +82,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             transformerHandler.setResult(streamResult);
             transformerHandler.startDocument();
-        } catch (Exception e) {
-            throw Exceptions.handle(e);
+        } catch (Exception exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -101,8 +102,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     protected void endArray(String name) {
         try {
             transformerHandler.endElement("", "", name);
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -124,8 +125,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     protected void endObject(String name) {
         try {
             transformerHandler.endElement("", "", name);
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -161,8 +162,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         if (opensCalled == 0) {
             try {
                 transformerHandler.startDocument();
-            } catch (SAXException e) {
-                throw Exceptions.handle(e);
+            } catch (SAXException exception) {
+                throw handleOutputException(exception);
             }
         }
         opensCalled++;
@@ -196,8 +197,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         if (opensCalled == 0) {
             try {
                 transformerHandler.startDocument();
-            } catch (SAXException e) {
-                throw Exceptions.handle(e);
+            } catch (SAXException exception) {
+                throw handleOutputException(exception);
             }
         }
         opensCalled++;
@@ -214,8 +215,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             try {
                 transformerHandler.endDocument();
                 out.close();
-            } catch (SAXException | IOException e) {
-                throw Exceptions.handle(e);
+            } catch (SAXException | IOException exception) {
+                throw handleOutputException(exception);
             }
         }
     }
@@ -229,8 +230,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     protected void startArray(String name) {
         try {
             transformerHandler.startElement("", "", name, null);
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -245,8 +246,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
                 }
             }
             transformerHandler.startElement("", "", name, attrs);
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -259,8 +260,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
                 transformerHandler.characters(val.toCharArray(), 0, val.length());
             }
             transformerHandler.endElement("", "", name);
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -396,8 +397,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
                 String val = transformToStringRepresentation(text);
                 transformerHandler.characters(val.toCharArray(), 0, val.length());
             }
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
 
         return this;
