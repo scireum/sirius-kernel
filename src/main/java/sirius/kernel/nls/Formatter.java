@@ -227,11 +227,17 @@ public class Formatter {
      * @return <tt>this</tt> to permit fluent method chains
      */
     public Formatter setDirect(String property, String value) {
-        if (jsEncode && value != null) {
-            replacement.put(property, value.replace("'", "\\'").replace("\"", "\\\""));
+        if (jsEncode) {
+            replacement.put(property, escapeJS(value));
             return this;
         }
-        replacement.put(property, urlEncode ? Strings.urlEncode(value) : value);
+
+        if (urlEncode) {
+            replacement.put(property, Strings.urlEncode(value));
+            return this;
+        }
+
+        replacement.put(property, value);
         return this;
     }
 
@@ -411,6 +417,13 @@ public class Formatter {
         currentBlock = blocks.get(blocks.size() - 2);
         blocks.remove(blocks.size() - 1);
         return currentBlock;
+    }
+
+    private String escapeJS(String value) {
+        if (value == null) {
+            return value;
+        }
+        return value.replace("'", "\\'").replace("\"", "\\\"");
     }
 
     @Override
