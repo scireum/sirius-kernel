@@ -46,6 +46,7 @@ import java.util.function.Function;
  */
 public class Formatter {
     private boolean urlEncode = false;
+    private boolean jsEncode = false;
     private final Map<String, String> replacement = new TreeMap<>();
     private Function<String, Optional<String>> parameterProvider;
     private boolean ignoreMissingParameters;
@@ -101,6 +102,21 @@ public class Formatter {
         Formatter result = new Formatter();
         result.pattern = pattern;
         result.urlEncode = true;
+        return result;
+    }
+
+    /**
+     * Creates a new formatter with auto JavaScript encoding turned on.
+     * <p>
+     * Any parameters passed to this formatter will have its single and double quotes encoded.
+     *
+     * @param pattern specifies the pattern to be used for creating the output
+     * @return <tt>this</tt> for fluently calling <tt>set</tt> methods.
+     */
+    public static Formatter createJSFormatter(String pattern) {
+        Formatter result = new Formatter();
+        result.pattern = pattern;
+        result.jsEncode = true;
         return result;
     }
 
@@ -211,6 +227,10 @@ public class Formatter {
      * @return <tt>this</tt> to permit fluent method chains
      */
     public Formatter setDirect(String property, String value) {
+        if (jsEncode && value != null) {
+            replacement.put(property, value.replace("'", "\\'").replace("\"", "\\\""));
+            return this;
+        }
         replacement.put(property, urlEncode ? Strings.urlEncode(value) : value);
         return this;
     }
