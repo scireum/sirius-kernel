@@ -52,8 +52,8 @@ public class XMLCall {
     public static XMLCall to(URL url) throws IOException {
         try {
             return to(url.toURI());
-        } catch (URISyntaxException e) {
-            throw Exceptions.handle(e);
+        } catch (URISyntaxException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 
@@ -68,8 +68,8 @@ public class XMLCall {
     public static XMLCall to(URL url, String contentType) throws IOException {
         try {
             return to(url.toURI(), contentType);
-        } catch (URISyntaxException e) {
-            throw Exceptions.handle(e);
+        } catch (URISyntaxException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 

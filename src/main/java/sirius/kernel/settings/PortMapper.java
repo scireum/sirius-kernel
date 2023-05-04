@@ -50,8 +50,8 @@ public abstract class PortMapper {
 
         try {
             return mapper.map(service, host, port);
-        } catch (Exception e) {
-            Exceptions.ignore(e);
+        } catch (Exception exception) {
+            Exceptions.ignore(exception);
             return Tuple.create(host, port);
         }
     }

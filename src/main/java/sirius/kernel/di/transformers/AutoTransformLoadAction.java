@@ -56,7 +56,7 @@ public class AutoTransformLoadAction implements ClassLoadAction {
 
             try {
                 findConstructor();
-            } catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException exception) {
                 Log.SYSTEM.WARN("The class %s which is marked with @AutoTransform does neither provide a"
                                 + " suitable single arg constructor nor a no-arg constructor! This will most probably"
                                 + " fail at runtime!", getClass().getName());
@@ -92,24 +92,24 @@ public class AutoTransformLoadAction implements ClassLoadAction {
 
                 globalContext.wire(result);
                 return result;
-            } catch (InvocationTargetException e) {
-                if (e.getCause() instanceof IllegalArgumentException) {
+            } catch (InvocationTargetException exception) {
+                if (exception.getCause() instanceof IllegalArgumentException) {
                     return null;
                 }
 
                 throw Exceptions.handle()
                                 .to(Log.SYSTEM)
-                                .error(e.getCause())
+                                .error(exception.getCause())
                                 .withSystemErrorMessage("Failed to transform %s (%s) to %s - An error occured when"
                                                         + " invoking the constructor: %s (%s)",
                                                         source,
                                                         sourceType,
                                                         targetType)
                                 .handle();
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 throw Exceptions.handle()
                                 .to(Log.SYSTEM)
-                                .error(e)
+                                .error(exception)
                                 .withSystemErrorMessage("Failed to transform %s (%s) to %s - An error occured when"
                                                         + " invoking the constructor: %s (%s)",
                                                         source,

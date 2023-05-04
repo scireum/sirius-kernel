@@ -275,9 +275,9 @@ public class Tasks implements Startable, Stoppable, Killable {
             } finally {
                 schedulerLock.unlock();
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            Exceptions.ignore(e);
+            Exceptions.ignore(exception);
         }
     }
 

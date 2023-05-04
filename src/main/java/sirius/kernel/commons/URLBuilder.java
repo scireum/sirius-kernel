@@ -219,8 +219,8 @@ public class URLBuilder {
     public URL asURL() {
         try {
             return new URL(url.toString());
-        } catch (MalformedURLException e) {
-            throw new IllegalStateException(Strings.apply("Could not create URL: %s", e.getMessage()));
+        } catch (MalformedURLException exception) {
+            throw new IllegalStateException(Strings.apply("Could not create URL: %s", exception.getMessage()));
         }
     }
 
@@ -236,8 +236,8 @@ public class URLBuilder {
     public URI asURI() {
         try {
             return asURL().toURI();
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(Strings.apply("Could not create URI: %s", e.getMessage()));
+        } catch (URISyntaxException exception) {
+            throw new IllegalStateException(Strings.apply("Could not create URI: %s", exception.getMessage()));
         }
     }
 }

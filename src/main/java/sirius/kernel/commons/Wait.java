@@ -39,8 +39,8 @@ public class Wait {
         if (millisToWait > 0) {
             try {
                 Thread.sleep(millisToWait);
-            } catch (InterruptedException e) {
-                Exceptions.ignore(e);
+            } catch (InterruptedException exception) {
+                Exceptions.ignore(exception);
                 Thread.currentThread().interrupt();
             }
         }

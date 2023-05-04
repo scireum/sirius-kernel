@@ -614,8 +614,8 @@ public class Value {
                     return defaultValue;
                 }
                 return (T) Enum.valueOf((Class<Enum>) targetClazz, asString(""));
-            } catch (Exception e) {
-                Exceptions.ignore(e);
+            } catch (Exception exception) {
+                Exceptions.ignore(exception);
                 return (T) Enum.valueOf((Class<Enum>) targetClazz, asString("").toUpperCase());
             }
         }
@@ -626,8 +626,8 @@ public class Value {
         if (data instanceof String) {
             try {
                 return NLS.parseMachineString(targetClazz, data.toString().trim());
-            } catch (Exception e) {
-                Exceptions.ignore(e);
+            } catch (Exception exception) {
+                Exceptions.ignore(exception);
                 return defaultValue;
             }
         }
@@ -1396,8 +1396,8 @@ public class Value {
                 return BigDecimal.valueOf(integer);
             }
             return new BigDecimal(asString().replace(',', '.').trim(), MathContext.UNLIMITED);
-        } catch (NumberFormatException e) {
-            Exceptions.ignore(e);
+        } catch (NumberFormatException exception) {
+            Exceptions.ignore(exception);
             return null;
         }
     }
@@ -1460,8 +1460,8 @@ public class Value {
         }
         try {
             return Enum.valueOf(clazz, String.valueOf(data).trim());
-        } catch (Exception e) {
-            Exceptions.ignore(e);
+        } catch (Exception exception) {
+            Exceptions.ignore(exception);
             return null;
         }
     }

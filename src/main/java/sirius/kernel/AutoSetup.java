@@ -51,10 +51,10 @@ public class AutoSetup implements Startable {
             LOG.INFO("Executing auto setup rule: %s", rule.getClass().getName());
             try {
                 rule.setup();
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 Exceptions.handle()
                           .to(LOG)
-                          .error(e)
+                          .error(exception)
                           .withSystemErrorMessage("Auto seatup rule %s failed: %s (%s)", rule.getClass().getName())
                           .handle();
             }

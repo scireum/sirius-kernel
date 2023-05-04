@@ -146,8 +146,8 @@ public class Files {
         if (file != null) {
             try {
                 java.nio.file.Files.deleteIfExists(file.toPath());
-            } catch (IOException e) {
-                Exceptions.handle(e);
+            } catch (IOException exception) {
+                Exceptions.handle(exception);
             }
         }
     }

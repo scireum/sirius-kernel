@@ -96,8 +96,8 @@ public class Promise<V> {
     private void completeHandler(final V value, final CompletionHandler<V> handler) {
         try {
             handler.onSuccess(value);
-        } catch (Exception e) {
-            Exceptions.handle(Tasks.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(Tasks.LOG, exception);
         }
     }
 
@@ -128,11 +128,11 @@ public class Promise<V> {
     /*
      * Invokes the onFailure method of given CompletionHandler.
      */
-    private void failHandler(final Throwable exception, final CompletionHandler<V> handler) {
+    private void failHandler(final Throwable throwable, final CompletionHandler<V> handler) {
         try {
-            handler.onFailure(exception);
-        } catch (Exception e) {
-            Exceptions.handle(Tasks.LOG, e);
+            handler.onFailure(throwable);
+        } catch (Exception exception) {
+            Exceptions.handle(Tasks.LOG, exception);
         }
     }
 
@@ -212,8 +212,8 @@ public class Promise<V> {
             lock.lock();
             try {
                 completed.await(timeout.getSeconds(), TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Exceptions.ignore(e);
+            } catch (InterruptedException exception) {
+                Exceptions.ignore(exception);
                 Thread.currentThread().interrupt();
             } finally {
                 lock.unlock();
@@ -342,8 +342,8 @@ public class Promise<V> {
             public void onSuccess(V value) throws Exception {
                 try {
                     promise.success(mapper.apply(value));
-                } catch (Exception e) {
-                    promise.fail(e);
+                } catch (Exception exception) {
+                    promise.fail(exception);
                 }
             }
 
@@ -369,8 +369,8 @@ public class Promise<V> {
             public void onSuccess(V value) throws Exception {
                 try {
                     successHandler.invoke(value);
-                } catch (Exception e) {
-                    promise.fail(e);
+                } catch (Exception exception) {
+                    promise.fail(exception);
                 }
             }
 
