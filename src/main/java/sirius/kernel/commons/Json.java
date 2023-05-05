@@ -179,6 +179,16 @@ public class Json {
     }
 
     /**
+     * Converts the given {@link ObjectNode} into a map.
+     *
+     * @param objectNode the node to convert
+     * @return the inner map of the ObjectNode
+     */
+    public static Map<String, Object> convertToMap(ObjectNode objectNode) {
+        return MAPPER.convertValue(objectNode, new TypeReference<Map<String, Object>>(){});
+    }
+    
+    /**
      * Converts the value of the given {@link JsonNode} into a Java object.
      *
      * @param node the node to convert
