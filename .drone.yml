@@ -71,22 +71,22 @@ steps:
       event:
         - tag
 
-  - name: sonar
-    image: scireum/sirius-build-jdk18
-    commands:
-      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' gradle.properties
-      - ./gradlew clean test sonarqube -Dsonar.projectKey=${DRONE_REPO_NAME} -Dsonar.host.url=https://sonarqube.scireum.com/ -Dsonar.login=${sonar_login}
-    volumes: *scireum_volumes
-    when:
-      event:
-        - tag
-
   - name: notify-tag-build
     image: plugins/slack
     settings:
       webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
       channel: scireum-dev
       template: "A new version is available: **{{Repo.Name}}**: [{{Build.Tag}}](https://github.com/scireum/sirius-kernel/releases/tag/{{Build.Tag}})"
+    when:
+      event:
+        - tag
+
+  - name: sonar
+    image: scireum/sirius-build-jdk18
+    commands:
+      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' gradle.properties
+      - ./gradlew clean test sonarqube -Dsonar.projectKey=${DRONE_REPO_NAME} -Dsonar.host.url=https://sonarqube.scireum.com/ -Dsonar.login=${sonar_login}
+    volumes: *scireum_volumes
     when:
       event:
         - tag

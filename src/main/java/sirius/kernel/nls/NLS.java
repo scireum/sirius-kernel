@@ -1025,15 +1025,15 @@ public class NLS {
     private static <V> V parseBasicTypesFromMachineString(Class<V> clazz, String value) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) Integer.valueOf(value);
-            } catch (NumberFormatException e) {
+                return (V) Integer.valueOf(parseMachineString(BigDecimal.class, value).intValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) Long.valueOf(value);
-            } catch (NumberFormatException e) {
+                return (V) Long.valueOf(parseMachineString(BigDecimal.class, value).longValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
@@ -1136,23 +1136,23 @@ public class NLS {
     private static <V> V parseBasicTypesFromUserString(Class<V> clazz, String value, String language) {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
-                return (V) Integer.valueOf(value);
-            } catch (NumberFormatException e) {
+                return (V) Integer.valueOf(parseDecimalNumberFromUser(value, language).intValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
-                return (V) Long.valueOf(value);
-            } catch (NumberFormatException e) {
+                return (V) Long.valueOf(parseDecimalNumberFromUser(value, language).longValueExact());
+            } catch (NumberFormatException | ArithmeticException e) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
             }
         }
         if (Float.class.equals(clazz) || float.class.equals(clazz)) {
-            return (V) Float.valueOf((float) parseDecimalNumberFromUser(value, language).doubleValue());
+            return (V) Float.valueOf(parseDecimalNumberFromUser(value, language).floatValue());
         }
         if (Double.class.equals(clazz) || double.class.equals(clazz)) {
-            return (V) parseDecimalNumberFromUser(value, language);
+            return (V) Double.valueOf(parseDecimalNumberFromUser(value, language).doubleValue());
         }
         if (Amount.class.equals(clazz)) {
             return (V) Amount.of(parseDecimalNumberFromUser(value, language));
@@ -1169,17 +1169,19 @@ public class NLS {
         return parseDatesFromUserString(clazz, value, language);
     }
 
-    private static Double parseDecimalNumberFromUser(String value, String language) {
+    private static BigDecimal parseDecimalNumberFromUser(String value, String language) {
         try {
             Double result = tryParseMachineFormat(value);
             if (result != null) {
-                return result;
+                return BigDecimal.valueOf(result);
             }
 
-            return getDecimalFormat(language).parse(value).doubleValue();
-        } catch (ParseException exception) {
-            Exceptions.ignore(exception);
-            return Double.valueOf(value);
+            try {
+                return BigDecimal.valueOf(getDecimalFormat(language).parse(value).doubleValue());
+            } catch (ParseException exception) {
+                Exceptions.ignore(exception);
+                return BigDecimal.valueOf(Double.valueOf(value));
+            }
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
                                                exception);
@@ -1273,6 +1275,61 @@ public class NLS {
     }
 
     /**
+     * Converts a given time range to a human-readable format using the current language
+     *
+     * @param duration       the duration
+     * @param includeSeconds determines whether to include seconds or to ignore everything below minutes
+     * @param includeMillis  determines whether to include milliseconds or to ignore everything below seconds
+     * @return a string representation of the given duration in days, hours, minutes and,
+     * if enabled, seconds and milliseconds
+     */
+    public static String convertDuration(Duration duration, boolean includeSeconds, boolean includeMillis) {
+        if (duration == null) {
+            return "";
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        long days = duration.toDaysPart();
+        if (days > 0) {
+            appendDurationValue(result, "NLS.days", days);
+        }
+        int hours = duration.toHoursPart();
+        if (hours > 0) {
+            appendDurationValue(result, "NLS.hours", hours);
+        }
+        int minutes = duration.toMinutesPart();
+        if (minutes > 0) {
+            appendDurationValue(result, "NLS.minutes", minutes);
+        }
+        if (includeSeconds) {
+            int seconds = duration.toSecondsPart();
+            if (seconds > 0) {
+                appendDurationValue(result, "NLS.seconds", seconds);
+            }
+            int millis = duration.toMillisPart();
+            if (includeMillis && millis > 0) {
+                appendDurationValue(result, "NLS.milliseconds", millis);
+            }
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Converts the given duration to a human-readable format including seconds and milliseconds using the current language
+     * <p>
+     * This is a boilerplate method for {@link #convertDuration(Duration, boolean, boolean)} with
+     * <tt>includeSeconds</tt> and <tt>includeMillis</tt> set to <tt>true</tt>.
+     *
+     * @param duration the duration
+     * @return a string representation of the given duration in days, hours, minutes, seconds and milliseconds
+     */
+    public static String convertDuration(Duration duration) {
+        return convertDuration(duration, true, true);
+    }
+
+    /**
      * Converts a given time range in milliseconds to a human-readable format using the current language
      *
      * @param duration       the duration in milliseconds
@@ -1281,31 +1338,23 @@ public class NLS {
      * @return a string representation of the given duration in days, hours, minutes and,
      * if enabled, seconds and milliseconds
      */
+    @Deprecated(forRemoval = true)
     public static String convertDuration(long duration, boolean includeSeconds, boolean includeMillis) {
-        StringBuilder result = new StringBuilder();
-        if (duration > DAY) {
-            appendDurationValue(result, "NLS.days", duration / DAY);
-            duration = duration % DAY;
-        }
-        if (duration > HOUR) {
-            appendDurationValue(result, "NLS.hours", duration / HOUR);
-            duration = duration % HOUR;
-        }
-        if (duration > MINUTE || (!includeSeconds && duration > 0)) {
-            appendDurationValue(result, "NLS.minutes", duration / MINUTE);
-            duration = duration % MINUTE;
-        }
-        if (includeSeconds) {
-            if (duration > SECOND || (!includeMillis && duration > 0)) {
-                appendDurationValue(result, "NLS.seconds", duration / SECOND);
-                duration = duration % SECOND;
-            }
-            if (includeMillis && duration > 0) {
-                appendDurationValue(result, "NLS.milliseconds", duration);
-            }
-        }
+        return convertDuration(Duration.ofMillis(duration), includeSeconds, includeMillis);
+    }
 
-        return result.toString();
+    /**
+     * Converts the given duration to a human-readable format including seconds and milliseconds using the current language
+     * <p>
+     * This is a boilerplate method for {@link #convertDuration(long, boolean, boolean)} with
+     * <tt>includeSeconds</tt> and <tt>includeMillis</tt> set to <tt>true</tt>.
+     *
+     * @param duration the duration in milliseconds
+     * @return a string representation of the given duration in days, hours, minutes, seconds and milliseconds
+     */
+    @Deprecated(forRemoval = true)
+    public static String convertDuration(long duration) {
+        return convertDuration(Duration.ofMillis(duration));
     }
 
     private static void appendDurationValue(StringBuilder result, String key, long value) {
@@ -1316,16 +1365,13 @@ public class NLS {
     }
 
     /**
-     * Converts the given duration in milliseconds including seconds and milliseconds
-     * <p>
-     * This is a boilerplate method for {@link #convertDuration(long, boolean, boolean)} with
-     * <tt>includeSeconds</tt> and <tt>includeMillis</tt> set to <tt>true</tt>.
+     * Converts the given time range to a time representation format typically found in digital clocks (like 12:05:17).
      *
-     * @param duration the duration in milliseconds
-     * @return a string representation of the given duration in days, hours, minutes, seconds and milliseconds
+     * @param duration the duration
+     * @return a string representation of the given duration as seen in digital clocks
      */
-    public static String convertDuration(long duration) {
-        return convertDuration(duration, true, true);
+    public static String convertDurationToDigitalClockFormat(Duration duration) {
+        return Strings.apply("%02d:%02d:%02d", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart());
     }
 
     /**

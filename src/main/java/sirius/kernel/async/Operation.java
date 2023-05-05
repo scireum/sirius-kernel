@@ -83,7 +83,7 @@ public class Operation implements AutoCloseable {
             name = nameProvider.get();
         }
 
-        String result = name + " (" + w.duration() + "/" + NLS.convertDuration(timeout.getSeconds(), true, false) + ")";
+        String result = name + " (" + w.duration() + "/" + NLS.convertDuration(timeout, true, false) + ")";
 
         if (isOvertime()) {
             result += " OVERTIME!";

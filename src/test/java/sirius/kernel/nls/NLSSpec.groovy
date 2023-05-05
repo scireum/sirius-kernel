@@ -144,6 +144,54 @@ class NLSSpec extends BaseSpecification {
         NLS.parseUserString(Amount.class, input).toString() == "34,54"
     }
 
+    def "parseUserString works for integers"() {
+        expect:
+        NLS.parseUserString(Integer.class, input) == output
+
+        where:
+        input     | output
+        "42"      | 42
+        "77,0000" | 77
+    }
+
+    def "parseUserString works for longs"() {
+        expect:
+        NLS.parseUserString(Long.class, input) == output
+
+        where:
+        input     | output
+        "12"      | 12L
+        "31,0000" | 31L
+    }
+
+    def "parseUserString works for integers considering locale"() {
+        expect:
+        NLS.parseUserString(Integer.class, input, language) == output
+
+        where:
+        input       | language | output
+        "55.000,00" | "de"     | 55000
+        "56,000.00" | "en"     | 56000
+    }
+
+    def "parseUserString fails when expected"() {
+        when:
+        NLS.parseUserString(clazz, input) == output
+
+        then:
+        def error = thrown(expecteException)
+        error.message == expectedMessage
+
+        where:
+        input        | clazz | expecteException         | expectedMessage
+        "42,1"       | Integer
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '42,1' ist ungültig."
+        "2999999999" | Integer
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '2999999999' ist ungültig."
+        "blub"       | Double
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
+    }
+
     def "parseUserString for a LocalTime works"() {
         expect:
         NLS.parseUserString(LocalTime.class, input) == output
@@ -163,6 +211,44 @@ class NLSSpec extends BaseSpecification {
         input | output
         "0.1" | BigDecimal.ONE.divide(BigDecimal.TEN)
         "0.1" | new BigDecimal("0.1")
+    }
+
+    def "parseMachineString works for integers"() {
+        expect:
+        NLS.parseMachineString(Integer.class, input) == output
+
+        where:
+        input     | output
+        "23"      | 23
+        "90.0000" | 90
+    }
+
+    def "parseMachineString works for longs"() {
+        expect:
+        NLS.parseMachineString(Long.class, input) == output
+
+        where:
+        input     | output
+        "5"       | 5L
+        "43.0000" | 43L
+    }
+
+    def "parseMachineString fails when expected"() {
+        when:
+        NLS.parseMachineString(clazz, input) == output
+
+        then:
+        def error = thrown(expecteException)
+        error.message == expectedMessage
+
+        where:
+        input        | clazz | expecteException         | expectedMessage
+        "42.1"       | Integer
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '42.1' ist ungültig."
+        "2999999999" | Integer
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Zahl ein. '2999999999' ist ungültig."
+        "blub"       | Double
+                .class       | IllegalArgumentException | "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
     }
 
     def "getMonthNameShort correctly appends the given symbol"() {
@@ -246,5 +332,94 @@ class NLSSpec extends BaseSpecification {
                 .getDateTimeFormatWithoutSeconds(currentLang).format(date)
         and:
         noExceptionThrown()
+    }
+
+    def "convertDurationToDigitalClockFormat() of Duration is properly formatted"() {
+        expect:
+        NLS.convertDurationToDigitalClockFormat(input) == output
+        where:
+        input                                               | output
+        Duration.ofMinutes(60L)                             | "01:00:00"
+        Duration.ofMinutes(60L).plusSeconds(1L)             | "01:00:01"
+        Duration.ofHours(1).plusMinutes(1L)                 | "01:01:00"
+        Duration.ofHours(1).plusMinutes(1L).plusSeconds(1L) | "01:01:01"
+        Duration.ofDays(2L)                                 | "48:00:00"
+        Duration.ofDays(2L).plusHours(1L)                   | "49:00:00"
+        Duration.ofDays(2L).plusMinutes(1L)                 | "48:01:00"
+        Duration.ofSeconds(1L)                              | "00:00:01"
+        Duration.ofMinutes(1L)                              | "00:01:00"
+        Duration.ofMinutes(1L).plusSeconds(1L)              | "00:01:01"
+    }
+
+    def "convertDuration() of Duration is properly formatted"() {
+        expect:
+        NLS.convertDuration(duration, enableSeconds, enableMillis) == output
+        where:
+        duration                  | enableSeconds | enableMillis | output
+        Duration.ofMinutes(60L)   | true          | true         | "1 Stunde"
+        Duration.ofMinutes(60L)   | true          | false        | "1 Stunde"
+        Duration.ofMinutes(60L)   | false         | true         | "1 Stunde"
+        Duration.ofMinutes(60L)   | false         | false        | "1 Stunde"
+        Duration.ofHours(2L)      | true          | true         | "2 Stunden"
+        Duration.ofHours(2L)      | true          | false        | "2 Stunden"
+        Duration.ofHours(2L)      | false         | true         | "2 Stunden"
+        Duration.ofHours(2L)      | false         | false        | "2 Stunden"
+        Duration.ofMinutes(61L)   | true          | true         | "1 Stunde, 1 Minute"
+        Duration.ofMinutes(61L)   | true          | false        | "1 Stunde, 1 Minute"
+        Duration.ofMinutes(61L)   | false         | true         | "1 Stunde, 1 Minute"
+        Duration.ofMinutes(61L)   | false         | false        | "1 Stunde, 1 Minute"
+        Duration.ofSeconds(61L)   | true          | true         | "1 Minute, 1 Sekunde"
+        Duration.ofSeconds(61L)   | true          | false        | "1 Minute, 1 Sekunde"
+        Duration.ofSeconds(61L)   | false         | true         | "1 Minute"
+        Duration.ofSeconds(61L)   | false         | false        | "1 Minute"
+        Duration.ofSeconds(121L)  | false         | false        | "2 Minuten"
+        Duration.ofSeconds(122L)  | true          | false        | "2 Minuten, 2 Sekunden"
+        Duration.ofDays(122L)     | false         | false        | "122 Tage"
+        Duration.ofDays(1L)       | false         | false        | "1 Tag"
+        Duration.ofDays(1L)
+                .plusMinutes(30L) | true          | true         | "1 Tag, 30 Minuten"
+        Duration.ofDays(1L)
+                .plusHours(7)
+                .plusMinutes(30L) | true          | true         | "1 Tag, 7 Stunden, 30 Minuten"
+        Duration.ofDays(1L)
+                .plusHours(24)
+                .plusMinutes(30L) | true          | true         | "2 Tage, 30 Minuten"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L) | true          | true         | "2 Tage, 2 Stunden, 30 Minuten"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusSeconds(22L) | true          | true         | "2 Tage, 2 Stunden, 30 Minuten, 22 Sekunden"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusSeconds(22L) | false         | true         | "2 Tage, 2 Stunden, 30 Minuten"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusSeconds(22L)
+                .plusMillis(1L)   | false         | true         | "2 Tage, 2 Stunden, 30 Minuten"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusSeconds(22L)
+                .plusMillis(1L)   | true          | true         | "2 Tage, 2 Stunden, 30 Minuten, 22 Sekunden, 1 Millisekunde"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusMillis(1L)   | true          | true         | "2 Tage, 2 Stunden, 30 Minuten, 1 Millisekunde"
+        Duration.ofDays(2L)
+                .plusHours(2)
+                .plusMinutes(30L)
+                .plusMillis(33L)  | true          | true         | "2 Tage, 2 Stunden, 30 Minuten, 33 Millisekunden"
+        Duration.ofDays(0L)       | true          | true         | ""
+        null                      | true          | true         | ""
+        Duration.ofMillis(101L)   | false         | false        | ""
+        Duration.ofMillis(101L)   | true          | false        | ""
+        Duration.ofMillis(101L)   | true          | true         | "101 Millisekunden"
+        Duration.ofSeconds(33L)   | true          | true         | "33 Sekunden"
+        Duration.ofSeconds(33L)   | true          | false        | "33 Sekunden"
+        Duration.ofSeconds(33L)   | false         | false        | ""
     }
 }

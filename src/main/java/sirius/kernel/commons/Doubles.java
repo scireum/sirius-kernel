@@ -50,7 +50,7 @@ public class Doubles {
     }
 
     /**
-     * Determines if the given number is zero (or very very close to).
+     * Determines if the given number is zero (or very, very close to).
      * <p>
      * Determines if the given number is zero or less than {@link #EPSILON} away from it. This is used to make up for
      * rounding errors which are in the nature of floating point numbers.

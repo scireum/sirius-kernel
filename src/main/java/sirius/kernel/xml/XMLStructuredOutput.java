@@ -11,7 +11,6 @@ package sirius.kernel.xml;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import sirius.kernel.commons.Explain;
-import sirius.kernel.health.Exceptions;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -81,8 +80,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             transformerHandler.setResult(streamResult);
             transformerHandler.startDocument();
-        } catch (Exception e) {
-            throw Exceptions.handle(e);
+        } catch (Exception exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -101,8 +100,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     protected void endArray(String name) {
         try {
             transformerHandler.endElement("", "", name);
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -124,8 +123,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     protected void endObject(String name) {
         try {
             transformerHandler.endElement("", "", name);
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -151,26 +150,6 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
-     * Starts the output with the given root element.
-     *
-     * @param rootElement the name of the root element of the generated document.
-     * @return the output itself for fluent method calls
-     */
-    public StructuredOutput beginOutput(@Nonnull String rootElement) {
-        if (opensCalled == 0) {
-            try {
-                transformerHandler.startDocument();
-            } catch (SAXException e) {
-                throw Exceptions.handle(e);
-            }
-        }
-        opensCalled++;
-        beginObject(rootElement);
-
-        return this;
-    }
-
-    /**
      * Starts the output with the given root element and attributes
      *
      * @param rootElement the name of the root element of the generated document.
@@ -181,8 +160,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         if (opensCalled == 0) {
             try {
                 transformerHandler.startDocument();
-            } catch (SAXException e) {
-                throw Exceptions.handle(e);
+            } catch (SAXException exception) {
+                throw handleOutputException(exception);
             }
         }
         opensCalled++;
@@ -216,8 +195,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
         if (opensCalled == 0) {
             try {
                 transformerHandler.startDocument();
-            } catch (SAXException e) {
-                throw Exceptions.handle(e);
+            } catch (SAXException exception) {
+                throw handleOutputException(exception);
             }
         }
         opensCalled++;
@@ -234,8 +213,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
             try {
                 transformerHandler.endDocument();
                 out.close();
-            } catch (SAXException | IOException e) {
-                throw Exceptions.handle(e);
+            } catch (SAXException | IOException exception) {
+                throw handleOutputException(exception);
             }
         }
     }
@@ -249,8 +228,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     protected void startArray(String name) {
         try {
             transformerHandler.startElement("", "", name, null);
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -265,8 +244,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
                 }
             }
             transformerHandler.startElement("", "", name, attrs);
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -279,8 +258,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
                 transformerHandler.characters(val.toCharArray(), 0, val.length());
             }
             transformerHandler.endElement("", "", name);
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -416,8 +395,8 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
                 String val = transformToStringRepresentation(text);
                 transformerHandler.characters(val.toCharArray(), 0, val.length());
             }
-        } catch (SAXException e) {
-            throw Exceptions.handle(e);
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
         }
 
         return this;

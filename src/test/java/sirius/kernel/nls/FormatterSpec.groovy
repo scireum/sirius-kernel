@@ -104,4 +104,13 @@ class FormatterSpec extends BaseSpecification {
         thrown(IllegalArgumentException)
     }
 
+    def "createJSFormatter works"() {
+        given:
+        def pattern = "foo = '\${foo}' bar = \"\${bar}\""
+        when:
+        def result = Formatter.createJSFormatter(pattern).set("foo", "d'or").set("bar", "\"buzz\"").format()
+        then:
+        result == "foo = 'd\\'or' bar = \"\\\"buzz\\\"\""
+    }
+
 }
