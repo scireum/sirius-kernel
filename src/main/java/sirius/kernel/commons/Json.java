@@ -11,6 +11,7 @@ package sirius.kernel.commons;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -19,6 +20,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -185,9 +187,10 @@ public class Json {
      * @return the inner map of the ObjectNode
      */
     public static Map<String, Object> convertToMap(ObjectNode objectNode) {
-        return MAPPER.convertValue(objectNode, new TypeReference<Map<String, Object>>(){});
+        return MAPPER.convertValue(objectNode, new TypeReference<Map<String, Object>>() {
+        });
     }
-    
+
     /**
      * Converts the value of the given {@link JsonNode} into a Java object.
      *
