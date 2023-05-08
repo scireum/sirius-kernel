@@ -65,8 +65,8 @@ public class XMLReader extends DefaultHandler {
         try {
             documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             taskContext = CallContext.getCurrent().get(TaskContext.class);
-        } catch (ParserConfigurationException e) {
-            throw Exceptions.handle(e);
+        } catch (ParserConfigurationException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 
@@ -189,9 +189,9 @@ public class XMLReader extends DefaultHandler {
             });
             reader.setContentHandler(this);
             reader.parse(new InputSource(stream));
-        } catch (ParserConfigurationException | SAXException e) {
-            throw new IOException(e);
-        } catch (UserInterruptException e) {
+        } catch (ParserConfigurationException | SAXException exception) {
+            throw new IOException(exception);
+        } catch (UserInterruptException exception) {
             // IGNORED - this is used to cancel parsing if the used tried to
             // cancel a process.
         }

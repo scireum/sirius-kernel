@@ -111,12 +111,12 @@ public class EndOfDayTaskExecutor implements EveryDay {
             task.execute();
             info.lastExecutionWasSuccessful = true;
             info.lastErrorMessage = null;
-        } catch (Exception e) {
+        } catch (Exception exception) {
             info.lastExecutionWasSuccessful = false;
-            info.lastErrorMessage = e.getMessage() + " (" + e.getClass().getName() + ")";
+            info.lastErrorMessage = exception.getMessage() + " (" + exception.getClass().getName() + ")";
             Exceptions.handle()
                       .to(Log.BACKGROUND)
-                      .error(e)
+                      .error(exception)
                       .withSystemErrorMessage("An error occured when executing end of day task %s (%s): %s (%s)",
                                               task.getName(),
                                               task.getClass())

@@ -239,10 +239,10 @@ public class Timers implements Startable, Stoppable {
                 LOG.INFO("Reloading: %s", res.file.toString());
                 try {
                     res.callback.run();
-                } catch (Exception e) {
+                } catch (Exception exception) {
                     Exceptions.handle()
                               .withSystemErrorMessage("Error reloading %s: %s (%s)", res.file.toString())
-                              .error(e)
+                              .error(exception)
                               .handle();
                 }
             }
@@ -301,8 +301,8 @@ public class Timers implements Startable, Stoppable {
             res.callback = callback;
             res.lastModified = file.lastModified();
             loadedFiles.add(res);
-        } catch (IllegalArgumentException | URISyntaxException e) {
-            Exceptions.ignore(e);
+        } catch (IllegalArgumentException | URISyntaxException exception) {
+            Exceptions.ignore(exception);
             Exceptions.handle()
                       .withSystemErrorMessage("Cannot monitor URL '%s' for changes: %s (%s)", url)
                       .to(LOG)

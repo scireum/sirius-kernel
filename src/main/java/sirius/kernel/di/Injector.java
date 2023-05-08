@@ -108,15 +108,15 @@ public class Injector {
                 createAndCollectClassLoadAction(className, clazz);
             }
             loadedClasses.add(clazz);
-        } catch (NoClassDefFoundError e) {
+        } catch (NoClassDefFoundError error) {
             Exceptions.handle()
-                      .error(e)
+                      .error(error)
                       .to(LOG)
                       .withSystemErrorMessage("Failed to load dependent class: %s", className)
                       .handle();
-        } catch (Exception e) {
+        } catch (Exception exception) {
             Exceptions.handle()
-                      .error(e)
+                      .error(exception)
                       .to(LOG)
                       .withSystemErrorMessage("Failed to load class %s: %s (%s)", className)
                       .handle();
@@ -126,9 +126,9 @@ public class Injector {
     private static void createAndCollectClassLoadAction(String className, Class<?> clazz) {
         try {
             actions.add((ClassLoadAction) clazz.getDeclaredConstructor().newInstance());
-        } catch (Exception e) {
+        } catch (Exception exception) {
             Exceptions.handle()
-                      .error(e)
+                      .error(exception)
                       .to(LOG)
                       .withSystemErrorMessage("Failed to instantiate ClassLoadAction: %s - %s (%s)", className)
                       .handle();
@@ -143,9 +143,9 @@ public class Injector {
                 }
                 try {
                     action.handle(ctx, clazz);
-                } catch (Exception e) {
+                } catch (Exception exception) {
                     Exceptions.handle()
-                              .error(e)
+                              .error(exception)
                               .to(LOG)
                               .withSystemErrorMessage("Failed to auto-load: %s with ClassLoadAction: %s: %s (%s)",
                                                       clazz.getName(),

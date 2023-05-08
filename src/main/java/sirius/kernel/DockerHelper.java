@@ -157,21 +157,25 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
                 try {
                     LOG.INFO("Executing docker-compose pull...");
                     dockerCompose.pull();
-                } catch (InterruptedException e) {
+                } catch (InterruptedException exception) {
                     Thread.currentThread().interrupt();
-                    LOG.WARN("docker-compose pull failed: %s (%s)", e.getMessage(), e.getClass().getName());
-                } catch (Exception e) {
-                    LOG.WARN("docker-compose pull failed: %s (%s)", e.getMessage(), e.getClass().getName());
+                    LOG.WARN("docker-compose pull failed: %s (%s)",
+                             exception.getMessage(),
+                             exception.getClass().getName());
+                } catch (Exception exception) {
+                    LOG.WARN("docker-compose pull failed: %s (%s)",
+                             exception.getMessage(),
+                             exception.getClass().getName());
                 }
             }
             try {
                 LOG.INFO("Executing docker-compose up...");
                 dockerCompose.up();
-            } catch (InterruptedException e) {
+            } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
-                LOG.WARN("docker-compose up failed: %s (%s)", e.getMessage(), e.getClass().getName());
-            } catch (Exception e) {
-                LOG.WARN("docker-compose up failed: %s (%s)", e.getMessage(), e.getClass().getName());
+                LOG.WARN("docker-compose up failed: %s (%s)", exception.getMessage(), exception.getClass().getName());
+            } catch (Exception exception) {
+                LOG.WARN("docker-compose up failed: %s (%s)", exception.getMessage(), exception.getClass().getName());
             }
 
             awaitClusterHealth();
@@ -203,8 +207,8 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
                        .map(resource -> {
                            try {
                                return resource.toURI();
-                           } catch (URISyntaxException e) {
-                               throw Exceptions.handle(e);
+                           } catch (URISyntaxException exception) {
+                               throw Exceptions.handle(exception);
                            }
                        })
                        .map(File::new)
@@ -216,11 +220,11 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
     private void awaitClusterHealth() {
         try {
             containers().allContainers().forEach(this::awaitContainerStart);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            LOG.SEVERE(e);
-        } catch (Exception e) {
-            LOG.SEVERE(e);
+            LOG.SEVERE(exception);
+        } catch (Exception exception) {
+            LOG.SEVERE(exception);
         }
     }
 
@@ -241,8 +245,8 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
             LOG.INFO("Container '%s' is ONLINE - Ports: %s",
                      container.getContainerName(),
                      container.ports().stream().map(Object::toString).collect(Collectors.joining(", ")));
-        } catch (Exception e) {
-            LOG.SEVERE(e);
+        } catch (Exception exception) {
+            LOG.SEVERE(exception);
         }
     }
 
@@ -264,30 +268,30 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
             try {
                 LOG.INFO("Executing docker-compose stop...");
                 containers().allContainers().forEach(this::stop);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
-                LOG.WARN("docker-compose stop failed: %s (%s)", e.getMessage(), e.getClass().getName());
-            } catch (Exception e) {
-                LOG.WARN("docker-compose stop failed: %s (%s)", e.getMessage(), e.getClass().getName());
+                LOG.WARN("docker-compose stop failed: %s (%s)", exception.getMessage(), exception.getClass().getName());
+            } catch (Exception exception) {
+                LOG.WARN("docker-compose stop failed: %s (%s)", exception.getMessage(), exception.getClass().getName());
             }
         }
     }
 
-    private void stop(Container c) {
+    private void stop(Container container) {
         try {
-            LOG.INFO("Executing docker-compose stop for '%s'...", c.getContainerName());
-            dockerCompose.stop(c);
-        } catch (InterruptedException e) {
+            LOG.INFO("Executing docker-compose stop for '%s'...", container.getContainerName());
+            dockerCompose.stop(container);
+        } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             LOG.WARN("docker-compose stop for '%s' failed: %s (%s)",
-                     c.getContainerName(),
-                     e.getMessage(),
-                     e.getClass().getName());
-        } catch (Exception e) {
+                     container.getContainerName(),
+                     exception.getMessage(),
+                     exception.getClass().getName());
+        } catch (Exception exception) {
             LOG.WARN("docker-compose stop for '%s' failed: %s (%s)",
-                     c.getContainerName(),
-                     e.getMessage(),
-                     e.getClass().getName());
+                     container.getContainerName(),
+                     exception.getMessage(),
+                     exception.getClass().getName());
         }
     }
 
@@ -295,11 +299,11 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
         try {
             LOG.INFO("Executing docker-compose rm...");
             dockerCompose.rm();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            LOG.WARN("docker-compose rm failed: %s (%s)", e.getMessage(), e.getClass().getName());
-        } catch (Exception e) {
-            LOG.WARN("docker-compose rm failed: %s (%s)", e.getMessage(), e.getClass().getName());
+            LOG.WARN("docker-compose rm failed: %s (%s)", exception.getMessage(), exception.getClass().getName());
+        } catch (Exception exception) {
+            LOG.WARN("docker-compose rm failed: %s (%s)", exception.getMessage(), exception.getClass().getName());
         }
     }
 
@@ -307,11 +311,11 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
         try {
             LOG.INFO("Executing docker-compose down...");
             dockerCompose.down();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            LOG.WARN("docker-compose down failed: %s (%s)", e.getMessage(), e.getClass().getName());
-        } catch (Exception e) {
-            LOG.WARN("docker-compose down failed: %s (%s)", e.getMessage(), e.getClass().getName());
+            LOG.WARN("docker-compose down failed: %s (%s)", exception.getMessage(), exception.getClass().getName());
+        } catch (Exception exception) {
+            LOG.WARN("docker-compose down failed: %s (%s)", exception.getMessage(), exception.getClass().getName());
         }
     }
 
@@ -319,11 +323,11 @@ public class DockerHelper extends PortMapper implements Initializable, Killable 
         try {
             LOG.INFO("Executing docker-compose kill...");
             dockerCompose.kill();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            LOG.WARN("docker-compose kill failed: %s (%s)", e.getMessage(), e.getClass().getName());
-        } catch (Exception e) {
-            LOG.WARN("docker-compose kill failed: %s (%s)", e.getMessage(), e.getClass().getName());
+            LOG.WARN("docker-compose kill failed: %s (%s)", exception.getMessage(), exception.getClass().getName());
+        } catch (Exception exception) {
+            LOG.WARN("docker-compose kill failed: %s (%s)", exception.getMessage(), exception.getClass().getName());
         }
     }
 }

@@ -1026,37 +1026,42 @@ public class NLS {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
                 return (V) Integer.valueOf(parseMachineString(BigDecimal.class, value).intValueExact());
-            } catch (NumberFormatException | ArithmeticException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
+            } catch (NumberFormatException | ArithmeticException exception) {
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(),
+                                                   exception);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
                 return (V) Long.valueOf(parseMachineString(BigDecimal.class, value).longValueExact());
-            } catch (NumberFormatException | ArithmeticException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
+            } catch (NumberFormatException | ArithmeticException exception) {
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(),
+                                                   exception);
             }
         }
         if (Float.class.equals(clazz) || float.class.equals(clazz)) {
             try {
                 Double result = Double.valueOf(value);
                 return (result == null) ? null : (V) Float.valueOf(result.floatValue());
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
+                                                   exception);
             }
         }
         if (Double.class.equals(clazz) || double.class.equals(clazz)) {
             try {
                 return (V) Double.valueOf(value);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
+                                                   exception);
             }
         }
         if (BigDecimal.class.equals(clazz)) {
             try {
                 return (V) new BigDecimal(value);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(), e);
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
+                                                   exception);
             }
         }
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
@@ -1071,37 +1076,37 @@ public class NLS {
         if (LocalDate.class.equals(clazz)) {
             try {
                 return (V) LocalDate.from(MACHINE_DATE_FORMAT.parse(value));
-            } catch (DateTimeParseException e) {
+            } catch (DateTimeParseException exception) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
                                                                              .set("format", "yyyy-MM-dd")
-                                                                             .format(), e);
+                                                                             .format(), exception);
             }
         }
         if (LocalDateTime.class.equals(clazz)) {
             try {
                 return (V) LocalDateTime.from(MACHINE_DATE_TIME_FORMAT.parse(value));
-            } catch (DateTimeParseException e) {
+            } catch (DateTimeParseException exception) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
                                                                              .set("format", "yyyy-MM-dd HH:mm:ss")
-                                                                             .format(), e);
+                                                                             .format(), exception);
             }
         }
         if (ZonedDateTime.class.equals(clazz)) {
             try {
                 return (V) ZonedDateTime.from(MACHINE_DATE_TIME_FORMAT.parse(value));
-            } catch (DateTimeParseException e) {
+            } catch (DateTimeParseException exception) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
                                                                              .set("format", "yyyy-MM-dd HH:mm:ss")
-                                                                             .format(), e);
+                                                                             .format(), exception);
             }
         }
         if (LocalTime.class.equals(clazz)) {
             try {
                 return (V) LocalTime.from(MACHINE_PARSE_TIME_FORMAT.parse(value));
-            } catch (DateTimeParseException e) {
+            } catch (DateTimeParseException exception) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidDate").set("value", value)
                                                                              .set("format", "H:mm[:ss]")
-                                                                             .format(), e);
+                                                                             .format(), exception);
             }
         }
 
@@ -1137,15 +1142,17 @@ public class NLS {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
                 return (V) Integer.valueOf(parseDecimalNumberFromUser(value, language).intValueExact());
-            } catch (NumberFormatException | ArithmeticException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
+            } catch (NumberFormatException | ArithmeticException exception) {
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(),
+                                                   exception);
             }
         }
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
                 return (V) Long.valueOf(parseDecimalNumberFromUser(value, language).longValueExact());
-            } catch (NumberFormatException | ArithmeticException e) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(), e);
+            } catch (NumberFormatException | ArithmeticException exception) {
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(),
+                                                   exception);
             }
         }
         if (Float.class.equals(clazz) || float.class.equals(clazz)) {
@@ -1206,8 +1213,8 @@ public class NLS {
         if (value.indexOf('.') == value.lastIndexOf('.') && value.indexOf('.') > value.length() - 4) {
             try {
                 return Double.valueOf(value);
-            } catch (Exception e) {
-                Exceptions.ignore(e);
+            } catch (Exception exception) {
+                Exceptions.ignore(exception);
             }
         }
         return null;

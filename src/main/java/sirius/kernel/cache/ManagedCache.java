@@ -233,8 +233,8 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
             } else {
                 return null;
             }
-        } catch (Exception e) {
-            throw Exceptions.handle(CacheManager.LOG, e);
+        } catch (Exception exception) {
+            throw Exceptions.handle(CacheManager.LOG, exception);
         }
     }
 
@@ -364,8 +364,8 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
             try {
                 CacheEntry<K, V> entry = (CacheEntry<K, V>) notification.getValue();
                 removeListener.invoke(Tuple.create(entry.getKey(), entry.getValue()));
-            } catch (Exception e) {
-                Exceptions.handle(e);
+            } catch (Exception exception) {
+                Exceptions.handle(exception);
             }
         }
     }

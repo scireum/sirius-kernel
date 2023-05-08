@@ -57,8 +57,8 @@ public class LookaheadReader extends Lookahead<Char> {
                 pos = 0;
             }
             return result;
-        } catch (IOException e) {
-            problemCollector.add(ParseError.error(new Char('\0', line, pos), e.getMessage()));
+        } catch (IOException exception) {
+            problemCollector.add(ParseError.error(new Char('\0', line, pos), exception.getMessage()));
             return null;
         }
     }

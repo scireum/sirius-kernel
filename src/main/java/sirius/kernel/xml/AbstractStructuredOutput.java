@@ -172,13 +172,13 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         for (RecordComponent component : object.getClass().getRecordComponents()) {
             try {
                 property(component.getName(), component.getAccessor().invoke(object));
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 throw new IllegalArgumentException(Strings.apply(
                         "Failed to serialize record component %s of record %s with type %s: %s",
                         component.getName(),
                         object,
                         object.getClass().getName(),
-                        e.getMessage()));
+                        exception.getMessage()));
             }
         }
 

@@ -164,8 +164,8 @@ public class Metrics implements EveryMinute {
     private void collectMetrics(DataCollector<Metric> collector, MetricProvider provider) {
         try {
             provider.gather(new MetricCollectorAdapter(collector));
-        } catch (Exception e) {
-            Exceptions.handle(e);
+        } catch (Exception exception) {
+            Exceptions.handle(exception);
         }
     }
 

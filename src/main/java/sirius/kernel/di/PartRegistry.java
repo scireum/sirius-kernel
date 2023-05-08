@@ -155,13 +155,13 @@ class PartRegistry implements MutableGlobalContext {
                     wireField(object, field);
                 }
             }
-        } catch (NoClassDefFoundError e) {
+        } catch (NoClassDefFoundError error) {
             if (object == null) {
                 // This is a static initialization as most probably ok (as all classes are loaded at this stage, even
                 // if they remain unused..)
                 Injector.LOG.INFO("Skipping static initialization of %s, as referenced class %s is missing...",
                                   clazz.getName(),
-                                  e.getMessage());
+                                  error.getMessage());
             } else {
                 // This seems odd, as a part has been loaded and registered - no classes should be missing here...
                 Injector.LOG.WARN(
@@ -169,7 +169,7 @@ class PartRegistry implements MutableGlobalContext {
                         object,
                         object.getClass().getName(),
                         clazz.getName(),
-                        e.getMessage());
+                        error.getMessage());
             }
         }
     }
@@ -181,14 +181,14 @@ class PartRegistry implements MutableGlobalContext {
                                                     try {
                                                         field.setAccessible(true);
                                                         p.handle(this, object, field);
-                                                    } catch (Exception e) {
+                                                    } catch (Exception exception) {
                                                         Injector.LOG.WARN("Cannot process annotation %s on %s.%s: %s "
                                                                           + "(%s)",
                                                                           p.getTrigger().getName(),
                                                                           field.getDeclaringClass().getName(),
                                                                           field.getName(),
-                                                                          e.getMessage(),
-                                                                          e.getClass().getName());
+                                                                          exception.getMessage(),
+                                                                          exception.getClass().getName());
                                                     }
                                                 });
     }
@@ -372,9 +372,9 @@ class PartRegistry implements MutableGlobalContext {
     private void initialize(Object part) {
         try {
             ((Initializable) part).initialize();
-        } catch (Exception e) {
+        } catch (Exception exception) {
             Injector.LOG.WARN("Error initializing %s (%s)", part, part.getClass().getName());
-            Injector.LOG.WARN(e);
+            Injector.LOG.WARN(exception);
         }
     }
 }

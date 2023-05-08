@@ -334,9 +334,9 @@ public class CallContext {
             }
 
             return (C) result;
-        } catch (Exception e) {
+        } catch (Exception exception) {
             throw Exceptions.handle()
-                            .error(e)
+                            .error(exception)
                             .withSystemErrorMessage("Cannot get instance of %s from current CallContext: %s (%s)",
                                                     contextType.getName())
                             .handle();
