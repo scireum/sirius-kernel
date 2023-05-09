@@ -346,4 +346,34 @@ public class Json {
         }
         return Optional.of((ArrayNode) node);
     }
+
+    /**
+     * Tries to retrieve the {@link JsonNode} at the given index of the given {@link ArrayNode}.
+     *
+     * @param arrayNode the node to retrieve the value from
+     * @param index     the index of the value to retrieve
+     * @return the value at the given index or an empty optional if the index is out of bounds or the node is null
+     */
+    public static Optional<JsonNode> tryGetAtIndex(ArrayNode arrayNode, int index) {
+        JsonNode node = arrayNode.get(index);
+        if (node == null || node.isNull()) {
+            return Optional.empty();
+        }
+        return Optional.of(node);
+    }
+
+    /**
+     * Tries to retrieve the {@link JsonNode} at the given field name of the given {@link ObjectNode}.
+     *
+     * @param objectNode the node to retrieve the value from
+     * @param fieldName  the field name of the value to retrieve
+     * @return the value at the given field name or an empty optional if the field does not exist or the node is null
+     */
+    public static Optional<JsonNode> tryGet(ObjectNode objectNode, String fieldName) {
+        JsonNode node = objectNode.get(fieldName);
+        if (node == null || node.isNull()) {
+            return Optional.empty();
+        }
+        return Optional.of(node);
+    }
 }
