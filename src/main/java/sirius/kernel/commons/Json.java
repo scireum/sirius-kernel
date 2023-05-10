@@ -21,6 +21,7 @@ import sirius.kernel.health.Log;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -239,24 +240,58 @@ public class Json {
 
     /**
      * Retrieves the {@link ObjectNode} at the given index of the given {@link ArrayNode}.
+     * <p>
+     * If the index is out of bounds or the node is not an object, an empty object is returned.
      *
      * @param arrayNode the node to retrieve the object from
      * @param index     the index of the object to retrieve
-     * @return the object at the given index
+     * @return the object at the given index or an empty object if the index is out of bounds or the node is not an object
      */
     public static ObjectNode getObjectAtIndex(ArrayNode arrayNode, int index) {
-        return (ObjectNode) arrayNode.get(index);
+        return tryGetObjectAtIndex(arrayNode, index).orElseGet(Json::createObject);
+    }
+
+    /**
+     * Tries to retrieve the {@link ObjectNode} at the given index of the given {@link ArrayNode}.
+     *
+     * @param arrayNode the node to retrieve the object from
+     * @param index     the index of the object to retrieve
+     * @return the object at the given index or an empty object if the index is out of bounds or the node is not an object
+     */
+    public static Optional<ObjectNode> tryGetObjectAtIndex(ArrayNode arrayNode, int index) {
+        JsonNode node = arrayNode.get(index);
+        if (node == null || !node.isObject()) {
+            return Optional.empty();
+        }
+        return Optional.of((ObjectNode) node);
     }
 
     /**
      * Retrieves the {@link ObjectNode} at the given field name of the given {@link ObjectNode}.
+     * <p>
+     * If the field does not exist or is not an object, an empty object is returned.
      *
      * @param objectNode the node to retrieve the object from
      * @param fieldName  the field name of the object to retrieve
-     * @return the object at the given field name
+     * @return the object at the given field name or an empty object if the field does not exist or is not an object
      */
     public static ObjectNode getObject(ObjectNode objectNode, String fieldName) {
-        return objectNode.withObject(JsonPointer.SEPARATOR + fieldName);
+        return tryGetObject(objectNode, fieldName).orElseGet(Json::createObject);
+    }
+
+    /**
+     * Tries to retrieve the {@link ObjectNode} at the given field name of the given {@link ObjectNode}.
+     *
+     * @param objectNode the node to retrieve the object from
+     * @param fieldName  the field name of the object to retrieve
+     * @return the object at the given field name or an empty optional if the field does not exist or is not an object
+     */
+    public static Optional<ObjectNode> tryGetObject(ObjectNode objectNode, String fieldName) {
+        JsonNode node = objectNode.get(fieldName);
+        if (node == null || !node.isObject()) {
+            return Optional.empty();
+        }
+        return Optional.of((ObjectNode) node);
     }
 
     /**
@@ -267,17 +302,94 @@ public class Json {
      * @return the array at the given index
      */
     public static ArrayNode getArrayAtIndex(ArrayNode arrayNode, int index) {
-        return (ArrayNode) arrayNode.get(index);
+        return tryGetArrayAtIndex(arrayNode, index).orElseGet(Json::createArray);
+    }
+
+    /**
+     * Tries to retrieve the {@link ArrayNode} at the given index of the given {@link ArrayNode}.
+     *
+     * @param arrayNode the node to retrieve the array from
+     * @param index     the index of the array to retrieve
+     * @return the array at the given index or an empty optional if the index is out of bounds or the node is not an array
+     */
+    public static Optional<ArrayNode> tryGetArrayAtIndex(ArrayNode arrayNode, int index) {
+        JsonNode node = arrayNode.get(index);
+        if (node == null || !node.isArray()) {
+            return Optional.empty();
+        }
+        return Optional.of((ArrayNode) node);
     }
 
     /**
      * Retrieves the {@link ArrayNode} at the given field name of the given {@link ObjectNode}.
+     * <p>
+     * If the field does not exist or is not an array, an empty array is returned.
      *
      * @param objectNode the node to retrieve the array from
      * @param fieldName  the field name of the array to retrieve
-     * @return the array at the given field name
+     * @return the array at the given field name or an empty array if the field does not exist or is not an array
      */
     public static ArrayNode getArray(ObjectNode objectNode, String fieldName) {
-        return objectNode.withArray(JsonPointer.SEPARATOR + fieldName);
+        return tryGetArray(objectNode, fieldName).orElseGet(Json::createArray);
+    }
+
+    /**
+     * Tries to retrieve the {@link ArrayNode} at the given field name of the given {@link ObjectNode}.
+     *
+     * @param objectNode the node to retrieve the array from
+     * @param fieldName  the field name of the array to retrieve
+     * @return the array at the given field name or an empty optional if the field does not exist or is not an array
+     */
+    public static Optional<ArrayNode> tryGetArray(ObjectNode objectNode, String fieldName) {
+        JsonNode node = objectNode.get(fieldName);
+        if (node == null || !node.isArray()) {
+            return Optional.empty();
+        }
+        return Optional.of((ArrayNode) node);
+    }
+
+    /**
+     * Tries to retrieve the {@link JsonNode} at the given index of the given {@link ArrayNode}.
+     *
+     * @param arrayNode the node to retrieve the value from
+     * @param index     the index of the value to retrieve
+     * @return the value at the given index or an empty optional if the index is out of bounds or the node is null
+     */
+    public static Optional<JsonNode> tryGetAtIndex(ArrayNode arrayNode, int index) {
+        JsonNode node = arrayNode.get(index);
+        if (node == null || node.isNull()) {
+            return Optional.empty();
+        }
+        return Optional.of(node);
+    }
+
+    /**
+     * Tries to retrieve the {@link JsonNode} at the given field name of the given {@link ObjectNode}.
+     *
+     * @param objectNode the node to retrieve the value from
+     * @param fieldName  the field name of the value to retrieve
+     * @return the value at the given field name or an empty optional if the field does not exist or the node is null
+     */
+    public static Optional<JsonNode> tryGet(ObjectNode objectNode, String fieldName) {
+        JsonNode node = objectNode.get(fieldName);
+        if (node == null || node.isNull()) {
+            return Optional.empty();
+        }
+        return Optional.of(node);
+    }
+
+    /**
+     * Tries to retrieve the {@link JsonNode} at the given pointer of the given {@link JsonNode}.
+     *
+     * @param jsonNode the node to retrieve the value from
+     * @param pointer  the pointer to the value to retrieve
+     * @return the value at the given pointer or an empty optional if the pointer does not exist or the node is null
+     */
+    public static Optional<JsonNode> tryGetAt(JsonNode jsonNode, JsonPointer pointer) {
+        JsonNode node = jsonNode.at(pointer);
+        if (node == null || node.isNull() || node.isMissingNode()) {
+            return Optional.empty();
+        }
+        return Optional.of(node);
     }
 }
