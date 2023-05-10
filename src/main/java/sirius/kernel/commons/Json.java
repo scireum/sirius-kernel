@@ -387,7 +387,7 @@ public class Json {
      */
     public static Optional<JsonNode> tryGetAt(JsonNode jsonNode, JsonPointer pointer) {
         JsonNode node = jsonNode.at(pointer);
-        if (node == null || node.isNull()) {
+        if (node == null || node.isNull() || node.isMissingNode()) {
             return Optional.empty();
         }
         return Optional.of(node);
