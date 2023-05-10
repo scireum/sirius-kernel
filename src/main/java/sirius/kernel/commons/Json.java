@@ -74,6 +74,18 @@ public class Json {
     }
 
     /**
+     * Creates a new JSON array node with the given elements.
+     *
+     * @param elements the elements to add to the array
+     * @return a new JSON array node
+     */
+    public static ArrayNode createArray(Collection<?> elements) {
+        ArrayNode arrayNode = MAPPER.createArrayNode();
+        elements.forEach(arrayNode::addPOJO);
+        return arrayNode;
+    }
+
+    /**
      * Parses the given JSON string into an {@link ObjectNode}.
      *
      * @param json the JSON string to parse
@@ -194,6 +206,16 @@ public class Json {
     public static Map<String, Object> convertToMap(ObjectNode objectNode) {
         return MAPPER.convertValue(objectNode, new TypeReference<Map<String, Object>>() {
         });
+    }
+
+    /**
+     * Converts the given map into a {@link ObjectNode}.
+     *
+     * @param map the map to convert
+     * @return the ObjectNode containing the given map's elements
+     */
+    public static ObjectNode convertFromMap(Map<String, ? extends Object> map) {
+        return MAPPER.convertValue(map, ObjectNode.class);
     }
 
     /**
