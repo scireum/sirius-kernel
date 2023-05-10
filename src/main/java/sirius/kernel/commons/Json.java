@@ -235,7 +235,7 @@ public class Json {
      * @return a deep copy of the given node
      */
     public static ObjectNode clone(ObjectNode objectNode) {
-        return parseObject(write(objectNode));
+        return objectNode.deepCopy();
     }
 
     /**
