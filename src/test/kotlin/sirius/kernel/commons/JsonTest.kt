@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -249,5 +250,39 @@ class JsonTest {
 
         val missingValue: Optional<JsonNode> = Json.tryGet(node, "baz")
         assertTrue(!missingValue.isPresent)
+    }
+
+
+    @Test
+    fun `tryValueAmount reads value from numbers and string`() {
+        val json =
+                """{"number_1": 123,"number_2": -123,"number_3": 12.3,"number_4": 1.0E+2,"string": "123","null":null}"""
+        val node = Json.parseObject(json)
+
+        assertEquals(Amount.of(123L), Json.tryValueAmount(node, "number_1").get())
+        assertEquals(Amount.of(-123L), Json.tryValueAmount(node, "number_2").get())
+        assertEquals(Amount.of(12.3), Json.tryValueAmount(node, "number_3").get())
+        assertEquals(Amount.of(100L), Json.tryValueAmount(node, "number_4").get())
+        assertEquals(Amount.of(123L), Json.tryValueAmount(node, "string").get())
+        assertTrue(Json.tryValueAmount(node, "null").isEmpty)
+    }
+
+    @Test
+    fun `tryValueString reads value from strings`() {
+        val json = """{ "number": 123, "string": "blablabla", "null": null }"""
+        val node = Json.parseObject(json)
+
+        assertTrue(Json.tryValueString(node, "number").isEmpty)
+        assertEquals("blablabla", Json.tryValueString(node, "string").get())
+        assertTrue(Json.tryValueString(node, "null").isEmpty)
+    }
+
+    @Test
+    fun `tryValueDateTime reads JS Date stringify representation aka ISO-8601 from strings`() {
+        val json = """{ "jsJsonStringifyDate": "2023-05-10T09:00:00.000Z" }"""
+        val node = Json.parseObject(json)
+
+        val expected = LocalDateTime.of(2023, 5, 10, 9, 0, 0)
+        assertEquals(expected, Json.tryValueDateTime(node, "jsJsonStringifyDate").get())
     }
 }

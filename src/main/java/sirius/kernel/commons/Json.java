@@ -19,6 +19,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -391,5 +395,63 @@ public class Json {
             return Optional.empty();
         }
         return Optional.of(node);
+    }
+
+    /**
+     * Tries to read a String value from the given {@link JsonNode} at the given field name.
+     *
+     * @param jsonNode  the node to retrieve the value from
+     * @param fieldName the field name of the value to retrieve
+     * @return the String at the given field name or an empty optional if the field does not exist or the node is null
+     */
+    public static Optional<String> tryValueString(JsonNode jsonNode, String fieldName) {
+        JsonNode node = jsonNode.get(fieldName);
+        if (node == null || node.isNull() || !node.isTextual()) {
+            return Optional.empty();
+        }
+        return Optional.of(node.asText());
+    }
+
+    /**
+     * Tries to read an {@link Amount} value from the given {@link JsonNode} at the given field name. In case no
+     * number format was used at the JSON source, we try to parse the string value as a machine string.
+     *
+     * @param jsonNode  the node to retrieve the value from
+     * @param fieldName the field name of the value to retrieve
+     * @return the value at the given field name or an empty optional if the field does not exist or the node is null
+     */
+    public static Optional<Amount> tryValueAmount(JsonNode jsonNode, String fieldName) {
+        JsonNode node = jsonNode.get(fieldName);
+        if (node == null || node.isNull()) {
+            return Optional.empty();
+        }
+        if (node.isNumber()) {
+            return Optional.of(Amount.of(node.decimalValue()));
+        }
+        if (node.isTextual()) {
+            return Optional.of(Amount.ofMachineString(node.textValue()));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Tries to read a {@link LocalDateTime} value from the given {@link JsonNode} at the given field name. JSON does
+     * not define a date format, so we fall back to ISO-8601 which is the default format e.g. used from
+     * Javascript using <code>JSON.stringify(new Date())</code>.
+     *
+     * @param jsonNode  the node to retrieve the value from
+     * @param fieldName the field name of the value to retrieve
+     * @return the value at the given field name or an empty optional if the field does not exist or the node is null
+     */
+    public static Optional<LocalDateTime> tryValueDateTime(JsonNode jsonNode, String fieldName) {
+        JsonNode node = jsonNode.get(fieldName);
+        if (node == null || node.isNull() || !node.isTextual()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(LocalDateTime.parse(node.textValue(), DateTimeFormatter.ISO_DATE_TIME));
+        } catch (DateTimeParseException e) {
+            return Optional.empty();
+        }
     }
 }
