@@ -244,10 +244,10 @@ class JsonTest {
         assertTrue(presentValue.isPresent)
         assertEquals("Alice", presentValue.get().asText())
 
-        val nullValue: Optional<JsonNode> = Json.tryGet(node, "bar")
+        val nullValue: Optional<JsonNode> = Json.tryGetAt(node, JsonPointer.valueOf("/bar"))
         assertTrue(!nullValue.isPresent)
 
-        val missingValue: Optional<JsonNode> = Json.tryGet(node, "baz")
+        val missingValue: Optional<JsonNode> = Json.tryGetAt(node, JsonPointer.valueOf("/baz"))
         assertTrue(!missingValue.isPresent)
     }
 }
