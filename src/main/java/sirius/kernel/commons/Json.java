@@ -9,6 +9,7 @@
 package sirius.kernel.commons;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -371,6 +372,21 @@ public class Json {
      */
     public static Optional<JsonNode> tryGet(ObjectNode objectNode, String fieldName) {
         JsonNode node = objectNode.get(fieldName);
+        if (node == null || node.isNull()) {
+            return Optional.empty();
+        }
+        return Optional.of(node);
+    }
+
+    /**
+     * Tries to retrieve the {@link JsonNode} at the given pointer of the given {@link JsonNode}.
+     *
+     * @param jsonNode the node to retrieve the value from
+     * @param pointer  the pointer to the value to retrieve
+     * @return the value at the given pointer or an empty optional if the pointer does not exist or the node is null
+     */
+    public static Optional<JsonNode> tryGetAt(JsonNode jsonNode, JsonPointer pointer) {
+        JsonNode node = jsonNode.at(pointer);
         if (node == null || node.isNull()) {
             return Optional.empty();
         }

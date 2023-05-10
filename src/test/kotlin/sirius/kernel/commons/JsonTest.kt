@@ -8,6 +8,7 @@
 
 package sirius.kernel.commons
 
+import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -226,6 +227,22 @@ class JsonTest {
         val presentValue: Optional<JsonNode> = Json.tryGet(node, "foo")
         assertTrue(presentValue.isPresent)
         assertEquals(1, presentValue.get().asInt())
+
+        val nullValue: Optional<JsonNode> = Json.tryGet(node, "bar")
+        assertTrue(!nullValue.isPresent)
+
+        val missingValue: Optional<JsonNode> = Json.tryGet(node, "baz")
+        assertTrue(!missingValue.isPresent)
+    }
+
+    @Test
+    fun `tryGetAt works as expected`() {
+        val json = """{ "foo": [ { "name": "Alice", "age": 30 } ], "bar": null }"""
+        val node = Json.parseObject(json)
+
+        val presentValue: Optional<JsonNode> = Json.tryGetAt(node, JsonPointer.valueOf("/foo/0/name"))
+        assertTrue(presentValue.isPresent)
+        assertEquals("Alice", presentValue.get().asText())
 
         val nullValue: Optional<JsonNode> = Json.tryGet(node, "bar")
         assertTrue(!nullValue.isPresent)
