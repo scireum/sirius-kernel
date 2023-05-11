@@ -480,7 +480,7 @@ public class Json {
         }
         try {
             return Optional.of(LocalDateTime.parse(node.textValue(), DateTimeFormatter.ISO_DATE_TIME));
-        } catch (DateTimeParseException e) {
+        } catch (DateTimeParseException exception) {
             return Optional.empty();
         }
     }
