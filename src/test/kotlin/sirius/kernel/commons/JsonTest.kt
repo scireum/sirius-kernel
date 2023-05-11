@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -249,5 +250,45 @@ class JsonTest {
 
         val missingValue: Optional<JsonNode> = Json.tryGetAt(node, JsonPointer.valueOf("/baz"))
         assertTrue(!missingValue.isPresent)
+    }
+
+
+    @Test
+    fun `getValueAmount reads value from number and string`() {
+        val json =
+                """{"number_1": 123,"number_2": -123,"number_3": 12.3,"number_4": 1.0E+2,"string": "123","null":null}"""
+        val node = Json.parseObject(json)
+
+        assertEquals(Amount.of(123L), Json.getValueAmount(node, "number_1"))
+        assertEquals(Amount.of(-123L), Json.getValueAmount(node, "number_2"))
+        assertEquals(Amount.of(12.3), Json.getValueAmount(node, "number_3"))
+        assertEquals(Amount.of(100L), Json.getValueAmount(node, "number_4"))
+        assertEquals(Amount.of(123L), Json.getValueAmount(node, "string"))
+        assertTrue(Json.getValueAmount(node, "null").isEmpty)
+        assertTrue(Json.getValueAmount(node, "missingNode").isEmpty)
+    }
+
+    @Test
+    fun `tryValueString reads string value from string, number and boolean`() {
+        val json = """{ "number": 123, "string": "blablabla", "null": null, "bool": true, "obj": {"a": "b"}, "array": [] }"""
+        val node = Json.parseObject(json)
+
+        assertEquals("123", Json.tryValueString(node, "number").get())
+        assertEquals("blablabla", Json.tryValueString(node, "string").get())
+        assertTrue(Json.tryValueString(node, "null").isEmpty)
+        assertEquals("true", Json.tryValueString(node, "bool").get())
+        assertTrue(Json.tryValueString(node, "missingNode").isEmpty)
+        assertTrue(Json.tryValueString(node, "obj").isEmpty)
+        assertTrue(Json.tryValueString(node, "array").isEmpty)
+    }
+
+    @Test
+    fun `tryValueDateTime reads JS Date stringify representation aka ISO-8601 from strings`() {
+        val json = """{ "jsJsonStringifyDate": "2023-05-10T09:00:00.000Z" }"""
+        val node = Json.parseObject(json)
+
+        val expected = LocalDateTime.of(2023, 5, 10, 9, 0, 0)
+        assertEquals(expected, Json.tryValueDateTime(node, "jsJsonStringifyDate").get())
+        assertTrue(Json.tryValueDateTime(node, "missingNode").isEmpty)
     }
 }

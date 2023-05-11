@@ -19,6 +19,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,6 +71,18 @@ public class Json {
      */
     public static ArrayNode createArray() {
         return MAPPER.createArrayNode();
+    }
+
+    /**
+     * Creates a new JSON array node with the given elements.
+     *
+     * @param elements the elements to add to the array
+     * @return a new JSON array node
+     */
+    public static ArrayNode createArray(Collection<?> elements) {
+        ArrayNode arrayNode = MAPPER.createArrayNode();
+        elements.forEach(arrayNode::addPOJO);
+        return arrayNode;
     }
 
     /**
@@ -193,6 +209,16 @@ public class Json {
     }
 
     /**
+     * Converts the given map into a {@link ObjectNode}.
+     *
+     * @param map the map to convert
+     * @return the ObjectNode containing the given map's elements
+     */
+    public static ObjectNode convertFromMap(Map<String, ? extends Object> map) {
+        return MAPPER.convertValue(map, ObjectNode.class);
+    }
+
+    /**
      * Converts the value of the given {@link JsonNode} into a Java object.
      *
      * @param node the node to convert
@@ -235,7 +261,7 @@ public class Json {
      * @return a deep copy of the given node
      */
     public static ObjectNode clone(ObjectNode objectNode) {
-        return parseObject(write(objectNode));
+        return objectNode.deepCopy();
     }
 
     /**
@@ -391,5 +417,71 @@ public class Json {
             return Optional.empty();
         }
         return Optional.of(node);
+    }
+
+    /**
+     * Tries to read a String value from the given {@link JsonNode} at the given field name. Returns the string value
+     * from string fields and tries to convert number or boolean fields to a string. Objects, arrays or null values
+     * return an empty optional.
+     *
+     * @param jsonNode  the node to retrieve the value from
+     * @param fieldName the field name of the value to retrieve
+     * @return the String at the given field name or an empty optional if the field does not exist or the node is null
+     */
+    public static Optional<String> tryValueString(JsonNode jsonNode, String fieldName) {
+        JsonNode node = jsonNode.get(fieldName);
+        if (node == null || node.isNull()) {
+            return Optional.empty();
+        }
+        if (node.isNumber() || node.isBoolean()) {
+            return Optional.of(node.asText());
+        }
+        if (node.isTextual()) {
+            return Optional.of(node.textValue());
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Reads an {@link Amount} value from the given {@link JsonNode} at the given field name. In case no
+     * number format was used at the JSON source, we try to parse the string value as a machine string.
+     *
+     * @param jsonNode  the node to retrieve the value from
+     * @param fieldName the field name of the value to retrieve
+     * @return the value at the given field name or an Amount.NOTHING if the field does not exist or the node is null
+     */
+    public static Amount getValueAmount(JsonNode jsonNode, String fieldName) {
+        JsonNode node = jsonNode.get(fieldName);
+        if (node == null || node.isNull()) {
+            return Amount.NOTHING;
+        }
+        if (node.isNumber()) {
+            return Amount.of(node.decimalValue());
+        }
+        if (node.isTextual()) {
+            return Amount.ofMachineString(node.textValue());
+        }
+        return Amount.NOTHING;
+    }
+
+    /**
+     * Tries to read a {@link LocalDateTime} value from the given {@link JsonNode} at the given field name. JSON does
+     * not define a date format, so we fall back to ISO-8601 which is the default format e.g. used from
+     * Javascript using <code>JSON.stringify(new Date())</code>.
+     *
+     * @param jsonNode  the node to retrieve the value from
+     * @param fieldName the field name of the value to retrieve
+     * @return the value at the given field name or an empty optional if the field does not exist or the node is null
+     */
+    public static Optional<LocalDateTime> tryValueDateTime(JsonNode jsonNode, String fieldName) {
+        JsonNode node = jsonNode.get(fieldName);
+        if (node == null || node.isNull() || !node.isTextual()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(LocalDateTime.parse(node.textValue(), DateTimeFormatter.ISO_DATE_TIME));
+        } catch (DateTimeParseException exception) {
+            return Optional.empty();
+        }
     }
 }
