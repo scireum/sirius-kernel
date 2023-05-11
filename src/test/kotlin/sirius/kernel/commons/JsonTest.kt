@@ -173,6 +173,22 @@ class JsonTest {
     }
 
     @Test
+    fun `tryGetObjectAt works as expected`() {
+        val json = """{ "foo": { "name": "Alice", "age": 30 }, "bar": 123 }"""
+        val node = Json.parseObject(json)
+
+        val presentObject: Optional<ObjectNode> = Json.tryGetObjectAt(node, Json.createPointer("foo"))
+        assertTrue(presentObject.isPresent)
+        assertEquals("Alice", presentObject.get().get("name").asText())
+
+        val notAnObject: Optional<ObjectNode> = Json.tryGetObjectAt(node, Json.createPointer("bar"))
+        assertTrue(!notAnObject.isPresent)
+
+        val missingObject: Optional<ObjectNode> = Json.tryGetObjectAt(node, Json.createPointer("baz"))
+        assertTrue(!missingObject.isPresent)
+    }
+
+    @Test
     fun `tryGetArrayAtIndex works as expected`() {
         val json = """[ [1, 2, 3], 123 ]"""
         val node = Json.parseArray(json)
@@ -201,6 +217,22 @@ class JsonTest {
         assertTrue(!notAnArray.isPresent)
 
         val missingArray: Optional<ArrayNode> = Json.tryGetArray(node, "baz")
+        assertTrue(!missingArray.isPresent)
+    }
+
+    @Test
+    fun `tryGetArrayAt works as expected`() {
+        val json = """{ "foo": [1, 2, 3], "bar": 123 }"""
+        val node = Json.parseObject(json)
+
+        val presentArray: Optional<ArrayNode> = Json.tryGetArrayAt(node, Json.createPointer("foo"))
+        assertTrue(presentArray.isPresent)
+        assertEquals(3, presentArray.get().size())
+
+        val notAnArray: Optional<ArrayNode> = Json.tryGetArrayAt(node, Json.createPointer("bar"))
+        assertTrue(!notAnArray.isPresent)
+
+        val missingArray: Optional<ArrayNode> = Json.tryGetArrayAt(node, Json.createPointer("baz"))
         assertTrue(!missingArray.isPresent)
     }
 

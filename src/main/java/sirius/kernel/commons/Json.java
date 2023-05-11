@@ -349,6 +349,36 @@ public class Json {
     }
 
     /**
+     * Retrieves the {@link ObjectNode} at the given pointer of the given {@link ObjectNode}.
+     * <p>
+     * If the field does not exist or is not an object, an empty object is returned.
+     *
+     * @param objectNode the node to retrieve the object from
+     * @param pointer    the pointer to the object to retrieve
+     * @return the object at the given pointer or an empty object if the field does not exist or is not an object
+     */
+    @Nonnull
+    public static ObjectNode getObjectAt(@Nonnull ObjectNode objectNode, JsonPointer pointer) {
+        return tryGetObjectAt(objectNode, pointer).orElseGet(Json::createObject);
+    }
+
+    /**
+     * Tries to retrieve the {@link ObjectNode} at the given pointer of the given {@link ObjectNode}.
+     *
+     * @param objectNode the node to retrieve the object from
+     * @param pointer    the pointer to the object to retrieve
+     * @return the object at the given pointer or an empty optional if the field does not exist or is not an object
+     */
+    @Nonnull
+    public static Optional<ObjectNode> tryGetObjectAt(@Nonnull ObjectNode objectNode, JsonPointer pointer) {
+        JsonNode node = objectNode.at(pointer);
+        if (node == null || !node.isObject() || node.isMissingNode()) {
+            return Optional.empty();
+        }
+        return Optional.of((ObjectNode) node);
+    }
+
+    /**
      * Retrieves the {@link ArrayNode} at the given index of the given {@link ArrayNode}.
      *
      * @param arrayNode the node to retrieve the array from
@@ -401,6 +431,36 @@ public class Json {
     public static Optional<ArrayNode> tryGetArray(@Nonnull ObjectNode objectNode, String fieldName) {
         JsonNode node = objectNode.get(fieldName);
         if (node == null || !node.isArray()) {
+            return Optional.empty();
+        }
+        return Optional.of((ArrayNode) node);
+    }
+
+    /**
+     * Retrieves the {@link ArrayNode} at the given pointer of the given {@link ObjectNode}.
+     * <p>
+     * If the field does not exist or is not an array, an empty array is returned.
+     *
+     * @param objectNode the node to retrieve the array from
+     * @param pointer    the pointer to the array to retrieve
+     * @return the array at the given pointer or an empty array if the field does not exist or is not an array
+     */
+    @Nonnull
+    public static ArrayNode getArrayAt(@Nonnull ObjectNode objectNode, JsonPointer pointer) {
+        return tryGetArrayAt(objectNode, pointer).orElseGet(Json::createArray);
+    }
+
+    /**
+     * Tries to retrieve the {@link ArrayNode} at the given field name of the given {@link ObjectNode}.
+     *
+     * @param objectNode the node to retrieve the array from
+     * @param pointer    the pointer to the array to retrieve
+     * @return the array at the given pointer or an empty optional if the field does not exist or is not an array
+     */
+    @Nonnull
+    public static Optional<ArrayNode> tryGetArrayAt(@Nonnull ObjectNode objectNode, JsonPointer pointer) {
+        JsonNode node = objectNode.at(pointer);
+        if (node == null || !node.isArray() || node.isMissingNode()) {
             return Optional.empty();
         }
         return Optional.of((ArrayNode) node);
