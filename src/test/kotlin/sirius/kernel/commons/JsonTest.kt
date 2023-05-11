@@ -270,7 +270,8 @@ class JsonTest {
 
     @Test
     fun `tryValueString reads string value from string, number and boolean`() {
-        val json = """{ "number": 123, "string": "blablabla", "null": null, "bool": true, "obj": {"a": "b"}, "array": [] }"""
+        val json =
+                """{ "number": 123, "string": "blablabla", "null": null, "bool": true, "obj": {"a": "b"}, "array": [] }"""
         val node = Json.parseObject(json)
 
         assertEquals("123", Json.tryValueString(node, "number").get())
@@ -290,5 +291,12 @@ class JsonTest {
         val expected = LocalDateTime.of(2023, 5, 10, 9, 0, 0)
         assertEquals(expected, Json.tryValueDateTime(node, "jsJsonStringifyDate").get())
         assertTrue(Json.tryValueDateTime(node, "missingNode").isEmpty)
+    }
+
+    @Test
+    fun `JSON pointers can be created properly`() {
+        assertEquals(JsonPointer.compile("/foo/bar"), Json.createPointer("foo", "bar"))
+        assertEquals(JsonPointer.compile("/foo"), Json.createPointer("foo"))
+        assertEquals(JsonPointer.compile("/foo/0/bar"), Json.createPointer("foo", 0, "bar"))
     }
 }

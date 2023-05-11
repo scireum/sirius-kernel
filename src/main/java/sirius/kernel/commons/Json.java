@@ -24,10 +24,12 @@ import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -75,6 +77,20 @@ public class Json {
     @Nonnull
     public static ArrayNode createArray() {
         return MAPPER.createArrayNode();
+    }
+
+    /**
+     * Creates a pointer for the given property names.
+     *
+     * @param propertyNames the names of the properties to create a pointer for
+     * @return a pointer for the given property names
+     */
+    public static JsonPointer createPointer(Object... propertyNames) {
+        if (propertyNames.length == 0) {
+            return JsonPointer.empty();
+        }
+        String path = "/" + Arrays.stream(propertyNames).map(Object::toString).collect(Collectors.joining("/"));
+        return JsonPointer.compile(path);
     }
 
     /**
