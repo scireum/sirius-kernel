@@ -19,13 +19,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -60,6 +64,7 @@ public class Json {
      *
      * @return a new JSON object node
      */
+    @Nonnull
     public static ObjectNode createObject() {
         return MAPPER.createObjectNode();
     }
@@ -69,8 +74,23 @@ public class Json {
      *
      * @return a new JSON array node
      */
+    @Nonnull
     public static ArrayNode createArray() {
         return MAPPER.createArrayNode();
+    }
+
+    /**
+     * Creates a pointer for the given property names.
+     *
+     * @param propertyNames the names of the properties to create a pointer for
+     * @return a pointer for the given property names
+     */
+    public static JsonPointer createPointer(Object... propertyNames) {
+        if (propertyNames.length == 0) {
+            return JsonPointer.empty();
+        }
+        String path = "/" + Arrays.stream(propertyNames).map(Object::toString).collect(Collectors.joining("/"));
+        return JsonPointer.compile(path);
     }
 
     /**
@@ -79,7 +99,7 @@ public class Json {
      * @param elements the elements to add to the array
      * @return a new JSON array node
      */
-    public static ArrayNode createArray(Collection<?> elements) {
+    public static ArrayNode createArray(@Nonnull Collection<?> elements) {
         ArrayNode arrayNode = MAPPER.createArrayNode();
         elements.forEach(arrayNode::addPOJO);
         return arrayNode;
@@ -214,7 +234,7 @@ public class Json {
      * @param map the map to convert
      * @return the ObjectNode containing the given map's elements
      */
-    public static ObjectNode convertFromMap(Map<String, ? extends Object> map) {
+    public static ObjectNode convertFromMap(Map<String, ?> map) {
         return MAPPER.convertValue(map, ObjectNode.class);
     }
 
@@ -224,7 +244,8 @@ public class Json {
      * @param node the node to convert
      * @return the Java object representing the given nodes value
      */
-    public static Object convertToJavaObject(JsonNode node) {
+    @Nullable
+    public static Object convertToJavaObject(@Nullable JsonNode node) {
         if (node == null || node.isNull() || node.isMissingNode()) {
             return null;
         }
@@ -237,7 +258,8 @@ public class Json {
      * @param node the node to convert
      * @return the value representing the given nodes value
      */
-    public static Value convertToValue(JsonNode node) {
+    @Nonnull
+    public static Value convertToValue(@Nullable JsonNode node) {
         if (node == null || node.isNull() || node.isMissingNode()) {
             return Value.EMPTY;
         }
@@ -250,7 +272,8 @@ public class Json {
      * @param arrayNode the node to stream
      * @return a stream of the entries of the given node
      */
-    public static Stream<JsonNode> streamEntries(ArrayNode arrayNode) {
+    @Nonnull
+    public static Stream<JsonNode> streamEntries(@Nonnull ArrayNode arrayNode) {
         return StreamSupport.stream(arrayNode.spliterator(), false);
     }
 
@@ -260,7 +283,8 @@ public class Json {
      * @param objectNode the node to clone
      * @return a deep copy of the given node
      */
-    public static ObjectNode clone(ObjectNode objectNode) {
+    @Nonnull
+    public static ObjectNode clone(@Nonnull ObjectNode objectNode) {
         return objectNode.deepCopy();
     }
 
@@ -273,7 +297,8 @@ public class Json {
      * @param index     the index of the object to retrieve
      * @return the object at the given index or an empty object if the index is out of bounds or the node is not an object
      */
-    public static ObjectNode getObjectAtIndex(ArrayNode arrayNode, int index) {
+    @Nonnull
+    public static ObjectNode getObjectAtIndex(@Nonnull ArrayNode arrayNode, int index) {
         return tryGetObjectAtIndex(arrayNode, index).orElseGet(Json::createObject);
     }
 
@@ -284,7 +309,8 @@ public class Json {
      * @param index     the index of the object to retrieve
      * @return the object at the given index or an empty object if the index is out of bounds or the node is not an object
      */
-    public static Optional<ObjectNode> tryGetObjectAtIndex(ArrayNode arrayNode, int index) {
+    @Nonnull
+    public static Optional<ObjectNode> tryGetObjectAtIndex(@Nonnull ArrayNode arrayNode, int index) {
         JsonNode node = arrayNode.get(index);
         if (node == null || !node.isObject()) {
             return Optional.empty();
@@ -301,7 +327,8 @@ public class Json {
      * @param fieldName  the field name of the object to retrieve
      * @return the object at the given field name or an empty object if the field does not exist or is not an object
      */
-    public static ObjectNode getObject(ObjectNode objectNode, String fieldName) {
+    @Nonnull
+    public static ObjectNode getObject(@Nonnull ObjectNode objectNode, String fieldName) {
         return tryGetObject(objectNode, fieldName).orElseGet(Json::createObject);
     }
 
@@ -312,9 +339,40 @@ public class Json {
      * @param fieldName  the field name of the object to retrieve
      * @return the object at the given field name or an empty optional if the field does not exist or is not an object
      */
-    public static Optional<ObjectNode> tryGetObject(ObjectNode objectNode, String fieldName) {
+    @Nonnull
+    public static Optional<ObjectNode> tryGetObject(@Nonnull ObjectNode objectNode, String fieldName) {
         JsonNode node = objectNode.get(fieldName);
         if (node == null || !node.isObject()) {
+            return Optional.empty();
+        }
+        return Optional.of((ObjectNode) node);
+    }
+
+    /**
+     * Retrieves the {@link ObjectNode} at the given pointer of the given {@link ObjectNode}.
+     * <p>
+     * If the field does not exist or is not an object, an empty object is returned.
+     *
+     * @param jsonNode the node to retrieve the object from
+     * @param pointer  the pointer to the object to retrieve
+     * @return the object at the given pointer or an empty object if the field does not exist or is not an object
+     */
+    @Nonnull
+    public static ObjectNode getObjectAt(@Nonnull JsonNode jsonNode, JsonPointer pointer) {
+        return tryGetObjectAt(jsonNode, pointer).orElseGet(Json::createObject);
+    }
+
+    /**
+     * Tries to retrieve the {@link ObjectNode} at the given pointer of the given {@link ObjectNode}.
+     *
+     * @param jsonNode the node to retrieve the object from
+     * @param pointer  the pointer to the object to retrieve
+     * @return the object at the given pointer or an empty optional if the field does not exist or is not an object
+     */
+    @Nonnull
+    public static Optional<ObjectNode> tryGetObjectAt(@Nonnull JsonNode jsonNode, JsonPointer pointer) {
+        JsonNode node = jsonNode.at(pointer);
+        if (node == null || !node.isObject() || node.isMissingNode()) {
             return Optional.empty();
         }
         return Optional.of((ObjectNode) node);
@@ -327,7 +385,8 @@ public class Json {
      * @param index     the index of the array to retrieve
      * @return the array at the given index
      */
-    public static ArrayNode getArrayAtIndex(ArrayNode arrayNode, int index) {
+    @Nonnull
+    public static ArrayNode getArrayAtIndex(@Nonnull ArrayNode arrayNode, int index) {
         return tryGetArrayAtIndex(arrayNode, index).orElseGet(Json::createArray);
     }
 
@@ -338,7 +397,8 @@ public class Json {
      * @param index     the index of the array to retrieve
      * @return the array at the given index or an empty optional if the index is out of bounds or the node is not an array
      */
-    public static Optional<ArrayNode> tryGetArrayAtIndex(ArrayNode arrayNode, int index) {
+    @Nonnull
+    public static Optional<ArrayNode> tryGetArrayAtIndex(@Nonnull ArrayNode arrayNode, int index) {
         JsonNode node = arrayNode.get(index);
         if (node == null || !node.isArray()) {
             return Optional.empty();
@@ -355,7 +415,8 @@ public class Json {
      * @param fieldName  the field name of the array to retrieve
      * @return the array at the given field name or an empty array if the field does not exist or is not an array
      */
-    public static ArrayNode getArray(ObjectNode objectNode, String fieldName) {
+    @Nonnull
+    public static ArrayNode getArray(@Nonnull ObjectNode objectNode, String fieldName) {
         return tryGetArray(objectNode, fieldName).orElseGet(Json::createArray);
     }
 
@@ -366,9 +427,40 @@ public class Json {
      * @param fieldName  the field name of the array to retrieve
      * @return the array at the given field name or an empty optional if the field does not exist or is not an array
      */
-    public static Optional<ArrayNode> tryGetArray(ObjectNode objectNode, String fieldName) {
+    @Nonnull
+    public static Optional<ArrayNode> tryGetArray(@Nonnull ObjectNode objectNode, String fieldName) {
         JsonNode node = objectNode.get(fieldName);
         if (node == null || !node.isArray()) {
+            return Optional.empty();
+        }
+        return Optional.of((ArrayNode) node);
+    }
+
+    /**
+     * Retrieves the {@link ArrayNode} at the given pointer of the given {@link ObjectNode}.
+     * <p>
+     * If the field does not exist or is not an array, an empty array is returned.
+     *
+     * @param jsonNode the node to retrieve the array from
+     * @param pointer  the pointer to the array to retrieve
+     * @return the array at the given pointer or an empty array if the field does not exist or is not an array
+     */
+    @Nonnull
+    public static ArrayNode getArrayAt(@Nonnull JsonNode jsonNode, JsonPointer pointer) {
+        return tryGetArrayAt(jsonNode, pointer).orElseGet(Json::createArray);
+    }
+
+    /**
+     * Tries to retrieve the {@link ArrayNode} at the given field name of the given {@link ObjectNode}.
+     *
+     * @param jsonNode the node to retrieve the array from
+     * @param pointer  the pointer to the array to retrieve
+     * @return the array at the given pointer or an empty optional if the field does not exist or is not an array
+     */
+    @Nonnull
+    public static Optional<ArrayNode> tryGetArrayAt(@Nonnull JsonNode jsonNode, JsonPointer pointer) {
+        JsonNode node = jsonNode.at(pointer);
+        if (node == null || !node.isArray() || node.isMissingNode()) {
             return Optional.empty();
         }
         return Optional.of((ArrayNode) node);
@@ -381,7 +473,8 @@ public class Json {
      * @param index     the index of the value to retrieve
      * @return the value at the given index or an empty optional if the index is out of bounds or the node is null
      */
-    public static Optional<JsonNode> tryGetAtIndex(ArrayNode arrayNode, int index) {
+    @Nonnull
+    public static Optional<JsonNode> tryGetAtIndex(@Nonnull ArrayNode arrayNode, int index) {
         JsonNode node = arrayNode.get(index);
         if (node == null || node.isNull()) {
             return Optional.empty();
@@ -396,7 +489,8 @@ public class Json {
      * @param fieldName  the field name of the value to retrieve
      * @return the value at the given field name or an empty optional if the field does not exist or the node is null
      */
-    public static Optional<JsonNode> tryGet(ObjectNode objectNode, String fieldName) {
+    @Nonnull
+    public static Optional<JsonNode> tryGet(@Nonnull ObjectNode objectNode, String fieldName) {
         JsonNode node = objectNode.get(fieldName);
         if (node == null || node.isNull()) {
             return Optional.empty();
@@ -411,7 +505,8 @@ public class Json {
      * @param pointer  the pointer to the value to retrieve
      * @return the value at the given pointer or an empty optional if the pointer does not exist or the node is null
      */
-    public static Optional<JsonNode> tryGetAt(JsonNode jsonNode, JsonPointer pointer) {
+    @Nonnull
+    public static Optional<JsonNode> tryGetAt(@Nonnull JsonNode jsonNode, JsonPointer pointer) {
         JsonNode node = jsonNode.at(pointer);
         if (node == null || node.isNull() || node.isMissingNode()) {
             return Optional.empty();
@@ -428,7 +523,8 @@ public class Json {
      * @param fieldName the field name of the value to retrieve
      * @return the String at the given field name or an empty optional if the field does not exist or the node is null
      */
-    public static Optional<String> tryValueString(JsonNode jsonNode, String fieldName) {
+    @Nonnull
+    public static Optional<String> tryValueString(@Nonnull JsonNode jsonNode, String fieldName) {
         JsonNode node = jsonNode.get(fieldName);
         if (node == null || node.isNull()) {
             return Optional.empty();
@@ -448,9 +544,10 @@ public class Json {
      *
      * @param jsonNode  the node to retrieve the value from
      * @param fieldName the field name of the value to retrieve
-     * @return the value at the given field name or an Amount.NOTHING if the field does not exist or the node is null
+     * @return the value at the given field name or {@link Amount#NOTHING)} if the field does not exist or the node is null
      */
-    public static Amount getValueAmount(JsonNode jsonNode, String fieldName) {
+    @Nonnull
+    public static Amount getValueAmount(@Nonnull JsonNode jsonNode, String fieldName) {
         JsonNode node = jsonNode.get(fieldName);
         if (node == null || node.isNull()) {
             return Amount.NOTHING;
@@ -467,13 +564,14 @@ public class Json {
     /**
      * Tries to read a {@link LocalDateTime} value from the given {@link JsonNode} at the given field name. JSON does
      * not define a date format, so we fall back to ISO-8601 which is the default format e.g. used from
-     * Javascript using <code>JSON.stringify(new Date())</code>.
+     * Javascript using {@code JSON.stringify(new Date())}.
      *
      * @param jsonNode  the node to retrieve the value from
      * @param fieldName the field name of the value to retrieve
      * @return the value at the given field name or an empty optional if the field does not exist or the node is null
      */
-    public static Optional<LocalDateTime> tryValueDateTime(JsonNode jsonNode, String fieldName) {
+    @Nonnull
+    public static Optional<LocalDateTime> tryValueDateTime(@Nonnull JsonNode jsonNode, String fieldName) {
         JsonNode node = jsonNode.get(fieldName);
         if (node == null || node.isNull() || !node.isTextual()) {
             return Optional.empty();
