@@ -420,7 +420,9 @@ public class Json {
     }
 
     /**
-     * Tries to read a String value from the given {@link JsonNode} at the given field name.
+     * Tries to read a String value from the given {@link JsonNode} at the given field name. Returns the string value
+     * from string fields and tries to convert number or boolean fields to a string. Objects, arrays or null values
+     * return an empty optional.
      *
      * @param jsonNode  the node to retrieve the value from
      * @param fieldName the field name of the value to retrieve
@@ -428,32 +430,38 @@ public class Json {
      */
     public static Optional<String> tryValueString(JsonNode jsonNode, String fieldName) {
         JsonNode node = jsonNode.get(fieldName);
-        if (node == null || node.isNull() || !node.isTextual()) {
+        if (node == null || node.isNull()) {
             return Optional.empty();
+        }
+        if (node.isNumber() || node.isBoolean()) {
+            return Optional.of(node.asText());
+        }
+        if (node.isTextual()) {
+            return Optional.of(node.textValue());
         }
         return Optional.of(node.asText());
     }
 
     /**
-     * Tries to read an {@link Amount} value from the given {@link JsonNode} at the given field name. In case no
+     * Reads an {@link Amount} value from the given {@link JsonNode} at the given field name. In case no
      * number format was used at the JSON source, we try to parse the string value as a machine string.
      *
      * @param jsonNode  the node to retrieve the value from
      * @param fieldName the field name of the value to retrieve
-     * @return the value at the given field name or an empty optional if the field does not exist or the node is null
+     * @return the value at the given field name or an Amount.NOTHING if the field does not exist or the node is null
      */
-    public static Optional<Amount> tryValueAmount(JsonNode jsonNode, String fieldName) {
+    public static Amount getValueAmount(JsonNode jsonNode, String fieldName) {
         JsonNode node = jsonNode.get(fieldName);
         if (node == null || node.isNull()) {
-            return Optional.empty();
+            return Amount.NOTHING;
         }
         if (node.isNumber()) {
-            return Optional.of(Amount.of(node.decimalValue()));
+            return Amount.of(node.decimalValue());
         }
         if (node.isTextual()) {
-            return Optional.of(Amount.ofMachineString(node.textValue()));
+            return Amount.ofMachineString(node.textValue());
         }
-        return Optional.empty();
+        return Amount.NOTHING;
     }
 
     /**

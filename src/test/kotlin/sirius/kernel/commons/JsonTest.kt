@@ -254,27 +254,30 @@ class JsonTest {
 
 
     @Test
-    fun `tryValueAmount reads value from numbers and string`() {
+    fun `getValueAmount reads value from number and string`() {
         val json =
                 """{"number_1": 123,"number_2": -123,"number_3": 12.3,"number_4": 1.0E+2,"string": "123","null":null}"""
         val node = Json.parseObject(json)
 
-        assertEquals(Amount.of(123L), Json.tryValueAmount(node, "number_1").get())
-        assertEquals(Amount.of(-123L), Json.tryValueAmount(node, "number_2").get())
-        assertEquals(Amount.of(12.3), Json.tryValueAmount(node, "number_3").get())
-        assertEquals(Amount.of(100L), Json.tryValueAmount(node, "number_4").get())
-        assertEquals(Amount.of(123L), Json.tryValueAmount(node, "string").get())
-        assertTrue(Json.tryValueAmount(node, "null").isEmpty)
+        assertEquals(Amount.of(123L), Json.getValueAmount(node, "number_1"))
+        assertEquals(Amount.of(-123L), Json.getValueAmount(node, "number_2"))
+        assertEquals(Amount.of(12.3), Json.getValueAmount(node, "number_3"))
+        assertEquals(Amount.of(100L), Json.getValueAmount(node, "number_4"))
+        assertEquals(Amount.of(123L), Json.getValueAmount(node, "string"))
+        assertTrue(Json.getValueAmount(node, "null").isEmpty)
+        assertTrue(Json.getValueAmount(node, "missingNode").isEmpty)
     }
 
     @Test
-    fun `tryValueString reads value from strings`() {
-        val json = """{ "number": 123, "string": "blablabla", "null": null }"""
+    fun `tryValueString reads string value from string, number and boolean`() {
+        val json = """{ "number": 123, "string": "blablabla", "null": null, "bool": true }"""
         val node = Json.parseObject(json)
 
-        assertTrue(Json.tryValueString(node, "number").isEmpty)
+        assertEquals("123", Json.tryValueString(node, "number").get())
         assertEquals("blablabla", Json.tryValueString(node, "string").get())
         assertTrue(Json.tryValueString(node, "null").isEmpty)
+        assertEquals("true", Json.tryValueString(node, "bool").get())
+        assertTrue(Json.tryValueString(node, "missingNode").isEmpty)
     }
 
     @Test
@@ -284,5 +287,6 @@ class JsonTest {
 
         val expected = LocalDateTime.of(2023, 5, 10, 9, 0, 0)
         assertEquals(expected, Json.tryValueDateTime(node, "jsJsonStringifyDate").get())
+        assertTrue(Json.tryValueDateTime(node, "missingNode").isEmpty)
     }
 }
