@@ -439,7 +439,7 @@ public class Json {
         if (node.isTextual()) {
             return Optional.of(node.textValue());
         }
-        return Optional.of(node.asText());
+        return Optional.empty();
     }
 
     /**

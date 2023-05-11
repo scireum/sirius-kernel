@@ -270,7 +270,7 @@ class JsonTest {
 
     @Test
     fun `tryValueString reads string value from string, number and boolean`() {
-        val json = """{ "number": 123, "string": "blablabla", "null": null, "bool": true }"""
+        val json = """{ "number": 123, "string": "blablabla", "null": null, "bool": true, "obj": {"a": "b"}, "array": [] }"""
         val node = Json.parseObject(json)
 
         assertEquals("123", Json.tryValueString(node, "number").get())
@@ -278,6 +278,8 @@ class JsonTest {
         assertTrue(Json.tryValueString(node, "null").isEmpty)
         assertEquals("true", Json.tryValueString(node, "bool").get())
         assertTrue(Json.tryValueString(node, "missingNode").isEmpty)
+        assertTrue(Json.tryValueString(node, "obj").isEmpty)
+        assertTrue(Json.tryValueString(node, "array").isEmpty)
     }
 
     @Test
