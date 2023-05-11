@@ -218,7 +218,7 @@ public class Json {
      * @param map the map to convert
      * @return the ObjectNode containing the given map's elements
      */
-    public static ObjectNode convertFromMap(Map<String, ? extends Object> map) {
+    public static ObjectNode convertFromMap(Map<String, ?> map) {
         return MAPPER.convertValue(map, ObjectNode.class);
     }
 
@@ -468,7 +468,7 @@ public class Json {
      *
      * @param jsonNode  the node to retrieve the value from
      * @param fieldName the field name of the value to retrieve
-     * @return the value at the given field name or an Amount.NOTHING if the field does not exist or the node is null
+     * @return the value at the given field name or {@link Amount#NOTHING)} if the field does not exist or the node is null
      */
     @Nonnull
     public static Amount getValueAmount(@Nonnull JsonNode jsonNode, String fieldName) {
@@ -488,7 +488,7 @@ public class Json {
     /**
      * Tries to read a {@link LocalDateTime} value from the given {@link JsonNode} at the given field name. JSON does
      * not define a date format, so we fall back to ISO-8601 which is the default format e.g. used from
-     * Javascript using <code>JSON.stringify(new Date())</code>.
+     * Javascript using {@code JSON.stringify(new Date())}.
      *
      * @param jsonNode  the node to retrieve the value from
      * @param fieldName the field name of the value to retrieve
