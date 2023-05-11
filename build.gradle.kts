@@ -9,7 +9,7 @@
 plugins {
     id("java-library")
     id("com.scireum.sirius-parent") version "11.0.3"
-    id("org.sonarqube") version "4.0.0.2929"
+    id("org.sonarqube") version "3.4.0.2513"
 }
 
 dependencies {
