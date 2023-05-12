@@ -235,6 +235,9 @@ public class Json {
      * @return the ObjectNode containing the given map's elements
      */
     public static ObjectNode convertFromMap(Map<String, ?> map) {
+        if (map == null) {
+            return createObject();
+        }
         return MAPPER.convertValue(map, ObjectNode.class);
     }
 
