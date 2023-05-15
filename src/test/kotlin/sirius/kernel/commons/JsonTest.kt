@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertEquals
@@ -41,7 +42,7 @@ class JsonTest {
 
     @Test
     fun `valid object is parsed properly`() {
-        val json = """{ "foo": 123, "bar": "baz" }"""
+        val json = """{"foo":123,"bar":"baz"}"""
         val node = Json.parseObject(json)
         assertEquals(2, node.size())
         assertEquals(123, node["foo"].asInt())
@@ -85,9 +86,15 @@ class JsonTest {
 
     @Test
     fun `valid object is written properly`() {
-        val node = Json.createObject().put("foo", 123).put("bar", "baz")
+        val date = LocalDate.now()
+        val time = LocalDateTime.now()
+        val node = Json.createObject()
+                .put("foo", 123)
+                .put("bar", "baz")
+                .putPOJO("date", date)
+                .putPOJO("time", time)
         val json = Json.write(node)
-        assertEquals("""{"foo":123,"bar":"baz"}""", json)
+        assertEquals("""{"foo":123,"bar":"baz","date":"$date","time":"$time"}""", json)
     }
 
     @Test
@@ -316,13 +323,24 @@ class JsonTest {
     }
 
     @Test
-    fun `tryValueDateTime reads JS Date stringify representation aka ISO-8601 from strings`() {
-        val json = """{ "jsJsonStringifyDate": "2023-05-10T09:00:00.000Z" }"""
-        val node = Json.parseObject(json)
+    fun `dates and times can be read properly`() {
 
-        val expected = LocalDateTime.of(2023, 5, 10, 9, 0, 0)
-        assertEquals(expected, Json.tryValueDateTime(node, "jsJsonStringifyDate").get())
-        assertTrue(Json.tryValueDateTime(node, "missingNode").isEmpty)
+        // JS Date stringify representation aka ISO-8601 from strings
+        val jsJson = """{ "jsJsonStringifyDate": "2023-01-01T13:37:00.000Z" }"""
+        val jsNode = Json.parseObject(jsJson)
+
+        val expectedJsDateTime = LocalDateTime.of(2023, 1, 1, 13, 37, 0, 0)
+        assertEquals(expectedJsDateTime, Json.tryValueDateTime(jsNode, "jsJsonStringifyDate").get())
+        assertTrue(Json.tryValueDateTime(jsNode, "missingNode").isEmpty)
+
+        // ISO-8601 String representations like generated via Json.write (Jackson -> Jackson)
+        val jacksonJson = """{"date":"2023-01-01","time":"2023-01-01T13:37:00.123456"}"""
+        val jacksonNode = Json.parseObject(jacksonJson)
+
+        val expectedJacksonDate = LocalDate.of(2023, 1, 1)
+        val expectedJacksonDateTime = LocalDateTime.of(2023, 1, 1, 13, 37, 0, 123456000)
+        assertEquals(expectedJacksonDate, Json.tryValueDate(jacksonNode, "date").get())
+        assertEquals(expectedJacksonDateTime, Json.tryValueDateTime(jacksonNode, "time").get())
     }
 
     @Test
