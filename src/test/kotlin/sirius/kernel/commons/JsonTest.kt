@@ -42,13 +42,11 @@ class JsonTest {
 
     @Test
     fun `valid object is parsed properly`() {
-        val json = """{"foo":123,"bar":"baz","date":"2023-01-01","time":"2023-01-01T13:37:00.123456"}"""
+        val json = """{"foo":123,"bar":"baz"}"""
         val node = Json.parseObject(json)
-        assertEquals(4, node.size())
+        assertEquals(2, node.size())
         assertEquals(123, node["foo"].asInt())
         assertEquals("baz", node["bar"].asText())
-        assertEquals(LocalDate.of(2023, 1, 1), Json.tryValueDate(node, "date").get())
-        assertEquals(LocalDateTime.of(2023, 1, 1, 13, 37, 0, 123456000), Json.tryValueDateTime(node, "time").get())
     }
 
     @Test
@@ -325,13 +323,24 @@ class JsonTest {
     }
 
     @Test
-    fun `tryValueDateTime reads JS Date stringify representation aka ISO-8601 from strings`() {
-        val json = """{ "jsJsonStringifyDate": "2023-05-10T09:00:00.000Z" }"""
-        val node = Json.parseObject(json)
+    fun `dates and times can be read properly`() {
 
-        val expected = LocalDateTime.of(2023, 5, 10, 9, 0, 0)
-        assertEquals(expected, Json.tryValueDateTime(node, "jsJsonStringifyDate").get())
-        assertTrue(Json.tryValueDateTime(node, "missingNode").isEmpty)
+        // JS Date stringify representation aka ISO-8601 from strings
+        val jsJson = """{ "jsJsonStringifyDate": "2023-01-01T13:37:00.000Z" }"""
+        val jsNode = Json.parseObject(jsJson)
+
+        val expectedJsDateTime = LocalDateTime.of(2023, 1, 1, 13, 37, 0, 0)
+        assertEquals(expectedJsDateTime, Json.tryValueDateTime(jsNode, "jsJsonStringifyDate").get())
+        assertTrue(Json.tryValueDateTime(jsNode, "missingNode").isEmpty)
+
+        // ISO-8601 String representations like generated via Json.write (Jackson -> Jackson)
+        val jacksonJson = """{"date":"2023-01-01","time":"2023-01-01T13:37:00.123456"}"""
+        val jacksonNode = Json.parseObject(jacksonJson)
+
+        val expectedJacksonDate = LocalDate.of(2023, 1, 1)
+        val expectedJacksonDateTime = LocalDateTime.of(2023, 1, 1, 13, 37, 0, 123456000)
+        assertEquals(expectedJacksonDate, Json.tryValueDate(jacksonNode, "date").get())
+        assertEquals(expectedJacksonDateTime, Json.tryValueDateTime(jacksonNode, "time").get())
     }
 
     @Test
