@@ -14,13 +14,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -54,7 +58,10 @@ public class Json {
      */
     public static final ObjectMapper MAPPER =
             new ObjectMapper().configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-                              .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+                              .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
+                              .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                              .setDateFormat(new StdDateFormat().withColonInTimeZone(true))
+                              .registerModule(new JavaTimeModule());
 
     private Json() {
     }
@@ -562,6 +569,28 @@ public class Json {
             return Amount.ofMachineString(node.textValue());
         }
         return Amount.NOTHING;
+    }
+
+    /**
+     * Tries to read a {@link LocalDate} value from the given {@link JsonNode} at the given field name. JSON does
+     * not define a date format, so we fall back to ISO-8601 which is the default format e.g. used from
+     * Javascript using {@code JSON.stringify(new Date())}.
+     *
+     * @param jsonNode  the node to retrieve the value from
+     * @param fieldName the field name of the value to retrieve
+     * @return the value at the given field name or an empty optional if the field does not exist or the node is null
+     */
+    @Nonnull
+    public static Optional<LocalDate> tryValueDate(@Nonnull JsonNode jsonNode, String fieldName) {
+        JsonNode node = jsonNode.get(fieldName);
+        if (node == null || node.isNull() || !node.isTextual()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(LocalDate.parse(node.textValue(), DateTimeFormatter.ISO_DATE));
+        } catch (DateTimeParseException exception) {
+            return Optional.empty();
+        }
     }
 
     /**

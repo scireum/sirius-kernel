@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertEquals
@@ -41,11 +42,13 @@ class JsonTest {
 
     @Test
     fun `valid object is parsed properly`() {
-        val json = """{ "foo": 123, "bar": "baz" }"""
+        val json = """{"foo":123,"bar":"baz","date":"2023-01-01","time":"2023-01-01T13:37:00.123456"}"""
         val node = Json.parseObject(json)
-        assertEquals(2, node.size())
+        assertEquals(4, node.size())
         assertEquals(123, node["foo"].asInt())
         assertEquals("baz", node["bar"].asText())
+        assertEquals(LocalDate.of(2023, 1, 1), Json.tryValueDate(node, "date").get())
+        assertEquals(LocalDateTime.of(2023, 1, 1, 13, 37, 0, 123456000), Json.tryValueDateTime(node, "time").get())
     }
 
     @Test
@@ -85,9 +88,15 @@ class JsonTest {
 
     @Test
     fun `valid object is written properly`() {
-        val node = Json.createObject().put("foo", 123).put("bar", "baz")
+        val date = LocalDate.now()
+        val time = LocalDateTime.now()
+        val node = Json.createObject()
+                .put("foo", 123)
+                .put("bar", "baz")
+                .putPOJO("date", date)
+                .putPOJO("time", time)
         val json = Json.write(node)
-        assertEquals("""{"foo":123,"bar":"baz"}""", json)
+        assertEquals("""{"foo":123,"bar":"baz","date":"$date","time":"$time"}""", json)
     }
 
     @Test
