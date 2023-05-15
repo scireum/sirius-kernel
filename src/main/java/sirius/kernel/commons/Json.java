@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -60,7 +59,6 @@ public class Json {
             new ObjectMapper().configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
                               .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
                               .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                              .setDateFormat(new StdDateFormat().withColonInTimeZone(true))
                               .registerModule(new JavaTimeModule());
 
     private Json() {
@@ -573,8 +571,7 @@ public class Json {
 
     /**
      * Tries to read a {@link LocalDate} value from the given {@link JsonNode} at the given field name. JSON does
-     * not define a date format, so we fall back to ISO-8601 which is the default format e.g. used from
-     * Javascript using {@code JSON.stringify(new Date())}.
+     * not define a date format, so we fall back to ISO-8601.
      *
      * @param jsonNode  the node to retrieve the value from
      * @param fieldName the field name of the value to retrieve
