@@ -168,9 +168,9 @@ public class Setup {
     public static void main(String[] args) {
         try {
             Sirius.start(new Setup(Mode.DEVELOP, Setup.class.getClassLoader()));
-        } catch (Exception e) {
-            Sirius.LOG.SEVERE("Unknown startup error: " + e.getLocalizedMessage());
-            throw e;
+        } catch (Exception exception) {
+            Sirius.LOG.SEVERE("Unknown startup error: " + exception.getLocalizedMessage());
+            throw exception;
         }
     }
 
@@ -320,9 +320,9 @@ public class Setup {
                 config = config.withFallback(fallback);
             }
             return config;
-        } catch (Exception e) {
-            Exceptions.ignore(e);
-            Sirius.LOG.WARN("Cannot load %s: %s", resourceName, e.getMessage());
+        } catch (Exception exception) {
+            Exceptions.ignore(exception);
+            Sirius.LOG.WARN("Cannot load %s: %s", resourceName, exception.getMessage());
             return fallback;
         }
     }
@@ -430,10 +430,10 @@ public class Setup {
     public Config applyEnvironment(@Nonnull Config config) {
         try {
             return ConfigFactory.parseMap(System.getenv(), "Environment").withFallback(config);
-        } catch (Exception e) {
+        } catch (Exception exception) {
             Sirius.LOG.WARN("An error occured while reading the environment: %s (%s)",
-                            e.getMessage(),
-                            e.getClass().getName());
+                            exception.getMessage(),
+                            exception.getClass().getName());
             return config;
         }
     }

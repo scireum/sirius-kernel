@@ -190,8 +190,8 @@ public class StructuredNode {
             }
 
             return new StructuredNode(result, namespaceContext);
-        } catch (XPathExpressionException e) {
-            throw new IllegalArgumentException(e);
+        } catch (XPathExpressionException exception) {
+            throw new IllegalArgumentException(exception);
         }
     }
 
@@ -220,8 +220,8 @@ public class StructuredNode {
                 resultList.add(new StructuredNode(result.item(i), namespaceContext));
             }
             return resultList;
-        } catch (XPathExpressionException e) {
-            throw new IllegalArgumentException(e);
+        } catch (XPathExpressionException exception) {
+            throw new IllegalArgumentException(exception);
         }
     }
 
@@ -248,8 +248,8 @@ public class StructuredNode {
             }
 
             return result.toString();
-        } catch (XPathExpressionException e) {
-            throw new IllegalArgumentException(e);
+        } catch (XPathExpressionException exception) {
+            throw new IllegalArgumentException(exception);
         }
     }
 
@@ -335,8 +335,8 @@ public class StructuredNode {
                 return serializeNodeAsXML(child, includeOuter);
             }
             return result.toString().trim();
-        } catch (XPathExpressionException e) {
-            throw new IllegalArgumentException(e);
+        } catch (XPathExpressionException exception) {
+            throw new IllegalArgumentException(exception);
         }
     }
 
@@ -345,8 +345,8 @@ public class StructuredNode {
             StringWriter writer = new StringWriter();
             XMLGenerator.writeXML(result, writer, StandardCharsets.UTF_8.name(), true, includeOuter);
             return writer.toString();
-        } catch (Exception e) {
-            Exceptions.handle(e);
+        } catch (Exception exception) {
+            Exceptions.handle(exception);
             return null;
         }
     }
@@ -418,8 +418,8 @@ public class StructuredNode {
             StringWriter writer = new StringWriter();
             XMLGenerator.writeXML(node, writer, StandardCharsets.UTF_8.name(), true);
             return writer.toString();
-        } catch (Exception e) {
-            Exceptions.handle(e);
+        } catch (Exception exception) {
+            Exceptions.handle(exception);
             return node.toString();
         }
     }

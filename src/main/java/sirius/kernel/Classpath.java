@@ -82,8 +82,8 @@ public class Classpath {
             try {
                 componentRoots = Collections.list(loader.getResources(componentName));
                 componentRoots.sort(Comparator.comparing(URL::toString));
-            } catch (IOException e) {
-                LOG.SEVERE(e);
+            } catch (IOException exception) {
+                LOG.SEVERE(exception);
             }
         }
         return componentRoots;
@@ -117,19 +117,19 @@ public class Classpath {
                     file = file.getParentFile();
                 }
                 addFiles(file, result, file);
-            } catch (URISyntaxException e) {
-                LOG.SEVERE(e);
+            } catch (URISyntaxException exception) {
+                LOG.SEVERE(exception);
             }
         } else if ("jar".equals(url.getProtocol())) {
             try {
                 JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
-                Enumeration<JarEntry> e = jar.entries();
-                while (e.hasMoreElements()) {
-                    JarEntry entry = e.nextElement();
+                Enumeration<JarEntry> enumeration = jar.entries();
+                while (enumeration.hasMoreElements()) {
+                    JarEntry entry = enumeration.nextElement();
                     result.add(entry.getName());
                 }
-            } catch (IOException e) {
-                LOG.SEVERE(e);
+            } catch (IOException exception) {
+                LOG.SEVERE(exception);
             }
         }
         return result.stream();

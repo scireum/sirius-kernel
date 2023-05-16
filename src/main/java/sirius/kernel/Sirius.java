@@ -187,8 +187,8 @@ public class Sirius {
                 total++;
                 numEnabled += enabled ? 1 : 0;
                 LOG.DEBUG_INFO(Strings.apply("  * %s: %b", framework, enabled));
-            } catch (Exception e) {
-                Exceptions.ignore(e);
+            } catch (Exception exception) {
+                Exceptions.ignore(exception);
                 LOG.WARN("Cannot convert status '%s' of framework '%s' to a boolean! Framework will be disabled.",
                          entry.getValue().render(),
                          framework);
@@ -229,9 +229,9 @@ public class Sirius {
         LOG.INFO("Starting: %s", lifecycle.getClass().getName());
         try {
             lifecycle.started();
-        } catch (Exception e) {
+        } catch (Exception exception) {
             Exceptions.handle()
-                      .error(e)
+                      .error(exception)
                       .to(LOG)
                       .withSystemErrorMessage("Startup of: %s failed!", lifecycle.getClass().getName())
                       .handle();
@@ -310,8 +310,8 @@ public class Sirius {
                 String configName = "customizations/" + conf + "/settings.conf";
                 try {
                     config = ConfigFactory.parseResources(setup.getLoader(), configName).withFallback(config);
-                } catch (Exception e) {
-                    handleConfigError(configName, e);
+                } catch (Exception exception) {
+                    handleConfigError(configName, exception);
                 }
             } else {
                 LOG.INFO("customization '" + conf + "' has no settings.conf...");
@@ -347,8 +347,8 @@ public class Sirius {
                 try {
                     LOG.INFO("Loading test config: %s", value.group());
                     config = config.withFallback(ConfigFactory.parseResources(setup.getLoader(), value.group()));
-                } catch (Exception e) {
-                    handleConfigError(value.group(), e);
+                } catch (Exception exception) {
+                    handleConfigError(value.group(), exception);
                 }
             });
         }
@@ -359,8 +359,8 @@ public class Sirius {
                 try {
                     LOG.INFO("Loading config: %s", value.group());
                     config = config.withFallback(ConfigFactory.parseResources(setup.getLoader(), value.group()));
-                } catch (Exception e) {
-                    handleConfigError(value.group(), e);
+                } catch (Exception exception) {
+                    handleConfigError(value.group(), exception);
                 }
             }
         });
@@ -380,9 +380,9 @@ public class Sirius {
         classpath.getComponentRoots().forEach(url -> LOG.INFO("Classpath: %s", url));
     }
 
-    private static void handleConfigError(String file, Exception e) {
-        Exceptions.ignore(e);
-        Sirius.LOG.WARN("Cannot load %s: %s", file, e.getMessage());
+    private static void handleConfigError(String file, Exception exception) {
+        Exceptions.ignore(exception);
+        Sirius.LOG.WARN("Cannot load %s: %s", file, exception.getMessage());
     }
 
     /**
@@ -408,7 +408,7 @@ public class Sirius {
         outputActiveOperations();
         stopLifecycleParticipants();
         outputActiveOperations();
-        waitForLifecyclePaticipants();
+        waitForLifecycleParticipants();
         outputThreadState();
         initialized = false;
         settings = null;
@@ -424,7 +424,7 @@ public class Sirius {
         LOG.INFO(SEPARATOR_LINE);
     }
 
-    private static void waitForLifecyclePaticipants() {
+    private static void waitForLifecycleParticipants() {
         LOG.INFO("Awaiting system halt...");
         LOG.INFO(SEPARATOR_LINE);
         for (int i = lifecycleKillParticipants.size() - 1; i >= 0; i--) {
@@ -433,9 +433,9 @@ public class Sirius {
                 Watch w = Watch.start();
                 killable.awaitTermination();
                 LOG.INFO("Terminated: %s (Took: %s)", killable.getClass().getName(), w.duration());
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 Exceptions.handle()
-                          .error(e)
+                          .error(exception)
                           .to(LOG)
                           .withSystemErrorMessage("Termination of: %s failed!", killable.getClass().getName())
                           .handle();
@@ -460,9 +460,9 @@ public class Sirius {
         LOG.INFO("Stopping: %s", lifecycle.getClass().getName());
         try {
             lifecycle.stopped();
-        } catch (Exception e) {
+        } catch (Exception exception) {
             Exceptions.handle()
-                      .error(e)
+                      .error(exception)
                       .to(LOG)
                       .withSystemErrorMessage("Stop of: %s failed!", lifecycle.getClass().getName())
                       .handle();

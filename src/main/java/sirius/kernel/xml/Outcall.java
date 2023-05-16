@@ -287,8 +287,8 @@ public class Outcall {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
             modifyClient().sslContext(sslContext);
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw Exceptions.handle(e);
+        } catch (NoSuchAlgorithmException | KeyManagementException exception) {
+            throw Exceptions.handle(exception);
         }
 
         return this;
@@ -459,15 +459,18 @@ public class Outcall {
 
     private void performRequest() throws IOException {
         Watch watch = Watch.start();
-        try (Operation op = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri().getPath(),
-                                          client.connectTimeout().orElse(defaultConnectTimeout).plusSeconds(1))) {
+        try (Operation operation = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri()
+                                                                                                        .getPath(),
+                                                 client.connectTimeout()
+                                                       .orElse(defaultConnectTimeout)
+                                                       .plusSeconds(1))) {
             response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-        } catch (InterruptedException e) {
+        } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IOException("Thread was interrupted!");
-        } catch (HttpTimeoutException | ConnectException | SocketTimeoutException e) {
+        } catch (HttpTimeoutException | ConnectException | SocketTimeoutException exception) {
             addToTimeoutBlacklist();
-            throw e;
+            throw exception;
         } finally {
             timeToFirstByte.addValue(watch.elapsedMillis());
             if (Microtiming.isEnabled()) {
@@ -530,9 +533,9 @@ public class Outcall {
     public String getHeaderField(String name) {
         try {
             connect();
-        } catch (IOException e) {
+        } catch (IOException exception) {
             // This is consistent with the internal behaviour of HttpUrlConnection :-/ ...
-            Exceptions.ignore(e);
+            Exceptions.ignore(exception);
             return null;
         }
         if (response == null) {
@@ -553,8 +556,8 @@ public class Outcall {
                 return Optional.of(LocalDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME)
                                                 .atZone(ZoneId.systemDefault())
                                                 .toLocalDateTime());
-            } catch (Exception e) {
-                Exceptions.ignore(e);
+            } catch (Exception exception) {
+                Exceptions.ignore(exception);
                 return Optional.empty();
             }
         });
@@ -627,14 +630,14 @@ public class Outcall {
             return StandardCharsets.UTF_8;
         }
         try {
-            Matcher m = CHARSET_PATTERN.matcher(contentType);
-            if (m.find()) {
-                return Charset.forName(m.group(1).trim().toUpperCase());
+            Matcher matcher = CHARSET_PATTERN.matcher(contentType);
+            if (matcher.find()) {
+                return Charset.forName(matcher.group(1).trim().toUpperCase());
             } else {
                 return StandardCharsets.UTF_8;
             }
-        } catch (Exception e) {
-            Exceptions.ignore(e);
+        } catch (Exception exception) {
+            Exceptions.ignore(exception);
             return StandardCharsets.UTF_8;
         }
     }

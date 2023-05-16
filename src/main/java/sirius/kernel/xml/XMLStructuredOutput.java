@@ -384,6 +384,29 @@ public class XMLStructuredOutput extends AbstractStructuredOutput {
     }
 
     /**
+     * Adds a property containing attributes to the current object.
+     * <p>
+     * In contrast to {@link #property(String, Object, Attribute...)}, this method will use a CDATA section for the data.
+     *
+     * @param name       the name of the property
+     * @param data       the value of the property
+     * @param attributes the attributes for the element
+     * @return the output itself for fluent method calls
+     */
+    public XMLStructuredOutput cdataProperty(String name, Object data, Attribute... attributes) {
+        try {
+            beginObject(name, attributes);
+            transformerHandler.startCDATA();
+            text(data);
+            transformerHandler.endCDATA();
+            endObject();
+        } catch (SAXException exception) {
+            throw handleOutputException(exception);
+        }
+        return this;
+    }
+
+    /**
      * Creates a text node for the current node.
      *
      * @param text the text to be added to the current node

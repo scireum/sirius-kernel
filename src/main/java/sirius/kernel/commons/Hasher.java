@@ -40,8 +40,8 @@ public class Hasher {
     private static MessageDigest obtainDigest(String name) {
         try {
             return MessageDigest.getInstance(name);
-        } catch (NoSuchAlgorithmException e) {
-            Log.SYSTEM.SEVERE(e);
+        } catch (NoSuchAlgorithmException exception) {
+            Log.SYSTEM.SEVERE(exception);
             return null;
         }
     }
@@ -54,8 +54,8 @@ public class Hasher {
     public static Hasher md5() {
         try {
             return new Hasher((MessageDigest) MD5.clone());
-        } catch (Exception e) {
-            throw Exceptions.handle(Log.SYSTEM, e);
+        } catch (Exception exception) {
+            throw Exceptions.handle(Log.SYSTEM, exception);
         }
     }
 
@@ -67,8 +67,8 @@ public class Hasher {
     public static Hasher sha1() {
         try {
             return new Hasher((MessageDigest) SHA1.clone());
-        } catch (Exception e) {
-            throw Exceptions.handle(Log.SYSTEM, e);
+        } catch (Exception exception) {
+            throw Exceptions.handle(Log.SYSTEM, exception);
         }
     }
 
@@ -80,8 +80,8 @@ public class Hasher {
     public static Hasher sha256() {
         try {
             return new Hasher((MessageDigest) SHA256.clone());
-        } catch (Exception e) {
-            throw Exceptions.handle(Log.SYSTEM, e);
+        } catch (Exception exception) {
+            throw Exceptions.handle(Log.SYSTEM, exception);
         }
     }
 
@@ -93,8 +93,8 @@ public class Hasher {
     public static Hasher sha512() {
         try {
             return new Hasher((MessageDigest) SHA512.clone());
-        } catch (Exception e) {
-            throw Exceptions.handle(Log.SYSTEM, e);
+        } catch (Exception exception) {
+            throw Exceptions.handle(Log.SYSTEM, exception);
         }
     }
 
@@ -195,8 +195,8 @@ public class Hasher {
     public Hasher hashFile(File file) {
         try (FileInputStream input = new FileInputStream(file)) {
             hashStream(input);
-        } catch (IOException e) {
-            throw Exceptions.handle(Log.SYSTEM, e);
+        } catch (IOException exception) {
+            throw Exceptions.handle(Log.SYSTEM, exception);
         }
         return this;
     }

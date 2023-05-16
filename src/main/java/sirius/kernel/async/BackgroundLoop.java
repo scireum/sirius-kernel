@@ -129,8 +129,8 @@ public abstract class BackgroundLoop {
             if (shouldExecute()) {
                 executeWork();
             }
-        } catch (Exception e) {
-            Exceptions.handle(Tasks.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(Tasks.LOG, exception);
         }
 
         loop();
@@ -299,8 +299,8 @@ public abstract class BackgroundLoop {
 
         try {
             loop.executeWork();
-        } catch (Exception e) {
-            Exceptions.handle(Tasks.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(Tasks.LOG, exception);
         }
     }
 }

@@ -274,9 +274,9 @@ public class Strings {
         if (isFilled(value)) {
             try {
                 return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
-            } catch (UnsupportedEncodingException e) {
+            } catch (UnsupportedEncodingException exception) {
                 // Cannot happen if Java-Version is > 1.4....
-                Exceptions.ignore(e);
+                Exceptions.ignore(exception);
             }
         }
         return value;
@@ -293,8 +293,8 @@ public class Strings {
         if (isFilled(value)) {
             try {
                 return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
-            } catch (UnsupportedEncodingException e) {
-                throw Exceptions.handle(e);
+            } catch (UnsupportedEncodingException exception) {
+                throw Exceptions.handle(exception);
             }
         }
         return value;

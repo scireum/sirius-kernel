@@ -293,13 +293,13 @@ public class Exceptions {
                                                     location,
                                                     CallContext.getCurrent().getMDC(),
                                                     result));
-                    } catch (Exception e) {
+                    } catch (Exception exception) {
                         // Just log the exception - anything else might call a rather long infinite loop
                         LOG.SEVERE(new Exception(Strings.apply(
                                 "An error occurred while calling the ExceptionHandler: %s - %s (%s)",
                                 handler,
-                                e.getMessage(),
-                                e.getClass().getName()), e));
+                                exception.getMessage(),
+                                exception.getClass().getName()), exception));
                     }
                 }
             } finally {
