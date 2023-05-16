@@ -8,7 +8,7 @@
 
 plugins {
     id("java-library")
-    id("com.scireum.sirius-parent") version "11.0.3"
+    id("com.scireum.sirius-parent") version "11.0.4"
     id("org.sonarqube") version "3.4.0.2513"
 }
 
@@ -30,7 +30,8 @@ dependencies {
     // Required, as the version provided by docker-compose-rule-core has security issues
     api("commons-io:commons-io:2.11.0")
     // Required, as the version provided by docker-compose-rule-core has security issues
-    api("com.fasterxml.jackson.core:jackson-databind:2.14.0-rc1")
+    api("com.fasterxml.jackson.core:jackson-databind")
+    api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     // Required, as the version provided by docker-compose-rule-core has security issues
     api("org.yaml:snakeyaml:2.0")
 }
