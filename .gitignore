@@ -4,3 +4,4 @@ target
 instance.conf
 .gradle
 build
+out
