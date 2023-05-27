@@ -10,6 +10,7 @@ plugins {
     id("java-library")
     id("com.scireum.sirius-parent") version "11.0.5"
     id("org.sonarqube") version "3.4.0.2513"
+    id("io.github.joselion.pretty-jupiter") version "2.2.0"
 }
 
 dependencies {
