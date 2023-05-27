@@ -2,6 +2,7 @@
   <configuration default="false" name="Run sirius-kernel" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="sirius.kernel.Setup"/>
     <module name="sirius-kernel.main"/>
+    <option name="PROGRAM_PARAMETERS" value="-Xmx=1G"/>
     <method v="2">
       <option name="Make" enabled="true"/>
     </method>
