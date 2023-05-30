@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -93,8 +94,9 @@ class JsonTest {
                 .put("bar", "baz")
                 .putPOJO("date", date)
                 .putPOJO("time", time)
+        val formattedTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(time)
         val json = Json.write(node)
-        assertEquals("""{"foo":123,"bar":"baz","date":"$date","time":"$time"}""", json)
+        assertEquals("""{"foo":123,"bar":"baz","date":"$date","time":"$formattedTime"}""", json)
     }
 
     @Test
