@@ -46,4 +46,5 @@ sonarqube {
 testlogger {
     showSimpleNames = true
     showStandardStreams = true
+    slowThreshold = 2000
 }
