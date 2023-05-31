@@ -50,7 +50,7 @@ steps:
   - name: test
     image: scireum/sirius-build-jdk18
     commands:
-      - ./gradlew clean testWithoutNightly
+      - ./gradlew testWithoutNightly
     volumes: *scireum_volumes
     when:
       event:
