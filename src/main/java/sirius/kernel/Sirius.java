@@ -404,7 +404,6 @@ public class Sirius {
         started = false;
 
         LOG.INFO("Stopping Sirius");
-        LOG.INFO("This is a test");
         LOG.INFO(SEPARATOR_LINE);
         outputActiveOperations();
         stopLifecycleParticipants();
