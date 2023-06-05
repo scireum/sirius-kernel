@@ -241,6 +241,7 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
      * @return the internally used <tt>BigDecimal</tt>
      */
     @Nullable
+    @JsonValue
     public BigDecimal getAmount() {
         return value;
     }
@@ -915,7 +916,6 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
      * @return the amount formatted in a language independent matter and rounded to two decimal digits or an empty
      * string if the underlying amount is empty
      */
-    @JsonValue
     public String toMachineString() {
         if (isEmpty()) {
             return "";
