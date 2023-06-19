@@ -8,6 +8,7 @@
 
 package sirius.kernel.commons;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import sirius.kernel.nls.NLS;
 
@@ -132,6 +133,7 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
      * @return an <tt>Amount</tt> representing the given input. <tt>NOTHING</tt> if the input was empty.
      */
     @Nonnull
+    @JsonCreator
     public static Amount of(@Nullable BigDecimal amount) {
         if (amount == null) {
             return NOTHING;
