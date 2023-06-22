@@ -649,7 +649,7 @@ public class Strings {
     @Nonnull
     @SuppressWarnings("java:S2637")
     @Explain("isEmpty properly handles null cases")
-    public String cleanup(@Nullable String inputString, @Nonnull Set<Cleanups> cleanups) {
+    public static String cleanup(@Nullable String inputString, @Nonnull Set<Cleanups> cleanups) {
         if (Strings.isEmpty(inputString)) {
             return "";
         }

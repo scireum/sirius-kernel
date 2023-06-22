@@ -2,6 +2,7 @@ package sirius.kernel.commons;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -153,5 +154,18 @@ class StringsTest {
         assertEquals("Hello", Strings.reduceCharacters("Héllo"));
         assertEquals("AOEO", Strings.reduceCharacters("AÖO"));
         assertEquals("AEAAE", Strings.reduceCharacters("ÄAÄ"));
+    }
+
+    @Test
+    void cleanup() {
+        assertEquals("Hel lo", Strings.cleanup("Hel lo ", EnumSet.of(Strings.Cleanups.TRIM)));
+        assertEquals("Hel lo ", Strings.cleanup("Hel  lo ", EnumSet.of(Strings.Cleanups.REDUCE_WHITESPACES)));
+        assertEquals("Hello", Strings.cleanup("Hel  lo", EnumSet.of(Strings.Cleanups.REMOVE_WHITESPACES)));
+        assertEquals("Hello", Strings.cleanup("Héllo", EnumSet.of(Strings.Cleanups.REDUCE_CHARACTERS)));
+        assertEquals("hello",
+                     Strings.cleanup("Héllo",
+                                     EnumSet.of(Strings.Cleanups.REDUCE_CHARACTERS, Strings.Cleanups.LOWERCASE)));
+        assertEquals("Hello", Strings.cleanup("Hel-lo", EnumSet.of(Strings.Cleanups.REMOVE_PUNCTUATION)));
+        assertEquals("Hello", Strings.cleanup("\10Hello", EnumSet.of(Strings.Cleanups.REMOVE_CONTROL_CHARS)));
     }
 }
