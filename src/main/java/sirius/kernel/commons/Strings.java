@@ -76,6 +76,11 @@ public class Strings {
                                                     'w',
                                                     'z'};
 
+    private static final Pattern PATTERN_CONTROL_CHARACTERS = Pattern.compile("\\p{Cntrl}");
+    private static final Pattern PATTERN_WHITESPACE = Pattern.compile("\\s");
+    private static final Pattern PATTERN_WHITESPACES = Pattern.compile("\\s+");
+    private static final Pattern PATTERN_PUNCTATION = Pattern.compile("\\p{Punct}");
+
     private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
     static {
@@ -657,21 +662,21 @@ public class Strings {
         String value = inputString;
 
         if (cleanups.contains(Cleanups.REMOVE_CONTROL_CHARS)) {
-            value = value.replaceAll("\\p{Cntrl}", "");
+            value = PATTERN_CONTROL_CHARACTERS.matcher(value).replaceAll("");
         }
         if (cleanups.contains(Cleanups.REDUCE_CHARACTERS)) {
             value = reduceCharacters(value);
         }
         if (cleanups.contains(Cleanups.REMOVE_WHITESPACES)) {
-            value = value.replaceAll("\\s", "");
+            value = PATTERN_WHITESPACE.matcher(value).replaceAll("");
         } else if (cleanups.contains(Cleanups.REDUCE_WHITESPACES)) {
-            value = value.replaceAll("\\s+", " ");
+            value = PATTERN_WHITESPACES.matcher(value).replaceAll(" ");
         }
         if (cleanups.contains(Cleanups.LOWERCASE)) {
             value = value.toLowerCase();
         }
         if (cleanups.contains(Cleanups.REMOVE_PUNCTUATION)) {
-            value = value.replaceAll("\\p{Punct}", "");
+            value = PATTERN_PUNCTATION.matcher(value).replaceAll("");
         }
         if (cleanups.contains(Cleanups.TRIM)) {
             value = value.trim();
