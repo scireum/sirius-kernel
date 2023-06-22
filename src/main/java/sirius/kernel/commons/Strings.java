@@ -8,12 +8,10 @@
 
 package sirius.kernel.commons;
 
-import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -273,12 +271,7 @@ public class Strings {
     @Nullable
     public static String urlEncode(@Nullable String value) {
         if (isFilled(value)) {
-            try {
-                return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
-            } catch (UnsupportedEncodingException exception) {
-                // Cannot happen if Java-Version is > 1.4....
-                Exceptions.ignore(exception);
-            }
+            return URLEncoder.encode(value, StandardCharsets.UTF_8);
         }
         return value;
     }
@@ -292,11 +285,7 @@ public class Strings {
     @Nullable
     public static String urlDecode(@Nullable String value) {
         if (isFilled(value)) {
-            try {
-                return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
-            } catch (UnsupportedEncodingException exception) {
-                throw Exceptions.handle(exception);
-            }
+            return URLDecoder.decode(value, StandardCharsets.UTF_8);
         }
         return value;
     }
@@ -755,7 +744,7 @@ public class Strings {
      * <p>
      * Note that if <tt>padding</tt> consists of several characters, the final string might be longer than
      * <tt>minLength</tt> as no substring but only the full value of <tt>padding</tt> is used to pad.
-     *
+     * <p>
      * <b>Implementation detail:</b> This method checks if padding is necessary at all. If not, it directly returns the
      * given input. This should enable inlining and therefore create a fast path if no padding is necessary.
      *
@@ -777,7 +766,7 @@ public class Strings {
      * <p>
      * Note that if <tt>padding</tt> consists of several characters, the final string might be longer than
      * <tt>minLength</tt> as no substring but only the full value of <tt>padding</tt> is used to pad.
-     *
+     * <p>
      * <b>Implementation detail:</b> This method checks if padding is necessary at all. If not, it directly returns the
      * given input. This should enable inlining and therefore create a fast path if no padding is necessary.
      *
