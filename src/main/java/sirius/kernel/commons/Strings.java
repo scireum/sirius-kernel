@@ -600,49 +600,6 @@ public class Strings {
     }
 
     /**
-     * Defines a set of cleanup operations that can be applied to a string.
-     */
-    public enum Cleanups {
-
-        /**
-         * Removes any ASCII control characters from the string.
-         */
-        REMOVE_CONTROL_CHARS,
-
-        /**
-         * Reduces all umlauts and decorated latin characters to their base character.
-         *
-         * @see #reduceCharacters(String)
-         */
-        REDUCE_CHARACTERS,
-
-        /**
-         * Reduces multiple whitespaces to a single <tt>blank</tt>.
-         */
-        REDUCE_WHITESPACES,
-
-        /**
-         * Removes all whitespaces from the string.
-         */
-        REMOVE_WHITESPACES,
-
-        /**
-         * Trims whitespace from the string.
-         */
-        TRIM,
-
-        /**
-         * Transforms the string into lower case.
-         */
-        LOWERCASE,
-
-        /**
-         * Removes all punctuation from the string.
-         */
-        REMOVE_PUNCTUATION,
-    }
-
-    /**
      * Applies the given set of cleanup on the given string.
      * <p>
      * Note that empty/<tt>null</tt> inputs will always result in an empty string.
