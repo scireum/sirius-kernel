@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
@@ -602,6 +603,92 @@ public class Strings {
             return null;
         }
         return object.toString().trim();
+    }
+
+    /**
+     * Defines a set of cleanup operations that can be applied to a string.
+     */
+    public enum Cleanups {
+
+        /**
+         * Removes any ASCII control characters from the string.
+         */
+        REMOVE_CONTROL_CHARS,
+
+        /**
+         * Reduces all umlauts and decorated latin characters to their base character.
+         *
+         * @see #reduceCharacters(String)
+         */
+        REDUCE_CHARACTERS,
+
+        /**
+         * Reduces multiple whitespaces to a single <tt>blank</tt>.
+         */
+        REDUCE_WHITESPACES,
+
+        /**
+         * Removes all whitespaces from the string.
+         */
+        REMOVE_WHITESPACES,
+
+        /**
+         * Trims whitespace from the string.
+         */
+        TRIM,
+
+        /**
+         * Transforms the string into lower case.
+         */
+        LOWERCASE,
+
+        /**
+         * Removes all punctuation from the string.
+         */
+        REMOVE_PUNCTUATION,
+    }
+
+    /**
+     * Applies the given set of cleanup on the given string.
+     * <p>
+     * Note that empty/<tt>null</tt> inputs will always result in an empty string.
+     *
+     * @param inputString the string to clean-up
+     * @param cleanups    the operations to perform
+     * @return the cleaned up string
+     */
+    @Nonnull
+    @SuppressWarnings("java:S2637")
+    @Explain("isEmpty properly handles null cases")
+    public String cleanup(@Nullable String inputString, @Nonnull Set<Cleanups> cleanups) {
+        if (Strings.isEmpty(inputString)) {
+            return "";
+        }
+
+        String value = inputString;
+
+        if (cleanups.contains(Cleanups.REMOVE_CONTROL_CHARS)) {
+            value = value.replaceAll("\\p{Cntrl}", "");
+        }
+        if (cleanups.contains(Cleanups.REDUCE_CHARACTERS)) {
+            value = reduceCharacters(value);
+        }
+        if (cleanups.contains(Cleanups.REMOVE_WHITESPACES)) {
+            value = value.replaceAll("\\s", "");
+        } else if (cleanups.contains(Cleanups.REDUCE_WHITESPACES)) {
+            value = value.replaceAll("\\s+", " ");
+        }
+        if (cleanups.contains(Cleanups.LOWERCASE)) {
+            value = value.toLowerCase();
+        }
+        if (cleanups.contains(Cleanups.REMOVE_PUNCTUATION)) {
+            value = value.replaceAll("\\p{Punct}", "");
+        }
+        if (cleanups.contains(Cleanups.TRIM)) {
+            value = value.trim();
+        }
+
+        return value;
     }
 
     /**
