@@ -158,14 +158,13 @@ class StringsTest {
 
     @Test
     void cleanup() {
-        assertEquals("Hel lo", Strings.cleanup("Hel lo ", EnumSet.of(Cleanups.TRIM)));
-        assertEquals("Hel lo ", Strings.cleanup("Hel  lo ", EnumSet.of(Cleanups.REDUCE_WHITESPACES)));
-        assertEquals("Hello", Strings.cleanup("Hel  lo", EnumSet.of(Cleanups.REMOVE_WHITESPACES)));
-        assertEquals("Hello", Strings.cleanup("Héllo", EnumSet.of(Cleanups.REDUCE_CHARACTERS)));
-        assertEquals("hello",
-                     Strings.cleanup("Héllo",
-                                     EnumSet.of(Cleanups.REDUCE_CHARACTERS, Cleanups.LOWERCASE)));
-        assertEquals("Hello", Strings.cleanup("Hel-lo", EnumSet.of(Cleanups.REMOVE_PUNCTUATION)));
-        assertEquals("Hello", Strings.cleanup("\10Hello", EnumSet.of(Cleanups.REMOVE_CONTROL_CHARS)));
+        assertEquals("Hel lo", Strings.cleanup("Hel lo ", EnumSet.of(Cleanup.TRIM)));
+        assertEquals("Hel lo ", Strings.cleanup("Hel  lo ", EnumSet.of(Cleanup.REDUCE_WHITESPACES)));
+        assertEquals("Hello", Strings.cleanup("Hel  lo", EnumSet.of(Cleanup.REMOVE_WHITESPACES)));
+        assertEquals("Hello", Strings.cleanup("Héllo", EnumSet.of(Cleanup.REDUCE_CHARACTERS)));
+        assertEquals("hello", Strings.cleanup("Héllo", EnumSet.of(Cleanup.REDUCE_CHARACTERS, Cleanup.LOWERCASE)));
+        assertEquals("HELLO", Strings.cleanup("Héllo", EnumSet.of(Cleanup.REDUCE_CHARACTERS, Cleanup.UPPERCASE)));
+        assertEquals("Hello", Strings.cleanup("Hel-lo", EnumSet.of(Cleanup.REMOVE_PUNCTUATION)));
+        assertEquals("Hello", Strings.cleanup("\10Hello", EnumSet.of(Cleanup.REMOVE_CONTROL_CHARS)));
     }
 }

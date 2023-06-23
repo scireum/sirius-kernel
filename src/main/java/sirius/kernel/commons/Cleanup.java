@@ -15,7 +15,7 @@ import java.util.Set;
  *
  * @see Strings#cleanup(String, Set)
  */
-public enum Cleanups {
+public enum Cleanup {
 
     /**
      * Removes any ASCII control characters from the string.
@@ -48,6 +48,11 @@ public enum Cleanups {
      * Transforms the string into lower case.
      */
     LOWERCASE,
+
+    /**
+     * Transforms the string into upper case.
+     */
+    UPPERCASE,
 
     /**
      * Removes all punctuation from the string.

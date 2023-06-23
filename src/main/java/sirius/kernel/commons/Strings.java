@@ -611,31 +611,34 @@ public class Strings {
     @Nonnull
     @SuppressWarnings("java:S2637")
     @Explain("isEmpty properly handles null cases")
-    public static String cleanup(@Nullable String inputString, @Nonnull Set<Cleanups> cleanups) {
+    public static String cleanup(@Nullable String inputString, @Nonnull Set<Cleanup> cleanups) {
         if (Strings.isEmpty(inputString)) {
             return "";
         }
 
         String value = inputString;
 
-        if (cleanups.contains(Cleanups.REMOVE_CONTROL_CHARS)) {
+        if (cleanups.contains(Cleanup.REMOVE_CONTROL_CHARS)) {
             value = PATTERN_CONTROL_CHARACTERS.matcher(value).replaceAll("");
         }
-        if (cleanups.contains(Cleanups.REDUCE_CHARACTERS)) {
+        if (cleanups.contains(Cleanup.REDUCE_CHARACTERS)) {
             value = reduceCharacters(value);
         }
-        if (cleanups.contains(Cleanups.REMOVE_WHITESPACES)) {
+        if (cleanups.contains(Cleanup.REMOVE_WHITESPACES)) {
             value = PATTERN_WHITESPACE.matcher(value).replaceAll("");
-        } else if (cleanups.contains(Cleanups.REDUCE_WHITESPACES)) {
+        } else if (cleanups.contains(Cleanup.REDUCE_WHITESPACES)) {
             value = PATTERN_WHITESPACES.matcher(value).replaceAll(" ");
         }
-        if (cleanups.contains(Cleanups.LOWERCASE)) {
+        if (cleanups.contains(Cleanup.LOWERCASE)) {
             value = value.toLowerCase();
         }
-        if (cleanups.contains(Cleanups.REMOVE_PUNCTUATION)) {
+        if (cleanups.contains(Cleanup.UPPERCASE)) {
+            value = value.toUpperCase();
+        }
+        if (cleanups.contains(Cleanup.REMOVE_PUNCTUATION)) {
             value = PATTERN_PUNCTATION.matcher(value).replaceAll("");
         }
-        if (cleanups.contains(Cleanups.TRIM)) {
+        if (cleanups.contains(Cleanup.TRIM)) {
             value = value.trim();
         }
 
