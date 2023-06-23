@@ -8,12 +8,10 @@
 
 package sirius.kernel.commons;
 
-import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -23,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
@@ -76,6 +75,11 @@ public class Strings {
                                                     'v',
                                                     'w',
                                                     'z'};
+
+    private static final Pattern PATTERN_CONTROL_CHARACTERS = Pattern.compile("\\p{Cntrl}");
+    private static final Pattern PATTERN_WHITESPACE = Pattern.compile("\\s");
+    private static final Pattern PATTERN_WHITESPACES = Pattern.compile("\\s+");
+    private static final Pattern PATTERN_PUNCTATION = Pattern.compile("\\p{Punct}");
 
     private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
@@ -272,12 +276,7 @@ public class Strings {
     @Nullable
     public static String urlEncode(@Nullable String value) {
         if (isFilled(value)) {
-            try {
-                return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
-            } catch (UnsupportedEncodingException exception) {
-                // Cannot happen if Java-Version is > 1.4....
-                Exceptions.ignore(exception);
-            }
+            return URLEncoder.encode(value, StandardCharsets.UTF_8);
         }
         return value;
     }
@@ -291,11 +290,7 @@ public class Strings {
     @Nullable
     public static String urlDecode(@Nullable String value) {
         if (isFilled(value)) {
-            try {
-                return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
-            } catch (UnsupportedEncodingException exception) {
-                throw Exceptions.handle(exception);
-            }
+            return URLDecoder.decode(value, StandardCharsets.UTF_8);
         }
         return value;
     }
@@ -605,6 +600,52 @@ public class Strings {
     }
 
     /**
+     * Applies the given set of cleanup on the given string.
+     * <p>
+     * Note that empty/<tt>null</tt> inputs will always result in an empty string.
+     *
+     * @param inputString the string to clean-up
+     * @param cleanups    the operations to perform
+     * @return the cleaned up string
+     */
+    @Nonnull
+    @SuppressWarnings("java:S2637")
+    @Explain("isEmpty properly handles null cases")
+    public static String cleanup(@Nullable String inputString, @Nonnull Set<Cleanup> cleanups) {
+        if (Strings.isEmpty(inputString)) {
+            return "";
+        }
+
+        String value = inputString;
+
+        if (cleanups.contains(Cleanup.REMOVE_CONTROL_CHARS)) {
+            value = PATTERN_CONTROL_CHARACTERS.matcher(value).replaceAll("");
+        }
+        if (cleanups.contains(Cleanup.REDUCE_CHARACTERS)) {
+            value = reduceCharacters(value);
+        }
+        if (cleanups.contains(Cleanup.REMOVE_WHITESPACES)) {
+            value = PATTERN_WHITESPACE.matcher(value).replaceAll("");
+        } else if (cleanups.contains(Cleanup.REDUCE_WHITESPACES)) {
+            value = PATTERN_WHITESPACES.matcher(value).replaceAll(" ");
+        }
+        if (cleanups.contains(Cleanup.LOWERCASE)) {
+            value = value.toLowerCase();
+        }
+        if (cleanups.contains(Cleanup.UPPERCASE)) {
+            value = value.toUpperCase();
+        }
+        if (cleanups.contains(Cleanup.REMOVE_PUNCTUATION)) {
+            value = PATTERN_PUNCTATION.matcher(value).replaceAll("");
+        }
+        if (cleanups.contains(Cleanup.TRIM)) {
+            value = value.trim();
+        }
+
+        return value;
+    }
+
+    /**
      * shortens a string to the given number of chars, cutting of at most half of the string and adding ... if
      * something
      * has been cut of.
@@ -668,7 +709,7 @@ public class Strings {
      * <p>
      * Note that if <tt>padding</tt> consists of several characters, the final string might be longer than
      * <tt>minLength</tt> as no substring but only the full value of <tt>padding</tt> is used to pad.
-     *
+     * <p>
      * <b>Implementation detail:</b> This method checks if padding is necessary at all. If not, it directly returns the
      * given input. This should enable inlining and therefore create a fast path if no padding is necessary.
      *
@@ -690,7 +731,7 @@ public class Strings {
      * <p>
      * Note that if <tt>padding</tt> consists of several characters, the final string might be longer than
      * <tt>minLength</tt> as no substring but only the full value of <tt>padding</tt> is used to pad.
-     *
+     * <p>
      * <b>Implementation detail:</b> This method checks if padding is necessary at all. If not, it directly returns the
      * given input. This should enable inlining and therefore create a fast path if no padding is necessary.
      *
