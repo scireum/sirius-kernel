@@ -646,13 +646,15 @@ public class Strings {
     }
 
     /**
-     * shortens a string to the given number of chars, cutting of at most half of the string and adding ... if
-     * something
-     * has been cut of.
+     * Shortens a string to the given number of chars,
+     * cutting of at most half of the string and adding ... if something has been cut of.
      *
      * @param string   string to be cut of
      * @param numChars new maximum length of string
      * @return the shortened string
+     *
+     * @see Strings#limit(Object, int)
+     * @see Strings#limit(Object, int, boolean)
      */
     public static String shorten(String string, int numChars) {
         if (isEmpty(string)) {
