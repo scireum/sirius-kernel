@@ -420,7 +420,7 @@ public class Strings {
         }
         String str = String.valueOf(input).trim();
         if (str.length() > length) {
-            return str.substring(0, length) + (showEllipsis ? "…" : "");
+            return str.substring(0, (showEllipsis ? length - 1 : length)) + (showEllipsis ? "…" : "");
         } else {
             return str;
         }
