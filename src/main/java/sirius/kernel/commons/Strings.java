@@ -667,7 +667,7 @@ public class Strings {
             index--;
             maxCutoff--;
         }
-        return string.substring(0, index) + "…";
+        return string.substring(0, index) + "...";
     }
 
     /**
