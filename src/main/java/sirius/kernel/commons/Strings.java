@@ -420,7 +420,7 @@ public class Strings {
         }
         String str = String.valueOf(input).trim();
         if (str.length() > length) {
-            return str.substring(0, length) + (showEllipsis ? "…" : "");
+            return str.substring(0, (showEllipsis ? length - 1 : length)) + (showEllipsis ? "…" : "");
         } else {
             return str;
         }
@@ -646,13 +646,15 @@ public class Strings {
     }
 
     /**
-     * shortens a string to the given number of chars, cutting of at most half of the string and adding ... if
-     * something
-     * has been cut of.
+     * Shortens a string to the given number of chars,
+     * cutting of at most half of the string and adding ... if something has been cut of.
      *
      * @param string   string to be cut of
      * @param numChars new maximum length of string
      * @return the shortened string
+     *
+     * @see Strings#limit(Object, int)
+     * @see Strings#limit(Object, int, boolean)
      */
     public static String shorten(String string, int numChars) {
         if (isEmpty(string)) {
