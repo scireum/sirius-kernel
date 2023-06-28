@@ -325,7 +325,9 @@ public class Promise<V> {
      * @return this promise as future
      */
     public Future asFuture() {
-        return (Future) this;
+        CombinedFuture result = new CombinedFuture();
+        result.add(this);
+        return result.asFuture();
     }
 
     /**
