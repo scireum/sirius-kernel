@@ -167,4 +167,16 @@ class StringsTest {
         assertEquals("Hello", Strings.cleanup("Hel-lo", EnumSet.of(Cleanup.REMOVE_PUNCTUATION)));
         assertEquals("Hello", Strings.cleanup("\10Hello", EnumSet.of(Cleanup.REMOVE_CONTROL_CHARS)));
     }
+
+    @Test
+    void limit() {
+        assertEquals("", Strings.limit(null, 10, false));
+        assertEquals("", Strings.limit(null, 10, true));
+        assertEquals("", Strings.limit("", 10, false));
+        assertEquals("", Strings.limit("", 10, true));
+        assertEquals("ABCDE", Strings.limit("ABCDE", 10, false));
+        assertEquals("ABCDE", Strings.limit("ABCDE", 10, true));
+        assertEquals("ABCDEFGHIJ", Strings.limit("ABCDEFGHIJKLMNOP", 10, false));
+        assertEquals("ABCDEFGHI…", Strings.limit("ABCDEFGHIJKLMNOP", 10, true));
+    }
 }
