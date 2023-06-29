@@ -323,9 +323,13 @@ public class Promise<V> {
      * Returns this promise as a future.
      *
      * @return this promise as future
+     * @deprecated Usage of this method is discouraged. Wrap and use {@link CombinedFuture#asFuture()}} instead.
      */
+    @Deprecated(forRemoval = true)
     public Future asFuture() {
-        return (Future) this;
+        CombinedFuture result = new CombinedFuture();
+        result.add(this);
+        return result.asFuture();
     }
 
     /**
