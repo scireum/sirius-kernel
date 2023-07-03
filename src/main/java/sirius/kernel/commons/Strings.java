@@ -553,7 +553,7 @@ public class Strings {
     @Nonnull
     @SuppressWarnings("java:S2637")
     @Explain("isEmpty properly handles null cases")
-    public static String cleanup(@Nullable String inputString, @Nonnull List<UnaryOperator<String>> cleanups) {
+    public static String cleanup(@Nullable String inputString, @Nonnull Iterable<UnaryOperator<String>> cleanups) {
         if (Strings.isEmpty(inputString)) {
             return "";
         }
