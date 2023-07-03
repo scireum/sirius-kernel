@@ -96,6 +96,17 @@ public class StringCleanup {
     }
 
     /**
+     * Creates a replacement function which replaces all control characters with the given replacement.
+     *
+     * @param replacement the replacement to use for control characters
+     * @return a function which replaces all control characters by the replacement
+     */
+    @Nonnull
+    public static UnaryOperator<String> replaceControlCharactersWith(@Nonnull String replacement) {
+        return input -> PATTERN_CONTROL_CHARACTERS.matcher(input).replaceAll(replacement);
+    }
+
+    /**
      * Removes all punctuation characters from the given string.
      *
      * @param input the input to process
@@ -117,6 +128,17 @@ public class StringCleanup {
     @Nonnull
     public static String replacePunctuation(@Nonnull String input) {
         return PATTERN_PUNCTUATION.matcher(input).replaceAll(" ");
+    }
+
+    /**
+     * Creates a replacement function which replaces all punctuation characters with the given replacement.
+     *
+     * @param replacement the replacement to use for control characters
+     * @return a function which replaces all punctuation characters by the replacement
+     */
+    @Nonnull
+    public static UnaryOperator<String> replacePunctuationCharactersWith(@Nonnull String replacement) {
+        return input -> PATTERN_PUNCTUATION.matcher(input).replaceAll(replacement);
     }
 
     /**
@@ -144,6 +166,17 @@ public class StringCleanup {
     }
 
     /**
+     * Creates a replacement function which replaces all non-alphanumeric characters with the given replacement.
+     *
+     * @param replacement the replacement to use for control characters
+     * @return a function which replaces all non-alphanumeric characters by the replacement
+     */
+    @Nonnull
+    public static UnaryOperator<String> replaceNonAlphaNumericWith(@Nonnull String replacement) {
+        return input -> PATTERN_NON_ALPHA_NUMERIC.matcher(input).replaceAll(replacement);
+    }
+
+    /**
      * Removes all non-letter (<tt>\P{L}</tt>) characters from the given string.
      *
      * @param input the input to process
@@ -168,6 +201,18 @@ public class StringCleanup {
     }
 
     /**
+     * Creates a replacement function which replaces all non-letter (<tt>\P{L}</tt>) characters with the given
+     * replacement.
+     *
+     * @param replacement the replacement to use for control characters
+     * @return a function which replaces all non-letter characters by the replacement
+     */
+    @Nonnull
+    public static UnaryOperator<String> replaceNonLetterWith(@Nonnull String replacement) {
+        return input -> PATTERN_NON_LETTER.matcher(input).replaceAll(replacement);
+    }
+
+    /**
      * Removes all non-digit (<tt>\D</tt>) characters from the given string.
      *
      * @param input the input to process
@@ -189,6 +234,18 @@ public class StringCleanup {
     @Nonnull
     public static String replaceNonDigit(@Nonnull String input) {
         return PATTERN_NON_DIGIT.matcher(input).replaceAll(" ");
+    }
+
+    /**
+     * Creates a replacement function which replaces all non-digit (<tt>\D</tt>) characters with the given
+     * replacement.
+     *
+     * @param replacement the replacement to use for control characters
+     * @return a function which replaces all non-digit characters by the replacement
+     */
+    @Nonnull
+    public static UnaryOperator<String> replaceNonDigitWith(@Nonnull String replacement) {
+        return input -> PATTERN_NON_DIGIT.matcher(input).replaceAll(replacement);
     }
 
     /**
