@@ -21,8 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,38 +73,6 @@ public class Strings {
                                                     'v',
                                                     'w',
                                                     'z'};
-
-    private static final Pattern PATTERN_CONTROL_CHARACTERS = Pattern.compile("\\p{Cntrl}");
-    private static final Pattern PATTERN_WHITESPACE = Pattern.compile("\\s");
-    private static final Pattern PATTERN_WHITESPACES = Pattern.compile("\\s+");
-    private static final Pattern PATTERN_PUNCTATION = Pattern.compile("\\p{Punct}");
-
-    private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
-
-    static {
-        translateRange(0x00C0, "A", "A", "A", "A", "AE", "A", "AE", "C", "E", "E", "E", "E", "I", "I", "I", "I");
-        translateRange(0x00D0, "D", "N", "O", "O", "O", "O", "OE", null, null, "U", "U", "U", "UE", "Y", null, "ss");
-        translateRange(0x00E0, "a", "a", "a", "a", "ae", "a", "ae", "c", "e", "e", "e", "e", "i", "i", "i", "i");
-        translateRange(0x00F0, null, "n", "o", "o", "o", "o", "oe", null, null, "u", "u", "u", "ue", "y", null, "y");
-        translateRange(0x0130, null, null, "IJ", "ij", "J", "j", "K", "k", "k", "L", "l", "L", "l", "L", "l", "L");
-        translateRange(0xFB00,
-                       "ff",
-                       "fi",
-                       "fl",
-                       "ffi",
-                       "ffl",
-                       "ft",
-                       "st",
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null);
-    }
 
     /*
      * All methods are static, therefore no instances need to be created.
@@ -542,47 +508,6 @@ public class Strings {
         return textToReplace;
     }
 
-    private static void translateRange(int offset, String... replacements) {
-        int index = offset;
-        for (String replacement : replacements) {
-            if (replacement != null) {
-                unicodeMapping.put(index, replacement);
-            }
-
-            index++;
-        }
-    }
-
-    /**
-     * Removes all umlauts and other decorated latin characters.
-     *
-     * @param term the term to reduce characters in
-     * @return the term with all decorated latin characters replaced
-     */
-    public static String reduceCharacters(String term) {
-        if (Strings.isEmpty(term)) {
-            return term;
-        }
-
-        StringBuilder result = null;
-
-        for (int i = 0; i < term.length(); ++i) {
-            String replacement = unicodeMapping.get(term.codePointAt(i));
-            if (replacement == null) {
-                if (result != null) {
-                    result.append(term.charAt(i));
-                }
-            } else {
-                if (result == null) {
-                    result = new StringBuilder().append(term, 0, i);
-                }
-                result.append(replacement);
-            }
-        }
-
-        return result == null ? term : result.toString();
-    }
-
     /**
      * Returns a trimmed version of the given object's string representation.
      * And empty string '' will always be null.
@@ -600,49 +525,58 @@ public class Strings {
     }
 
     /**
-     * Applies the given set of cleanup on the given string.
+     * Applies the given list of cleanups on the given string.
      * <p>
      * Note that empty/<tt>null</tt> inputs will always result in an empty string.
      *
      * @param inputString the string to clean-up
-     * @param cleanups    the operations to perform
+     * @param cleanups    the operations to perform, most probably some from {@link StringCleanup}
      * @return the cleaned up string
+     * @see StringCleanup
+     */
+    @Nonnull
+    @SafeVarargs
+    public static String cleanup(@Nullable String inputString, @Nonnull UnaryOperator<String>... cleanups) {
+        return cleanup(inputString, Arrays.asList(cleanups));
+    }
+
+    /**
+     * Applies the given list of cleanups on the given string.
+     * <p>
+     * Note that empty/<tt>null</tt> inputs will always result in an empty string.
+     *
+     * @param inputString the string to clean-up
+     * @param cleanups    the operations to perform, most probably some from {@link StringCleanup}
+     * @return the cleaned up string
+     * @see StringCleanup
      */
     @Nonnull
     @SuppressWarnings("java:S2637")
     @Explain("isEmpty properly handles null cases")
-    public static String cleanup(@Nullable String inputString, @Nonnull Set<Cleanup> cleanups) {
+    public static String cleanup(@Nullable String inputString, @Nonnull Iterable<UnaryOperator<String>> cleanups) {
         if (Strings.isEmpty(inputString)) {
             return "";
         }
 
         String value = inputString;
-
-        if (cleanups.contains(Cleanup.REMOVE_CONTROL_CHARS)) {
-            value = PATTERN_CONTROL_CHARACTERS.matcher(value).replaceAll("");
-        }
-        if (cleanups.contains(Cleanup.REDUCE_CHARACTERS)) {
-            value = reduceCharacters(value);
-        }
-        if (cleanups.contains(Cleanup.REMOVE_WHITESPACES)) {
-            value = PATTERN_WHITESPACE.matcher(value).replaceAll("");
-        } else if (cleanups.contains(Cleanup.REDUCE_WHITESPACES)) {
-            value = PATTERN_WHITESPACES.matcher(value).replaceAll(" ");
-        }
-        if (cleanups.contains(Cleanup.LOWERCASE)) {
-            value = value.toLowerCase();
-        }
-        if (cleanups.contains(Cleanup.UPPERCASE)) {
-            value = value.toUpperCase();
-        }
-        if (cleanups.contains(Cleanup.REMOVE_PUNCTUATION)) {
-            value = PATTERN_PUNCTATION.matcher(value).replaceAll("");
-        }
-        if (cleanups.contains(Cleanup.TRIM)) {
-            value = value.trim();
+        for (UnaryOperator<String> cleanup : cleanups) {
+            value = cleanup.apply(value);
         }
 
         return value;
+    }
+
+    /**
+     * Removes all umlauts and other decorated latin characters.
+     *
+     * @param input the term to reduce characters in
+     * @return the term with all decorated latin characters replaced
+     * @deprecated Use {@link StringCleanup#reduceCharacters(String)} or
+     * * {@code Strings.cleanup(input, Cleanup::reduceCharacters)} instead
+     */
+    @Deprecated
+    public static String reduceCharacters(String input) {
+        return StringCleanup.reduceCharacters(input);
     }
 
     /**
@@ -652,7 +586,6 @@ public class Strings {
      * @param string   string to be cut of
      * @param numChars new maximum length of string
      * @return the shortened string
-     *
      * @see Strings#limit(Object, int)
      * @see Strings#limit(Object, int, boolean)
      */
