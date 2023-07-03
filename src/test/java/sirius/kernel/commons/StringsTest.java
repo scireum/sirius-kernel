@@ -2,7 +2,6 @@ package sirius.kernel.commons;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -149,23 +148,23 @@ class StringsTest {
 
     @Test
     void reduceCharacters() {
-        assertEquals("Hello", Strings.reduceCharacters("Hello"));
-        assertSame("Hello", Strings.reduceCharacters("Hello"));
-        assertEquals("Hello", Strings.reduceCharacters("Héllo"));
-        assertEquals("AOEO", Strings.reduceCharacters("AÖO"));
-        assertEquals("AEAAE", Strings.reduceCharacters("ÄAÄ"));
+        assertEquals("Hello", StringCleanup.reduceCharacters("Hello"));
+        assertSame("Hello", StringCleanup.reduceCharacters("Hello"));
+        assertEquals("Hello", StringCleanup.reduceCharacters("Héllo"));
+        assertEquals("AOEO", StringCleanup.reduceCharacters("AÖO"));
+        assertEquals("AEAAE", StringCleanup.reduceCharacters("ÄAÄ"));
     }
 
     @Test
     void cleanup() {
-        assertEquals("Hel lo", Strings.cleanup("Hel lo ", EnumSet.of(Cleanup.TRIM)));
-        assertEquals("Hel lo ", Strings.cleanup("Hel  lo ", EnumSet.of(Cleanup.REDUCE_WHITESPACES)));
-        assertEquals("Hello", Strings.cleanup("Hel  lo", EnumSet.of(Cleanup.REMOVE_WHITESPACES)));
-        assertEquals("Hello", Strings.cleanup("Héllo", EnumSet.of(Cleanup.REDUCE_CHARACTERS)));
-        assertEquals("hello", Strings.cleanup("Héllo", EnumSet.of(Cleanup.REDUCE_CHARACTERS, Cleanup.LOWERCASE)));
-        assertEquals("HELLO", Strings.cleanup("Héllo", EnumSet.of(Cleanup.REDUCE_CHARACTERS, Cleanup.UPPERCASE)));
-        assertEquals("Hello", Strings.cleanup("Hel-lo", EnumSet.of(Cleanup.REMOVE_PUNCTUATION)));
-        assertEquals("Hello", Strings.cleanup("\10Hello", EnumSet.of(Cleanup.REMOVE_CONTROL_CHARS)));
+        assertEquals("Hel lo", Strings.cleanup("Hel lo ", StringCleanup::trim));
+        assertEquals("Hel lo ", Strings.cleanup("Hel  lo ", StringCleanup::reduceWhitespace));
+        assertEquals("Hello", Strings.cleanup("Hel  lo", StringCleanup::removeWhitespace));
+        assertEquals("Hello", Strings.cleanup("Héllo", StringCleanup::reduceCharacters));
+        assertEquals("hello", Strings.cleanup("Héllo", StringCleanup::reduceCharacters, StringCleanup::lowercase));
+        assertEquals("HELLO", Strings.cleanup("Héllo", StringCleanup::reduceCharacters, StringCleanup::uppercase));
+        assertEquals("Hello", Strings.cleanup("Hel-lo", StringCleanup::removePunctuation));
+        assertEquals("Hello", Strings.cleanup("\10Hello", StringCleanup::removeControlCharacters));
     }
 
     @Test
