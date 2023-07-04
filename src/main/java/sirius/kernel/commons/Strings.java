@@ -537,7 +537,16 @@ public class Strings {
     @Nonnull
     @SafeVarargs
     public static String cleanup(@Nullable String inputString, @Nonnull UnaryOperator<String>... cleanups) {
-        return cleanup(inputString, Arrays.asList(cleanups));
+        if (Strings.isEmpty(inputString)) {
+            return "";
+        }
+
+        String value = inputString;
+        for (UnaryOperator<String> cleanup : cleanups) {
+            value = cleanup.apply(value);
+        }
+
+        return value;
     }
 
     /**
