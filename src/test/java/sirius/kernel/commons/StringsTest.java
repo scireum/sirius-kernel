@@ -165,6 +165,22 @@ class StringsTest {
         assertEquals("HELLO", Strings.cleanup("Héllo", StringCleanup::reduceCharacters, StringCleanup::uppercase));
         assertEquals("Hello", Strings.cleanup("Hel-lo", StringCleanup::removePunctuation));
         assertEquals("Hello", Strings.cleanup("\10Hello", StringCleanup::removeControlCharacters));
+        assertEquals("Test", Strings.cleanup("<b>Test</b>", StringCleanup::replaceXml, StringCleanup::trim));
+        assertEquals("Test", Strings.cleanup("<b>Test</b>", StringCleanup::replaceXml, StringCleanup::trim));
+        assertEquals("Test", Strings.cleanup("<b>Test<br><img /></b>", StringCleanup::replaceXml, StringCleanup::trim));
+        assertEquals("Test Blubb", Strings.cleanup("<b>Test<br><img />Blubb</b>", StringCleanup::replaceXml, StringCleanup::trim));
+        assertEquals("foo having < 3 m, with >= 3 m", Strings.cleanup("foo having < 3 m, with >= 3 m", StringCleanup::replaceXml, StringCleanup::trim));
+        assertEquals("&lt;b&gt;Foo &lt;br /&gt; Bar&lt;/b&gt;", Strings.cleanup("<b>Foo <br /> Bar</b>", StringCleanup::escapeXml));
+        assertEquals("Hello <br> World", Strings.cleanup("Hello\nWorld", StringCleanup::nlToBr));
+    }
+
+    @Test
+    void probablyContainsXml() {
+        assertTrue(Strings.probablyContainsXml("<b>Test</b>"));
+        assertTrue(Strings.probablyContainsXml("<br>"));
+        assertTrue(Strings.probablyContainsXml("<br />"));
+        assertTrue(Strings.probablyContainsXml("<br test=\"foo\">"));
+        assertFalse(Strings.probablyContainsXml("foo having < 3 m, with >= 3 m"));
     }
 
     @Test
