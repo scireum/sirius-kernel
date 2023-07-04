@@ -19,6 +19,9 @@ import java.util.regex.Pattern;
 
 /**
  * Provides various methods to clean-up or reduce strings.
+ * <p>
+ * Please note, that most of the functions provided here are intended to be used via {@code Strings.cleanup(..)} and
+ * therefore provide no internal <tt>null</tt> check.
  *
  * @see Strings#cleanup(String, Iterable)
  */
@@ -319,7 +322,7 @@ public class StringCleanup {
      * @param term the term to reduce characters in
      * @return the term with all decorated latin characters replaced
      */
-    public static String reduceCharacters(String term) {
+    public static String reduceCharacters(@Nullable String term) {
         if (Strings.isEmpty(term)) {
             return term;
         }
@@ -352,7 +355,7 @@ public class StringCleanup {
      * @param input the input to process
      * @return the resulting string
      */
-    public static String replaceXml(String input) {
+    public static String replaceXml(@Nullable String input) {
         if (Strings.isEmpty(input)) {
             return input;
         }
