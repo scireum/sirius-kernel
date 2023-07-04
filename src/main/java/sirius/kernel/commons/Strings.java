@@ -566,6 +566,22 @@ public class Strings {
         return value;
     }
 
+    private static final Pattern DETECT_XML_REGEX = Pattern.compile("<[a-zA-Z0-9]+[^>]*>");
+
+    /**
+     * Determines if the given content contains XML tags.
+     *
+     * @param content the content to check
+     * @return <tt>true</tt> if XML tags were found, <tt>false</tt> otherwise
+     */
+    public static boolean probablyContainsXml(@Nullable String content) {
+        if (Strings.isEmpty(content)) {
+            return false;
+        }
+
+        return DETECT_XML_REGEX.matcher(content).find();
+    }
+
     /**
      * Removes all umlauts and other decorated latin characters.
      *

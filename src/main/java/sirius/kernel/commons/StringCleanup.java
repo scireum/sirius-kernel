@@ -9,6 +9,9 @@
 package sirius.kernel.commons;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.UnaryOperator;
@@ -28,6 +31,7 @@ public class StringCleanup {
     private static final Pattern PATTERN_NON_ALPHA_NUMERIC = Pattern.compile("([^\\p{L}\\d])");
     private static final Pattern PATTERN_NON_LETTER = Pattern.compile("\\P{L}");
     private static final Pattern PATTERN_NON_DIGIT = Pattern.compile("\\D");
+    private static final Pattern STRIP_XML_REGEX = Pattern.compile("\\s*</?[a-zA-Z0-9]+[^>]*>\\s*");
 
     private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
@@ -337,5 +341,81 @@ public class StringCleanup {
         }
 
         return result == null ? term : result.toString();
+    }
+
+    /**
+     * Replaces XML tags by a single whitespace character.
+     * <p>
+     * Most probably this should be followed by {@link #reduceWhitespace(String)} and also
+     * {@link StringCleanup#trim(String)}
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    public static String replaceXml(String input) {
+        if (Strings.isEmpty(input)) {
+            return input;
+        }
+
+        String alreadyStrippedContent = input;
+        String contentToStrip;
+        do {
+            contentToStrip = alreadyStrippedContent;
+            alreadyStrippedContent = STRIP_XML_REGEX.matcher(contentToStrip).replaceFirst(" ");
+        } while (!Strings.areEqual(contentToStrip, alreadyStrippedContent));
+
+        return alreadyStrippedContent;
+    }
+
+    /**
+     * Escapes XML characters to that the given string can be safely embedded in XML.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    public static String escapeXml(@Nullable String input) {
+        if (Strings.isEmpty(input)) {
+            return "";
+        }
+
+        final StringBuilder result = new StringBuilder();
+        final StringCharacterIterator iterator = new StringCharacterIterator(input);
+        char character = iterator.current();
+        while (character != CharacterIterator.DONE) {
+            if (character == '<') {
+                result.append("&lt;");
+            } else if (character == '>') {
+                result.append("&gt;");
+            } else if (character == '\"') {
+                result.append("&quot;");
+            } else if (character == '\'') {
+                result.append("&#039;");
+            } else if (character == '&') {
+                result.append("&amp;");
+            } else {
+                // the char is not a special one
+                // add it to the result as is
+                result.append(character);
+            }
+            character = iterator.next();
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Provides a very simplistic approach to convert newlines to HTML line breaks.
+     * <p>
+     * Note that most modern browsers will probably be better off by using a CSS "whitespace" setting, but some
+     * old html renderers need raw br tags to properly render.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    public static String nlToBr(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replace("\n", " <br> ");
     }
 }
