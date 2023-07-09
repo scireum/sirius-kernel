@@ -283,6 +283,22 @@ class NLSSpec extends BaseSpecification {
         "nls.test.withTwo"   | -2      | "many: -2"
     }
 
+    def "get with numeric and autoformat works correctly"() {
+        expect:
+        NLS.get(property, numeric, {number -> number + 'X'}, "en") == output
+
+        where:
+        property             | numeric | output
+        "nls.test.withThree" | 0       | "zero"
+        "nls.test.withThree" | 1       | "one"
+        "nls.test.withThree" | 2       | "many: 2X"
+        "nls.test.withThree" | -2      | "many: -2X"
+        "nls.test.withTwo"   | 0       | "many: 0X"
+        "nls.test.withTwo"   | 1       | "one"
+        "nls.test.withTwo"   | 2       | "many: 2X"
+        "nls.test.withTwo"   | -2      | "many: -2X"
+    }
+
     def "unicode characters get imported without problems"() {
         given:
         def loadedProperty = NLS.get("nls.test.utf8", "en")
