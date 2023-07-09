@@ -48,6 +48,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Native Language Support used by the framework.
@@ -288,6 +289,10 @@ public class NLS {
      * </pre>
      * <p>
      * Based on the given <tt>numeric</tt> the right version will be chosen.
+     * <p>
+     * <b>Note:</b> the number will be plainly formatted using {@link String#valueOf(int)}. Use the companion method
+     * {@link #get(String, int, Function, String)} and supply e.g. {@link Amount#toString(NumberFormat)} or the like
+     * to add "thousand separators" or other formatting.
      *
      * @param property the property to fetch
      * @param numeric  the numeric used to determine which version to use
@@ -295,6 +300,34 @@ public class NLS {
      * @return the version of the given property in the given language based on the given numeric
      */
     public static String get(@Nonnull String property, int numeric, @Nullable String language) {
+        return get(property, numeric, String::valueOf, language);
+    }
+
+    /**
+     * Returns one of two or three versions of a translation based on the given numeric.
+     * <p>
+     * The property has to be defined like:
+     * <pre>
+     * <tt>property.key=Version for 0|Version for 1|Version for many</tt>
+     * </pre>
+     * <p>
+     * Alternatively, only two versions can be given:
+     * <pre>
+     * <tt>property.key=Version for 1|Version for 0 or many</tt>
+     * </pre>
+     * <p>
+     * Based on the given <tt>numeric</tt> the right version will be chosen.
+     *
+     * @param property  the property to fetch
+     * @param numeric   the numeric used to determine which version to use
+     * @param formatter the formatter used to format the numeric
+     * @param language  the language to translate for
+     * @return the version of the given property in the given language based on the given numeric
+     */
+    public static String get(@Nonnull String property,
+                             int numeric,
+                             Function<Integer, String> formatter,
+                             @Nullable String language) {
         String value = get(property, language);
         String[] versions = value.split("\\|");
 
@@ -313,7 +346,7 @@ public class NLS {
             if (versions.length == 3) {
                 return versions[0].trim();
             } else {
-                return Formatter.create(versions[1].trim()).set("count", 0).format();
+                return Formatter.create(versions[1].trim()).set("count", formatter.apply(0)).format();
             }
         } else if (numeric == 1) {
             if (versions.length == 3) {
@@ -323,9 +356,9 @@ public class NLS {
             }
         } else {
             if (versions.length == 3) {
-                return Formatter.create(versions[2].trim()).set("count", numeric).format();
+                return Formatter.create(versions[2].trim()).set("count", formatter.apply(numeric)).format();
             } else {
-                return Formatter.create(versions[1].trim()).set("count", numeric).format();
+                return Formatter.create(versions[1].trim()).set("count", formatter.apply(numeric)).format();
             }
         }
     }
