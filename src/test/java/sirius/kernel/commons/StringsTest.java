@@ -181,6 +181,7 @@ class StringsTest {
         assertTrue(Strings.probablyContainsXml("<br />"));
         assertTrue(Strings.probablyContainsXml("<br test=\"foo\">"));
         assertFalse(Strings.probablyContainsXml("foo having < 3 m, with >= 3 m"));
+        assertFalse(Strings.probablyContainsXml("foo length<19. with width > 80"));
     }
 
     @Test
