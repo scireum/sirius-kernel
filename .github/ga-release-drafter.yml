@@ -1,4 +1,4 @@
-name-template: 'GA Release $RESOLVED_VERSION 🌈'
+name-template: 'GA Release $RESOLVED_VERSION'
 tag-template: 'ga-$RESOLVED_VERSION'
 categories:
   - title: 'Breaking Changes'
@@ -14,6 +14,7 @@ categories:
     labels:
       - '🛠️ Maintenance'
       - '⬆️ Dependencies'
+  - title: 'Uncategorized'
 exclude-labels:
   - '⎇ Sidebranch'
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
@@ -31,8 +32,8 @@ version-resolver:
       - '🛠️ Maintenance'
   default: patch
 template: |
-  ## Changelog
+  # Changelog
 
   $CHANGES
 
-  **Full Changelog:** $PREVIOUS_TAG...ga-$RESOLVED_VERSION
+  **Full Changelog:** [$PREVIOUS_TAG...ga-$RESOLVED_VERSION](https://github.com/scireum/$REPOSITORY/compare/$PREVIOUS_TAG...ga-$RESOLVED_VERSION)
