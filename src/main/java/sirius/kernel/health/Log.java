@@ -209,7 +209,7 @@ public class Log {
                                                         this,
                                                         caller,
                                                         Thread.currentThread().getName()));
-                } catch (Exception e) {
+                } catch (Exception exception) {
                     // Ignored - if we can't log s.th. let's just give up...
                 }
             }
@@ -350,6 +350,19 @@ public class Log {
         }
 
         log(Level.SEVERE, message);
+    }
+
+    /**
+     * Logs the given message at the SEVERE or ERROR level.
+     * <p>
+     * The ERROR level can be used to signal problems or errors which occurred in the system. It is recommended to handle
+     * exceptions using {@link Exceptions} instead.
+     *
+     * @param message    the message containing placeholders as understood by {@link Strings#apply(String, Object...)}
+     * @param parameters the parameters used to format the resulting log message
+     */
+    public void SEVERE(String message, Object... parameters) {
+        SEVERE(Strings.apply(message, parameters));
     }
 
     /**

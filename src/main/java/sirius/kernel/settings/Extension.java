@@ -140,9 +140,10 @@ public class Extension extends Settings implements Comparable<Extension> {
         String className = get(classProperty).asString();
         try {
             return Class.forName(className).getDeclaredConstructor().newInstance();
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                 IllegalAccessException exception) {
             throw Exceptions.handle()
-                            .error(e)
+                            .error(exception)
                             .to(LOG)
                             .withSystemErrorMessage(
                                     "Cannot create instance of class %s (%s) for extension %s of type %s: %s (%s)",
@@ -151,9 +152,9 @@ public class Extension extends Settings implements Comparable<Extension> {
                                     id,
                                     type)
                             .handle();
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException exception) {
             throw Exceptions.handle()
-                            .error(e)
+                            .error(exception)
                             .to(LOG)
                             .withSystemErrorMessage("Class %s not found for %s in extension %s of type %s",
                                                     className,

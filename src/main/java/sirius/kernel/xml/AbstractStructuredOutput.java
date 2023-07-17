@@ -13,6 +13,8 @@ import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.NumberFormat;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 
@@ -20,6 +22,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.RecordComponent;
+import java.nio.channels.ClosedChannelException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -169,13 +172,13 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         for (RecordComponent component : object.getClass().getRecordComponents()) {
             try {
                 property(component.getName(), component.getAccessor().invoke(object));
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 throw new IllegalArgumentException(Strings.apply(
                         "Failed to serialize record component %s of record %s with type %s: %s",
                         component.getName(),
                         object,
                         object.getClass().getName(),
-                        e.getMessage()));
+                        exception.getMessage()));
             }
         }
 
@@ -378,5 +381,22 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         if (getCurrentType() != ElementType.OBJECT && getCurrentType() != ElementType.ARRAY) {
             throw new IllegalArgumentException("Invalid result structure. Cannot place a property here.");
         }
+    }
+
+    protected HandledException handleOutputException(Exception exception) {
+        if (exception instanceof ClosedChannelException closedChannelException) {
+            return handleClosedChannel(closedChannelException);
+        } else if (exception.getCause() instanceof ClosedChannelException closedChannelException) {
+            return handleClosedChannel(closedChannelException);
+        } else {
+            return Exceptions.handle(exception);
+        }
+    }
+
+    private HandledException handleClosedChannel(ClosedChannelException closedChannelException) {
+        return Exceptions.createHandled()
+                         .error(closedChannelException)
+                         .withSystemErrorMessage("An IO exception occurred (closed channel): %s")
+                         .handle();
     }
 }

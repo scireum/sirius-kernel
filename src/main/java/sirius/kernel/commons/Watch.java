@@ -12,6 +12,7 @@ import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -92,8 +93,7 @@ public class Watch {
      * This method tries to generate a string which is as short as possible. Therefore, if the duration is
      * less than one microsecond, the number of nanoseconds is returned. If the duration is less than one millisecond,
      * the number of microseconds (rounded) is returned. Otherwise, the value is rounded to milliseconds and returned
-     * as
-     * formatted by {@link NLS#convertDuration(long)}.
+     * as formatted by {@link NLS#convertDuration(Duration)}.
      *
      * @param reset determines if the watch should be reset, after the duration has be computed.
      * @return a string representing the duration since the last call to <tt>reset</tt> or <tt>start</tt>.
@@ -107,7 +107,7 @@ public class Watch {
         if (elapsed <= 1000) {
             return elapsed + " us";
         }
-        return NLS.convertDuration(elapsed / 1000);
+        return NLS.convertDuration(Duration.ofMillis(elapsed / 1000));
     }
 
     /**

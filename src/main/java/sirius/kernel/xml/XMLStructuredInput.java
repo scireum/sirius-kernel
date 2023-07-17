@@ -37,15 +37,15 @@ public class XMLStructuredInput implements StructuredInput {
      */
     public XMLStructuredInput(InputStream inputStream, @Nullable NamespaceContext namespaceContext) throws IOException {
         try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             if (namespaceContext != null) {
-                dbf.setNamespaceAware(true);
+                factory.setNamespaceAware(true);
             }
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(inputStream);
-            this.node = StructuredNode.of(doc.getDocumentElement(), namespaceContext);
-        } catch (ParserConfigurationException | SAXException e) {
-            throw new IOException(e);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(inputStream);
+            this.node = StructuredNode.of(document.getDocumentElement(), namespaceContext);
+        } catch (ParserConfigurationException | SAXException exception) {
+            throw new IOException(exception);
         }
     }
 

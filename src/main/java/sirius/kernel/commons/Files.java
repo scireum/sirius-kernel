@@ -43,15 +43,17 @@ public class Files {
      */
     @Nonnull
     public static Optional<String> toSaneFileName(@Nullable String input) {
-        String effectiveInput = Strings.trim(Strings.reduceCharacters(input));
-        if (Strings.isEmpty(effectiveInput)) {
+        String sanitizedInput = Strings.cleanup(input,
+                                                StringCleanup::reduceCharacters,
+                                                StringCleanup::trim,
+                                                path -> NON_PATH_CHARACTERS.matcher(path).replaceAll("_"));
+        if (Strings.isEmpty(sanitizedInput)) {
             return Optional.empty();
         }
 
-        effectiveInput = NON_PATH_CHARACTERS.matcher(effectiveInput).replaceAll("_");
-        Tuple<String, String> nameAndSuffix = Strings.splitAtLast(effectiveInput, ".");
+        Tuple<String, String> nameAndSuffix = Strings.splitAtLast(sanitizedInput, ".");
         if (nameAndSuffix.getSecond() == null) {
-            return Optional.of(effectiveInput);
+            return Optional.of(sanitizedInput);
         }
 
         return Optional.of(nameAndSuffix.getFirst().replace(".", "_") + "." + nameAndSuffix.getSecond());
@@ -146,8 +148,8 @@ public class Files {
         if (file != null) {
             try {
                 java.nio.file.Files.deleteIfExists(file.toPath());
-            } catch (IOException e) {
-                Exceptions.handle(e);
+            } catch (IOException exception) {
+                Exceptions.handle(exception);
             }
         }
     }

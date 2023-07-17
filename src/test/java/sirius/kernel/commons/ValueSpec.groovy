@@ -168,6 +168,87 @@ class ValueSpec extends BaseSpecification {
         Value.of(Amount.of(0.00001)).getAmount() == Amount.of(0.00001)
     }
 
+    def "Casting to integers works"() {
+        expect:
+        Value.of(input).asInt(1234) == output
+        where:
+        input             | output
+        99999             | 99999
+        99999l            | 99999
+        99999.0           | 99999
+        new Double(99999) | 99999
+        Amount.of(99999)  | 99999
+        Amount.NOTHING    | 1234
+        "99999"           | 99999
+        "Keine Zahl"      | 1234
+        null              | 1234
+    }
+
+    def "Casting to integer instances works"() {
+        expect:
+        Value.of(input).getInteger() == output
+        where:
+        input             | output
+        99999             | new Integer(99999)
+        99999l            | new Integer(99999)
+        99999.0           | new Integer(99999)
+        new Double(99999) | new Integer(99999)
+        Amount.of(99999)  | new Integer(99999)
+        Amount.NOTHING    | null
+        "99999"           | new Integer(99999)
+        "Keine Zahl"      | null
+        null              | null
+    }
+
+    def "Casting to longs works"() {
+        expect:
+        Value.of(input).asLong(1234) == output
+        where:
+        input             | output
+        99999             | 99999l
+        99999l            | 99999l
+        99999.0           | 99999l
+        new Double(99999) | 99999l
+        Amount.of(99999)  | 99999l
+        Amount.NOTHING    | 1234l
+        "99999"           | 99999l
+        "Keine Zahl"      | 1234l
+        null              | 1234l
+    }
+
+    def "Casting to long instances works"() {
+        expect:
+        Value.of(input).getLong() == output
+        where:
+        input             | output
+        99999             | new Long(99999l)
+        99999l            | new Long(99999l)
+        99999.0           | new Long(99999l)
+        new Double(99999) | new Long(99999l)
+        Amount.of(99999)  | new Long(99999l)
+        Amount.NOTHING    | null
+        "99999"           | new Long(99999l)
+        "Keine Zahl"      | null
+        null              | null
+    }
+
+    def "Casting to doubles works"() {
+        expect:
+        Math.abs(Value.of(input).asDouble(1234.56) - output) < Doubles.EPSILON
+        where:
+        input                | output
+        99999                | 99999.0
+        99999l               | 99999.0
+        99999.87             | 99999.87
+        new Double(99999.87) | 99999.87
+        Amount.of(99999.87)  | 99999.87
+        Amount.NOTHING       | 1234.56
+        "99999"              | 99999.0
+        "99999.87"           | 99999.87
+        "Keine Zahl"         | 1234.56
+        null                 | 1234.56
+    }
+
     def "map() does not call the mapper on an empty Value"() {
         given:
         def count = 0

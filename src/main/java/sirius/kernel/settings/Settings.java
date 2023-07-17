@@ -278,9 +278,9 @@ public class Settings {
     public Duration getDuration(String path) {
         try {
             return config.getDuration(path);
-        } catch (Exception e) {
+        } catch (Exception exception) {
             if (strict) {
-                Exceptions.handle(e);
+                Exceptions.handle(exception);
             }
             return Duration.ZERO;
         }

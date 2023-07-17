@@ -61,14 +61,14 @@ public class Reflection {
         try {
             try {
                 return clazz.getMethod("get" + toFirstUpper(property));
-            } catch (NoSuchMethodException e) {
-                Exceptions.ignore(e);
+            } catch (NoSuchMethodException exception) {
+                Exceptions.ignore(exception);
                 return getterAsIs(clazz, property);
             }
-        } catch (Exception e) {
+        } catch (Exception exception) {
             throw new IllegalArgumentException(Strings.apply("get-Method for Field %s not found: %s",
                                                              property,
-                                                             e.getMessage()), e);
+                                                             exception.getMessage()), exception);
         }
     }
 
@@ -94,10 +94,10 @@ public class Reflection {
     public static Method setter(Class<?> clazz, String property, Class<?> fieldType) {
         try {
             return clazz.getMethod("set" + toFirstUpper(property), fieldType);
-        } catch (Exception e) {
+        } catch (Exception exception) {
             throw new IllegalArgumentException(Strings.apply("set-Method for Field %s not found: %s",
                                                              property,
-                                                             e.getMessage()), e);
+                                                             exception.getMessage()), exception);
         }
     }
 
@@ -122,18 +122,18 @@ public class Reflection {
         Method m = getter(root.getClass(), pair.getFirst());
         try {
             return evalAccessPath(pair.getSecond(), m.invoke(root));
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException exception) {
             throw new IllegalArgumentException(Strings.apply("Cannot invoke %s on %s (%s)",
                                                              m.getName(),
                                                              root,
-                                                             m.getDeclaringClass().getName()), e);
-        } catch (InvocationTargetException e) {
+                                                             m.getDeclaringClass().getName()), exception);
+        } catch (InvocationTargetException exception) {
             throw new IllegalArgumentException(Strings.apply("Error invoking %s on %s (%s): %s (%s)",
                                                              m.getName(),
                                                              root,
                                                              m.getDeclaringClass().getName(),
-                                                             e.getCause().getMessage(),
-                                                             e.getCause().getClass().getName()), e);
+                                                             exception.getCause().getMessage(),
+                                                             exception.getCause().getClass().getName()), exception);
         }
     }
 
@@ -166,8 +166,8 @@ public class Reflection {
         DataCollector<Field> collector = new DataCollector<>();
         try {
             walkHierarchy(clazz, value -> collector.addAll(Arrays.asList(value.getDeclaredFields())));
-        } catch (Exception e) {
-            Exceptions.handle(e);
+        } catch (Exception exception) {
+            Exceptions.handle(exception);
         }
         return collector.getData();
     }

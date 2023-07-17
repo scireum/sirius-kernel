@@ -187,8 +187,8 @@ public class ContentDispositionParser {
             if (Strings.isFilled(encodedFileName) && Strings.isFilled(encoding != null)) {
                 try {
                     return Optional.of(decodeHeaderField(encodedFileName, encoding));
-                } catch (UnsupportedEncodingException e) {
-                    Exceptions.ignore(e);
+                } catch (UnsupportedEncodingException exception) {
+                    Exceptions.ignore(exception);
                     return Optional.empty();
                 }
             } else {
@@ -212,8 +212,8 @@ public class ContentDispositionParser {
             if (Strings.isFilled(encoding) && Strings.isFilled(fileName)) {
                 try {
                     return Optional.of(decodeHeaderField(fileName, encoding));
-                } catch (UnsupportedEncodingException e) {
-                    Exceptions.ignore(e);
+                } catch (UnsupportedEncodingException exception) {
+                    Exceptions.ignore(exception);
                     return Optional.empty();
                 }
             }

@@ -8,12 +8,10 @@
 
 package sirius.kernel.commons;
 
-import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,33 +73,6 @@ public class Strings {
                                                     'v',
                                                     'w',
                                                     'z'};
-
-    private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
-
-    static {
-        translateRange(0x00C0, "A", "A", "A", "A", "AE", "A", "AE", "C", "E", "E", "E", "E", "I", "I", "I", "I");
-        translateRange(0x00D0, "D", "N", "O", "O", "O", "O", "OE", null, null, "U", "U", "U", "UE", "Y", null, "ss");
-        translateRange(0x00E0, "a", "a", "a", "a", "ae", "a", "ae", "c", "e", "e", "e", "e", "i", "i", "i", "i");
-        translateRange(0x00F0, null, "n", "o", "o", "o", "o", "oe", null, null, "u", "u", "u", "ue", "y", null, "y");
-        translateRange(0x0130, null, null, "IJ", "ij", "J", "j", "K", "k", "k", "L", "l", "L", "l", "L", "l", "L");
-        translateRange(0xFB00,
-                       "ff",
-                       "fi",
-                       "fl",
-                       "ffi",
-                       "ffl",
-                       "ft",
-                       "st",
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null,
-                       null);
-    }
 
     /*
      * All methods are static, therefore no instances need to be created.
@@ -272,12 +242,7 @@ public class Strings {
     @Nullable
     public static String urlEncode(@Nullable String value) {
         if (isFilled(value)) {
-            try {
-                return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
-            } catch (UnsupportedEncodingException e) {
-                // Cannot happen if Java-Version is > 1.4....
-                Exceptions.ignore(e);
-            }
+            return URLEncoder.encode(value, StandardCharsets.UTF_8);
         }
         return value;
     }
@@ -291,11 +256,7 @@ public class Strings {
     @Nullable
     public static String urlDecode(@Nullable String value) {
         if (isFilled(value)) {
-            try {
-                return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
-            } catch (UnsupportedEncodingException e) {
-                throw Exceptions.handle(e);
-            }
+            return URLDecoder.decode(value, StandardCharsets.UTF_8);
         }
         return value;
     }
@@ -425,7 +386,7 @@ public class Strings {
         }
         String str = String.valueOf(input).trim();
         if (str.length() > length) {
-            return str.substring(0, length) + (showEllipsis ? "…" : "");
+            return str.substring(0, (showEllipsis ? length - 1 : length)) + (showEllipsis ? "…" : "");
         } else {
             return str;
         }
@@ -547,47 +508,6 @@ public class Strings {
         return textToReplace;
     }
 
-    private static void translateRange(int offset, String... replacements) {
-        int index = offset;
-        for (String replacement : replacements) {
-            if (replacement != null) {
-                unicodeMapping.put(index, replacement);
-            }
-
-            index++;
-        }
-    }
-
-    /**
-     * Removes all umlauts and other decorated latin characters.
-     *
-     * @param term the term to reduce characters in
-     * @return the term with all decorated latin characters replaced
-     */
-    public static String reduceCharacters(String term) {
-        if (Strings.isEmpty(term)) {
-            return term;
-        }
-
-        StringBuilder result = null;
-
-        for (int i = 0; i < term.length(); ++i) {
-            String replacement = unicodeMapping.get(term.codePointAt(i));
-            if (replacement == null) {
-                if (result != null) {
-                    result.append(term.charAt(i));
-                }
-            } else {
-                if (result == null) {
-                    result = new StringBuilder().append(term, 0, i);
-                }
-                result.append(replacement);
-            }
-        }
-
-        return result == null ? term : result.toString();
-    }
-
     /**
      * Returns a trimmed version of the given object's string representation.
      * And empty string '' will always be null.
@@ -605,13 +525,94 @@ public class Strings {
     }
 
     /**
-     * shortens a string to the given number of chars, cutting of at most half of the string and adding ... if
-     * something
-     * has been cut of.
+     * Applies the given list of cleanups on the given string.
+     * <p>
+     * Note that empty/<tt>null</tt> inputs will always result in an empty string.
+     *
+     * @param inputString the string to clean-up
+     * @param cleanups    the operations to perform, most probably some from {@link StringCleanup}
+     * @return the cleaned up string
+     * @see StringCleanup
+     */
+    @Nonnull
+    @SafeVarargs
+    public static String cleanup(@Nullable String inputString, @Nonnull UnaryOperator<String>... cleanups) {
+        if (Strings.isEmpty(inputString)) {
+            return "";
+        }
+
+        String value = inputString;
+        for (UnaryOperator<String> cleanup : cleanups) {
+            value = cleanup.apply(value);
+        }
+
+        return value;
+    }
+
+    /**
+     * Applies the given list of cleanups on the given string.
+     * <p>
+     * Note that empty/<tt>null</tt> inputs will always result in an empty string.
+     *
+     * @param inputString the string to clean-up
+     * @param cleanups    the operations to perform, most probably some from {@link StringCleanup}
+     * @return the cleaned up string
+     * @see StringCleanup
+     */
+    @Nonnull
+    @SuppressWarnings("java:S2637")
+    @Explain("isEmpty properly handles null cases")
+    public static String cleanup(@Nullable String inputString, @Nonnull Iterable<UnaryOperator<String>> cleanups) {
+        if (Strings.isEmpty(inputString)) {
+            return "";
+        }
+
+        String value = inputString;
+        for (UnaryOperator<String> cleanup : cleanups) {
+            value = cleanup.apply(value);
+        }
+
+        return value;
+    }
+
+    private static final Pattern DETECT_XML_REGEX = Pattern.compile("<[a-zA-Z0-9]+[^>]*>");
+
+    /**
+     * Determines if the given content contains XML tags.
+     *
+     * @param content the content to check
+     * @return <tt>true</tt> if XML tags were found, <tt>false</tt> otherwise
+     */
+    public static boolean probablyContainsXml(@Nullable String content) {
+        if (Strings.isEmpty(content)) {
+            return false;
+        }
+
+        return DETECT_XML_REGEX.matcher(content).find();
+    }
+
+    /**
+     * Removes all umlauts and other decorated latin characters.
+     *
+     * @param input the term to reduce characters in
+     * @return the term with all decorated latin characters replaced
+     * @deprecated Use {@link StringCleanup#reduceCharacters(String)} or
+     * * {@code Strings.cleanup(input, Cleanup::reduceCharacters)} instead
+     */
+    @Deprecated
+    public static String reduceCharacters(String input) {
+        return StringCleanup.reduceCharacters(input);
+    }
+
+    /**
+     * Shortens a string to the given number of chars,
+     * cutting of at most half of the string and adding ... if something has been cut of.
      *
      * @param string   string to be cut of
      * @param numChars new maximum length of string
      * @return the shortened string
+     * @see Strings#limit(Object, int)
+     * @see Strings#limit(Object, int, boolean)
      */
     public static String shorten(String string, int numChars) {
         if (isEmpty(string)) {
@@ -668,7 +669,7 @@ public class Strings {
      * <p>
      * Note that if <tt>padding</tt> consists of several characters, the final string might be longer than
      * <tt>minLength</tt> as no substring but only the full value of <tt>padding</tt> is used to pad.
-     *
+     * <p>
      * <b>Implementation detail:</b> This method checks if padding is necessary at all. If not, it directly returns the
      * given input. This should enable inlining and therefore create a fast path if no padding is necessary.
      *
@@ -690,7 +691,7 @@ public class Strings {
      * <p>
      * Note that if <tt>padding</tt> consists of several characters, the final string might be longer than
      * <tt>minLength</tt> as no substring but only the full value of <tt>padding</tt> is used to pad.
-     *
+     * <p>
      * <b>Implementation detail:</b> This method checks if padding is necessary at all. If not, it directly returns the
      * given input. This should enable inlining and therefore create a fast path if no padding is necessary.
      *

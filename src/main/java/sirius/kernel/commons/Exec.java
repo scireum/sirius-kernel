@@ -68,9 +68,9 @@ public class Exec {
                     logger.append("\n");
                     line = br.readLine();
                 }
-            } catch (IOException e) {
-                logger.append(NLS.toUserString(e));
-                exHolder.set(e);
+            } catch (IOException exception) {
+                logger.append(NLS.toUserString(exception));
+                exHolder.set(exception);
             } finally {
                 this.completionSynchronizer.release();
             }
@@ -168,14 +168,14 @@ public class Exec {
     public static String exec(String command, boolean ignoreExitCodes, Duration opTimeout, @Nullable File directory)
             throws ExecException {
         StringBuilder logger = new StringBuilder();
-        try (Operation op = new Operation(() -> command, opTimeout)) {
-            Process p = new ProcessBuilder().command(parseCommandToArray(command))
-                                            .directory(directory)
-                                            .redirectErrorStream(true)
-                                            .start();
+        try (Operation operation = new Operation(() -> command, opTimeout)) {
+            Process process = new ProcessBuilder().command(parseCommandToArray(command))
+                                                  .directory(directory)
+                                                  .redirectErrorStream(true)
+                                                  .start();
             Semaphore completionSynchronizer = new Semaphore(1);
-            StreamEater outEater = StreamEater.eat(p.getInputStream(), logger, completionSynchronizer);
-            doExec(ignoreExitCodes, logger, p);
+            StreamEater outEater = StreamEater.eat(process.getInputStream(), logger, completionSynchronizer);
+            doExec(ignoreExitCodes, logger, process);
 
             // Wait for the stream eaters to complete...
             completionSynchronizer.acquire(1);
@@ -184,11 +184,11 @@ public class Exec {
                 throw new ExecException(outEater.exHolder.get(), logger.toString());
             }
             return logger.toString();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new ExecException(e, logger.toString());
-        } catch (Exception e) {
-            throw new ExecException(e, logger.toString());
+            throw new ExecException(exception, logger.toString());
+        } catch (Exception exception) {
+            throw new ExecException(exception, logger.toString());
         }
     }
 
@@ -200,15 +200,15 @@ public class Exec {
         return commandList.toArray(EMPTY_ARRAY);
     }
 
-    private static void doExec(boolean ignoreExitCodes, StringBuilder logger, Process p) throws ExecException {
+    private static void doExec(boolean ignoreExitCodes, StringBuilder logger, Process process) throws ExecException {
         try {
-            int code = p.waitFor();
+            int code = process.waitFor();
             if (code != 0 && !ignoreExitCodes) {
                 Exception root = new Exception("Command returned with exit code " + code);
                 throw new ExecException(root, logger.toString());
             }
-        } catch (InterruptedException e) {
-            Exceptions.ignore(e);
+        } catch (InterruptedException exception) {
+            Exceptions.ignore(exception);
             Thread.currentThread().interrupt();
         }
     }
