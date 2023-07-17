@@ -5,8 +5,6 @@ on:
     # branches to consider in the event; optional, defaults to all
     branches:
       - master
-    tags:
-      - "ga-*.*.*"
 
 permissions:
   contents: read
