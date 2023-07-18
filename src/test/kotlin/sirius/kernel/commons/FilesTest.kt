@@ -57,6 +57,7 @@ internal class FilesTest {
         assertEquals("test", Files.getFilenameWithoutExtension("test"))
         assertEquals("test", Files.getFilenameWithoutExtension("/bar/test.txt"))
         assertEquals("test", Files.getFilenameWithoutExtension("/bar/test"))
+        assertEquals("test", Files.getFilenameWithoutExtension("/bar.bar/test"))
         assertNull(Files.getFilenameWithoutExtension("/foo/"))
         assertNull(Files.getFilenameWithoutExtension("/"))
         assertNull(Files.getFilenameWithoutExtension(""))
