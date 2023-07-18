@@ -18,7 +18,9 @@ internal class FilesTest {
         assertEquals("txt", Files.getFileExtension("text.txt"))
         assertEquals("txt", Files.getFileExtension("/foo/bar/text.txt"))
         assertEquals("txt", Files.getFileExtension("/foo/bar/text.foo.txt"))
+        assertEquals("txt", Files.getFileExtension("/foo.bar/text.txt"))
         assertNull(Files.getFileExtension("/foo/bartext"))
+        assertNull(Files.getFileExtension("/foo.foo/bartext"))
         assertNull(Files.getFileExtension(""))
         assertNull(Files.getFileExtension(null))
     }
@@ -42,6 +44,7 @@ internal class FilesTest {
         assertEquals("test.txt", Files.getFilenameAndExtension("test.txt"))
         assertEquals("test.txt", Files.getFilenameAndExtension("bar/test.txt"))
         assertEquals("test", Files.getFilenameAndExtension("bar/test"))
+        assertEquals("test", Files.getFilenameAndExtension("/foo.foo/test"))
         assertNull(Files.getFilenameAndExtension("/foo/"))
         assertNull(Files.getFilenameAndExtension("/"))
         assertNull(Files.getFilenameAndExtension(""))
