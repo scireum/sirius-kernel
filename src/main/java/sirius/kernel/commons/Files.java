@@ -70,8 +70,10 @@ public class Files {
      * <tt>.txt.zip</tt>, only the last is returned.
      */
     @Nullable
+    @SuppressWarnings("java:S2259")
+    @Explain("path is checked for null by the Strings.isEmpty call in getFilenameAndExtension")
     public static String getFileExtension(@Nullable String path) {
-        return Strings.splitAtLast(path, ".").getSecond();
+        return Strings.splitAtLast(getFilenameAndExtension(path), ".").getSecond();
     }
 
     /**
