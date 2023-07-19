@@ -158,8 +158,8 @@ class StringsTest {
     @Test
     void cleanup() {
         assertEquals("Hel lo", Strings.cleanup("Hel lo ", StringCleanup::trim));
-        assertEquals("Hel lo ", Strings.cleanup("Hel \t\t lo ", StringCleanup::reduceWhitespace));
-        assertEquals("Hello", Strings.cleanup("Hel  lo", StringCleanup::removeWhitespace));
+        assertEquals("Hel lo ", Strings.cleanup("Hel \t \t \r\n lo ", StringCleanup::reduceWhitespace));
+        assertEquals("Hello", Strings.cleanup("Hel \t \t \n lo ", StringCleanup::removeWhitespace));
         assertEquals("Hello", Strings.cleanup("Héllo", StringCleanup::reduceCharacters));
         assertEquals("hello", Strings.cleanup("Héllo", StringCleanup::reduceCharacters, StringCleanup::lowercase));
         assertEquals("HELLO", Strings.cleanup("Héllo", StringCleanup::reduceCharacters, StringCleanup::uppercase));
@@ -174,8 +174,6 @@ class StringsTest {
         assertEquals("&lt;b&gt;Foo &lt;br /&gt; Bar&lt;/b&gt;",
                      Strings.cleanup("<b>Foo <br /> Bar</b>", StringCleanup::escapeXml));
         assertEquals("Hello <br> World", Strings.cleanup("Hello\nWorld", StringCleanup::nlToBr));
-        assertEquals("Hello World", Strings.cleanup("Hello  World", StringCleanup::reduceNbspCharacters));
-        assertEquals("Hello\tWorld", Strings.cleanup("Hello\r\nWorld", StringCleanup::replaceLinebreaksWithTabs));
         assertEquals("Testalert('Hello World!')",
                      Strings.cleanup("Test<script>alert('Hello World!')</script>", StringCleanup::removeHtmlTags));
         assertEquals(" äöüÄÖÜß<>\"'&* * * * * * ",

@@ -30,9 +30,8 @@ import java.util.regex.Pattern;
 public class StringCleanup {
 
     private static final Pattern PATTERN_CONTROL_CHARACTERS = Pattern.compile("\\p{Cntrl}");
-    private static final Pattern PATTERN_WHITESPACE = Pattern.compile("\\s");
-    private static final Pattern PATTERN_WHITESPACES = Pattern.compile("\\s+");
-    private static final Pattern PATTERN_NBSP_CHARACTERS = Pattern.compile("\u00A0+");
+    private static final Pattern PATTERN_WHITESPACE = Pattern.compile("[\\s\\p{Z}]");
+    private static final Pattern PATTERN_WHITESPACES = Pattern.compile(PATTERN_WHITESPACE + "+");
     private static final Pattern PATTERN_LINEBREAKS = Pattern.compile("\\r?\\n");
     private static final Pattern PATTERN_PUNCTUATION = Pattern.compile("\\p{Punct}");
     private static final Pattern PATTERN_NON_ALPHA_NUMERIC = Pattern.compile("([^\\p{L}\\d])");
@@ -290,29 +289,6 @@ public class StringCleanup {
     }
 
     /**
-     * Replaces the special whitespace character {@code " "}({@linkplain #PATTERN_NBSP_CHARACTERS Unicode: u00A0}))
-     * by simple spaces.
-     *
-     * @param input the input to process
-     * @return the resulting string
-     */
-    @Nonnull
-    public static String reduceNbspCharacters(@Nonnull String input) {
-        return PATTERN_NBSP_CHARACTERS.matcher(input).replaceAll(" ");
-    }
-
-    /**
-     * Replaces all {@linkplain #PATTERN_LINEBREAKS line breaks} with a tab (<tt>\t</tt>) character.
-     *
-     * @param input the input to process
-     * @return the resulting string
-     */
-    @Nonnull
-    public static String replaceLinebreaksWithTabs(@Nonnull String input) {
-        return PATTERN_LINEBREAKS.matcher(input).replaceAll("\t");
-    }
-
-    /**
      * Trims the given string.
      * <p>
      * This is essentially an alias for {@code String::trim}.
@@ -423,9 +399,9 @@ public class StringCleanup {
     public static String htmlToPlainText(@Nonnull String input) {
         String normalizedText = input;
 
-        if (STRIP_HTML_REGEX.matcher(normalizedText).find()) {
-            // It is HTML -> replace line breaks with tabs
-            normalizedText = Strings.cleanup(normalizedText, StringCleanup::replaceLinebreaksWithTabs);
+        if (STRIP_XML_REGEX.matcher(normalizedText).find()) {
+            // Reduce all contained whitespaces, tabs, and line breaks
+            normalizedText = Strings.cleanup(normalizedText, StringCleanup::reduceWhitespace);
             // Replace br tags with line breaks
             normalizedText = PATTERN_BR_TAG.matcher(normalizedText).replaceAll("\n");
             // Replace li tags with line breaks
@@ -436,8 +412,6 @@ public class StringCleanup {
             normalizedText = PATTERN_P_TAG.matcher(normalizedText).replaceAll("\n");
             // Remove any other tags
             normalizedText = Strings.cleanup(normalizedText, StringCleanup::removeHtmlTags);
-            // Convert all generated tabs to blanks and collapse multiple
-            normalizedText = Strings.cleanup(normalizedText, StringCleanup::reduceWhitespace);
             // Decode entities
             normalizedText = Strings.cleanup(normalizedText, StringCleanup::decodeHtmlEntities);
         }
