@@ -47,8 +47,7 @@ public class StringCleanup {
     private static final Pattern PATTERN_P_TAG = Pattern.compile("<(/?p|/?P)>");
     private static final Pattern STRIP_HTML_REGEX = Pattern.compile("</?([a-zA-Z][a-zA-Z\\-.:_0-9]*)[^>]*>");
 
-    private static final Pattern STRIP_XML_REGEX = Pattern.compile("\\s*</?[a-zA-Z][a-zA-Z0-9]*[^>]*>\\s*");
-
+    private static final Pattern STRIP_XML_REGEX = Pattern.compile("\\s*" + Strings.DETECT_XML_REGEX + "\\s*");
     private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
     static {
