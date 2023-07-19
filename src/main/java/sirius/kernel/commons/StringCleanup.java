@@ -33,7 +33,6 @@ public class StringCleanup {
     private static final Pattern PATTERN_CONTROL_CHARACTERS = Pattern.compile("\\p{Cntrl}");
     private static final Pattern PATTERN_WHITESPACE = Pattern.compile("[\\s\\p{Z}]");
     private static final Pattern PATTERN_WHITESPACES = Pattern.compile(PATTERN_WHITESPACE + "+");
-    private static final Pattern PATTERN_LINEBREAKS = Pattern.compile("\\r?\\n");
     private static final Pattern PATTERN_PUNCTUATION = Pattern.compile("\\p{Punct}");
     private static final Pattern PATTERN_NON_ALPHA_NUMERIC = Pattern.compile("([^\\p{L}\\d])");
     private static final Pattern PATTERN_NON_LETTER = Pattern.compile("\\P{L}");
