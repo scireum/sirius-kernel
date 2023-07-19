@@ -45,33 +45,114 @@ public class StringCleanup {
     private static final Pattern PATTERN_PP_TAG = Pattern.compile("<(/p|/P)>\\r?\\n?\\t?<([pP])>");
     private static final Pattern PATTERN_P_TAG = Pattern.compile("<(/?p|/?P)>");
 
+    /**
+     * Holds the name of the {@code <p>} tag.
+     */
     public static final String TAG_P = "p";
+    /**
+     * Holds the name of the {@code <br>} tag.
+     */
     public static final String TAG_BR = "br";
+    /**
+     * Holds the name of the {@code <div>} tag.
+     */
     public static final String TAG_DIV = "div";
+    /**
+     * Holds the name of the {@code <span>} tag.
+     */
     public static final String TAG_SPAN = "span";
+    /**
+     * Holds the name of the {@code <small>} tag.
+     */
     public static final String TAG_SMALL = "small";
+    /**
+     * Holds the name of the {@code <h1>} tag.
+     */
     public static final String TAG_H1 = "h1";
+    /**
+     * Holds the name of the {@code <h2>} tag.
+     */
     public static final String TAG_H2 = "h2";
+    /**
+     * Holds the name of the {@code <h3>} tag.
+     */
     public static final String TAG_H3 = "h3";
+    /**
+     * Holds the name of the {@code <h4>} tag.
+     */
     public static final String TAG_H4 = "h4";
+    /**
+     * Holds the name of the {@code <h5>} tag.
+     */
     public static final String TAG_H5 = "h5";
+    /**
+     * Holds the name of the {@code <h6>} tag.
+     */
     public static final String TAG_H6 = "h6";
+    /**
+     * Holds the name of the {@code <b>} tag.
+     */
     public static final String TAG_B = "b";
+    /**
+     * Holds the name of the {@code <strong>} tag.
+     */
     public static final String TAG_STRONG = "strong";
+    /**
+     * Holds the name of the {@code <i>} tag.
+     */
     public static final String TAG_I = "i";
+    /**
+     * Holds the name of the {@code <em>} tag.
+     */
     public static final String TAG_EM = "em";
+    /**
+     * Holds the name of the {@code <u>} tag.
+     */
     public static final String TAG_U = "u";
+    /**
+     * Holds the name of the {@code <sup>} tag.
+     */
     public static final String TAG_SUP = "sup";
+    /**
+     * Holds the name of the {@code <sub>} tag.
+     */
     public static final String TAG_SUB = "sub";
+    /**
+     * Holds the name of the {@code <mark>} tag.
+     */
     public static final String TAG_MARK = "mark";
+    /**
+     * Holds the name of the {@code <hr>} tag.
+     */
     public static final String TAG_HR = "hr";
+    /**
+     * Holds the name of the {@code <dl>} tag.
+     */
     public static final String TAG_DL = "dl";
+    /**
+     * Holds the name of the {@code <dt>} tag.
+     */
     public static final String TAG_DT = "dt";
+    /**
+     * Holds the name of the {@code <dd>} tag.
+     */
     public static final String TAG_DD = "dd";
+    /**
+     * Holds the name of the {@code <ol>} tag.
+     */
     public static final String TAG_OL = "ol";
+    /**
+     * Holds the name of the {@code <ul>} tag.
+     */
     public static final String TAG_UL = "ul";
+    /**
+     * Holds the name of the {@code <li>} tag.
+     */
     public static final String TAG_LI = "li";
 
+    /**
+     * Holds a list of all allowed HTML tag names.
+     */
     public static final List<String> ALLOWED_HTML_TAG_NAMES = List.of(TAG_P,
                                                                       TAG_BR,
                                                                       TAG_DIV,
