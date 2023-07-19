@@ -31,8 +31,9 @@ import java.util.regex.Pattern;
 public class StringCleanup {
 
     private static final Pattern PATTERN_CONTROL_CHARACTERS = Pattern.compile("\\p{Cntrl}");
-    private static final Pattern PATTERN_WHITESPACE = Pattern.compile("[\\s\\p{Z}]");
-    private static final Pattern PATTERN_WHITESPACES = Pattern.compile(PATTERN_WHITESPACE + "+");
+    private static final String REGEX_WHITESPACE = "[\\s\\p{Z}]";
+    private static final Pattern PATTERN_WHITESPACE = Pattern.compile(REGEX_WHITESPACE);
+    private static final Pattern PATTERN_WHITESPACES = Pattern.compile(REGEX_WHITESPACE + "+");
     private static final Pattern PATTERN_PUNCTUATION = Pattern.compile("\\p{Punct}");
     private static final Pattern PATTERN_NON_ALPHA_NUMERIC = Pattern.compile("([^\\p{L}\\d])");
     private static final Pattern PATTERN_NON_LETTER = Pattern.compile("\\P{L}");
@@ -180,7 +181,7 @@ public class StringCleanup {
                                                                       TAG_UL,
                                                                       TAG_LI);
 
-    private static final Pattern STRIP_XML_REGEX = Pattern.compile("\\s*" + Strings.DETECT_XML_REGEX + "\\s*");
+    private static final Pattern PATTERN_STRIP_XML = Pattern.compile("\\s*" + Strings.REGEX_DETECT_XML + "\\s*");
     private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
     static {
@@ -462,14 +463,14 @@ public class StringCleanup {
     }
 
     /**
-     * Removes all {@linkplain #STRIP_XML_REGEX XML tags} from the given string.
+     * Removes all {@linkplain #PATTERN_STRIP_XML XML tags} from the given string.
      *
      * @param input the input to process
      * @return the resulting string
      */
     @Nonnull
     public static String removeXml(@Nonnull String input) {
-        return STRIP_XML_REGEX.matcher(input).replaceAll("");
+        return PATTERN_STRIP_XML.matcher(input).replaceAll("");
     }
 
     /**
@@ -480,10 +481,9 @@ public class StringCleanup {
      */
     @Nonnull
     public static String removeUnsafeHtml(@Nonnull String input) {
-        return STRIP_XML_REGEX.matcher(input)
-                              .replaceAll(match -> Strings.DETECT_ALLOWED_HTML_REGEX.matcher(match.group()).matches() ?
-                                                   match.group() :
-                                                   "");
+        return PATTERN_STRIP_XML.matcher(input)
+                                .replaceAll(match -> Strings.DETECT_ALLOWED_HTML_REGEX.matcher(match.group())
+                                                                                      .matches() ? match.group() : "");
     }
 
     /**
@@ -547,7 +547,7 @@ public class StringCleanup {
     public static String htmlToPlainText(@Nonnull String input) {
         String normalizedText = input;
 
-        if (STRIP_XML_REGEX.matcher(normalizedText).find()) {
+        if (PATTERN_STRIP_XML.matcher(normalizedText).find()) {
             // Reduce all contained whitespaces, tabs, and line breaks
             normalizedText = Strings.cleanup(normalizedText, StringCleanup::reduceWhitespace);
             // Replace br tags with line breaks
@@ -615,7 +615,7 @@ public class StringCleanup {
         String contentToStrip;
         do {
             contentToStrip = alreadyStrippedContent;
-            alreadyStrippedContent = STRIP_XML_REGEX.matcher(contentToStrip).replaceFirst(" ");
+            alreadyStrippedContent = PATTERN_STRIP_XML.matcher(contentToStrip).replaceFirst(" ");
         } while (!Strings.areEqual(contentToStrip, alreadyStrippedContent));
 
         return alreadyStrippedContent;
