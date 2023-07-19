@@ -158,7 +158,7 @@ class StringsTest {
     @Test
     void cleanup() {
         assertEquals("Hel lo", Strings.cleanup("Hel lo ", StringCleanup::trim));
-        assertEquals("Hel lo ", Strings.cleanup("Hel  lo ", StringCleanup::reduceWhitespace));
+        assertEquals("Hel lo ", Strings.cleanup("Hel \t\t lo ", StringCleanup::reduceWhitespace));
         assertEquals("Hello", Strings.cleanup("Hel  lo", StringCleanup::removeWhitespace));
         assertEquals("Hello", Strings.cleanup("Héllo", StringCleanup::reduceCharacters));
         assertEquals("hello", Strings.cleanup("Héllo", StringCleanup::reduceCharacters, StringCleanup::lowercase));
