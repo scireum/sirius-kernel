@@ -575,7 +575,7 @@ public class Strings {
         return value;
     }
 
-    private static final Pattern DETECT_XML_REGEX = Pattern.compile("<[a-zA-Z][^>]*>");
+    private static final Pattern DETECT_XML_REGEX = Pattern.compile("</?[a-zA-Z][^>]*>");
 
     /**
      * Determines if the given content contains XML tags.
@@ -589,22 +589,6 @@ public class Strings {
         }
 
         return DETECT_XML_REGEX.matcher(content).find();
-    }
-
-    private static final Pattern DETECT_HTML_REGEX = Pattern.compile("</?([a-zA-Z][a-zA-Z\\-.:_0-9]*)[^>]*>");
-
-    /**
-     * Determines if the given content contains HTML tags.
-     *
-     * @param content the content to check
-     * @return <tt>true</tt> if HTML tags were found, <tt>false</tt> otherwise
-     */
-    public static boolean probablyContainsHtml(@Nullable String content) {
-        if (Strings.isEmpty(content)) {
-            return false;
-        }
-
-        return DETECT_HTML_REGEX.matcher(content).find();
     }
 
     /**

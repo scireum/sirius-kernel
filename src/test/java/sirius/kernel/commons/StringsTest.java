@@ -190,21 +190,10 @@ class StringsTest {
         assertTrue(Strings.probablyContainsXml("<br>"));
         assertTrue(Strings.probablyContainsXml("<br />"));
         assertTrue(Strings.probablyContainsXml("<br test=\"foo\">"));
+        assertTrue(Strings.probablyContainsXml("</div>"));
         assertTrue(Strings.probablyContainsXml("<namespace:element>"));
         assertFalse(Strings.probablyContainsXml("foo having < 3 m, with >= 3 m"));
         assertFalse(Strings.probablyContainsXml("foo length<19. with width > 80"));
-    }
-
-    @Test
-    void probablyContainsHtml() {
-        assertTrue(Strings.probablyContainsHtml("<b>Test</b>"));
-        assertTrue(Strings.probablyContainsHtml("<br>"));
-        assertTrue(Strings.probablyContainsHtml("<br />"));
-        assertTrue(Strings.probablyContainsHtml("<br test=\"foo\">"));
-        assertTrue(Strings.probablyContainsHtml("<br test=\"foo\">"));
-        assertTrue(Strings.probablyContainsHtml("<namespace:tag>"));
-        assertFalse(Strings.probablyContainsHtml("foo having < 3 m, with >= 3 m"));
-        assertFalse(Strings.probablyContainsHtml("foo length<19. with width > 80"));
     }
 
     @Test
