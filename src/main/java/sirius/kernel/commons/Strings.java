@@ -592,7 +592,8 @@ public class Strings {
     }
 
     protected static final Pattern DETECT_ALLOWED_HTML_REGEX =
-            Pattern.compile("</?(" + String.join("|", StringCleanup.ALLOWED_HTML_TAG_NAMES) + ")\\b[^>]*>");
+            Pattern.compile("</?(" + String.join("|", StringCleanup.ALLOWED_HTML_TAG_NAMES) + ")\\b[^>]*>",
+                            Pattern.CASE_INSENSITIVE);
 
     /**
      * Determines if the given content contains HTML tags that are {@linkplain #DETECT_ALLOWED_HTML_REGEX allowed} in
