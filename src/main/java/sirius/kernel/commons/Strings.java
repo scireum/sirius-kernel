@@ -591,6 +591,24 @@ public class Strings {
         return DETECT_XML_REGEX.matcher(content).find();
     }
 
+    protected static final Pattern DETECT_ALLOWED_HTML_REGEX =
+            Pattern.compile("</?(" + String.join("|", StringCleanup.ALLOWED_HTML_TAG_NAMES) + ")\\b[^>]*>");
+
+    /**
+     * Determines if the given content contains HTML tags that are {@linkplain #DETECT_ALLOWED_HTML_REGEX allowed} in
+     * the system.
+     *
+     * @param content the content to check
+     * @return <tt>true</tt> if allowed HTML tags were found, <tt>false</tt> otherwise
+     */
+    public static boolean containsAllowedHtml(@Nullable String content) {
+        if (Strings.isEmpty(content)) {
+            return false;
+        }
+
+        return DETECT_ALLOWED_HTML_REGEX.matcher(content).find();
+    }
+
     /**
      * Removes all umlauts and other decorated latin characters.
      *

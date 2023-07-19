@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.UnaryOperator;
@@ -44,7 +45,60 @@ public class StringCleanup {
     private static final Pattern PATTERN_LI_TAG = Pattern.compile("<(/?li|/?LI)>");
     private static final Pattern PATTERN_PP_TAG = Pattern.compile("<(/p|/P)>\\r?\\n?\\t?<([pP])>");
     private static final Pattern PATTERN_P_TAG = Pattern.compile("<(/?p|/?P)>");
-    private static final Pattern STRIP_HTML_REGEX = Pattern.compile("</?([a-zA-Z][a-zA-Z\\-.:_0-9]*)[^>]*>");
+
+    public static final String TAG_P = "p";
+    public static final String TAG_BR = "br";
+    public static final String TAG_DIV = "div";
+    public static final String TAG_SPAN = "span";
+    public static final String TAG_SMALL = "small";
+    public static final String TAG_H1 = "h1";
+    public static final String TAG_H2 = "h2";
+    public static final String TAG_H3 = "h3";
+    public static final String TAG_H4 = "h4";
+    public static final String TAG_H5 = "h5";
+    public static final String TAG_H6 = "h6";
+    public static final String TAG_B = "b";
+    public static final String TAG_STRONG = "strong";
+    public static final String TAG_I = "i";
+    public static final String TAG_EM = "em";
+    public static final String TAG_U = "u";
+    public static final String TAG_SUP = "sup";
+    public static final String TAG_SUB = "sub";
+    public static final String TAG_MARK = "mark";
+    public static final String TAG_HR = "hr";
+    public static final String TAG_DL = "dl";
+    public static final String TAG_DT = "dt";
+    public static final String TAG_DD = "dd";
+    public static final String TAG_OL = "ol";
+    public static final String TAG_UL = "ul";
+    public static final String TAG_LI = "li";
+
+    public static final List<String> ALLOWED_HTML_TAG_NAMES = List.of(TAG_P,
+                                                                      TAG_BR,
+                                                                      TAG_DIV,
+                                                                      TAG_SPAN,
+                                                                      TAG_SMALL,
+                                                                      TAG_H1,
+                                                                      TAG_H2,
+                                                                      TAG_H3,
+                                                                      TAG_H4,
+                                                                      TAG_H5,
+                                                                      TAG_H6,
+                                                                      TAG_B,
+                                                                      TAG_STRONG,
+                                                                      TAG_I,
+                                                                      TAG_EM,
+                                                                      TAG_U,
+                                                                      TAG_SUP,
+                                                                      TAG_SUB,
+                                                                      TAG_MARK,
+                                                                      TAG_HR,
+                                                                      TAG_DL,
+                                                                      TAG_DT,
+                                                                      TAG_DD,
+                                                                      TAG_OL,
+                                                                      TAG_UL,
+                                                                      TAG_LI);
 
     private static final Pattern STRIP_XML_REGEX = Pattern.compile("\\s*" + Strings.DETECT_XML_REGEX + "\\s*");
     private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
@@ -328,14 +382,28 @@ public class StringCleanup {
     }
 
     /**
-     * Removes all {@linkplain #STRIP_HTML_REGEX html tags} from the given string.
+     * Removes all {@linkplain #STRIP_XML_REGEX XML tags} from the given string.
      *
      * @param input the input to process
      * @return the resulting string
      */
     @Nonnull
-    public static String removeHtmlTags(@Nonnull String input) {
-        return STRIP_HTML_REGEX.matcher(input).replaceAll("");
+    public static String removeXml(@Nonnull String input) {
+        return STRIP_XML_REGEX.matcher(input).replaceAll("");
+    }
+
+    /**
+     * Removes all unsafe HTML tags from the given string.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    @Nonnull
+    public static String removeUnsafeHtml(@Nonnull String input) {
+        return STRIP_XML_REGEX.matcher(input)
+                              .replaceAll(match -> Strings.DETECT_ALLOWED_HTML_REGEX.matcher(match.group()).matches() ?
+                                                   match.group() :
+                                                   "");
     }
 
     /**
@@ -411,7 +479,7 @@ public class StringCleanup {
             normalizedText = PATTERN_PP_TAG.matcher(normalizedText).replaceAll("\n");
             normalizedText = PATTERN_P_TAG.matcher(normalizedText).replaceAll("\n");
             // Remove any other tags
-            normalizedText = Strings.cleanup(normalizedText, StringCleanup::removeHtmlTags);
+            normalizedText = Strings.cleanup(normalizedText, StringCleanup::removeXml);
             // Decode entities
             normalizedText = Strings.cleanup(normalizedText, StringCleanup::decodeHtmlEntities);
         }

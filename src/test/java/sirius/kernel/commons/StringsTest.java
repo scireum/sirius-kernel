@@ -175,7 +175,9 @@ class StringsTest {
                      Strings.cleanup("<b>Foo <br /> Bar</b>", StringCleanup::escapeXml));
         assertEquals("Hello <br> World", Strings.cleanup("Hello\nWorld", StringCleanup::nlToBr));
         assertEquals("Testalert('Hello World!')",
-                     Strings.cleanup("Test<script>alert('Hello World!')</script>", StringCleanup::removeHtmlTags));
+                     Strings.cleanup("Test<script>alert('Hello World!')</script>", StringCleanup::removeXml));
+        assertEquals("<div>Test</div>",
+                     Strings.cleanup("<div><script>Test</script></div>", StringCleanup::removeUnsafeHtml));
         assertEquals(" äöüÄÖÜß<>\"'&* * * * * * ",
                      Strings.cleanup(
                              "&nbsp;&auml;&ouml;&uuml;&Auml;&Ouml;&Uuml;&szlig;&lt;&gt;&quot;&apos;&amp;&#8226;&#8226;&#8227;&#8227;&#8259;&#8259;",
@@ -192,6 +194,19 @@ class StringsTest {
         assertTrue(Strings.probablyContainsXml("<namespace:element>"));
         assertFalse(Strings.probablyContainsXml("foo having < 3 m, with >= 3 m"));
         assertFalse(Strings.probablyContainsXml("foo length<19. with width > 80"));
+    }
+
+    @Test
+    void containsAllowedHtml() {
+        assertTrue(Strings.containsAllowedHtml("<b>Test</b>"));
+        assertTrue(Strings.containsAllowedHtml("<br>"));
+        assertTrue(Strings.containsAllowedHtml("<br />"));
+        assertTrue(Strings.containsAllowedHtml("<br test=\"foo\">"));
+        assertTrue(Strings.containsAllowedHtml("</div>"));
+        assertFalse(Strings.containsAllowedHtml("<namespace:element>"));
+        assertFalse(Strings.containsAllowedHtml("Test <script>alert('Hello World!')</script>"));
+        assertFalse(Strings.containsAllowedHtml("foo having < 3 m, with >= 3 m"));
+        assertFalse(Strings.containsAllowedHtml("foo length<19. with width > 80"));
     }
 
     @Test
