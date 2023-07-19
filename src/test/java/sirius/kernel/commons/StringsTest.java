@@ -166,12 +166,22 @@ class StringsTest {
         assertEquals("Hello", Strings.cleanup("Hel-lo", StringCleanup::removePunctuation));
         assertEquals("Hello", Strings.cleanup("\10Hello", StringCleanup::removeControlCharacters));
         assertEquals("Test", Strings.cleanup("<b>Test</b>", StringCleanup::replaceXml, StringCleanup::trim));
-        assertEquals("Test", Strings.cleanup("<b>Test</b>", StringCleanup::replaceXml, StringCleanup::trim));
         assertEquals("Test", Strings.cleanup("<b>Test<br><img /></b>", StringCleanup::replaceXml, StringCleanup::trim));
-        assertEquals("Test Blubb", Strings.cleanup("<b>Test<br><img />Blubb</b>", StringCleanup::replaceXml, StringCleanup::trim));
-        assertEquals("foo having < 3 m, with >= 3 m", Strings.cleanup("foo having < 3 m, with >= 3 m", StringCleanup::replaceXml, StringCleanup::trim));
-        assertEquals("&lt;b&gt;Foo &lt;br /&gt; Bar&lt;/b&gt;", Strings.cleanup("<b>Foo <br /> Bar</b>", StringCleanup::escapeXml));
+        assertEquals("Test Blubb",
+                     Strings.cleanup("<b>Test<br><img />Blubb</b>", StringCleanup::replaceXml, StringCleanup::trim));
+        assertEquals("foo having < 3 m, with >= 3 m",
+                     Strings.cleanup("foo having < 3 m, with >= 3 m", StringCleanup::replaceXml, StringCleanup::trim));
+        assertEquals("&lt;b&gt;Foo &lt;br /&gt; Bar&lt;/b&gt;",
+                     Strings.cleanup("<b>Foo <br /> Bar</b>", StringCleanup::escapeXml));
         assertEquals("Hello <br> World", Strings.cleanup("Hello\nWorld", StringCleanup::nlToBr));
+        assertEquals("Hello World", Strings.cleanup("Hello  World", StringCleanup::reduceNbspCharacters));
+        assertEquals("Hello\tWorld", Strings.cleanup("Hello\r\nWorld", StringCleanup::replaceLinebreaksWithTabs));
+        assertEquals("Testalert('Hello World!')",
+                     Strings.cleanup("Test<script>alert('Hello World!')</script>", StringCleanup::removeHtmlTags));
+        assertEquals(" äöüÄÖÜß<>\"'&* * * * * * ",
+                     Strings.cleanup(
+                             "&nbsp;&auml;&ouml;&uuml;&Auml;&Ouml;&Uuml;&szlig;&lt;&gt;&quot;&apos;&amp;&#8226;&#8226;&#8227;&#8227;&#8259;&#8259;",
+                             StringCleanup::decodeHtmlEntities));
     }
 
     @Test
@@ -180,8 +190,21 @@ class StringsTest {
         assertTrue(Strings.probablyContainsXml("<br>"));
         assertTrue(Strings.probablyContainsXml("<br />"));
         assertTrue(Strings.probablyContainsXml("<br test=\"foo\">"));
+        assertTrue(Strings.probablyContainsXml("<namespace:element>"));
         assertFalse(Strings.probablyContainsXml("foo having < 3 m, with >= 3 m"));
         assertFalse(Strings.probablyContainsXml("foo length<19. with width > 80"));
+    }
+
+    @Test
+    void probablyContainsHtml() {
+        assertTrue(Strings.probablyContainsHtml("<b>Test</b>"));
+        assertTrue(Strings.probablyContainsHtml("<br>"));
+        assertTrue(Strings.probablyContainsHtml("<br />"));
+        assertTrue(Strings.probablyContainsHtml("<br test=\"foo\">"));
+        assertTrue(Strings.probablyContainsHtml("<br test=\"foo\">"));
+        assertTrue(Strings.probablyContainsHtml("<namespace:tag>"));
+        assertFalse(Strings.probablyContainsHtml("foo having < 3 m, with >= 3 m"));
+        assertFalse(Strings.probablyContainsHtml("foo length<19. with width > 80"));
     }
 
     @Test

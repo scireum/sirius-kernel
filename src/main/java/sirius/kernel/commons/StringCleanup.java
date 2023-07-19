@@ -8,6 +8,8 @@
 
 package sirius.kernel.commons;
 
+import sirius.kernel.health.Exceptions;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.text.CharacterIterator;
@@ -30,11 +32,22 @@ public class StringCleanup {
     private static final Pattern PATTERN_CONTROL_CHARACTERS = Pattern.compile("\\p{Cntrl}");
     private static final Pattern PATTERN_WHITESPACE = Pattern.compile("\\s");
     private static final Pattern PATTERN_WHITESPACES = Pattern.compile("\\s+");
+    private static final Pattern PATTERN_NBSP_CHARACTERS = Pattern.compile("\u00A0+");
+    private static final Pattern PATTERN_LINEBREAKS = Pattern.compile("\\r?\\n");
     private static final Pattern PATTERN_PUNCTUATION = Pattern.compile("\\p{Punct}");
     private static final Pattern PATTERN_NON_ALPHA_NUMERIC = Pattern.compile("([^\\p{L}\\d])");
     private static final Pattern PATTERN_NON_LETTER = Pattern.compile("\\P{L}");
     private static final Pattern PATTERN_NON_DIGIT = Pattern.compile("\\D");
-    private static final Pattern STRIP_XML_REGEX = Pattern.compile("\\s*</?[a-zA-Z0-9]+[^>]*>\\s*");
+    private static final Pattern PATTERN_DECIMAL_ENTITY = Pattern.compile("&(\\d+);");
+    private static final Pattern PATTERN_HEX_ENTITY = Pattern.compile("&x0*([0-9a-fA-F]+);");
+    private static final Pattern PATTERN_BR_TAG = Pattern.compile("<(br|BR) */? *>");
+    private static final Pattern PATTERN_LILI_TAG = Pattern.compile("<(/li|/LI)>\\r?\\n?\\t?<(li|LI)>");
+    private static final Pattern PATTERN_LI_TAG = Pattern.compile("<(/?li|/?LI)>");
+    private static final Pattern PATTERN_PP_TAG = Pattern.compile("<(/p|/P)>\\r?\\n?\\t?<([pP])>");
+    private static final Pattern PATTERN_P_TAG = Pattern.compile("<(/?p|/?P)>");
+    private static final Pattern STRIP_HTML_REGEX = Pattern.compile("</?([a-zA-Z][a-zA-Z\\-.:_0-9]*)[^>]*>");
+
+    private static final Pattern STRIP_XML_REGEX = Pattern.compile("\\s*</?[a-zA-Z][a-zA-Z0-9]*[^>]*>\\s*");
 
     private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
@@ -278,6 +291,29 @@ public class StringCleanup {
     }
 
     /**
+     * Replaces the special whitespace character {@code " "}({@linkplain #PATTERN_NBSP_CHARACTERS Unicode: u00A0}))
+     * by simple spaces.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    @Nonnull
+    public static String reduceNbspCharacters(@Nonnull String input) {
+        return PATTERN_NBSP_CHARACTERS.matcher(input).replaceAll(" ");
+    }
+
+    /**
+     * Replaces all {@linkplain #PATTERN_LINEBREAKS line breaks} with a tab (<tt>\t</tt>) character.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    @Nonnull
+    public static String replaceLinebreaksWithTabs(@Nonnull String input) {
+        return PATTERN_LINEBREAKS.matcher(input).replaceAll("\t");
+    }
+
+    /**
      * Trims the given string.
      * <p>
      * This is essentially an alias for {@code String::trim}.
@@ -314,6 +350,100 @@ public class StringCleanup {
     @Nonnull
     public static String uppercase(@Nonnull String input) {
         return input.toUpperCase();
+    }
+
+    /**
+     * Removes all {@linkplain #STRIP_HTML_REGEX html tags} from the given string.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    @Nonnull
+    public static String removeHtmlTags(@Nonnull String input) {
+        return STRIP_HTML_REGEX.matcher(input).replaceAll("");
+    }
+
+    /**
+     * Resolves encoded HTML entities to their plain text equivalent in the given string.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    @Nonnull
+    public static String decodeHtmlEntities(@Nonnull String input) {
+        input = input.replace("&nbsp;", " ")
+                     .replace("&auml;", "ä")
+                     .replace("&ouml;", "ö")
+                     .replace("&uuml;", "ü")
+                     .replace("&Auml;", "Ä")
+                     .replace("&Ouml;", "Ö")
+                     .replace("&Uuml;", "Ü")
+                     .replace("&szlig;", "ß")
+                     .replace("&lt;", "<")
+                     .replace("&gt;", ">")
+                     .replace("&quot;", "\"")
+                     .replace("&apos;", "'")
+                     .replace("&amp;", "&")
+                     .replace("&#8226; ", "* ")
+                     .replace("&#8226;", "* ")
+                     .replace("&#8227; ", "* ")
+                     .replace("&#8227;", "* ")
+                     .replace("&#8259; ", "* ")
+                     .replace("&#8259;", "* ");
+        input = Strings.replaceAll(PATTERN_DECIMAL_ENTITY, input, s -> {
+            try {
+                return String.valueOf(Character.toChars(Integer.parseInt(s)));
+            } catch (NumberFormatException e) {
+                Exceptions.ignore(e);
+            } catch (Exception e) {
+                Exceptions.handle(e);
+            }
+            return "";
+        });
+        input = Strings.replaceAll(PATTERN_HEX_ENTITY, input, s -> {
+            try {
+                return String.valueOf(Character.toChars(Integer.parseInt(s, 16)));
+            } catch (NumberFormatException e) {
+                Exceptions.ignore(e);
+            } catch (Exception e) {
+                Exceptions.handle(e);
+            }
+            return "";
+        });
+
+        return input;
+    }
+
+    /**
+     * Normalizes a text by removing all HTML, entities and special characters.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    @Nonnull
+    public static String htmlToPlainText(@Nonnull String input) {
+        String normalizedText = input;
+
+        if (STRIP_HTML_REGEX.matcher(normalizedText).find()) {
+            // It is HTML -> replace line breaks with tabs
+            normalizedText = Strings.cleanup(normalizedText, StringCleanup::replaceLinebreaksWithTabs);
+            // Replace br tags with line breaks
+            normalizedText = PATTERN_BR_TAG.matcher(normalizedText).replaceAll("\n");
+            // Replace li tags with line breaks
+            normalizedText = PATTERN_LILI_TAG.matcher(normalizedText).replaceAll("\n");
+            normalizedText = PATTERN_LI_TAG.matcher(normalizedText).replaceAll("\n");
+            // Replace p tags with line breaks
+            normalizedText = PATTERN_PP_TAG.matcher(normalizedText).replaceAll("\n");
+            normalizedText = PATTERN_P_TAG.matcher(normalizedText).replaceAll("\n");
+            // Remove any other tags
+            normalizedText = Strings.cleanup(normalizedText, StringCleanup::removeHtmlTags);
+            // Convert all generated tabs to blanks and collapse multiple
+            normalizedText = Strings.cleanup(normalizedText, StringCleanup::reduceWhitespace);
+            // Decode entities
+            normalizedText = Strings.cleanup(normalizedText, StringCleanup::decodeHtmlEntities);
+        }
+
+        return normalizedText;
     }
 
     /**
@@ -371,7 +501,7 @@ public class StringCleanup {
     }
 
     /**
-     * Escapes XML characters to that the given string can be safely embedded in XML.
+     * Escapes XML characters so that the given string can be safely embedded in XML.
      *
      * @param input the input to process
      * @return the resulting string
@@ -415,6 +545,7 @@ public class StringCleanup {
      * @param input the input to process
      * @return the resulting string
      */
+    @Nullable
     public static String nlToBr(String input) {
         if (input == null) {
             return null;
