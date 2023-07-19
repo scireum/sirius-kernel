@@ -203,6 +203,7 @@ class StringsTest {
         assertTrue(Strings.containsAllowedHtml("<br />"));
         assertTrue(Strings.containsAllowedHtml("<br test=\"foo\">"));
         assertTrue(Strings.containsAllowedHtml("</div>"));
+        assertTrue(Strings.containsAllowedHtml("<div><script>Test</script></div>"));
         assertFalse(Strings.containsAllowedHtml("<namespace:element>"));
         assertFalse(Strings.containsAllowedHtml("Test <script>alert('Hello World!')</script>"));
         assertFalse(Strings.containsAllowedHtml("foo having < 3 m, with >= 3 m"));
