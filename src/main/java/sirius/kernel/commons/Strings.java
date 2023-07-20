@@ -575,7 +575,10 @@ public class Strings {
         return value;
     }
 
-    private static final Pattern DETECT_XML_REGEX = Pattern.compile("<[a-zA-Z0-9]+[^>]*>");
+    /**
+     * Defines a pattern (regular expression) to detect XML tags.
+     */
+    public static final Pattern PATTERN_DETECT_XML = Pattern.compile("</?[a-zA-Z][^>]*>");
 
     /**
      * Determines if the given content contains XML tags.
@@ -588,7 +591,7 @@ public class Strings {
             return false;
         }
 
-        return DETECT_XML_REGEX.matcher(content).find();
+        return PATTERN_DETECT_XML.matcher(content).find();
     }
 
     /**
