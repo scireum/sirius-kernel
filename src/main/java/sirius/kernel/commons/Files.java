@@ -70,8 +70,10 @@ public class Files {
      * <tt>.txt.zip</tt>, only the last is returned.
      */
     @Nullable
+    @SuppressWarnings("java:S2259")
+    @Explain("path is checked for null by the Strings.isEmpty call in getFilenameAndExtension")
     public static String getFileExtension(@Nullable String path) {
-        return Strings.splitAtLast(path, ".").getSecond();
+        return Strings.splitAtLast(getFilenameAndExtension(path), ".").getSecond();
     }
 
     /**
@@ -87,6 +89,8 @@ public class Files {
      * <tt>null</tt> if the given path is empty or does not contain a path.
      */
     @Nullable
+    @SuppressWarnings("java:S2259")
+    @Explain("path is already checked for null by the Strings.isEmpty call")
     public static String getBasepath(@Nullable String path) {
         if (Strings.isEmpty(path)) {
             return null;
@@ -109,6 +113,8 @@ public class Files {
      * @return the filename without the path to it. Returns <tt>null</tt> if the input is empty or <tt>null</tt>.
      */
     @Nullable
+    @SuppressWarnings("java:S2259")
+    @Explain("path is already checked for null by the Strings.isEmpty call")
     public static String getFilenameAndExtension(@Nullable String path) {
         if (Strings.isEmpty(path)) {
             return null;
@@ -134,6 +140,8 @@ public class Files {
      * have a filename (ends with a sepratator).
      */
     @Nullable
+    @SuppressWarnings("java:S2259")
+    @Explain("path is checked for null by the Strings.isEmpty call in getFilenameAndExtension")
     public static String getFilenameWithoutExtension(@Nullable String path) {
         return Strings.splitAtLast(getFilenameAndExtension(path), ".").getFirst();
     }
