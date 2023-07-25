@@ -193,7 +193,7 @@ class StringsTest {
         assertTrue(Strings.probablyContainsXml("</div>"));
         assertTrue(Strings.probablyContainsXml("<namespace:element>"));
         assertFalse(Strings.probablyContainsXml("foo having < 3 m, with >= 3 m"));
-        assertFalse(Strings.probablyContainsXml("foo length<19. with width > 80"));
+        assertFalse(Strings.probablyContainsXml("foo having <3 m, with > 3 m"));
     }
 
     @Test
@@ -207,7 +207,7 @@ class StringsTest {
         assertFalse(Strings.containsAllowedHtml("<namespace:element>"));
         assertFalse(Strings.containsAllowedHtml("Test <script>alert('Hello World!')</script>"));
         assertFalse(Strings.containsAllowedHtml("foo having < 3 m, with >= 3 m"));
-        assertFalse(Strings.containsAllowedHtml("foo length<19. with width > 80"));
+        assertFalse(Strings.containsAllowedHtml("foo having <3 m, with > 3 m"));
     }
 
     @Test

@@ -1,0 +1,39 @@
+name-template: 'GA Release $RESOLVED_VERSION'
+tag-template: 'ga-$RESOLVED_VERSION'
+categories:
+  - title: 'Breaking Changes'
+    label: '💣 BREAKING CHANGE'
+  - title: 'New Features / Enhancements'
+    collapse-after: 10
+    label: '🧬 Enhancement'
+  - title: 'Bugfixes'
+    collapse-after: 5
+    label: '🐛 Bugfix'
+  - title: 'Maintenance'
+    collapse-after: 5
+    labels:
+      - '🛠️ Maintenance'
+      - '⬆️ Dependencies'
+  - title: 'Uncategorized'
+exclude-labels:
+  - '⎇ Sidebranch'
+change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+filter-by-commitish: true
+version-resolver:
+  major:
+    labels:
+      - '💣 BREAKING CHANGE'
+  minor:
+    labels:
+      - '🧬 Enhancement'
+  patch:
+    labels:
+      - '🐛 Bugfix'
+      - '🛠️ Maintenance'
+  default: patch
+template: |
+  # Changelog
+
+  $CHANGES
+
+  **Full Changelog:** [$PREVIOUS_TAG...ga-$RESOLVED_VERSION](https://github.com/scireum/$REPOSITORY/compare/$PREVIOUS_TAG...ga-$RESOLVED_VERSION)
