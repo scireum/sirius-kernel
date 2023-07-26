@@ -176,8 +176,6 @@ class StringsTest {
         assertEquals("Hello <br> World", Strings.cleanup("Hello\nWorld", StringCleanup::nlToBr));
         assertEquals("Testalert('Hello World!')",
                      Strings.cleanup("Test<script>alert('Hello World!')</script>", StringCleanup::removeXml));
-        assertEquals("<div>Test</div>",
-                     Strings.cleanup("<div><script>Test</script></div>", StringCleanup::removeUnsafeHtml));
         assertEquals(" äöüÄÖÜß<>\"'&* * * * * * ",
                      Strings.cleanup(
                              "&nbsp;&auml;&ouml;&uuml;&Auml;&Ouml;&Uuml;&szlig;&lt;&gt;&quot;&apos;&amp;&#8226;&#8226;&#8227;&#8227;&#8259;&#8259;",

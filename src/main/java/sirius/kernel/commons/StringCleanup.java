@@ -474,19 +474,6 @@ public class StringCleanup {
     }
 
     /**
-     * Removes all unsafe HTML tags from the given string.
-     *
-     * @param input the input to process
-     * @return the resulting string
-     */
-    @Nonnull
-    public static String removeUnsafeHtml(@Nonnull String input) {
-        return PATTERN_STRIP_XML.matcher(input)
-                                .replaceAll(match -> Strings.DETECT_ALLOWED_HTML_REGEX.matcher(match.group())
-                                                                                      .matches() ? match.group() : "");
-    }
-
-    /**
      * Resolves encoded HTML entities to their plain text equivalent in the given string.
      *
      * @param input the input to process
