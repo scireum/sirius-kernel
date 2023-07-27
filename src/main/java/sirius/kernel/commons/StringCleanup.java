@@ -8,10 +8,13 @@
 
 package sirius.kernel.commons;
 
+import sirius.kernel.health.Exceptions;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.UnaryOperator;
@@ -28,14 +31,157 @@ import java.util.regex.Pattern;
 public class StringCleanup {
 
     private static final Pattern PATTERN_CONTROL_CHARACTERS = Pattern.compile("\\p{Cntrl}");
-    private static final Pattern PATTERN_WHITESPACE = Pattern.compile("\\s");
-    private static final Pattern PATTERN_WHITESPACES = Pattern.compile("\\s+");
+    private static final String REGEX_WHITESPACE = "[\\s\\p{Z}]";
+    private static final Pattern PATTERN_WHITESPACE = Pattern.compile(REGEX_WHITESPACE);
+    private static final Pattern PATTERN_WHITESPACES = Pattern.compile(REGEX_WHITESPACE + "+");
     private static final Pattern PATTERN_PUNCTUATION = Pattern.compile("\\p{Punct}");
     private static final Pattern PATTERN_NON_ALPHA_NUMERIC = Pattern.compile("([^\\p{L}\\d])");
     private static final Pattern PATTERN_NON_LETTER = Pattern.compile("\\P{L}");
     private static final Pattern PATTERN_NON_DIGIT = Pattern.compile("\\D");
-    private static final Pattern STRIP_XML_REGEX = Pattern.compile("\\s*</?[a-zA-Z0-9]+[^>]*>\\s*");
+    private static final Pattern PATTERN_DECIMAL_ENTITY = Pattern.compile("&(\\d+);");
+    private static final Pattern PATTERN_HEX_ENTITY = Pattern.compile("&x0*([0-9a-fA-F]+);");
+    private static final Pattern PATTERN_BR_TAG = Pattern.compile("<(br|BR) */? *>");
+    private static final Pattern PATTERN_LILI_TAG = Pattern.compile("<(/li|/LI)>\\r?\\n?\\t?<(li|LI)>");
+    private static final Pattern PATTERN_LI_TAG = Pattern.compile("<(/?li|/?LI)>");
+    private static final Pattern PATTERN_PP_TAG = Pattern.compile("<(/p|/P)>\\r?\\n?\\t?<([pP])>");
+    private static final Pattern PATTERN_P_TAG = Pattern.compile("<(/?p|/?P)>");
 
+    /**
+     * Holds the name of the {@code <p>} tag.
+     */
+    public static final String TAG_P = "p";
+    /**
+     * Holds the name of the {@code <br>} tag.
+     */
+    public static final String TAG_BR = "br";
+    /**
+     * Holds the name of the {@code <div>} tag.
+     */
+    public static final String TAG_DIV = "div";
+    /**
+     * Holds the name of the {@code <span>} tag.
+     */
+    public static final String TAG_SPAN = "span";
+    /**
+     * Holds the name of the {@code <small>} tag.
+     */
+    public static final String TAG_SMALL = "small";
+    /**
+     * Holds the name of the {@code <h1>} tag.
+     */
+    public static final String TAG_H1 = "h1";
+    /**
+     * Holds the name of the {@code <h2>} tag.
+     */
+    public static final String TAG_H2 = "h2";
+    /**
+     * Holds the name of the {@code <h3>} tag.
+     */
+    public static final String TAG_H3 = "h3";
+    /**
+     * Holds the name of the {@code <h4>} tag.
+     */
+    public static final String TAG_H4 = "h4";
+    /**
+     * Holds the name of the {@code <h5>} tag.
+     */
+    public static final String TAG_H5 = "h5";
+    /**
+     * Holds the name of the {@code <h6>} tag.
+     */
+    public static final String TAG_H6 = "h6";
+    /**
+     * Holds the name of the {@code <b>} tag.
+     */
+    public static final String TAG_B = "b";
+    /**
+     * Holds the name of the {@code <strong>} tag.
+     */
+    public static final String TAG_STRONG = "strong";
+    /**
+     * Holds the name of the {@code <i>} tag.
+     */
+    public static final String TAG_I = "i";
+    /**
+     * Holds the name of the {@code <em>} tag.
+     */
+    public static final String TAG_EM = "em";
+    /**
+     * Holds the name of the {@code <u>} tag.
+     */
+    public static final String TAG_U = "u";
+    /**
+     * Holds the name of the {@code <sup>} tag.
+     */
+    public static final String TAG_SUP = "sup";
+    /**
+     * Holds the name of the {@code <sub>} tag.
+     */
+    public static final String TAG_SUB = "sub";
+    /**
+     * Holds the name of the {@code <mark>} tag.
+     */
+    public static final String TAG_MARK = "mark";
+    /**
+     * Holds the name of the {@code <hr>} tag.
+     */
+    public static final String TAG_HR = "hr";
+    /**
+     * Holds the name of the {@code <dl>} tag.
+     */
+    public static final String TAG_DL = "dl";
+    /**
+     * Holds the name of the {@code <dt>} tag.
+     */
+    public static final String TAG_DT = "dt";
+    /**
+     * Holds the name of the {@code <dd>} tag.
+     */
+    public static final String TAG_DD = "dd";
+    /**
+     * Holds the name of the {@code <ol>} tag.
+     */
+    public static final String TAG_OL = "ol";
+    /**
+     * Holds the name of the {@code <ul>} tag.
+     */
+    public static final String TAG_UL = "ul";
+    /**
+     * Holds the name of the {@code <li>} tag.
+     */
+    public static final String TAG_LI = "li";
+
+    /**
+     * Holds a list of all allowed HTML tag names.
+     */
+    public static final List<String> ALLOWED_HTML_TAG_NAMES = List.of(TAG_P,
+                                                                      TAG_BR,
+                                                                      TAG_DIV,
+                                                                      TAG_SPAN,
+                                                                      TAG_SMALL,
+                                                                      TAG_H1,
+                                                                      TAG_H2,
+                                                                      TAG_H3,
+                                                                      TAG_H4,
+                                                                      TAG_H5,
+                                                                      TAG_H6,
+                                                                      TAG_B,
+                                                                      TAG_STRONG,
+                                                                      TAG_I,
+                                                                      TAG_EM,
+                                                                      TAG_U,
+                                                                      TAG_SUP,
+                                                                      TAG_SUB,
+                                                                      TAG_MARK,
+                                                                      TAG_HR,
+                                                                      TAG_DL,
+                                                                      TAG_DT,
+                                                                      TAG_DD,
+                                                                      TAG_OL,
+                                                                      TAG_UL,
+                                                                      TAG_LI);
+
+    private static final Pattern PATTERN_STRIP_XML = Pattern.compile("\\s*" + Strings.REGEX_DETECT_XML + "\\s*");
     private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
     static {
@@ -317,6 +463,98 @@ public class StringCleanup {
     }
 
     /**
+     * Removes all {@linkplain #PATTERN_STRIP_XML XML tags} from the given string.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    @Nonnull
+    public static String removeXml(@Nonnull String input) {
+        return PATTERN_STRIP_XML.matcher(input).replaceAll("");
+    }
+
+    /**
+     * Resolves encoded HTML entities to their plain text equivalent in the given string.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    @Nonnull
+    public static String decodeHtmlEntities(@Nonnull String input) {
+        input = input.replace("&nbsp;", " ")
+                     .replace("&auml;", "ä")
+                     .replace("&ouml;", "ö")
+                     .replace("&uuml;", "ü")
+                     .replace("&Auml;", "Ä")
+                     .replace("&Ouml;", "Ö")
+                     .replace("&Uuml;", "Ü")
+                     .replace("&szlig;", "ß")
+                     .replace("&lt;", "<")
+                     .replace("&gt;", ">")
+                     .replace("&quot;", "\"")
+                     .replace("&apos;", "'")
+                     .replace("&amp;", "&")
+                     .replace("&#8226; ", "* ")
+                     .replace("&#8226;", "* ")
+                     .replace("&#8227; ", "* ")
+                     .replace("&#8227;", "* ")
+                     .replace("&#8259; ", "* ")
+                     .replace("&#8259;", "* ");
+        input = Strings.replaceAll(PATTERN_DECIMAL_ENTITY, input, s -> {
+            try {
+                return String.valueOf(Character.toChars(Integer.parseInt(s)));
+            } catch (NumberFormatException e) {
+                Exceptions.ignore(e);
+            } catch (Exception e) {
+                Exceptions.handle(e);
+            }
+            return "";
+        });
+        input = Strings.replaceAll(PATTERN_HEX_ENTITY, input, s -> {
+            try {
+                return String.valueOf(Character.toChars(Integer.parseInt(s, 16)));
+            } catch (NumberFormatException e) {
+                Exceptions.ignore(e);
+            } catch (Exception e) {
+                Exceptions.handle(e);
+            }
+            return "";
+        });
+
+        return input;
+    }
+
+    /**
+     * Normalizes a text by removing all HTML, entities and special characters.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    @Nonnull
+    public static String htmlToPlainText(@Nonnull String input) {
+        String normalizedText = input;
+
+        if (PATTERN_STRIP_XML.matcher(normalizedText).find()) {
+            // Reduce all contained whitespaces, tabs, and line breaks
+            normalizedText = Strings.cleanup(normalizedText, StringCleanup::reduceWhitespace);
+            // Replace br tags with line breaks
+            normalizedText = PATTERN_BR_TAG.matcher(normalizedText).replaceAll("\n");
+            // Replace li tags with line breaks
+            normalizedText = PATTERN_LILI_TAG.matcher(normalizedText).replaceAll("\n");
+            normalizedText = PATTERN_LI_TAG.matcher(normalizedText).replaceAll("\n");
+            // Replace p tags with line breaks
+            normalizedText = PATTERN_PP_TAG.matcher(normalizedText).replaceAll("\n");
+            normalizedText = PATTERN_P_TAG.matcher(normalizedText).replaceAll("\n");
+            // Remove any other tags
+            normalizedText = Strings.cleanup(normalizedText, StringCleanup::removeXml);
+            // Decode entities
+            normalizedText = Strings.cleanup(normalizedText, StringCleanup::decodeHtmlEntities);
+        }
+
+        return normalizedText;
+    }
+
+    /**
      * Removes all umlauts and other decorated latin characters.
      *
      * @param term the term to reduce characters in
@@ -364,14 +602,14 @@ public class StringCleanup {
         String contentToStrip;
         do {
             contentToStrip = alreadyStrippedContent;
-            alreadyStrippedContent = STRIP_XML_REGEX.matcher(contentToStrip).replaceFirst(" ");
+            alreadyStrippedContent = PATTERN_STRIP_XML.matcher(contentToStrip).replaceFirst(" ");
         } while (!Strings.areEqual(contentToStrip, alreadyStrippedContent));
 
         return alreadyStrippedContent;
     }
 
     /**
-     * Escapes XML characters to that the given string can be safely embedded in XML.
+     * Escapes XML characters so that the given string can be safely embedded in XML.
      *
      * @param input the input to process
      * @return the resulting string
@@ -415,6 +653,7 @@ public class StringCleanup {
      * @param input the input to process
      * @return the resulting string
      */
+    @Nullable
     public static String nlToBr(String input) {
         if (input == null) {
             return null;

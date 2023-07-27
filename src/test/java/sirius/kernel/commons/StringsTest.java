@@ -158,20 +158,28 @@ class StringsTest {
     @Test
     void cleanup() {
         assertEquals("Hel lo", Strings.cleanup("Hel lo ", StringCleanup::trim));
-        assertEquals("Hel lo ", Strings.cleanup("Hel  lo ", StringCleanup::reduceWhitespace));
-        assertEquals("Hello", Strings.cleanup("Hel  lo", StringCleanup::removeWhitespace));
+        assertEquals("Hel lo ", Strings.cleanup("Hel \t \t \r\n lo ", StringCleanup::reduceWhitespace));
+        assertEquals("Hello", Strings.cleanup("Hel \t \t \n lo ", StringCleanup::removeWhitespace));
         assertEquals("Hello", Strings.cleanup("Héllo", StringCleanup::reduceCharacters));
         assertEquals("hello", Strings.cleanup("Héllo", StringCleanup::reduceCharacters, StringCleanup::lowercase));
         assertEquals("HELLO", Strings.cleanup("Héllo", StringCleanup::reduceCharacters, StringCleanup::uppercase));
         assertEquals("Hello", Strings.cleanup("Hel-lo", StringCleanup::removePunctuation));
         assertEquals("Hello", Strings.cleanup("\10Hello", StringCleanup::removeControlCharacters));
         assertEquals("Test", Strings.cleanup("<b>Test</b>", StringCleanup::replaceXml, StringCleanup::trim));
-        assertEquals("Test", Strings.cleanup("<b>Test</b>", StringCleanup::replaceXml, StringCleanup::trim));
         assertEquals("Test", Strings.cleanup("<b>Test<br><img /></b>", StringCleanup::replaceXml, StringCleanup::trim));
-        assertEquals("Test Blubb", Strings.cleanup("<b>Test<br><img />Blubb</b>", StringCleanup::replaceXml, StringCleanup::trim));
-        assertEquals("foo having < 3 m, with >= 3 m", Strings.cleanup("foo having < 3 m, with >= 3 m", StringCleanup::replaceXml, StringCleanup::trim));
-        assertEquals("&lt;b&gt;Foo &lt;br /&gt; Bar&lt;/b&gt;", Strings.cleanup("<b>Foo <br /> Bar</b>", StringCleanup::escapeXml));
+        assertEquals("Test Blubb",
+                     Strings.cleanup("<b>Test<br><img />Blubb</b>", StringCleanup::replaceXml, StringCleanup::trim));
+        assertEquals("foo having < 3 m, with >= 3 m",
+                     Strings.cleanup("foo having < 3 m, with >= 3 m", StringCleanup::replaceXml, StringCleanup::trim));
+        assertEquals("&lt;b&gt;Foo &lt;br /&gt; Bar&lt;/b&gt;",
+                     Strings.cleanup("<b>Foo <br /> Bar</b>", StringCleanup::escapeXml));
         assertEquals("Hello <br> World", Strings.cleanup("Hello\nWorld", StringCleanup::nlToBr));
+        assertEquals("Testalert('Hello World!')",
+                     Strings.cleanup("Test<script>alert('Hello World!')</script>", StringCleanup::removeXml));
+        assertEquals(" äöüÄÖÜß<>\"'&* * * * * * ",
+                     Strings.cleanup(
+                             "&nbsp;&auml;&ouml;&uuml;&Auml;&Ouml;&Uuml;&szlig;&lt;&gt;&quot;&apos;&amp;&#8226;&#8226;&#8227;&#8227;&#8259;&#8259;",
+                             StringCleanup::decodeHtmlEntities));
     }
 
     @Test
@@ -180,8 +188,24 @@ class StringsTest {
         assertTrue(Strings.probablyContainsXml("<br>"));
         assertTrue(Strings.probablyContainsXml("<br />"));
         assertTrue(Strings.probablyContainsXml("<br test=\"foo\">"));
+        assertTrue(Strings.probablyContainsXml("</div>"));
+        assertTrue(Strings.probablyContainsXml("<namespace:element>"));
         assertFalse(Strings.probablyContainsXml("foo having < 3 m, with >= 3 m"));
         assertFalse(Strings.probablyContainsXml("foo having <3 m, with > 3 m"));
+    }
+
+    @Test
+    void containsAllowedHtml() {
+        assertTrue(Strings.containsAllowedHtml("<b>Test</b>"));
+        assertTrue(Strings.containsAllowedHtml("<br>"));
+        assertTrue(Strings.containsAllowedHtml("<br />"));
+        assertTrue(Strings.containsAllowedHtml("<br test=\"foo\">"));
+        assertTrue(Strings.containsAllowedHtml("</div>"));
+        assertTrue(Strings.containsAllowedHtml("<div><script>Test</script></div>"));
+        assertFalse(Strings.containsAllowedHtml("<namespace:element>"));
+        assertFalse(Strings.containsAllowedHtml("Test <script>alert('Hello World!')</script>"));
+        assertFalse(Strings.containsAllowedHtml("foo having < 3 m, with >= 3 m"));
+        assertFalse(Strings.containsAllowedHtml("foo having <3 m, with > 3 m"));
     }
 
     @Test
