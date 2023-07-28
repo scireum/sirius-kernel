@@ -13,7 +13,9 @@ import sirius.kernel.commons.ValueHolder
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-
+/**
+ * Tests the [Promise] class.
+ */
 class PromiseTest {
 
     @Test

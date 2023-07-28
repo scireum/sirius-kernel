@@ -26,7 +26,8 @@ class Reflections {
          */
         fun <T : Any> callPrivateMethod(instance: T, functionName: String, vararg args: Any): Any? {
             try {
-                val function = instance.javaClass.getDeclaredMethod(functionName, *args.map { it.javaClass }.toTypedArray())
+                val function =
+                        instance.javaClass.getDeclaredMethod(functionName, *args.map { it.javaClass }.toTypedArray())
                 function.trySetAccessible()
                 return function.invoke(instance, *args)
             } catch (e: InvocationTargetException) {
