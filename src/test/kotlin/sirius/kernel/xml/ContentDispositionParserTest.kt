@@ -29,8 +29,7 @@ class ContentDispositionParserTest {
         inline; filename*="UTF-8''test.pdf"                       | test.pdf
         inline; filename*="UTF-8''test%20pdf%20doc.pdf"           | test pdf doc.pdf
         inline; filename*=UTF-8''test%20pdf%20doc.pdf             | test pdf doc.pdf
-        attachment; filename*=iso-8859-1'en'file%27%20%27name.jpg | file' 'name.jpg
-    """
+        attachment; filename*=iso-8859-1'en'file%27%20%27name.jpg | file' 'name.jpg"""
     )
     fun `parseContentDisposition regex works for various scenarios`(input: String, output: String) {
         assertEquals(output, ContentDispositionParser.parseFileName(input).get())
