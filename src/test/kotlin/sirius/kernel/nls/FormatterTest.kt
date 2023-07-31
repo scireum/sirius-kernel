@@ -10,12 +10,15 @@ package sirius.kernel.nls
 
 import org.junit.Assert.assertThrows
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Context
 import kotlin.test.assertEquals
 
 /**
  * Tests the [Formatter] class.
  */
+@ExtendWith(SiriusExtension::class)
 class FormatterTest {
 
     @Test
@@ -33,7 +36,7 @@ class FormatterTest {
 
         val result = Formatter.create(pattern).set("foo", true).set("bar", " test ").format()
 
-        assertEquals("Test NLS.yes test", result)
+        assertEquals("Test Ja test", result)
     }
 
     @Test
