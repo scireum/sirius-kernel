@@ -28,8 +28,7 @@ import java.util.stream.IntStream;
  * <p>
  * An Example: If we have a list of stop words: "one", "two", "three" and want to detect if these occur in a
  * given text, we can do the following:
- * <pre>
- * {@code
+ * {@snippet :
  * Trie<Boolean> trie = Trie.create();
  *
  * trie.put("one", true);
@@ -47,12 +46,11 @@ import java.util.stream.IntStream;
  *         iter.resetWith(check.charAt(i));
  *     }
  * }
+ *
  * if (iter.isCompleted()) {
  *     System.out.println("Found!");
  * }
- *
  * }
- * </pre>
  *
  * @param <V> the type of values managed by the trie
  */
