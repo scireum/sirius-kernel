@@ -4867,4 +4867,24 @@ public class Emojis {
 
         return count;
     }
+
+    /**
+     * Removes all emojis from the given {@code string}.
+     *
+     * @param string the string to remove the emojis from
+     * @return the string without emojis
+     */
+    public static String removeEmojis(String string) {
+        StringBuilder builder = new StringBuilder();
+        Trie.ContainmentIterator<Boolean> iterator = emojiTrie.iterator();
+        int[] sequence = string.codePoints().toArray();
+
+        for (int index = 0; index < sequence.length; index++) {
+            if (!iterator.doContinue(sequence[index]) && !iterator.resetWith(sequence[index])) {
+                builder.appendCodePoint(sequence[index]);
+            }
+        }
+
+        return builder.toString();
+    }
 }

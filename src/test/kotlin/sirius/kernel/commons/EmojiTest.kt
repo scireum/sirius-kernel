@@ -91,4 +91,18 @@ class EmojiTest {
         assertEquals(2, Emojis.countEmojis("😅🤦‍♂️"))
         assertEquals(3, Emojis.countEmojis("👩🏾‍🚀🪐🚀"))
     }
+
+    @Test
+    fun removesEmojisCorrectly() {
+        assertEquals("", Emojis.removeEmojis("🥳"))
+        assertEquals("", Emojis.removeEmojis("😅🤦‍♂️"))
+        assertEquals("", Emojis.removeEmojis("👩🏾‍🚀🪐🚀"))
+        assertEquals("Hallo", Emojis.removeEmojis("Hallo"))
+        assertEquals("Hallo ", Emojis.removeEmojis("Hallo 🙂"))
+        assertEquals("Hallo ", Emojis.removeEmojis("Hallo 🙂👋"))
+        assertEquals(" Yay!", Emojis.removeEmojis("🍾 Yay!"))
+        assertEquals(" Yay!", Emojis.removeEmojis("🍾🥂 Yay!"))
+        assertEquals("Hallo  Wie geht's?", Emojis.removeEmojis("Hallo 🙂 Wie geht's?"))
+        assertEquals("Hallo  Wie geht's?", Emojis.removeEmojis("Hallo 🙂👋 Wie geht's?"))
+    }
 }
