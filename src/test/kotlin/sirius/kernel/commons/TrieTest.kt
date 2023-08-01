@@ -25,11 +25,11 @@ class TrieTest {
         val iter = trie.iterator()
         var found = 0
         for (index in check.indices) {
-            if (!iter.doContinue(check[index])) {
+            if (!iter.doContinue(check[index].code)) {
                 if (iter.isCompleted()) {
                     found = iter.getValue()
                 }
-                iter.resetWith(check[index])
+                iter.resetWith(check[index].code)
             }
         }
         assertEquals(5, found)
