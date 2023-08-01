@@ -32,6 +32,9 @@ class TrieTest {
                 iter.resetWith(check[index].code)
             }
         }
+        if (iter.isCompleted()) {
+            found = iter.getValue()
+        }
         assertEquals(5, found)
         assertEquals(2, trie["on"] as Int)
         assertNull(trie["onx"])
