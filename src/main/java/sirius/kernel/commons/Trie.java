@@ -27,16 +27,16 @@ import java.util.TreeSet;
  * given text, we can do the following:
  * <pre>
  * {@code
- * Trie&lt;Boolean&gt; trie = Trie.create();
+ * Trie<Boolean> trie = Trie.create();
  *
  * trie.put("one", true);
  * trie.put("two", true);
  * trie.put("three", true);
  *
  * String check = "I'd like to have three beer please";
- * Trie.ContainmentIterator&lt;Boolean&gt; iter = trie.iterator();
+ * Trie.ContainmentIterator<Boolean> iter = trie.iterator();
  *
- * for(int i = 0; i &lt; check.length(); i++) {
+ * for(int i = 0; i < check.length(); i++) {
  *     if (!iter.doContinue(check.charAt(i))) {
  *         if (iter.isCompleted()) {
  *             System.out.println("Found!");
@@ -145,7 +145,7 @@ public class Trie<V> {
         void reset();
 
         /**
-         * Restarts the iterator at  the beginning and tries to perform the next transition using the given character.
+         * Restarts the iterator at the beginning and tries to perform the next transition using the given character.
          *
          * @param c the character to try to use after resetting the iterator
          * @return <tt>true</tt> if the transition using <tt>c</tt> was possible, <tt>false</tt> otherwise. In this
