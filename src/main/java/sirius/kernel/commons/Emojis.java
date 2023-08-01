@@ -4805,6 +4805,7 @@ public class Emojis {
      * @param string the string to check
      * @return <tt>true</tt> if the string contains only emojis, <tt>false</tt> otherwise
      * @see #isEmoji(String)
+     * @see #onlyContainsEmojisWithWhitespace(String)
      */
     public static boolean onlyContainsEmojis(String string) {
         if (Strings.isEmpty(string)) {
@@ -4826,6 +4827,19 @@ public class Emojis {
         }
 
         return iterator.isCompleted();
+    }
+
+    /**
+     * Checks whether the given {@code string} contains only emojis with additional whitespace characters.
+     * <p>
+     * Note that pure whitespace strings will return <tt>false</tt>.
+     *
+     * @param string the string to check
+     * @return <tt>true</tt> if the string contains only emojis and whitespace, <tt>false</tt> otherwise
+     * @see #onlyContainsEmojis(String)
+     */
+    public static boolean onlyContainsEmojisWithWhitespace(String string) {
+        return onlyContainsEmojis(string.replaceAll("\\s", ""));
     }
 
     /**

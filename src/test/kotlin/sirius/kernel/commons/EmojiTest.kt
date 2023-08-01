@@ -8,11 +8,9 @@
 
 package sirius.kernel.commons
 
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -64,6 +62,22 @@ class EmojiTest {
         assertFalse { Emojis.onlyContainsEmojis(" 👎👎") }
         assertFalse { Emojis.onlyContainsEmojis("👎 👎") }
         assertFalse { Emojis.onlyContainsEmojis("👎👎 ") }
+    }
+
+    @Test
+    fun detectsMultipleEmojisWithWhitespaceCorrectly() {
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👩🏾‍🚀") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👍👍") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👩🏾‍🚀🪐🚀") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace(" 👎👎") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👎 👎") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👎👎 ") }
+
+        assertFalse { Emojis.onlyContainsEmojisWithWhitespace("") }
+        assertFalse { Emojis.onlyContainsEmojisWithWhitespace(" ") }
+        assertFalse { Emojis.onlyContainsEmojisWithWhitespace("Nope") }
+        assertFalse { Emojis.onlyContainsEmojisWithWhitespace("Nope 👎👎") }
+        assertFalse { Emojis.onlyContainsEmojisWithWhitespace("👎👎 Nope") }
     }
 
     @Test
