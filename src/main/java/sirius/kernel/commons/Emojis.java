@@ -4764,6 +4764,10 @@ public class Emojis {
      * @see #onlyContainsEmojis(String)
      */
     public static boolean isEmoji(String string) {
+        if (Strings.isEmpty(string)) {
+            return false;
+        }
+
         return emojiTrie.get(string) != null;
     }
 
@@ -4774,6 +4778,10 @@ public class Emojis {
      * @return <tt>true</tt> if the string contains at least one emoji, <tt>false</tt> otherwise
      */
     public static boolean containsEmoji(String string) {
+        if (Strings.isEmpty(string)) {
+            return false;
+        }
+
         Trie.ContainmentIterator<Boolean> iterator = emojiTrie.iterator();
         int[] sequence = string.codePoints().toArray();
 
@@ -4799,6 +4807,10 @@ public class Emojis {
      * @see #isEmoji(String)
      */
     public static boolean onlyContainsEmojis(String string) {
+        if (Strings.isEmpty(string)) {
+            return false;
+        }
+
         Trie.ContainmentIterator<Boolean> iterator = emojiTrie.iterator();
         int[] sequence = string.codePoints().toArray();
 

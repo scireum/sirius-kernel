@@ -35,6 +35,7 @@ class EmojiTest {
         assertTrue { Emojis.isEmoji("🎎") }
         assertTrue { Emojis.isEmoji("🥺") }
 
+        assertFalse { Emojis.isEmoji("") }
         assertFalse { Emojis.isEmoji("a") }
         assertFalse { Emojis.isEmoji("👍👍") }
     }
@@ -46,6 +47,7 @@ class EmojiTest {
         assertTrue { Emojis.containsEmoji("😇") }
         assertTrue { Emojis.containsEmoji("👍👍") }
 
+        assertFalse { Emojis.containsEmoji("") }
         assertFalse { Emojis.containsEmoji("Nope") }
     }
 
@@ -55,6 +57,7 @@ class EmojiTest {
         assertTrue { Emojis.onlyContainsEmojis("👍👍") }
         assertTrue { Emojis.onlyContainsEmojis("👩🏾‍🚀🪐🚀") }
 
+        assertFalse { Emojis.onlyContainsEmojis("") }
         assertFalse { Emojis.onlyContainsEmojis("Nope") }
         assertFalse { Emojis.onlyContainsEmojis("Nope 👎👎") }
         assertFalse { Emojis.onlyContainsEmojis("👎👎 Nope") }
