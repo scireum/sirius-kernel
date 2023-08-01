@@ -4816,6 +4816,12 @@ public class Emojis {
         return iterator.isCompleted();
     }
 
+    /**
+     * Counts the emojis contained in the given {@code string}.
+     *
+     * @param string the string to check
+     * @return the number of emojis contained in the string
+     */
     public static int countEmojis(String string) {
         Trie.ContainmentIterator<Boolean> iterator = emojiTrie.iterator();
         int[] sequence = string.codePoints().toArray();
