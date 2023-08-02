@@ -12,31 +12,31 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 /**
- * Implements the {@link BaseTrie} to use {@link Character}-based keys.
+ * Implements the {@link BaseTrie} to use keys based on {@link Integer} code points.
  *
  * @param <V> the type of values managed by the trie
  */
-public class Trie<V> extends BaseTrie<V> {
+public class CodePointTrie<V> extends BaseTrie<V> {
 
     /**
-     * Creates a new {@link Trie} without forcing you to re-type the generics.
+     * Creates a new {@link CodePointTrie} without forcing you to re-type the generics.
      *
      * @param <V> the type of values managed by the trie
-     * @return a new instance of {@link Trie}
+     * @return a new instance of {@link CodePointTrie}
      */
-    public static <V> Trie<V> create() {
-        return new Trie<>();
+    public static <V> CodePointTrie<V> create() {
+        return new CodePointTrie<>();
     }
 
     @Override
     protected IntStream stream(CharSequence string) {
-        return string.chars();
+        return string.codePoints();
     }
 
     @Override
     protected String assembleString(List<Integer> keys) {
         StringBuilder builder = new StringBuilder();
-        keys.stream().map(integer -> (char) integer.intValue()).forEach(builder::append);
+        keys.forEach(builder::appendCodePoint);
         return builder.toString();
     }
 }
