@@ -16,6 +16,10 @@ public class Emojis {
     protected static final CodePointTrie<Boolean> emojiTrie = CodePointTrie.create();
 
     static {
+        // The following list is maintained by pasting the output of a Python generator script. It can be found at
+        // https://github.com/scireum/scireum-scripts/blob/main/sirius/list_emojis_for_insertion_into_kernel.py
+        // Emojis should be updated about once per year.
+
         emojiTrie.put("😀", true);
         emojiTrie.put("😃", true);
         emojiTrie.put("😄", true);
