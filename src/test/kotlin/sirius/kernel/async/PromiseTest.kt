@@ -19,14 +19,8 @@ import kotlin.test.assertTrue
 class PromiseTest {
 
     @Test
-    fun `A Promise can be converted to a Future`() {
-        val promise = Promise<String>()
-        promise.asFuture()
-    }
-
-    @Test
     fun `Multiple Callbacks work on Promises when successfully completed`() {
-        val test = Promise<String>();
+        val test = Promise<String>()
         val resultHolder1 = ValueHolder.of("")
         val resultHolder2 = ValueHolder.of("")
         test.onSuccess(resultHolder1)
@@ -38,8 +32,8 @@ class PromiseTest {
         // assert both handlers contain the expected result and the promise is considered successful and completed
         assertEquals(resultHolder1.get(), "Hello")
         assertEquals(resultHolder2.get(), "Hello")
-        test.isSuccessful()
-        test.isCompleted()
+        test.isSuccessful
+        test.isCompleted
     }
 
     @Test
@@ -69,8 +63,8 @@ class PromiseTest {
         // both handlers contain the expected exception and the promise is considered 'failed' and 'completed'
         assertEquals(resultHolder1.get(), exception)
         assertEquals(resultHolder2.get(), exception)
-        assertTrue(test.isFailed())
-        assertTrue(test.isCompleted())
+        assertTrue { test.isFailed }
+        assertTrue { test.isCompleted }
     }
 
     @Test
@@ -111,9 +105,9 @@ class PromiseTest {
         // complete the input with invalid data
         input.success(null)
         // the handler will contain the appropriate exception
-        assertTrue(resultHolder.get() is NullPointerException)
+        assertTrue { resultHolder.get() is NullPointerException }
         // the output promise is considered as 'failed'
-        assertTrue(output.isFailed())
+        assertTrue { output.isFailed }
     }
 
     @Test
@@ -127,7 +121,7 @@ class PromiseTest {
         // and mark it as failed as well
         test.fail(exception)
         // the promise is considered as 'failed' and is not considered as 'successful'
-        assertTrue(test.isFailed())
-        assertTrue(!test.isSuccessful())
+        assertTrue { test.isFailed }
+        assertTrue { !test.isSuccessful }
     }
 }

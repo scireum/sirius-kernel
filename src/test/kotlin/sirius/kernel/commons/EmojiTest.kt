@@ -14,7 +14,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Tests the [Trie] class.
+ * Tests the [Emojis] class.
  */
 class EmojiTest {
 
