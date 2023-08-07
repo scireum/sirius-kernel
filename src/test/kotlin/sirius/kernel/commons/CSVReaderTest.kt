@@ -14,6 +14,9 @@ import sirius.kernel.SiriusExtension
 import java.io.StringReader
 import kotlin.test.assertEquals
 
+/**
+ * Tests the [CSVReader] class.
+ */
 @ExtendWith(SiriusExtension::class)
 class CSVReaderTest {
 
@@ -151,7 +154,7 @@ class CSVReaderTest {
 
     @Test
     fun `limit the number of line to read`() {
-        val completeData = (0 .. 99).joinToString("\n") { "a;b;c\n1;2;3\r\n4;5;6" }
+        val completeData = (0..99).joinToString("\n") { "a;b;c\n1;2;3\r\n4;5;6" }
         val output = mutableListOf<Values>()
         CSVReader(StringReader(completeData)).withLimit(Limit(0, 100)).execute { output.add(it) }
 

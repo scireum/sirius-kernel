@@ -11,6 +11,9 @@ package sirius.kernel.settings
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+/**
+ * Tests the [ConfigBuilder] class.
+ */
 class ConfigBuilderTest {
 
     @Test

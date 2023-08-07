@@ -16,6 +16,9 @@ import java.io.StringReader
 import java.io.StringWriter
 import kotlin.test.assertEquals
 
+/**
+ * Tests the [CSVWriter] class.
+ */
 @ExtendWith(SiriusExtension::class)
 class CSVWriterTest {
 

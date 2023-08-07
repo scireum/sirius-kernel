@@ -22,6 +22,9 @@ import java.time.ZoneId
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+/**
+ * Tests the [EveryDay] class.
+ */
 @ExtendWith(SiriusExtension::class)
 class EveryDayTaskTest {
 

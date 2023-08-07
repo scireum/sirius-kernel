@@ -21,6 +21,9 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertEquals
 
+/**
+ * Tests the [AdvancedDateParser] class.
+ */
 @ExtendWith(SiriusExtension::class)
 class AdvancedDateParserTest {
 
