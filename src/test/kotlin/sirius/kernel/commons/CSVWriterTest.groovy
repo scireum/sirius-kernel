@@ -10,7 +10,7 @@ package sirius.kernel.commons
 
 import sirius.kernel.BaseSpecification
 
-class CSVWriterSpec extends BaseSpecification {
+class CSVWriterTest extends BaseSpecification {
 
     def "simple data is output as CSV"() {
         given:

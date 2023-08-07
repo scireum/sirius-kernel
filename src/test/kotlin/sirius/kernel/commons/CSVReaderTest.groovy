@@ -12,7 +12,7 @@ import sirius.kernel.BaseSpecification
 
 import java.util.function.Consumer
 
-class CSVReaderSpec extends BaseSpecification {
+class CSVReaderTest extends BaseSpecification {
 
     def "valid CSV data can be parsed"() {
         given:
