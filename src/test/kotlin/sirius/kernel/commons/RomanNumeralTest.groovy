@@ -2,7 +2,7 @@ package sirius.kernel.commons
 
 import sirius.kernel.BaseSpecification
 
-class RomanNumeralSpec extends BaseSpecification {
+class RomanNumeralTest extends BaseSpecification {
 
     def "RomanNumeral converts int correctly to roman numeral strings"() {
         expect:
