@@ -19,7 +19,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 
-class EveryDayTaskSpec extends BaseSpecification {
+class EveryDayTaskTest extends BaseSpecification {
 
     @Part
     private static TimeProvider timeProvider
