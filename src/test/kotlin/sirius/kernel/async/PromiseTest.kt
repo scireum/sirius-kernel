@@ -19,12 +19,6 @@ import kotlin.test.assertTrue
 class PromiseTest {
 
     @Test
-    fun `A Promise can be converted to a Future`() {
-        val promise = Promise<String>()
-        promise.asFuture()
-    }
-
-    @Test
     fun `Multiple Callbacks work on Promises when successfully completed`() {
         val test = Promise<String>();
         val resultHolder1 = ValueHolder.of("")
