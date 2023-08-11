@@ -119,6 +119,8 @@ public class Outcall {
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
 
+    private static final String HEADER_AUTHORIZATION = "Authorization";
+
     @ConfigValue("http.outcall.timeouts.default.connectTimeout")
     private static Duration defaultConnectTimeout;
 
@@ -271,7 +273,7 @@ public class Outcall {
 
         String userAndPassword = user + ":" + password;
         String encodedAuthorization = Base64.getEncoder().encodeToString(userAndPassword.getBytes(charset));
-        setRequestProperty("Authorization", "Basic " + encodedAuthorization);
+        setRequestProperty(HEADER_AUTHORIZATION, "Basic " + encodedAuthorization);
         return this;
     }
 
