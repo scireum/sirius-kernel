@@ -62,6 +62,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -144,6 +145,8 @@ public class Outcall {
 
     private static String defaultUserAgent;
     private static final Average timeToFirstByte = new Average();
+    private Supplier<String> oAuthAccessToken;
+    private Runnable oAuthTokenRefresher;
 
     /**
      * Builds the default user agent string as 'product.name/product.version (+product.baseUrl)', where version or
@@ -438,6 +441,10 @@ public class Outcall {
             return;
         }
 
+        if (oAuthAccessToken != null) {
+            setRequestProperty(HEADER_AUTHORIZATION, oAuthAccessToken.get());
+        }
+
         if (client == null) {
             client = clientBuilder.build();
         }
@@ -467,6 +474,14 @@ public class Outcall {
                                                        .orElse(defaultConnectTimeout)
                                                        .plusSeconds(1))) {
             response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            if (oAuthTokenRefresher != null && isUnauthorized(response.statusCode())) {
+                oAuthTokenRefresher.run();
+                oAuthTokenRefresher = null;
+
+                requestBuilder.setHeader(HEADER_AUTHORIZATION, oAuthAccessToken.get());
+                request = requestBuilder.build();
+                performRequest();
+            }
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IOException("Thread was interrupted!");
@@ -671,6 +686,22 @@ public class Outcall {
         return timeToFirstByte;
     }
 
+    /**
+     * Enables OAuth token support for this outcall.
+     *
+     * @param accessTokenSupplier supplies the access token to be used for OAuth. It must contain the proper
+     *                            authorization type, e.g. 'Bearer <token>'
+     * @param tokenRefresher      supplies the refreshed token to be used for OAuth. This means the supplier will
+     *                            perform the refresh of the token using OAuth refresh token flow. The token
+     *                            must contain the proper authorization type, e.g. 'Bearer &lt;token&gt;'
+     * @return the current instance for fluent method calls
+     */
+    public Outcall withOAuth(Supplier<String> accessTokenSupplier, Runnable tokenRefresher) {
+        this.oAuthAccessToken = accessTokenSupplier;
+        this.oAuthTokenRefresher = tokenRefresher;
+        return this;
+    }
+
     private void installRedirectRequest(URI redirectedURI) {
         HttpRequest.Builder redirectBuilder = requestBuilder.copy();
         redirectBuilder.uri(redirectedURI);
@@ -698,6 +729,15 @@ public class Outcall {
             }
         }
         return Optional.empty();
+    }
+
+    private boolean isUnauthorized(int statusCode) {
+        return switch (statusCode) {
+            case 400, 403 -> true;
+            // 400: Bad Request => authorization might be missing
+            // 403: Forbidden => authentication might be valid, but authorization is missing
+            default -> false;
+        };
     }
 
     private boolean isRedirecting(int statusCode) {
