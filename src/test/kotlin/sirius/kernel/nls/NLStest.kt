@@ -7,7 +7,10 @@
  */
 
 package sirius.kernel.nls
-
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -17,6 +20,7 @@ import sirius.kernel.async.CallContext
 import sirius.kernel.commons.Amount
 import java.time.*
 import kotlin.test.assertEquals
+import java.math.BigDecimal
 
 /**
  * Tests the [NLS] class.
@@ -24,6 +28,45 @@ import kotlin.test.assertEquals
 @ExtendWith(SiriusExtension::class)
 
 class NLSTest {
+
+    companion object {
+        @JvmStatic
+        private fun `generator for parseUserString fails when expected`(): Stream<Arguments?>? {
+            return Stream.of(
+                Arguments.of(
+                    "42,1",
+                    Int::class.java,
+                    IllegalArgumentException::class.java,
+                    "Bitte geben Sie eine gültige Zahl ein. '42,1' ist ungültig."
+                ),
+                Arguments.of(
+                    "2999999999",
+                    Int::class.java, IllegalArgumentException::class.java,
+                    "Bitte geben Sie eine gültige Zahl ein. '2999999999' ist ungültig."
+                ),
+                Arguments.of(
+                    "blub",
+                    Double::class.java, IllegalArgumentException::class.java,
+                    "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
+                )
+            )
+        }
+
+        @JvmStatic
+        private fun `generator for parseUserString for a LocalTime works`(): Stream<Arguments?>? {
+            return Stream.of(
+                Arguments.of(
+                    "14:30:12", LocalTime.of(14, 30, 12, 0)
+                ),
+                Arguments.of(
+                    "14:30", LocalTime.of(14, 30, 0, 0)
+                ),
+                Arguments.of(
+                    "14", LocalTime.of(14, 0, 0, 0)
+                )
+            )
+        }
+    }
 
     @Test
     fun `toMachineString() formats a LocalDate as date without time`() {
@@ -160,4 +203,55 @@ class NLSTest {
     fun `parseUserString works for integers considering locale`(input: String, language: String, output: Int) {
         assertEquals(output, NLS.parseUserString(Int::class.java, input, language))
     }
+
+    @ParameterizedTest
+    @MethodSource("generator for parseUserString fails when expected")
+    fun `parseUserString fails when expected`(
+        input: String,
+        type: Class<out Number>,
+        exception: Class<Exception>,
+        message: String
+    ) {
+        val thrown: Exception = Assertions.assertThrows(exception) {
+            NLS.parseUserString(type, input)
+        }
+        Assertions.assertEquals(message, thrown.message)
+    }
+
+    @ParameterizedTest
+    @MethodSource("generator for parseUserString for a LocalTime works")
+    fun `parseUserString for a LocalTime works`(input: String, output: LocalTime) {
+        assertEquals(output, NLS.parseUserString(LocalTime::class.java, input))
+    }
+
+    @Test
+    fun `parseMachineString works for decimals`() {
+        assertEquals(BigDecimal.ONE.divide(BigDecimal.TEN), NLS.parseMachineString(BigDecimal::class.java, "0.1"))
+        assertEquals(BigDecimal("0.1"), NLS.parseMachineString(BigDecimal::class.java, "0.1"))
+    }
+
+    @Test
+    fun `parseMachineString works for integers`() {
+        assertEquals(23, NLS.parseMachineString(Int::class.java, "23"))
+        assertEquals(90, NLS.parseMachineString(Int::class.java, "90.0000"))
+    }
+
+    @Test
+    fun `parseMachineString works for longs`() {
+        assertEquals(5L, NLS.parseMachineString(Long::class.java, "5"))
+        assertEquals(43L, NLS.parseMachineString(Long::class.java, "43.0000"))
+    }
+
+    @Test
+    fun `getMonthNameShort correctly appends the given symbol`() {
+        Assertions.assertEquals("Jan.", NLS.getMonthNameShort(1, "."))
+        Assertions.assertEquals("Mai", NLS.getMonthNameShort(5, "."))
+        Assertions.assertEquals("März", NLS.getMonthNameShort(3, "."))
+        Assertions.assertEquals("Juni", NLS.getMonthNameShort(6, "."))
+        Assertions.assertEquals("Nov.", NLS.getMonthNameShort(11, "."))
+        Assertions.assertEquals("Dez.", NLS.getMonthNameShort(12, "."))
+        Assertions.assertEquals("", NLS.getMonthNameShort(0, "."))
+        Assertions.assertEquals("", NLS.getMonthNameShort(13, "."))
+    }
+
 }
