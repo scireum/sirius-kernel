@@ -116,4 +116,48 @@ class NLSTest {
         assertEquals("in der nächsten Stunde", NLS.toSpokenDate(LocalDateTime.now().plusMinutes(40)))
         assertEquals("in 3 Stunden", NLS.toSpokenDate(LocalDateTime.now().plusHours(4)))
     }
+
+    @Test
+    fun `parseUserString with LocalTime parses 900 and 90023`() {
+        val input = "9:00"
+        val inputWithSeconds = "9:00:23"
+        assertEquals(9, NLS.parseUserString(LocalTime::class.java, input).getHour())
+        assertEquals(9, NLS.parseUserString(LocalTime::class.java, inputWithSeconds).getHour())
+    }
+
+    @Test
+    fun `parseUserString for an Amount works`() {
+        val input = "34,54"
+        assertEquals("34,54", NLS.parseUserString(Amount::class.java, input).toString())
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', textBlock = """
+        42      | 42
+        77,0000 | 77"""
+    )
+    fun `parseUserString works for integers`(input: String, output: Int) {
+        assertEquals(output, NLS.parseUserString(Int::class.java, input))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', textBlock = """
+        12      | 12
+        31,0000 | 31"""
+    )
+    fun `parseUserString works for longs`(input: String, output: Long) {
+        assertEquals(output, NLS.parseUserString(Long::class.java, input))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', textBlock = """
+         55.000,00 | de     | 55000
+        56,000.00 | en     | 56000"""
+    )
+    fun `parseUserString works for integers considering locale`(input: String, language: String, output: Int) {
+        assertEquals(output, NLS.parseUserString(Int::class.java, input, language))
+    }
 }
