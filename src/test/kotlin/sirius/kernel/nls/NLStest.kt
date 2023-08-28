@@ -7,20 +7,22 @@
  */
 
 package sirius.kernel.nls
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
-import java.util.stream.Stream
+
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.MethodSource
 import sirius.kernel.SiriusExtension
 import sirius.kernel.async.CallContext
 import sirius.kernel.commons.Amount
-import java.time.*
-import kotlin.test.assertEquals
 import java.math.BigDecimal
+import java.time.*
+import java.util.stream.Stream
+import kotlin.test.assertEquals
+
 
 /**
  * Tests the [NLS] class.
@@ -242,6 +244,20 @@ class NLSTest {
         assertEquals(43L, NLS.parseMachineString(Long::class.java, "43.0000"))
     }
 
+    @ParameterizedTest
+    @MethodSource("generator for parseUserString fails when expected")
+    fun `parseMachineString fails when expected`(
+        input: String,
+        type: Class<out Number>,
+        exception: Class<Exception>,
+        message: String
+    ) {
+        val thrown: Exception = Assertions.assertThrows(exception) {
+            NLS.parseMachineString(type, input)
+        }
+        Assertions.assertEquals(message, thrown.message)
+    }
+
     @Test
     fun `getMonthNameShort correctly appends the given symbol`() {
         Assertions.assertEquals("Jan.", NLS.getMonthNameShort(1, "."))
@@ -252,6 +268,196 @@ class NLSTest {
         Assertions.assertEquals("Dez.", NLS.getMonthNameShort(12, "."))
         Assertions.assertEquals("", NLS.getMonthNameShort(0, "."))
         Assertions.assertEquals("", NLS.getMonthNameShort(13, "."))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', textBlock = """
+        nls.test.withThree | 0      | zero
+        nls.test.withThree | 1      | one
+        nls.test.withThree | 2      | many: 2X
+        nls.test.withThree | -2     | many: -2X
+        nls.test.withTwo  | 0       | many: 0X
+        nls.test.withTwo  | 1       | one
+        nls.test.withTwo  | 2       | many: 2X
+        nls.test.withTwo  | -2      | many: -2X"""
+    )
+    fun `get with numeric and autoformat works correctly`(property: String, numeric: Int, output: String) {
+        val function: (Int) -> String = { number -> number.toString() + 'X' }
+        Assertions.assertEquals(output, NLS.get(property, numeric, function, "en"))
+    }
+
+    @Test
+    fun `unicode characters get imported without problems`() {
+        val loadedProperty = NLS.get("nls.test.utf8", "en")
+        Assertions.assertEquals(
+            "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſƀƁƂƃƄƅƆƇƈƉƊƋƌƍƎƏƐƑƒƓƔƕƖƗƘƙƚƛƜƝƞƟƠơƢƣƤƥƦƧƨƩƪƫƬƭƮƯưƱƲƳƴƵƶƷƸƹƺƻƼƽƾƿǀǁǂǃǄǅǆǇǈǉǊǋǌǍǎǏǐǑǒǓǔǕǖǗǘǙǚǛǜǝǞǟǠǡǢǣǤǥǦǧǨǩǪǫǬǭǮǯǰǱǲǳǴǵǺǻǼǽǾǿȀȁȂȃ...ЁЂЃЄЅІЇЈЉЊЋЌЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяёђѓєѕіїјљњћќўџѠѡѢѣѤѥѦѧѨѩѪѫѬѭѮѯѰѱѲѳѴѵѶѷѸѹѺѻѼѽѾѿҀҁ҂҃...ʹ͵ͺ;΄΅Ά·ΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϐϑϒϓϔϕϖϚϜϞϠϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰϱϲϳ،؛؟ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىيًٌٍَُِّْ٠١٢٣٤٥٦٧٨٩٪٫٬٭ٰٱٲٳٴٵٶٷٸٹٺٻټٽپٿڀځڂڃڄڅچڇڈډڊڋڌڍڎڏڐڑڒړڔڕږڗژڙښڛڜڝڞڟڠڡڢڣڤڥڦڧڨکڪګڬڭڮگڰڱ...¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☚☛☜☝☞☟☠☡☢☣☤☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯✁✂✃✄✆✇✈✉✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❍❏❐❑❒❖❘❙❚❛❜❝❞❡❢❣❤❥❦❧❶❷❸❹❺❻❼❽❾❿➀➁➂➃➄➅➆➇➈➉➊➋➌➍➎➏➐➑➒➓➔➘➙➚➛➜➝...",
+            loadedProperty
+        )
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', textBlock =
+        "nls.test.translate  | nls.test.translate | de \n\$nls.test.translate | übersetzungs test  | null\n\$nls.test.translate | übersetzungs test  | de\n\$nls.test.translate | translation test   | en"
+    )
+    fun `test smartGet works correctly`(input: String, output: String, lang: String) {
+        Assertions.assertEquals(output, NLS.smartGet(input, lang))
+    }
+
+    @Test
+    fun `test various formatters`() {
+        val date = LocalDateTime.of(2000, 1, 2, 3, 4, 5)
+        Assertions.assertEquals("03:04", NLS.getTimeFormat("de").format(date))
+        Assertions.assertEquals("03:04 AM", NLS.getTimeFormat("en").format(date))
+        Assertions.assertEquals("02.01.2000 03:04:05", NLS.getDateTimeFormat("de").format(date))
+        Assertions.assertEquals("01/02/2000 03:04:05", NLS.getDateTimeFormat("en").format(date))
+        Assertions.assertEquals("02.01.2000 03:04", NLS.getDateTimeFormatWithoutSeconds("de").format(date))
+        Assertions.assertEquals("01/02/2000 03:04", NLS.getDateTimeFormatWithoutSeconds("en").format(date))
+        Assertions.assertEquals("03:04:05", NLS.getTimeFormatWithSeconds("de").format(date))
+        Assertions.assertEquals("03:04:05 AM", NLS.getTimeFormatWithSeconds("en").format(date))
+    }
+
+    @Test
+    fun `formatters for null language don't throw exceptions and format using the current language`() {
+        val date = LocalDateTime.of(2000, 1, 2, 3, 4, 5)
+        val currentLang = NLS.getCurrentLanguage()
+        Assertions.assertEquals(NLS.getDateFormat(currentLang).format(date), NLS.getDateFormat(null).format(date))
+        Assertions.assertDoesNotThrow { NLS.getDateFormat(null).format(date) }
+        Assertions.assertEquals(
+            NLS.getShortDateFormat(currentLang).format(date),
+            NLS.getShortDateFormat(null).format(date)
+        )
+        Assertions.assertDoesNotThrow { NLS.getShortDateFormat(null).format(date) }
+        Assertions.assertEquals(
+            NLS.getTimeFormatWithSeconds(currentLang).format(date),
+            NLS.getTimeFormatWithSeconds(null).format(date)
+        )
+        Assertions.assertDoesNotThrow { NLS.getTimeFormatWithSeconds(null).format(date) }
+        Assertions.assertEquals(NLS.getTimeFormat(currentLang).format(date), NLS.getTimeFormat(null).format(date))
+        Assertions.assertDoesNotThrow { NLS.getTimeFormat(null).format(date) }
+        Assertions.assertEquals(
+            NLS.getTimeParseFormat(currentLang).format(date),
+            NLS.getTimeParseFormat(null).format(date)
+        )
+        Assertions.assertDoesNotThrow { NLS.getTimeParseFormat(null).format(date) }
+        Assertions.assertEquals(
+            NLS.getDateTimeFormat(currentLang).format(date),
+            NLS.getDateTimeFormat(null).format(date)
+        )
+        Assertions.assertDoesNotThrow { NLS.getDateTimeFormat(null).format(date) }
+        Assertions.assertEquals(
+            NLS
+                .getDateTimeFormatWithoutSeconds(currentLang).format(date),
+            NLS.getDateTimeFormatWithoutSeconds(null).format(date)
+        )
+        Assertions.assertDoesNotThrow { NLS.getDateTimeFormatWithoutSeconds(null).format(date) }
+    }
+
+    @Test
+    fun `convertDurationToDigitalClockFormat() of Duration is properly formatted`() {
+        Assertions.assertEquals("01:00:00", NLS.convertDurationToDigitalClockFormat(Duration.ofMinutes(60L)))
+        Assertions.assertEquals(
+            "01:00:01",
+            NLS.convertDurationToDigitalClockFormat(Duration.ofMinutes(60L).plusSeconds(1L))
+        )
+        Assertions.assertEquals(
+            "01:01:00",
+            NLS.convertDurationToDigitalClockFormat(Duration.ofHours(1).plusMinutes(1L))
+        )
+        Assertions.assertEquals(
+            "01:01:01",
+            NLS.convertDurationToDigitalClockFormat(Duration.ofHours(1).plusMinutes(1L).plusSeconds(1L))
+        )
+        Assertions.assertEquals("48:00:00", NLS.convertDurationToDigitalClockFormat(Duration.ofDays(2L)))
+        Assertions.assertEquals("49:00:00", NLS.convertDurationToDigitalClockFormat(Duration.ofDays(2L).plusHours(1L)))
+        Assertions.assertEquals(
+            "48:01:00",
+            NLS.convertDurationToDigitalClockFormat(Duration.ofDays(2L).plusMinutes(1L))
+        )
+        Assertions.assertEquals("00:00:01", NLS.convertDurationToDigitalClockFormat(Duration.ofSeconds(1L)))
+        Assertions.assertEquals("00:01:00", NLS.convertDurationToDigitalClockFormat(Duration.ofMinutes(1L)))
+        Assertions.assertEquals(
+            "00:01:01",
+            NLS.convertDurationToDigitalClockFormat(Duration.ofMinutes(1L).plusSeconds(1L))
+        )
+    }
+
+    @Test
+    fun `convertDuration() of Duration is properly formatted`() {
+        assertEquals("1 Stunde", NLS.convertDuration(Duration.ofMinutes(60L), true, true))
+        assertEquals("1 Stunde", NLS.convertDuration(Duration.ofMinutes(60L), true, false))
+        assertEquals("1 Stunde", NLS.convertDuration(Duration.ofMinutes(60L), false, true))
+        assertEquals("1 Stunde", NLS.convertDuration(Duration.ofMinutes(60L), false, false))
+        assertEquals("2 Stunden", NLS.convertDuration(Duration.ofHours(2L), true, true))
+        assertEquals("2 Stunden", NLS.convertDuration(Duration.ofHours(2L), true, false))
+        assertEquals("2 Stunden", NLS.convertDuration(Duration.ofHours(2L), false, true))
+        assertEquals("2 Stunden", NLS.convertDuration(Duration.ofHours(2L), false, false))
+        assertEquals("1 Stunde, 1 Minute", NLS.convertDuration(Duration.ofMinutes(61L), true, true))
+        assertEquals("1 Stunde, 1 Minute", NLS.convertDuration(Duration.ofMinutes(61L), true, false))
+        assertEquals("1 Stunde, 1 Minute", NLS.convertDuration(Duration.ofMinutes(61L), false, true))
+        assertEquals("1 Stunde, 1 Minute", NLS.convertDuration(Duration.ofMinutes(61L), false, false))
+        assertEquals("1 Minute, 1 Sekunde", NLS.convertDuration(Duration.ofSeconds(61L), true, true))
+        assertEquals("1 Minute, 1 Sekunde", NLS.convertDuration(Duration.ofSeconds(61L), true, false))
+        assertEquals("1 Minute", NLS.convertDuration(Duration.ofSeconds(61L), false, true))
+        assertEquals("1 Minute", NLS.convertDuration(Duration.ofSeconds(61L), false, false))
+        assertEquals("2 Minuten", NLS.convertDuration(Duration.ofSeconds(121L), false, false))
+        assertEquals("2 Minuten, 2 Sekunden", NLS.convertDuration(Duration.ofSeconds(122L), true, false))
+        assertEquals("122 Tage", NLS.convertDuration(Duration.ofDays(122L), false, false))
+        assertEquals("1 Tag", NLS.convertDuration(Duration.ofDays(1L), false, false))
+        assertEquals("1 Tag, 30 Minuten", NLS.convertDuration(Duration.ofDays(1L).plusMinutes(30L), true, true))
+        assertEquals(
+            "1 Tag, 7 Stunden, 30 Minuten",
+            NLS.convertDuration(Duration.ofDays(1L).plusHours(7).plusMinutes(30L), true, true)
+        )
+        assertEquals(
+            "2 Tage, 30 Minuten",
+            NLS.convertDuration(Duration.ofDays(1L).plusHours(24).plusMinutes(30L), true, true)
+        )
+        assertEquals(
+            "2 Tage, 2 Stunden, 30 Minuten",
+            NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L), true, true)
+        )
+        assertEquals(
+            "2 Tage, 2 Stunden, 30 Minuten, 22 Sekunden",
+            NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L), true, true)
+        )
+        assertEquals(
+            "2 Tage, 2 Stunden, 30 Minuten",
+            NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L), false, true)
+        )
+        assertEquals(
+            "2 Tage, 2 Stunden, 30 Minuten",
+            NLS.convertDuration(
+                Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L).plusMillis(1L),
+                false,
+                true
+            )
+        )
+        assertEquals(
+            "2 Tage, 2 Stunden, 30 Minuten, 22 Sekunden, 1 Millisekunde",
+            NLS.convertDuration(
+                Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L).plusMillis(1L),
+                true,
+                true
+            )
+        )
+        assertEquals(
+            "2 Tage, 2 Stunden, 30 Minuten, 1 Millisekunde",
+            NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusMillis(1L), true, true)
+        )
+        assertEquals(
+            "2 Tage, 2 Stunden, 30 Minuten, 33 Millisekunden",
+            NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusMillis(33L), true, true)
+        )
+        assertEquals("", NLS.convertDuration(Duration.ofDays(0L), true, true))
+        assertEquals("", NLS.convertDuration(null, true, true))
+        assertEquals("", NLS.convertDuration(Duration.ofMillis(101L), false, false))
+        assertEquals("", NLS.convertDuration(Duration.ofMillis(101L), true, false))
+        assertEquals("101 Millisekunden", NLS.convertDuration(Duration.ofMillis(101L), true, true))
+        assertEquals("33 Sekunden", NLS.convertDuration(Duration.ofSeconds(33L), true, true))
+        assertEquals("33 Sekunden", NLS.convertDuration(Duration.ofSeconds(33L), true, false))
+        assertEquals("", NLS.convertDuration(Duration.ofSeconds(33L), false, false))
     }
 
 }
