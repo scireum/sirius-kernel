@@ -35,37 +35,43 @@ class NLSTest {
         @JvmStatic
         private fun `generator for parseUserString fails when expected`(): Stream<Arguments?>? {
             return Stream.of(
-                Arguments.of(
-                    "42,1",
-                    Int::class.java,
-                    IllegalArgumentException::class.java,
-                    "Bitte geben Sie eine gültige Zahl ein. '42,1' ist ungültig."
-                ),
-                Arguments.of(
-                    "2999999999",
-                    Int::class.java, IllegalArgumentException::class.java,
-                    "Bitte geben Sie eine gültige Zahl ein. '2999999999' ist ungültig."
-                ),
-                Arguments.of(
-                    "blub",
-                    Double::class.java, IllegalArgumentException::class.java,
-                    "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
-                )
+                    Arguments.of(
+                            "42.1",
+                            Integer::class.java,
+                            IllegalArgumentException::class.java,
+                            "Bitte geben Sie eine gültige Zahl ein. '42.1' ist ungültig."
+                    ),
+                    Arguments.of(
+                            "42,1",
+                            Integer::class.java,
+                            IllegalArgumentException::class.java,
+                            "Bitte geben Sie eine gültige Zahl ein. '42,1' ist ungültig."
+                    ),
+                    Arguments.of(
+                            "2999999999",
+                            Integer::class.java, IllegalArgumentException::class.java,
+                            "Bitte geben Sie eine gültige Zahl ein. '2999999999' ist ungültig."
+                    ),
+                    Arguments.of(
+                            "blub",
+                            Double::class.java, IllegalArgumentException::class.java,
+                            "Bitte geben Sie eine gültige Dezimalzahl ein. 'blub' ist ungültig."
+                    )
             )
         }
 
         @JvmStatic
         private fun `generator for parseUserString for a LocalTime works`(): Stream<Arguments?>? {
             return Stream.of(
-                Arguments.of(
-                    "14:30:12", LocalTime.of(14, 30, 12, 0)
-                ),
-                Arguments.of(
-                    "14:30", LocalTime.of(14, 30, 0, 0)
-                ),
-                Arguments.of(
-                    "14", LocalTime.of(14, 0, 0, 0)
-                )
+                    Arguments.of(
+                            "14:30:12", LocalTime.of(14, 30, 12, 0)
+                    ),
+                    Arguments.of(
+                            "14:30", LocalTime.of(14, 30, 0, 0)
+                    ),
+                    Arguments.of(
+                            "14", LocalTime.of(14, 0, 0, 0)
+                    )
             )
         }
     }
@@ -86,7 +92,7 @@ class NLSTest {
 
     @ParameterizedTest
     @CsvSource(
-        delimiter = '|', textBlock = """
+            delimiter = '|', textBlock = """
         123456.789 | 123456.79
         123456.81  | 123456.81
         0.113      | 0.11
@@ -96,8 +102,8 @@ class NLSTest {
         0          | 0.00"""
     )
     fun `toMachineString() of Amount is properly formatted`(
-        input: Double,
-        output: String
+            input: Double,
+            output: String
     ) {
         assertEquals(NLS.toMachineString(Amount.of(input)), output)
     }
@@ -178,7 +184,7 @@ class NLSTest {
 
     @ParameterizedTest
     @CsvSource(
-        delimiter = '|', textBlock = """
+            delimiter = '|', textBlock = """
         42      | 42
         77,0000 | 77"""
     )
@@ -188,7 +194,7 @@ class NLSTest {
 
     @ParameterizedTest
     @CsvSource(
-        delimiter = '|', textBlock = """
+            delimiter = '|', textBlock = """
         12      | 12
         31,0000 | 31"""
     )
@@ -198,7 +204,7 @@ class NLSTest {
 
     @ParameterizedTest
     @CsvSource(
-        delimiter = '|', textBlock = """
+            delimiter = '|', textBlock = """
          55.000,00 | de     | 55000
         56,000.00 | en     | 56000"""
     )
@@ -209,12 +215,13 @@ class NLSTest {
     @ParameterizedTest
     @MethodSource("generator for parseUserString fails when expected")
     fun `parseUserString fails when expected`(
-        input: String,
-        type: Class<out Number>,
-        exception: Class<Exception>,
-        message: String
+            input: String,
+            type: Class<out Number>,
+            exception: Class<Exception>,
+            message: String
     ) {
         val thrown: Exception = Assertions.assertThrows(exception) {
+
             NLS.parseUserString(type, input)
         }
         Assertions.assertEquals(message, thrown.message)
@@ -247,10 +254,10 @@ class NLSTest {
     @ParameterizedTest
     @MethodSource("generator for parseUserString fails when expected")
     fun `parseMachineString fails when expected`(
-        input: String,
-        type: Class<out Number>,
-        exception: Class<Exception>,
-        message: String
+            input: String,
+            type: Class<out Number>,
+            exception: Class<Exception>,
+            message: String
     ) {
         val thrown: Exception = Assertions.assertThrows(exception) {
             NLS.parseMachineString(type, input)
@@ -272,7 +279,7 @@ class NLSTest {
 
     @ParameterizedTest
     @CsvSource(
-        delimiter = '|', textBlock = """
+            delimiter = '|', textBlock = """
         nls.test.withThree | 0      | zero
         nls.test.withThree | 1      | one
         nls.test.withThree | 2      | many: 2X
@@ -291,15 +298,15 @@ class NLSTest {
     fun `unicode characters get imported without problems`() {
         val loadedProperty = NLS.get("nls.test.utf8", "en")
         Assertions.assertEquals(
-            "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſƀƁƂƃƄƅƆƇƈƉƊƋƌƍƎƏƐƑƒƓƔƕƖƗƘƙƚƛƜƝƞƟƠơƢƣƤƥƦƧƨƩƪƫƬƭƮƯưƱƲƳƴƵƶƷƸƹƺƻƼƽƾƿǀǁǂǃǄǅǆǇǈǉǊǋǌǍǎǏǐǑǒǓǔǕǖǗǘǙǚǛǜǝǞǟǠǡǢǣǤǥǦǧǨǩǪǫǬǭǮǯǰǱǲǳǴǵǺǻǼǽǾǿȀȁȂȃ...ЁЂЃЄЅІЇЈЉЊЋЌЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяёђѓєѕіїјљњћќўџѠѡѢѣѤѥѦѧѨѩѪѫѬѭѮѯѰѱѲѳѴѵѶѷѸѹѺѻѼѽѾѿҀҁ҂҃...ʹ͵ͺ;΄΅Ά·ΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϐϑϒϓϔϕϖϚϜϞϠϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰϱϲϳ،؛؟ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىيًٌٍَُِّْ٠١٢٣٤٥٦٧٨٩٪٫٬٭ٰٱٲٳٴٵٶٷٸٹٺٻټٽپٿڀځڂڃڄڅچڇڈډڊڋڌڍڎڏڐڑڒړڔڕږڗژڙښڛڜڝڞڟڠڡڢڣڤڥڦڧڨکڪګڬڭڮگڰڱ...¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☚☛☜☝☞☟☠☡☢☣☤☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯✁✂✃✄✆✇✈✉✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❍❏❐❑❒❖❘❙❚❛❜❝❞❡❢❣❤❥❦❧❶❷❸❹❺❻❼❽❾❿➀➁➂➃➄➅➆➇➈➉➊➋➌➍➎➏➐➑➒➓➔➘➙➚➛➜➝...",
-            loadedProperty
+                "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſƀƁƂƃƄƅƆƇƈƉƊƋƌƍƎƏƐƑƒƓƔƕƖƗƘƙƚƛƜƝƞƟƠơƢƣƤƥƦƧƨƩƪƫƬƭƮƯưƱƲƳƴƵƶƷƸƹƺƻƼƽƾƿǀǁǂǃǄǅǆǇǈǉǊǋǌǍǎǏǐǑǒǓǔǕǖǗǘǙǚǛǜǝǞǟǠǡǢǣǤǥǦǧǨǩǪǫǬǭǮǯǰǱǲǳǴǵǺǻǼǽǾǿȀȁȂȃ...ЁЂЃЄЅІЇЈЉЊЋЌЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяёђѓєѕіїјљњћќўџѠѡѢѣѤѥѦѧѨѩѪѫѬѭѮѯѰѱѲѳѴѵѶѷѸѹѺѻѼѽѾѿҀҁ҂҃...ʹ͵ͺ;΄΅Ά·ΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϐϑϒϓϔϕϖϚϜϞϠϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰϱϲϳ،؛؟ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىيًٌٍَُِّْ٠١٢٣٤٥٦٧٨٩٪٫٬٭ٰٱٲٳٴٵٶٷٸٹٺٻټٽپٿڀځڂڃڄڅچڇڈډڊڋڌڍڎڏڐڑڒړڔڕږڗژڙښڛڜڝڞڟڠڡڢڣڤڥڦڧڨکڪګڬڭڮگڰڱ...¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☚☛☜☝☞☟☠☡☢☣☤☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯✁✂✃✄✆✇✈✉✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❍❏❐❑❒❖❘❙❚❛❜❝❞❡❢❣❤❥❦❧❶❷❸❹❺❻❼❽❾❿➀➁➂➃➄➅➆➇➈➉➊➋➌➍➎➏➐➑➒➓➔➘➙➚➛➜➝...",
+                loadedProperty
         )
     }
 
     @ParameterizedTest
     @CsvSource(
-        delimiter = '|', textBlock =
-        "nls.test.translate  | nls.test.translate | de \n\$nls.test.translate | übersetzungs test  | null\n\$nls.test.translate | übersetzungs test  | de\n\$nls.test.translate | translation test   | en"
+            delimiter = '|', textBlock =
+    "nls.test.translate  | nls.test.translate | de \n\$nls.test.translate | übersetzungs test  | null\n\$nls.test.translate | übersetzungs test  | de\n\$nls.test.translate | translation test   | en"
     )
     fun `test smartGet works correctly`(input: String, output: String, lang: String) {
         Assertions.assertEquals(output, NLS.smartGet(input, lang))
@@ -325,31 +332,31 @@ class NLSTest {
         Assertions.assertEquals(NLS.getDateFormat(currentLang).format(date), NLS.getDateFormat(null).format(date))
         Assertions.assertDoesNotThrow { NLS.getDateFormat(null).format(date) }
         Assertions.assertEquals(
-            NLS.getShortDateFormat(currentLang).format(date),
-            NLS.getShortDateFormat(null).format(date)
+                NLS.getShortDateFormat(currentLang).format(date),
+                NLS.getShortDateFormat(null).format(date)
         )
         Assertions.assertDoesNotThrow { NLS.getShortDateFormat(null).format(date) }
         Assertions.assertEquals(
-            NLS.getTimeFormatWithSeconds(currentLang).format(date),
-            NLS.getTimeFormatWithSeconds(null).format(date)
+                NLS.getTimeFormatWithSeconds(currentLang).format(date),
+                NLS.getTimeFormatWithSeconds(null).format(date)
         )
         Assertions.assertDoesNotThrow { NLS.getTimeFormatWithSeconds(null).format(date) }
         Assertions.assertEquals(NLS.getTimeFormat(currentLang).format(date), NLS.getTimeFormat(null).format(date))
         Assertions.assertDoesNotThrow { NLS.getTimeFormat(null).format(date) }
         Assertions.assertEquals(
-            NLS.getTimeParseFormat(currentLang).format(date),
-            NLS.getTimeParseFormat(null).format(date)
+                NLS.getTimeParseFormat(currentLang).format(date),
+                NLS.getTimeParseFormat(null).format(date)
         )
         Assertions.assertDoesNotThrow { NLS.getTimeParseFormat(null).format(date) }
         Assertions.assertEquals(
-            NLS.getDateTimeFormat(currentLang).format(date),
-            NLS.getDateTimeFormat(null).format(date)
+                NLS.getDateTimeFormat(currentLang).format(date),
+                NLS.getDateTimeFormat(null).format(date)
         )
         Assertions.assertDoesNotThrow { NLS.getDateTimeFormat(null).format(date) }
         Assertions.assertEquals(
-            NLS
-                .getDateTimeFormatWithoutSeconds(currentLang).format(date),
-            NLS.getDateTimeFormatWithoutSeconds(null).format(date)
+                NLS
+                        .getDateTimeFormatWithoutSeconds(currentLang).format(date),
+                NLS.getDateTimeFormatWithoutSeconds(null).format(date)
         )
         Assertions.assertDoesNotThrow { NLS.getDateTimeFormatWithoutSeconds(null).format(date) }
     }
@@ -358,28 +365,28 @@ class NLSTest {
     fun `convertDurationToDigitalClockFormat() of Duration is properly formatted`() {
         Assertions.assertEquals("01:00:00", NLS.convertDurationToDigitalClockFormat(Duration.ofMinutes(60L)))
         Assertions.assertEquals(
-            "01:00:01",
-            NLS.convertDurationToDigitalClockFormat(Duration.ofMinutes(60L).plusSeconds(1L))
+                "01:00:01",
+                NLS.convertDurationToDigitalClockFormat(Duration.ofMinutes(60L).plusSeconds(1L))
         )
         Assertions.assertEquals(
-            "01:01:00",
-            NLS.convertDurationToDigitalClockFormat(Duration.ofHours(1).plusMinutes(1L))
+                "01:01:00",
+                NLS.convertDurationToDigitalClockFormat(Duration.ofHours(1).plusMinutes(1L))
         )
         Assertions.assertEquals(
-            "01:01:01",
-            NLS.convertDurationToDigitalClockFormat(Duration.ofHours(1).plusMinutes(1L).plusSeconds(1L))
+                "01:01:01",
+                NLS.convertDurationToDigitalClockFormat(Duration.ofHours(1).plusMinutes(1L).plusSeconds(1L))
         )
         Assertions.assertEquals("48:00:00", NLS.convertDurationToDigitalClockFormat(Duration.ofDays(2L)))
         Assertions.assertEquals("49:00:00", NLS.convertDurationToDigitalClockFormat(Duration.ofDays(2L).plusHours(1L)))
         Assertions.assertEquals(
-            "48:01:00",
-            NLS.convertDurationToDigitalClockFormat(Duration.ofDays(2L).plusMinutes(1L))
+                "48:01:00",
+                NLS.convertDurationToDigitalClockFormat(Duration.ofDays(2L).plusMinutes(1L))
         )
         Assertions.assertEquals("00:00:01", NLS.convertDurationToDigitalClockFormat(Duration.ofSeconds(1L)))
         Assertions.assertEquals("00:01:00", NLS.convertDurationToDigitalClockFormat(Duration.ofMinutes(1L)))
         Assertions.assertEquals(
-            "00:01:01",
-            NLS.convertDurationToDigitalClockFormat(Duration.ofMinutes(1L).plusSeconds(1L))
+                "00:01:01",
+                NLS.convertDurationToDigitalClockFormat(Duration.ofMinutes(1L).plusSeconds(1L))
         )
     }
 
@@ -407,48 +414,48 @@ class NLSTest {
         assertEquals("1 Tag", NLS.convertDuration(Duration.ofDays(1L), false, false))
         assertEquals("1 Tag, 30 Minuten", NLS.convertDuration(Duration.ofDays(1L).plusMinutes(30L), true, true))
         assertEquals(
-            "1 Tag, 7 Stunden, 30 Minuten",
-            NLS.convertDuration(Duration.ofDays(1L).plusHours(7).plusMinutes(30L), true, true)
+                "1 Tag, 7 Stunden, 30 Minuten",
+                NLS.convertDuration(Duration.ofDays(1L).plusHours(7).plusMinutes(30L), true, true)
         )
         assertEquals(
-            "2 Tage, 30 Minuten",
-            NLS.convertDuration(Duration.ofDays(1L).plusHours(24).plusMinutes(30L), true, true)
+                "2 Tage, 30 Minuten",
+                NLS.convertDuration(Duration.ofDays(1L).plusHours(24).plusMinutes(30L), true, true)
         )
         assertEquals(
-            "2 Tage, 2 Stunden, 30 Minuten",
-            NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L), true, true)
+                "2 Tage, 2 Stunden, 30 Minuten",
+                NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L), true, true)
         )
         assertEquals(
-            "2 Tage, 2 Stunden, 30 Minuten, 22 Sekunden",
-            NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L), true, true)
+                "2 Tage, 2 Stunden, 30 Minuten, 22 Sekunden",
+                NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L), true, true)
         )
         assertEquals(
-            "2 Tage, 2 Stunden, 30 Minuten",
-            NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L), false, true)
+                "2 Tage, 2 Stunden, 30 Minuten",
+                NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L), false, true)
         )
         assertEquals(
-            "2 Tage, 2 Stunden, 30 Minuten",
-            NLS.convertDuration(
-                Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L).plusMillis(1L),
-                false,
-                true
-            )
+                "2 Tage, 2 Stunden, 30 Minuten",
+                NLS.convertDuration(
+                        Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L).plusMillis(1L),
+                        false,
+                        true
+                )
         )
         assertEquals(
-            "2 Tage, 2 Stunden, 30 Minuten, 22 Sekunden, 1 Millisekunde",
-            NLS.convertDuration(
-                Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L).plusMillis(1L),
-                true,
-                true
-            )
+                "2 Tage, 2 Stunden, 30 Minuten, 22 Sekunden, 1 Millisekunde",
+                NLS.convertDuration(
+                        Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusSeconds(22L).plusMillis(1L),
+                        true,
+                        true
+                )
         )
         assertEquals(
-            "2 Tage, 2 Stunden, 30 Minuten, 1 Millisekunde",
-            NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusMillis(1L), true, true)
+                "2 Tage, 2 Stunden, 30 Minuten, 1 Millisekunde",
+                NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusMillis(1L), true, true)
         )
         assertEquals(
-            "2 Tage, 2 Stunden, 30 Minuten, 33 Millisekunden",
-            NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusMillis(33L), true, true)
+                "2 Tage, 2 Stunden, 30 Minuten, 33 Millisekunden",
+                NLS.convertDuration(Duration.ofDays(2L).plusHours(2).plusMinutes(30L).plusMillis(33L), true, true)
         )
         assertEquals("", NLS.convertDuration(Duration.ofDays(0L), true, true))
         assertEquals("", NLS.convertDuration(null, true, true))
