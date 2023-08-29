@@ -28,7 +28,6 @@ import kotlin.test.assertEquals
  * Tests the [NLS] class.
  */
 @ExtendWith(SiriusExtension::class)
-
 class NLSTest {
 
     companion object {
