@@ -1059,7 +1059,7 @@ public class NLS {
         if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
             try {
                 return (V) Integer.valueOf(parseMachineString(BigDecimal.class, value).intValueExact());
-            } catch (NumberFormatException | ArithmeticException exception) {
+            } catch (IllegalArgumentException | ArithmeticException exception) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(),
                                                    exception);
             }
@@ -1067,7 +1067,7 @@ public class NLS {
         if (Long.class.equals(clazz) || long.class.equals(clazz)) {
             try {
                 return (V) Long.valueOf(parseMachineString(BigDecimal.class, value).longValueExact());
-            } catch (NumberFormatException | ArithmeticException exception) {
+            } catch (IllegalArgumentException | ArithmeticException exception) {
                 throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(),
                                                    exception);
             }
