@@ -9,12 +9,11 @@
 package sirius.kernel.commons
 
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import sirius.kernel.nls.NLS
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Optional
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -224,9 +223,8 @@ class ValueTest {
     @Test
     fun `asOptionalInt must not throw NPE on floats`() {
         val value = Value.of(1.1f)
-        assertDoesNotThrow {
-            value.asOptionalInt()
-        }
+        value.asOptionalInt()
+
     }
 
     @Test
