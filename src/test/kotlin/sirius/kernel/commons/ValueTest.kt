@@ -224,7 +224,6 @@ class ValueTest {
     fun `asOptionalInt must not throw NPE on floats`() {
         val value = Value.of(1.1f)
         value.asOptionalInt()
-
     }
 
     @Test
