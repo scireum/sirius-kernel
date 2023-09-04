@@ -195,7 +195,6 @@ class URLBuilderTest {
             urlBuilder.addParameter("test", "value")
             urlBuilder.addSafePart("late")
         }
-
     }
 
     @Test
