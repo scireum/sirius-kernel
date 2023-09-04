@@ -186,7 +186,6 @@ class URLBuilderTest {
         urlBuilder.addParameter("test2", "value2")
         urlBuilder.addParameter("test3", "value3")
         assertEquals("http://sirius-lib.net?test1=value1&test2=value2&test3=value3", urlBuilder.build())
-
     }
 
     @Test
