@@ -19,7 +19,6 @@ class URLBuilderTest {
 
     @Test
     fun `baseURL is handled correctly`() {
-
         var urlBuilder = URLBuilder("http://sirius-lib.net")
         assertEquals("http://sirius-lib.net", urlBuilder.build())
 
