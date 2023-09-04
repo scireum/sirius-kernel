@@ -61,7 +61,6 @@ class URLBuilderTest {
 
     @Test
     fun `baseURL creation with protocol and host constructor is working`() {
-
         var urlBuilder = URLBuilder(URLBuilder.PROTOCOL_HTTP, "sirius-lib.net")
         assertEquals("http://sirius-lib.net", urlBuilder.build())
 
