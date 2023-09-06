@@ -10,9 +10,7 @@ package sirius.kernel.commons
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.api.extension.ParameterContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.converter.ArgumentConverter
 import org.junit.jupiter.params.converter.ConvertWith
 import org.junit.jupiter.params.provider.CsvSource
 import sirius.kernel.SiriusExtension
@@ -26,17 +24,6 @@ import kotlin.test.assertTrue
  * Tests the [Amount] class.
  */
 
-class AmountConverter : ArgumentConverter {
-    override fun convert(source: Any?, context: ParameterContext?): Any? {
-        if (source !is String) {
-
-            return Amount.NOTHING
-
-        }
-        return Amount.ofMachineString(source)
-    }
-
-}
 
 @ExtendWith(SiriusExtension::class)
 class AmountTest {
@@ -178,10 +165,10 @@ class AmountTest {
             delimiter = '|', textBlock = """
         4.2            | 42             | 46.2
         42             | 4.2            | 46.2
-        0    | 42             | 42 
+        0              | 42             | 42 
         42             | 0              | 42
-         | 42             | 
-        42             |   | 42 """
+                       | 42             |  
+        42             |                | 42 """
     )
     fun `add() works as expected`(
             @ConvertWith(AmountConverter::class) a: Amount,
@@ -235,7 +222,7 @@ class AmountTest {
         4.2            | 42             | 0.1
         42             | 4.2            | 10
         0              | 42             | 0
-        42             |0               | 
+        42             | 0              | 
                        | 42             | 
         42             |                |    """
     )
