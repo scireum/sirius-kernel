@@ -10,13 +10,14 @@ package sirius.kernel.commons
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.extension.ParameterContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.converter.ArgumentConverter
+import org.junit.jupiter.params.converter.ConvertWith
+import org.junit.jupiter.params.provider.CsvSource
 import sirius.kernel.SiriusExtension
 import sirius.kernel.async.CallContext
 import java.math.RoundingMode
-import java.util.stream.Stream
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -24,279 +25,21 @@ import kotlin.test.assertTrue
 /**
  * Tests the [Amount] class.
  */
-@ExtendWith(SiriusExtension::class)
-class AmountTest {
 
-    companion object {
-        @JvmStatic
-        private fun `generator for add() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            4.2, 42, 46.2
-                    ),
-                    Arguments.of(
-                            42, 4.2, 46.2
-                    ),
-                    Arguments.of(
-                            Amount.ZERO, 42, 42
-                    ),
-                    Arguments.of(
-                            42, Amount.ZERO, 42
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, 42, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            42, Amount.NOTHING, 42
-                    ),
-            )
-        }
+class AmountConverter : ArgumentConverter {
+    override fun convert(source: Any?, context: ParameterContext?): Any? {
+        if (source !is String) {
 
-        @JvmStatic
-        private fun `generator for subtract() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            4.2, 42, -37.8
-                    ),
-                    Arguments.of(
-                            42, 4.2, 37.8
-                    ),
-                    Arguments.of(
-                            Amount.ZERO, 42, -42
-                    ),
-                    Arguments.of(
-                            42, Amount.ZERO, 42
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, 42, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            42, Amount.NOTHING, 42
-                    ),
-            )
-        }
+            return Amount.NOTHING
 
-        @JvmStatic
-        private fun `generator for times() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            4.2, 42, 176.4
-                    ),
-                    Arguments.of(
-                            42, 4.2, 176.4
-                    ),
-                    Arguments.of(Amount.ZERO, 42, Amount.ZERO),
-                    Arguments.of(
-                            42, Amount.ZERO, Amount.ZERO
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, 42, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            42, Amount.NOTHING, Amount.NOTHING
-                    ),
-            )
         }
-
-        @JvmStatic
-        private fun `generator for divideBy() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            4.2, 42, 0.1
-                    ),
-                    Arguments.of(
-                            42, 4.2, Amount.TEN
-                    ),
-                    Arguments.of(
-                            Amount.ZERO, 42, Amount.ZERO
-                    ),
-                    Arguments.of(
-                            42, Amount.ZERO, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, 42, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            42, Amount.NOTHING, Amount.NOTHING
-                    ),
-            )
-        }
-
-        @JvmStatic
-        private fun `generator for negate() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            4.2, -4.2
-                    ),
-                    Arguments.of(
-                            -4.2, 4.2
-                    ),
-                    Arguments.of(
-                            42, -42
-                    ),
-                    Arguments.of(
-                            Amount.ZERO, Amount.ZERO
-                    ),
-                    Arguments.of(
-                            -0, Amount.ZERO
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, Amount.NOTHING
-                    )
-            )
-        }
-
-        @JvmStatic
-        private fun `generator for increasePercent() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            4.2, Amount.TEN, 4.62
-                    ),
-                    Arguments.of(
-                            Amount.ZERO, 42, Amount.ZERO
-                    ),
-                    Arguments.of(
-                            42, Amount.ZERO, 42
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, 42, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            42, Amount.NOTHING, 42
-                    ),
-            )
-        }
-
-        @JvmStatic
-        private fun `generator for decreasePercent() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            4.2, Amount.TEN, 3.78
-                    ),
-                    Arguments.of(
-                            Amount.ZERO, 42, Amount.ZERO
-                    ),
-                    Arguments.of(
-                            42, Amount.ZERO, 42
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, 42, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            42, Amount.NOTHING, 42
-                    ),
-            )
-        }
-
-        @JvmStatic
-        private fun `generator for percentageOf() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            4.2, 42, Amount.TEN
-                    ),
-                    Arguments.of(
-                            Amount.ZERO, 42, Amount.ZERO
-                    ),
-                    Arguments.of(
-                            42, Amount.ZERO, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, 42, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            42, Amount.NOTHING, Amount.NOTHING
-                    ),
-            )
-        }
-
-        @JvmStatic
-        private fun `generator for percentageDifferenceOf() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            4.62, 4.2, Amount.TEN
-                    ),
-                    Arguments.of(
-                            Amount.ZERO, 42, -100
-                    ),
-                    Arguments.of(
-                            42, Amount.ZERO, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, 42, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            42, Amount.NOTHING, Amount.NOTHING
-                    ),
-            )
-        }
-
-        @JvmStatic
-        private fun `generator for toPercent() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            0.42, 42
-                    ),
-                    Arguments.of(
-                            Amount.ONE, Amount.ONE_HUNDRED
-                    ),
-                    Arguments.of(
-                            2, 200
-                    ),
-                    Arguments.of(
-                            Amount.ZERO, Amount.ZERO
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, Amount.NOTHING
-                    ),
-            )
-        }
-
-        @JvmStatic
-        private fun `generator for asDecimal() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            42, 0.42
-                    ),
-                    Arguments.of(
-                            Amount.ONE_HUNDRED, Amount.ONE
-                    ),
-                    Arguments.of(
-                            200, 2
-                    ),
-                    Arguments.of(
-                            Amount.ZERO, Amount.ZERO
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, Amount.NOTHING
-                    ),
-            )
-        }
-
-        @JvmStatic
-        private fun `generator for remainder() works as expected`(): Stream<Arguments?>? {
-            return Stream.of(
-                    Arguments.of(
-                            10, 2, 0
-                    ),
-                    Arguments.of(
-                            10, 3, 1
-                    ),
-                    Arguments.of(
-                            10, 0, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            0, 10, 0
-                    ),
-                    Arguments.of(
-                            Amount.NOTHING, 10, Amount.NOTHING
-                    ),
-                    Arguments.of(
-                            10, Amount.NOTHING, Amount.NOTHING
-                    )
-            )
-        }
+        return Amount.ofMachineString(source)
     }
 
+}
+
+@ExtendWith(SiriusExtension::class)
+class AmountTest {
 
     @Test
     fun `predicates are evaluated correctly`() {
@@ -429,154 +172,221 @@ class AmountTest {
         assertTrue { Amount.MINUS_ONE.isLessThan(Amount.ONE) }
     }
 
+
     @ParameterizedTest
-    @MethodSource("generator for add() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        4.2            | 42             | 46.2
+        42             | 4.2            | 46.2
+        0    | 42             | 42 
+        42             | 0              | 42
+         | 42             | 
+        42             |   | 42 """
+    )
     fun `add() works as expected`(
-            a: Number,
-            b: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) b: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountB = if (b is Amount) b else Amount.of(b.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.add(amountB))
+
+        assertEquals(result, a.add(b))
     }
 
     @ParameterizedTest
-    @MethodSource("generator for subtract() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        4.2            | 42             | -37.8
+        42             | 4.2            | 37.8
+         0             | 42             | -42
+        42             | 0              | 42
+                       | 42             | 
+        42             |                | 42 """
+    )
     fun `subtract() works as expected`(
-            a: Number,
-            b: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) b: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountB = if (b is Amount) b else Amount.of(b.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.subtract(amountB))
+
+        assertEquals(result, a.subtract(b))
     }
 
     @ParameterizedTest
-    @MethodSource("generator for times() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        4.2            | 42             | 176.4
+        42             | 4.2            | 176.4
+        0              | 42             | 0
+        42             | 0              | 0
+                       | 42             | 
+        42             |                |   """
+    )
     fun `times() works as expected`(
-            a: Number,
-            b: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) b: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountB = if (b is Amount) b else Amount.of(b.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.times(amountB))
+        assertEquals(result, a.times(b))
     }
 
     @ParameterizedTest
-    @MethodSource("generator for divideBy() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        4.2            | 42             | 0.1
+        42             | 4.2            | 10
+        0              | 42             | 0
+        42             |0               | 
+                       | 42             | 
+        42             |                |    """
+    )
     fun `divideBy() works as expected`(
-            a: Number,
-            b: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) b: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountB = if (b is Amount) b else Amount.of(b.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.divideBy(amountB))
+        assertEquals(result, a.divideBy(b))
     }
 
     @ParameterizedTest
-    @MethodSource("generator for negate() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        4.2            | -4.2
+        -4.2           | 4.2
+        42             | -42
+        0              | 0
+        -0             | 0
+                       |    """
+    )
     fun `negate() works as expected`(
-            a: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.negate())
+        assertEquals(result, a.negate())
     }
 
     @ParameterizedTest
-    @MethodSource("generator for increasePercent() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        4.2            | 10             | 4.62
+        0              | 42             | 0
+        42             | 0              | 42
+                       | 42             | 
+        42             |                | 42 """
+    )
     fun `increasePercent() works as expected`(
-            a: Number,
-            b: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) b: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountB = if (b is Amount) b else Amount.of(b.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.increasePercent(amountB))
+
+        assertEquals(result, a.increasePercent(b))
     }
 
     @ParameterizedTest
-    @MethodSource("generator for decreasePercent() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        4.2            | 10             | 3.78
+        0              | 42             | 0
+        42             | 0              | 42
+                       | 42             |
+        42             |                | 42"""
+    )
     fun `decreasePercent() works as expected`(
-            a: Number,
-            b: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) b: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountB = if (b is Amount) b else Amount.of(b.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.decreasePercent(amountB))
+
+        assertEquals(result, a.decreasePercent(b))
     }
 
     @ParameterizedTest
-    @MethodSource("generator for percentageOf() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        4.2            | 42             | 10
+        0              | 42             | 0
+        42             | 0              | 
+                       | 42             | 
+        42             |                | """
+    )
     fun `percentageOf() works as expected`(
-            a: Number,
-            b: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) b: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountB = if (b is Amount) b else Amount.of(b.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.percentageOf(amountB))
+
+        assertEquals(result, a.percentageOf(b))
     }
 
     @ParameterizedTest
-    @MethodSource("generator for percentageDifferenceOf() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        4.62           | 4.2            | 10
+        0              | 42             | -100
+        42             | 0              | 
+                       | 42             | 
+        42             |                |  """
+    )
     fun `percentageDifferenceOf() works as expected`(
-            a: Number,
-            b: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) b: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountB = if (b is Amount) b else Amount.of(b.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.percentageDifferenceOf(amountB))
+
+        assertEquals(result, a.percentageDifferenceOf(b))
     }
 
     @ParameterizedTest
-    @MethodSource("generator for toPercent() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        0.42           | 42
+        1              | 100
+        2              | 200
+        0              | 0
+                       |  """
+    )
     fun `toPercent() works as expected`(
-            a: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.toPercent())
+
+        assertEquals(result, a.toPercent())
 
     }
 
     @ParameterizedTest
-    @MethodSource("generator for asDecimal() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        42                 | 0.42
+        100                | 1
+        200                | 2
+        0                  | 0
+                           |  """
+    )
     fun `asDecimal() works as expected`(
-            a: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.asDecimal())
+
+        assertEquals(result, a.asDecimal())
     }
 
     @ParameterizedTest
-    @MethodSource("generator for remainder() works as expected")
+    @CsvSource(
+            delimiter = '|', textBlock = """
+        10             | 2              | 0
+        10             | 3              | 1
+        10             | 0              | 
+        0              | 10             | 0
+                       | 10             | 
+        10             |                |  """
+    )
     fun `remainder() works as expected`(
-            a: Number,
-            b: Number,
-            result: Number,
+            @ConvertWith(AmountConverter::class) a: Amount,
+            @ConvertWith(AmountConverter::class) b: Amount,
+            @ConvertWith(AmountConverter::class) result: Amount,
     ) {
-        val amountA = if (a is Amount) a else Amount.of(a.toDouble())
-        val amountB = if (b is Amount) b else Amount.of(b.toDouble())
-        val amountResult = if (result is Amount) result else Amount.of(result.toDouble())
-        assertEquals(amountResult, amountA.remainder(amountB))
+
+        assertEquals(result, a.remainder(b))
     }
 }
