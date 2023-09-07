@@ -19,11 +19,9 @@ import java.math.RoundingMode
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-
 /**
  * Tests the [Amount] class.
  */
-
 
 @ExtendWith(SiriusExtension::class)
 class AmountTest {
