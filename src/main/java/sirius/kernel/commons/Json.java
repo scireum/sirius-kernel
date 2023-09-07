@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.POJONode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -408,10 +409,7 @@ public class Json {
     @Nonnull
     public static Optional<ArrayNode> tryGetArrayAtIndex(@Nonnull ArrayNode arrayNode, int index) {
         JsonNode node = arrayNode.get(index);
-        if (node == null || !node.isArray()) {
-            return Optional.empty();
-        }
-        return Optional.of((ArrayNode) node);
+        return tryNodeAsArray(node);
     }
 
     /**
@@ -438,10 +436,7 @@ public class Json {
     @Nonnull
     public static Optional<ArrayNode> tryGetArray(@Nonnull ObjectNode objectNode, String fieldName) {
         JsonNode node = objectNode.get(fieldName);
-        if (node == null || !node.isArray()) {
-            return Optional.empty();
-        }
-        return Optional.of((ArrayNode) node);
+        return tryNodeAsArray(node);
     }
 
     /**
@@ -468,10 +463,17 @@ public class Json {
     @Nonnull
     public static Optional<ArrayNode> tryGetArrayAt(@Nonnull JsonNode jsonNode, JsonPointer pointer) {
         JsonNode node = jsonNode.at(pointer);
-        if (node == null || !node.isArray() || node.isMissingNode()) {
+        return tryNodeAsArray(node);
+    }
+
+    private static Optional<ArrayNode> tryNodeAsArray(JsonNode node) {
+        if (node == null || node.isMissingNode()) {
             return Optional.empty();
         }
-        return Optional.of((ArrayNode) node);
+        if (node instanceof POJONode pojoNode && pojoNode.getPojo() instanceof Collection<?> collection) {
+            return Optional.of(MAPPER.valueToTree(collection));
+        }
+        return node.isArray() ? Optional.of((ArrayNode) node) : Optional.empty();
     }
 
     /**
