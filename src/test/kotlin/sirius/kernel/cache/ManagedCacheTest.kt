@@ -96,13 +96,17 @@ class ManagedCacheTest {
 
         // defines a remover, that allows to define a key value, which should not be removed
         cache.addRemover("FILTER")
-            .filter { selector, entry ->
-                (entry.getKey() != selector)
-            }
-            // get value of managed cache
-            .map { entry ->
-                entry.getValue()
-            }
+            .filter(
+                { selector, entry ->
+                    entry.getKey() != selector
+                }
+            )
+            .map(
+                // get value of managed cache
+                { entry ->
+                    entry.getValue()
+                }
+            )
             .map(
                 // add key + value of the cache Entry, for example: "E" + 12345
                 { selector, value ->
