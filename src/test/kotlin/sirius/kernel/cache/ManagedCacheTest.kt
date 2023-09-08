@@ -8,9 +8,9 @@
 
 package sirius.kernel.cache
 
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.NightlyTest
 import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Tuple
@@ -22,7 +22,9 @@ import kotlin.test.assertNotEquals
 /**
  * Tests the [AdvancedDateParser] class.
  */
+
 @ExtendWith(SiriusExtension::class)
+@NightlyTest
 class ManagedCacheTest {
 
     @Test
@@ -71,18 +73,12 @@ class ManagedCacheTest {
         cache.put("B", Tuple.create("1", "2"))
         cache.put("C", Tuple.create("2", "1"))
         cache.put("D", Tuple.create("3", "3"))
-        `Remove all entries where the first is a '1' and then all where the second is a '1'`(cache)
-        `Ensure that the correct entries were removed and others remained in cache`(cache)
-    }
 
-    @DisplayName("Remove all entries where the first is a '1' and then all where the second is a '1'")
-    private fun `Remove all entries where the first is a '1' and then all where the second is a '1'`(cache: ManagedCache<String, Tuple<String, String>>) {
+        //Remove all entries where the first is a '1' and then all where the second is a '1'
         cache.removeAll("FIRST", "1")
         cache.removeAll("SECOND", "1")
-    }
 
-    @DisplayName("Ensure that the correct entries were removed and others remained in cache")
-    private fun `Ensure that the correct entries were removed and others remained in cache`(cache: ManagedCache<String, Tuple<String, String>>) {
+        //Ensure that the correct entries were removed and others remained in cache
         assertNotEquals(null, cache.get("A"))
         assertEquals(null, cache.get("B"))
         assertEquals(null, cache.get("C"))
@@ -91,51 +87,66 @@ class ManagedCacheTest {
 
     @Test
     fun `remover builder works as expected`() {
-        val cache: ManagedCache<String, Tuple<String, String>> = ManagedCache("test-cache", null, null)
-        cache.put("A", Tuple.create("gets ignored, ", "because the key is equal to the selector"))
-        cache.put("B", Tuple.create("gets ", "removed, because it's too long"))
-        cache.put("C", Tuple.create("does", " not get removed"))
-        cache.put("D", Tuple.create("B", "A"))
-        cache.put("E", Tuple.create("B", "C"))
+        val cache: ManagedCache<String, String> = ManagedCache("test-cache", null, null)
+        cache.put("A", "1")
+        cache.put("B", "12")
+        cache.put("C", "123")
+        cache.put("D", "1234")
+        cache.put("E", "12345")
 
         // defines a remover, that allows to define a key value, which should not be removed
         cache.addRemover("FILTER")
-            .filter { selector: String, entry: CacheEntry<String, Tuple<String, String>> ->
+            .filter { selector, entry ->
                 (entry.getKey() != selector)
             }
-            // get tuple consisting of two strings
-            .map { entry: CacheEntry<String, Tuple<String, String>?> ->
+            // get value of managed cache
+            .map { entry ->
                 entry.getValue()
             }
-            .map { tuple: Tuple<String, String>? ->
-                // get first value of tuple (which is a string)
-                tuple?.first
-            }.map(
-                // add the selector (key of the cache entry) and the first value of the string
-                // for the cache value B this would be: "B" + "gets " = "Bgets "
+            .map(
+                // add key + value of the cache Entry, for example: "E" + 12345
                 { selector, value ->
                     value + selector
                 }
             ).removeIf(
-                // if the resulting string, f.E. "Bgets " is larger than 5, remove entry
+                // if the resulting string, f.E. "E12345" is larger than 5, remove entry
                 { x ->
                     x.length > 5
                 }
             )
 
-        cache.addValueBasedRemover("REMOVE_ALWAYS").removeAlways({ selector, tuple ->
-            tuple.getSecond() == selector
-        }).removeIf({ tuple ->
-            false
-        })
-
         cache.removeAll("FILTER", "A")
-        cache.removeAll("REMOVE_ALWAYS", "C")
 
         assertNotEquals(null, cache.get("A"))
-        assertEquals(null, cache.get("B"))
+        assertNotEquals(null, cache.get("B"))
         assertNotEquals(null, cache.get("C"))
         assertNotEquals(null, cache.get("D"))
         assertEquals(null, cache.get("E"))
+    }
+
+    @Test
+    fun `valueBasedRemover works as expected`() {
+        val cache: ManagedCache<String, Tuple<String, String>> = ManagedCache("test-cache", null, null)
+        cache.put("Key1", Tuple.create("1, ", "A"))
+        cache.put("Key2", Tuple.create("2 ", "B"))
+        cache.put("Key3", Tuple.create("3", "C"))
+        cache.put("Key4", Tuple.create("4", "D"))
+        cache.put("Key5", Tuple.create("5", "E"))
+
+        cache.addValueBasedRemover("REMOVE_ALWAYS")
+            .removeAlways({ selector, tuple ->
+                tuple.getSecond() == selector
+            }).removeIf({ tuple ->
+                false
+            })
+
+        cache.removeAll("REMOVE_ALWAYS", "C")
+        cache.removeAll("REMOVE_ALWAYS", "B")
+
+        assertNotEquals(null, cache.get("Key1"))
+        assertEquals(null, cache.get("Key2"))
+        assertEquals(null, cache.get("Key3"))
+        assertNotEquals(null, cache.get("Key4"))
+        assertNotEquals(null, cache.get("Key5"))
     }
 }
