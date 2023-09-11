@@ -5,54 +5,41 @@
  * Copyright by scireum GmbH
  * http://www.scireum.de - info@scireum.de
  */
+package sirius.kernel.commons
 
-package sirius.kernel.commons;
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import java.util.*
+import java.util.stream.Collectors
+import java.util.stream.Stream
+import java.util.stream.StreamSupport
 
-import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-class PullBasedSpliteratorTest {
-
-    private static class TestSpliterator extends PullBasedSpliterator<Integer> {
-
-        private int index;
-
-        @Nullable
-        @Override
-        protected Iterator<Integer> pullNextBlock() {
+internal class PullBasedSpliteratorTest {
+    private class TestSpliterator : PullBasedSpliterator<Int?>() {
+        private var index = 0
+        override fun pullNextBlock(): Iterator<Int>? {
             if (index < 10) {
-                List<Integer> result = new ArrayList<>();
-                for (int i = index; i < index + 5; i++) {
-                    result.add(i);
+                val result: MutableList<Int> = ArrayList()
+                for (i in index until index + 5) {
+                    result.add(i)
                 }
-                index += 5;
-
-                return result.iterator();
+                index += 5
+                return result.iterator()
             }
-
-            return Collections.emptyIterator();
+            return Collections.emptyIterator()
         }
 
-        @Override
-        public int characteristics() {
-            return 0;
+        override fun characteristics(): Int {
+            return 0
         }
     }
 
     @Test
-    void streamWorksProperly() {
-        assertEquals(10, StreamSupport.stream(new TestSpliterator(), false).count());
-        assertEquals(StreamSupport.stream(new TestSpliterator(), false).collect(Collectors.toList()),
-            Stream.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).collect(Collectors.toList()));
+    fun streamWorksProperly() {
+        Assertions.assertEquals(10, StreamSupport.stream(TestSpliterator(), false).count())
+        Assertions.assertEquals(
+            StreamSupport.stream(TestSpliterator(), false).collect(Collectors.toList()),
+            Stream.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).collect(Collectors.toList())
+        )
     }
 }
