@@ -8,14 +8,14 @@
 
 package sirius.kernel.async
 
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.NightlyTest
 import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Wait
 import kotlin.test.assertTrue
 
-@Tag("nightly")
+@NightlyTest
 @ExtendWith(SiriusExtension::class)
 class BackgroundLoopSpec {
     @Test
