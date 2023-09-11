@@ -9,33 +9,34 @@
 package sirius.kernel.async
 
 import org.junit.jupiter.api.Tag
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Wait
+import kotlin.test.assertTrue
 
 @Tag("nightly")
-class BackgroundLoopSpec extends BaseSpecification {
-
-    def "BackgroundLoop limits to max frequency"() {
-        given:
-        int currentCounter = FastTestLoop.counter
-                when:
-        Wait.seconds(10)
-        int delta = FastTestLoop.counter - currentCounter
-        then: "the background loop executed enough calls (should be 10 but we're a bit tolerant here)"
-        delta >= 8
-        and: "the background loop was limited not to execute too often (should be 10 but we're a bit tolerant here)"
-        delta <= 12
+@ExtendWith(SiriusExtension::class)
+class BackgroundLoopSpec {
+    @Test
+    fun `BackgroundLoop limits to max frequency`() {
+        val currentCounter = FastTestLoop.counter.toInt()
+        Wait.seconds(10.0)
+        val delta = FastTestLoop.counter.toInt() - currentCounter
+        //the background loop executed enough calls (should be 10 but we're a bit tolerant here)
+        assertTrue { delta >= 8 }
+        //the background loop was limited not to execute too often (should be 10 but we're a bit tolerant here)
+        assertTrue { delta <= 12 }
     }
 
-    def "BackgroundLoop executes as fast as possible if loop is slow"() {
-        given:
-        int currentCounter = SlowTestLoop.counter
-                when:
-        Wait.seconds(10)
-        int delta = SlowTestLoop.counter - currentCounter
-        then: "the background loop executed enough calls (should be 5 but we're a bit tolerant here)"
-        delta >= 3
-        and: "the background loop was limited not to execute too often (should be 5 but we're a bit tolerant here)"
-        delta <= 6
+    @Test
+    fun `BackgroundLoop executes as fast as possible if loop is slow`() {
+        val currentCounter = SlowTestLoop.counter.toInt()
+        Wait.seconds(10.0)
+        val delta = SlowTestLoop.counter.toInt() - currentCounter
+        // the background loop executed enough calls (should be 10 but we're a bit tolerant here)
+        assertTrue { delta >= 3 }
+        // the background loop was limited not to execute too often (should be 10 but we're a bit tolerant here)
+        assertTrue { delta <= 6 }
     }
 }
