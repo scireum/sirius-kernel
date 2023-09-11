@@ -34,9 +34,9 @@ class BackgroundLoopSpec {
         val currentCounter = SlowTestLoop.counter.toInt()
         Wait.seconds(10.0)
         val delta = SlowTestLoop.counter.toInt() - currentCounter
-        // the background loop executed enough calls (should be 10 but we're a bit tolerant here)
+        //the background loop executed enough calls (should be 5 but we're a bit tolerant here)
         assertTrue { delta >= 3 }
-        // the background loop was limited not to execute too often (should be 10 but we're a bit tolerant here)
+        //the background loop was limited not to execute too often (should be 5 but we're a bit tolerant here)
         assertTrue { delta <= 6 }
     }
 }
