@@ -39,7 +39,10 @@ public class TimerCommand implements Command {
                   .map(String::toLowerCase)
                   .collect(Collectors.toSet());
 
-    private static final String USAGE = "Usage: timer all|oneMinute|tenMinutes|oneHour|everyDay <hour>";
+    private static final String FORCE_PARAM_LONG = "--force";
+    private static final String FORCE_PARAM_SHORT = "-f";
+
+    private static final String USAGE = "Usage: timer [-f] all|oneMinute|tenMinutes|oneHour|everyDay <hour>";
 
     @Part
     private Timers timers;
@@ -48,6 +51,7 @@ public class TimerCommand implements Command {
     public void execute(Output output, String... parameters) throws Exception {
         List<String> parameterList = new ArrayList<>(List.of(parameters));
         String scope = parameterList.isEmpty() ? "" : parameterList.get(0);
+        boolean forced = extractForceParameter(parameterList);
 
         if (parameterList.isEmpty()) {
             output.line(USAGE);
@@ -70,7 +74,7 @@ public class TimerCommand implements Command {
             if ("everyDay".equalsIgnoreCase(scope)) {
                 int currentHour = Values.of(parameterList).at(1).asInt(25);
                 output.line("Executing daily timers for hour: " + currentHour);
-                timers.runEveryDayTimers(currentHour);
+                timers.runEveryDayTimers(currentHour, forced);
             }
         }
 
@@ -105,5 +109,19 @@ public class TimerCommand implements Command {
     @Override
     public String getDescription() {
         return "Reports the last timer runs and executes them out of schedule.";
+    }
+
+    private boolean extractForceParameter(List<String> parameterList) {
+        if (parameterList.contains(FORCE_PARAM_LONG)) {
+            parameterList.remove(FORCE_PARAM_LONG);
+            return true;
+        }
+
+        if (parameterList.contains(FORCE_PARAM_SHORT)) {
+            parameterList.remove(FORCE_PARAM_SHORT);
+            return true;
+        }
+
+        return false;
     }
 }
