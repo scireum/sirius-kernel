@@ -238,7 +238,7 @@ public class Timers implements Startable, Stoppable {
 
     private void watchLoadedResources() {
         Thread.currentThread().setName("Resource-Watch");
-        for (WatchedResource resource : loadedFiles) {
+        loadedFiles.forEach(resource -> {
             long lastModified = resource.file.lastModified();
             if (lastModified > resource.lastModified) {
                 resource.lastModified = resource.file.lastModified();
@@ -252,7 +252,7 @@ public class Timers implements Startable, Stoppable {
                               .handle();
                 }
             }
-        }
+        });
     }
 
     private void startTimer() {
