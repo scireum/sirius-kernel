@@ -224,54 +224,6 @@ public class Timers implements Startable, Stoppable {
         }
     }
 
-    private void startResourceWatcher() {
-        if (reloadTimer == null) {
-            reloadTimer = new Timer(true);
-            reloadTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    watchLoadedResources();
-                }
-            }, RELOAD_INTERVAL, RELOAD_INTERVAL);
-        }
-    }
-
-    private void watchLoadedResources() {
-        Thread.currentThread().setName("Resource-Watch");
-        loadedFiles.forEach(resource -> {
-            long lastModified = resource.file.lastModified();
-            if (lastModified > resource.lastModified) {
-                resource.lastModified = resource.file.lastModified();
-                LOG.INFO("Reloading: %s", resource.file.toString());
-                try {
-                    resource.callback.run();
-                } catch (Exception exception) {
-                    Exceptions.handle()
-                              .withSystemErrorMessage("Error reloading %s: %s (%s)", resource.file.toString())
-                              .error(exception)
-                              .handle();
-                }
-            }
-        });
-    }
-
-    private void startTimer() {
-        try {
-            timerLock.lock();
-            try {
-                if (timer != null) {
-                    timer.cancel();
-                }
-                timer = new Timer(true);
-                timer.schedule(new InnerTimerTask(), TEN_SECONDS_IN_MILLIS, TEN_SECONDS_IN_MILLIS);
-            } finally {
-                timerLock.unlock();
-            }
-        } catch (Exception t) {
-            Exceptions.handle(LOG, t);
-        }
-    }
-
     @Override
     public void stopped() {
         try {
@@ -331,29 +283,6 @@ public class Timers implements Startable, Stoppable {
         lastOneMinuteExecution = timeProvider.currentTimeMillis();
     }
 
-    private void executeTask(final TimedTask task) {
-        tasks.executor(TIMER)
-             .dropOnOverload(() -> Exceptions.handle()
-                                             .to(LOG)
-                                             .withSystemErrorMessage(
-                                                     "Dropping timer task '%s' (%s) due to system overload!",
-                                                     task,
-                                                     task.getClass())
-                                             .handle())
-             .start(() -> {
-                 try {
-                     Watch w = Watch.start();
-                     task.runTimer();
-                     if (w.elapsed(TimeUnit.SECONDS, false) > 1) {
-                         LOG.WARN("TimedTask '%s' (%s) took over a second to complete! "
-                                  + "Consider executing the work in a separate executor!", task, task.getClass());
-                     }
-                 } catch (Exception t) {
-                     Exceptions.handle(LOG, t);
-                 }
-             });
-    }
-
     /**
      * Executes all ten minutes timers (implementing <tt>EveryTenMinutes</tt>) now (out of schedule).
      */
@@ -395,6 +324,92 @@ public class Timers implements Startable, Stoppable {
         return Collections.unmodifiableCollection(everyDay.getParts());
     }
 
+    /**
+     * Determines the execution hour (0..23) in which the given task is to be executed.
+     *
+     * @param task the task to check
+     * @return the execution hour wrapped as optional or an empty optional if the config is missing
+     */
+    public Optional<Integer> getExecutionHour(EveryDay task) {
+        String configPath = TIMER_DAILY_PREFIX + task.getConfigKeyName();
+        if (!Sirius.getSettings().getConfig().hasPath(configPath)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(Sirius.getSettings().getInt(configPath));
+    }
+
+    private void startResourceWatcher() {
+        if (reloadTimer == null) {
+            reloadTimer = new Timer(true);
+            reloadTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    watchLoadedResources();
+                }
+            }, RELOAD_INTERVAL, RELOAD_INTERVAL);
+        }
+    }
+
+    private void watchLoadedResources() {
+        Thread.currentThread().setName("Resource-Watch");
+        loadedFiles.forEach(resource -> {
+            long lastModified = resource.file.lastModified();
+            if (lastModified > resource.lastModified) {
+                resource.lastModified = resource.file.lastModified();
+                LOG.INFO("Reloading: %s", resource.file.toString());
+                try {
+                    resource.callback.run();
+                } catch (Exception exception) {
+                    Exceptions.handle()
+                              .withSystemErrorMessage("Error reloading %s: %s (%s)", resource.file.toString())
+                              .error(exception)
+                              .handle();
+                }
+            }
+        });
+    }
+
+    private void startTimer() {
+        try {
+            timerLock.lock();
+            try {
+                if (timer != null) {
+                    timer.cancel();
+                }
+                timer = new Timer(true);
+                timer.schedule(new InnerTimerTask(), TEN_SECONDS_IN_MILLIS, TEN_SECONDS_IN_MILLIS);
+            } finally {
+                timerLock.unlock();
+            }
+        } catch (Exception t) {
+            Exceptions.handle(LOG, t);
+        }
+    }
+
+    private void executeTask(final TimedTask task) {
+        tasks.executor(TIMER)
+             .dropOnOverload(() -> Exceptions.handle()
+                                             .to(LOG)
+                                             .withSystemErrorMessage(
+                                                     "Dropping timer task '%s' (%s) due to system overload!",
+                                                     task,
+                                                     task.getClass())
+                                             .handle())
+             .start(() -> {
+                 try {
+                     Watch w = Watch.start();
+                     task.runTimer();
+                     if (w.elapsed(TimeUnit.SECONDS, false) > 1) {
+                         LOG.WARN("TimedTask '%s' (%s) took over a second to complete! "
+                                  + "Consider executing the work in a separate executor!", task, task.getClass());
+                     }
+                 } catch (Exception t) {
+                     Exceptions.handle(LOG, t);
+                 }
+             });
+    }
+
     private void runDailyTimer(int currentHour, EveryDay task) {
         Optional<Integer> executionHour = getExecutionHour(task);
         if (executionHour.isEmpty()) {
@@ -413,20 +428,5 @@ public class Timers implements Startable, Stoppable {
         }
 
         executeTask(task);
-    }
-
-    /**
-     * Determines the execution hour (0..23) in which the given task is to be executed.
-     *
-     * @param task the task to check
-     * @return the execution hour wrapped as optional or an empty optional if the config is missing
-     */
-    public Optional<Integer> getExecutionHour(EveryDay task) {
-        String configPath = TIMER_DAILY_PREFIX + task.getConfigKeyName();
-        if (!Sirius.getSettings().getConfig().hasPath(configPath)) {
-            return Optional.empty();
-        }
-
-        return Optional.of(Sirius.getSettings().getInt(configPath));
     }
 }
