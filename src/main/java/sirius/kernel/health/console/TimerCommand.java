@@ -50,8 +50,8 @@ public class TimerCommand implements Command {
     @Override
     public void execute(Output output, String... parameters) throws Exception {
         List<String> parameterList = new ArrayList<>(List.of(parameters));
-        String scope = parameterList.isEmpty() ? "" : parameterList.get(0);
         boolean forced = extractForceParameter(parameterList);
+        String scope = parameterList.isEmpty() ? "" : parameterList.get(0);
 
         if (parameterList.isEmpty()) {
             output.line(USAGE);
