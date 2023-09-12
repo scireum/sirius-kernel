@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Console command which reports the last execution of the timer tasks.
@@ -31,7 +33,11 @@ public class TimerCommand implements Command {
 
     private static final String LINE_FORMAT = "%20s %-30s";
 
-    private static final Set<String> ACCEPTED_PARAMS = Set.of("all", "oneMinute", "tenMinutes", "oneHour", "everyDay");
+    // matching is intentionally case-insensitive, and we compare lower-case values
+    private static final Set<String> ACCEPTED_PARAMS =
+            Stream.of("all", "oneMinute", "tenMinutes", "oneHour", "everyDay")
+                  .map(String::toLowerCase)
+                  .collect(Collectors.toSet());
 
     private static final String USAGE = "Usage: timer all|oneMinute|tenMinutes|oneHour|everyDay <hour>";
 
@@ -45,7 +51,7 @@ public class TimerCommand implements Command {
 
         if (parameterList.isEmpty()) {
             output.line(USAGE);
-        } else if (!ACCEPTED_PARAMS.contains(scope)) {
+        } else if (!ACCEPTED_PARAMS.contains(scope.toLowerCase())) {
             output.apply("'%s' is not an accepted parameter!", scope);
             output.line(USAGE);
         } else {
