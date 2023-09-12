@@ -141,8 +141,8 @@ public class Timers implements Startable, Stoppable {
                     runOneHourTimers();
                     runEveryDayTimers(timeProvider.localTimeNow().getHour());
                 }
-            } catch (Exception t) {
-                Exceptions.handle(LOG, t);
+            } catch (Exception exception) {
+                Exceptions.handle(LOG, exception);
             }
         }
     }
@@ -235,8 +235,8 @@ public class Timers implements Startable, Stoppable {
             } finally {
                 timerLock.unlock();
             }
-        } catch (Exception t) {
-            Exceptions.handle(LOG, t);
+        } catch (Exception exception) {
+            Exceptions.handle(LOG, exception);
         }
     }
 
@@ -394,8 +394,8 @@ public class Timers implements Startable, Stoppable {
             } finally {
                 timerLock.unlock();
             }
-        } catch (Exception t) {
-            Exceptions.handle(LOG, t);
+        } catch (Exception exception) {
+            Exceptions.handle(LOG, exception);
         }
     }
 
@@ -410,14 +410,14 @@ public class Timers implements Startable, Stoppable {
                                              .handle())
              .start(() -> {
                  try {
-                     Watch w = Watch.start();
+                     Watch watch = Watch.start();
                      task.runTimer();
-                     if (w.elapsed(TimeUnit.SECONDS, false) > 1) {
+                     if (watch.elapsed(TimeUnit.SECONDS, false) > 1) {
                          LOG.WARN("TimedTask '%s' (%s) took over a second to complete! "
                                   + "Consider executing the work in a separate executor!", task, task.getClass());
                      }
-                 } catch (Exception t) {
-                     Exceptions.handle(LOG, t);
+                 } catch (Exception exception) {
+                     Exceptions.handle(LOG, exception);
                  }
              });
     }
