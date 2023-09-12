@@ -232,16 +232,16 @@ public class Timers implements Startable, Stoppable {
 
     private void watchLoadedResources() {
         Thread.currentThread().setName("Resource-Watch");
-        for (WatchedResource res : loadedFiles) {
-            long lastModified = res.file.lastModified();
-            if (lastModified > res.lastModified) {
-                res.lastModified = res.file.lastModified();
-                LOG.INFO("Reloading: %s", res.file.toString());
+        for (WatchedResource resource : loadedFiles) {
+            long lastModified = resource.file.lastModified();
+            if (lastModified > resource.lastModified) {
+                resource.lastModified = resource.file.lastModified();
+                LOG.INFO("Reloading: %s", resource.file.toString());
                 try {
-                    res.callback.run();
+                    resource.callback.run();
                 } catch (Exception exception) {
                     Exceptions.handle()
-                              .withSystemErrorMessage("Error reloading %s: %s (%s)", res.file.toString())
+                              .withSystemErrorMessage("Error reloading %s: %s (%s)", resource.file.toString())
                               .error(exception)
                               .handle();
                 }
@@ -295,12 +295,12 @@ public class Timers implements Startable, Stoppable {
     @Explain("Resources are only collected once at startup, so there is no performance hotspot")
     public void addWatchedResource(@Nonnull URL url, @Nonnull Runnable callback) {
         try {
-            WatchedResource res = new WatchedResource();
+            WatchedResource resource = new WatchedResource();
             File file = new File(url.toURI());
-            res.file = file;
-            res.callback = callback;
-            res.lastModified = file.lastModified();
-            loadedFiles.add(res);
+            resource.file = file;
+            resource.callback = callback;
+            resource.lastModified = file.lastModified();
+            loadedFiles.add(resource);
         } catch (IllegalArgumentException | URISyntaxException exception) {
             Exceptions.ignore(exception);
             Exceptions.handle()
