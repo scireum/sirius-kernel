@@ -59,24 +59,7 @@ public class TimerCommand implements Command {
             output.apply("'%s' is not an accepted parameter!", scope);
             output.line(USAGE);
         } else {
-            if ("all".equalsIgnoreCase(scope) || "oneMinute".equalsIgnoreCase(scope)) {
-                output.line("Executing one minute timers...");
-                timers.runOneMinuteTimers();
-            }
-            if ("all".equalsIgnoreCase(scope) || "tenMinutes".equalsIgnoreCase(scope)) {
-                output.line("Executing ten minute timers...");
-                timers.runTenMinuteTimers();
-            }
-            if ("all".equalsIgnoreCase(scope) || "oneHour".equalsIgnoreCase(scope)) {
-                output.line("Executing one hour timers...");
-                timers.runOneHourTimers();
-            }
-            if ("everyDay".equalsIgnoreCase(scope)) {
-                int currentHour = Values.of(parameterList).at(0).asInt(25);
-                String forcedMessage = forced ? " (forced)" : "";
-                output.line("Executing daily timers for hour: " + currentHour + forcedMessage);
-                timers.runEveryDayTimers(currentHour, forced);
-            }
+            executeCommand(scope, parameterList, forced, output);
         }
 
         output.blankLine();
@@ -134,5 +117,26 @@ public class TimerCommand implements Command {
         }
 
         return false;
+    }
+
+    private void executeCommand(String scope, List<String> parameters, boolean forced, Output output) {
+        if ("all".equalsIgnoreCase(scope) || "oneMinute".equalsIgnoreCase(scope)) {
+            output.line("Executing one minute timers...");
+            timers.runOneMinuteTimers();
+        }
+        if ("all".equalsIgnoreCase(scope) || "tenMinutes".equalsIgnoreCase(scope)) {
+            output.line("Executing ten minute timers...");
+            timers.runTenMinuteTimers();
+        }
+        if ("all".equalsIgnoreCase(scope) || "oneHour".equalsIgnoreCase(scope)) {
+            output.line("Executing one hour timers...");
+            timers.runOneHourTimers();
+        }
+        if ("everyDay".equalsIgnoreCase(scope)) {
+            int currentHour = Values.of(parameters).at(0).asInt(25);
+            String forcedMessage = forced ? " (forced)" : "";
+            output.line("Executing daily timers for hour: " + currentHour + forcedMessage);
+            timers.runEveryDayTimers(currentHour, forced);
+        }
     }
 }
