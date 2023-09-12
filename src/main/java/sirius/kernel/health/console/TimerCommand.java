@@ -112,14 +112,14 @@ public class TimerCommand implements Command {
         return "Reports the last timer runs and executes them out of schedule.";
     }
 
-    private boolean extractForceParameter(List<String> parameterList) {
-        if (parameterList.contains(FORCE_PARAM_LONG)) {
-            parameterList.remove(FORCE_PARAM_LONG);
+    private boolean extractForceParameter(List<String> parameters) {
+        if (parameters.contains(FORCE_PARAM_LONG)) {
+            parameters.remove(FORCE_PARAM_LONG);
             return true;
         }
 
-        if (parameterList.contains(FORCE_PARAM_SHORT)) {
-            parameterList.remove(FORCE_PARAM_SHORT);
+        if (parameters.contains(FORCE_PARAM_SHORT)) {
+            parameters.remove(FORCE_PARAM_SHORT);
             return true;
         }
 
