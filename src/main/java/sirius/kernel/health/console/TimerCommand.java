@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * Console command which reports the last execution of the timer tasks.
  * <p>
- * It also permits to call an timer out of schedule
+ * It also permits to call a timer out of schedule.
  */
 @Register
 public class TimerCommand implements Command {

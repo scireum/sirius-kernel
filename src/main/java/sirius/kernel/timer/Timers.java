@@ -157,7 +157,7 @@ public class Timers implements Startable, Stoppable {
     }
 
     /**
-     * Returns the timestamp of the last execution of the 10 second timer.
+     * Returns the timestamp of the last execution of the 10-second timer.
      *
      * @return a textual representation of the last execution of the ten seconds timer. Returns "-" if the timer didn't
      * run yet.
@@ -170,9 +170,9 @@ public class Timers implements Startable, Stoppable {
     }
 
     /**
-     * Returns the timestamp of the last execution of the one minute timer.
+     * Returns the timestamp of the last execution of the one-minute timer.
      *
-     * @return a textual representation of the last execution of the one minute timer. Returns "-" if the timer didn't
+     * @return a textual representation of the last execution of the one-minute timer. Returns "-" if the timer didn't
      * run yet.
      */
     public String getLastOneMinuteExecution() {
@@ -196,9 +196,9 @@ public class Timers implements Startable, Stoppable {
     }
 
     /**
-     * Returns the timestamp of the last execution of the one hour timer.
+     * Returns the timestamp of the last execution of the one-hour timer.
      *
-     * @return a textual representation of the last execution of the one hour timer. Returns "-" if the timer didn't
+     * @return a textual representation of the last execution of the one-hour timer. Returns "-" if the timer didn't
      * run yet.
      */
     public String getLastHourExecution() {
