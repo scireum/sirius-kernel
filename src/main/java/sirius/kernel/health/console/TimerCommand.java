@@ -73,7 +73,8 @@ public class TimerCommand implements Command {
             }
             if ("everyDay".equalsIgnoreCase(scope)) {
                 int currentHour = Values.of(parameterList).at(1).asInt(25);
-                output.line("Executing daily timers for hour: " + currentHour);
+                String forcedMessage = forced ? " (forced)" : "";
+                output.line("Executing daily timers for hour: " + currentHour + forcedMessage);
                 timers.runEveryDayTimers(currentHour, forced);
             }
         }
