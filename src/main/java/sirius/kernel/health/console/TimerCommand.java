@@ -16,7 +16,9 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.timer.Timers;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,26 +40,29 @@ public class TimerCommand implements Command {
 
     @Override
     public void execute(Output output, String... parameters) throws Exception {
-        if (parameters.length == 0) {
+        List<String> parameterList = new ArrayList<>(List.of(parameters));
+        String scope = parameterList.isEmpty() ? "" : parameterList.get(0);
+
+        if (parameterList.isEmpty()) {
             output.line(USAGE);
-        } else if (!ACCEPTED_PARAMS.contains(parameters[0])) {
-            output.apply("'%s' is not an accepted parameter!", parameters[0]);
+        } else if (!ACCEPTED_PARAMS.contains(scope)) {
+            output.apply("'%s' is not an accepted parameter!", scope);
             output.line(USAGE);
         } else {
-            if ("all".equalsIgnoreCase(parameters[0]) || "oneMinute".equalsIgnoreCase(parameters[0])) {
+            if ("all".equalsIgnoreCase(scope) || "oneMinute".equalsIgnoreCase(scope)) {
                 output.line("Executing one minute timers...");
                 timers.runOneMinuteTimers();
             }
-            if ("all".equalsIgnoreCase(parameters[0]) || "tenMinutes".equalsIgnoreCase(parameters[0])) {
+            if ("all".equalsIgnoreCase(scope) || "tenMinutes".equalsIgnoreCase(scope)) {
                 output.line("Executing ten minute timers...");
                 timers.runTenMinuteTimers();
             }
-            if ("all".equalsIgnoreCase(parameters[0]) || "oneHour".equalsIgnoreCase(parameters[0])) {
+            if ("all".equalsIgnoreCase(scope) || "oneHour".equalsIgnoreCase(scope)) {
                 output.line("Executing one hour timers...");
                 timers.runOneHourTimers();
             }
-            if ("everyDay".equalsIgnoreCase(parameters[0])) {
-                int currentHour = Values.of(parameters).at(1).asInt(25);
+            if ("everyDay".equalsIgnoreCase(scope)) {
+                int currentHour = Values.of(parameterList).at(1).asInt(25);
                 output.line("Executing daily timers for hour: " + currentHour);
                 timers.runEveryDayTimers(currentHour);
             }
