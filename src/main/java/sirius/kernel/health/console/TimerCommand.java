@@ -51,7 +51,7 @@ public class TimerCommand implements Command {
     public void execute(Output output, String... parameters) throws Exception {
         List<String> parameterList = new ArrayList<>(List.of(parameters));
         boolean forced = extractForceParameter(parameterList);
-        String scope = parameterList.isEmpty() ? "" : parameterList.get(0);
+        String scope = extractScope(parameterList);
 
         if (parameterList.isEmpty()) {
             output.line(USAGE);
@@ -72,7 +72,7 @@ public class TimerCommand implements Command {
                 timers.runOneHourTimers();
             }
             if ("everyDay".equalsIgnoreCase(scope)) {
-                int currentHour = Values.of(parameterList).at(1).asInt(25);
+                int currentHour = Values.of(parameterList).at(0).asInt(25);
                 String forcedMessage = forced ? " (forced)" : "";
                 output.line("Executing daily timers for hour: " + currentHour + forcedMessage);
                 timers.runEveryDayTimers(currentHour, forced);
@@ -110,6 +110,16 @@ public class TimerCommand implements Command {
     @Override
     public String getDescription() {
         return "Reports the last timer runs and executes them out of schedule.";
+    }
+
+    private String extractScope(List<String> parameters) {
+        if (parameters.isEmpty()) {
+            return "";
+        }
+
+        String scope = parameters.get(0);
+        parameters.remove(0);
+        return scope;
     }
 
     private boolean extractForceParameter(List<String> parameters) {
