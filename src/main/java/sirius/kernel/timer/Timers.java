@@ -310,8 +310,20 @@ public class Timers implements Startable, Stoppable {
      *                    out-of-schedule eecution, this can be set to any value.
      */
     public void runEveryDayTimers(int currentHour) {
+        runEveryDayTimers(currentHour, false);
+    }
+
+    /**
+     * Executes all daily timers (implementing <tt>EveryDay</tt>) if applicable, or if outOfASchedule is <tt>true</tt>.
+     *
+     * @param currentHour determines the current hour. Most probably this will be wall-clock time. However, for
+     *                    out-of-schedule eecution, this can be set to any value.
+     * @param forced      if <b>true</b>, the task will be executed even if it is not scheduled according to
+     *                    {@link Orchestration#shouldRunDailyTask(String)}
+     */
+    public void runEveryDayTimers(int currentHour, boolean forced) {
         for (final EveryDay task : getDailyTasks()) {
-            runDailyTimer(currentHour, task);
+            runDailyTimer(currentHour, task, forced);
         }
     }
 
@@ -410,7 +422,7 @@ public class Timers implements Startable, Stoppable {
              });
     }
 
-    private void runDailyTimer(int currentHour, EveryDay task) {
+    private void runDailyTimer(int currentHour, EveryDay task, boolean forced) {
         Optional<Integer> executionHour = getExecutionHour(task);
         if (executionHour.isEmpty()) {
             LOG.WARN("Skipping daily timer %s as config key '%s' is missing!",
@@ -423,7 +435,7 @@ public class Timers implements Startable, Stoppable {
             return;
         }
 
-        if (orchestration != null && !orchestration.shouldRunDailyTask(task.getConfigKeyName())) {
+        if (!forced && orchestration != null && !orchestration.shouldRunDailyTask(task.getConfigKeyName())) {
             return;
         }
 
