@@ -151,9 +151,15 @@ public class Timers implements Startable, Stoppable {
      * Used to monitor a resource for changes
      */
     private static class WatchedResource {
-        private File file;
+        private final File file;
         private long lastModified;
-        private Runnable callback;
+        private final Runnable callback;
+
+        private WatchedResource(File file, Runnable callback) {
+            this.file = file;
+            this.lastModified = file.lastModified();
+            this.callback = callback;
+        }
     }
 
     /**
@@ -295,12 +301,7 @@ public class Timers implements Startable, Stoppable {
     @Explain("Resources are only collected once at startup, so there is no performance hotspot")
     public void addWatchedResource(@Nonnull URL url, @Nonnull Runnable callback) {
         try {
-            WatchedResource resource = new WatchedResource();
-            File file = new File(url.toURI());
-            resource.file = file;
-            resource.callback = callback;
-            resource.lastModified = file.lastModified();
-            loadedFiles.add(resource);
+            loadedFiles.add(new WatchedResource(new File(url.toURI()), callback));
         } catch (IllegalArgumentException | URISyntaxException exception) {
             Exceptions.ignore(exception);
             Exceptions.handle()
