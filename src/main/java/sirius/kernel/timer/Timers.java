@@ -141,8 +141,8 @@ public class Timers implements Startable, Stoppable {
                     runOneHourTimers();
                     runEveryDayTimers(timeProvider.localTimeNow().getHour());
                 }
-            } catch (Exception t) {
-                Exceptions.handle(LOG, t);
+            } catch (Exception exception) {
+                Exceptions.handle(LOG, exception);
             }
         }
     }
@@ -151,13 +151,19 @@ public class Timers implements Startable, Stoppable {
      * Used to monitor a resource for changes
      */
     private static class WatchedResource {
-        private File file;
+        private final File file;
         private long lastModified;
-        private Runnable callback;
+        private final Runnable callback;
+
+        private WatchedResource(File file, Runnable callback) {
+            this.file = file;
+            this.lastModified = file.lastModified();
+            this.callback = callback;
+        }
     }
 
     /**
-     * Returns the timestamp of the last execution of the 10 second timer.
+     * Returns the timestamp of the last execution of the 10-second timer.
      *
      * @return a textual representation of the last execution of the ten seconds timer. Returns "-" if the timer didn't
      * run yet.
@@ -170,9 +176,9 @@ public class Timers implements Startable, Stoppable {
     }
 
     /**
-     * Returns the timestamp of the last execution of the one minute timer.
+     * Returns the timestamp of the last execution of the one-minute timer.
      *
-     * @return a textual representation of the last execution of the one minute timer. Returns "-" if the timer didn't
+     * @return a textual representation of the last execution of the one-minute timer. Returns "-" if the timer didn't
      * run yet.
      */
     public String getLastOneMinuteExecution() {
@@ -196,9 +202,9 @@ public class Timers implements Startable, Stoppable {
     }
 
     /**
-     * Returns the timestamp of the last execution of the one hour timer.
+     * Returns the timestamp of the last execution of the one-hour timer.
      *
-     * @return a textual representation of the last execution of the one hour timer. Returns "-" if the timer didn't
+     * @return a textual representation of the last execution of the one-hour timer. Returns "-" if the timer didn't
      * run yet.
      */
     public String getLastHourExecution() {
@@ -218,54 +224,6 @@ public class Timers implements Startable, Stoppable {
         }
     }
 
-    private void startResourceWatcher() {
-        if (reloadTimer == null) {
-            reloadTimer = new Timer(true);
-            reloadTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    watchLoadedResources();
-                }
-            }, RELOAD_INTERVAL, RELOAD_INTERVAL);
-        }
-    }
-
-    private void watchLoadedResources() {
-        Thread.currentThread().setName("Resource-Watch");
-        for (WatchedResource res : loadedFiles) {
-            long lastModified = res.file.lastModified();
-            if (lastModified > res.lastModified) {
-                res.lastModified = res.file.lastModified();
-                LOG.INFO("Reloading: %s", res.file.toString());
-                try {
-                    res.callback.run();
-                } catch (Exception exception) {
-                    Exceptions.handle()
-                              .withSystemErrorMessage("Error reloading %s: %s (%s)", res.file.toString())
-                              .error(exception)
-                              .handle();
-                }
-            }
-        }
-    }
-
-    private void startTimer() {
-        try {
-            timerLock.lock();
-            try {
-                if (timer != null) {
-                    timer.cancel();
-                }
-                timer = new Timer(true);
-                timer.schedule(new InnerTimerTask(), TEN_SECONDS_IN_MILLIS, TEN_SECONDS_IN_MILLIS);
-            } finally {
-                timerLock.unlock();
-            }
-        } catch (Exception t) {
-            Exceptions.handle(LOG, t);
-        }
-    }
-
     @Override
     public void stopped() {
         try {
@@ -277,8 +235,8 @@ public class Timers implements Startable, Stoppable {
             } finally {
                 timerLock.unlock();
             }
-        } catch (Exception t) {
-            Exceptions.handle(LOG, t);
+        } catch (Exception exception) {
+            Exceptions.handle(LOG, exception);
         }
     }
 
@@ -295,12 +253,7 @@ public class Timers implements Startable, Stoppable {
     @Explain("Resources are only collected once at startup, so there is no performance hotspot")
     public void addWatchedResource(@Nonnull URL url, @Nonnull Runnable callback) {
         try {
-            WatchedResource res = new WatchedResource();
-            File file = new File(url.toURI());
-            res.file = file;
-            res.callback = callback;
-            res.lastModified = file.lastModified();
-            loadedFiles.add(res);
+            loadedFiles.add(new WatchedResource(new File(url.toURI()), callback));
         } catch (IllegalArgumentException | URISyntaxException exception) {
             Exceptions.ignore(exception);
             Exceptions.handle()
@@ -330,29 +283,6 @@ public class Timers implements Startable, Stoppable {
         lastOneMinuteExecution = timeProvider.currentTimeMillis();
     }
 
-    private void executeTask(final TimedTask task) {
-        tasks.executor(TIMER)
-             .dropOnOverload(() -> Exceptions.handle()
-                                             .to(LOG)
-                                             .withSystemErrorMessage(
-                                                     "Dropping timer task '%s' (%s) due to system overload!",
-                                                     task,
-                                                     task.getClass())
-                                             .handle())
-             .start(() -> {
-                 try {
-                     Watch w = Watch.start();
-                     task.runTimer();
-                     if (w.elapsed(TimeUnit.SECONDS, false) > 1) {
-                         LOG.WARN("TimedTask '%s' (%s) took over a second to complete! "
-                                  + "Consider executing the work in a separate executor!", task, task.getClass());
-                     }
-                 } catch (Exception t) {
-                     Exceptions.handle(LOG, t);
-                 }
-             });
-    }
-
     /**
      * Executes all ten minutes timers (implementing <tt>EveryTenMinutes</tt>) now (out of schedule).
      */
@@ -380,8 +310,20 @@ public class Timers implements Startable, Stoppable {
      *                    out-of-schedule eecution, this can be set to any value.
      */
     public void runEveryDayTimers(int currentHour) {
+        runEveryDayTimers(currentHour, false);
+    }
+
+    /**
+     * Executes all daily timers (implementing <tt>EveryDay</tt>) if applicable, or if outOfASchedule is <tt>true</tt>.
+     *
+     * @param currentHour determines the current hour. Most probably this will be wall-clock time. However, for
+     *                    out-of-schedule eecution, this can be set to any value.
+     * @param forced      if <b>true</b>, the task will be executed even if it is not scheduled according to
+     *                    {@link Orchestration#shouldRunDailyTask(String)}
+     */
+    public void runEveryDayTimers(int currentHour, boolean forced) {
         for (final EveryDay task : getDailyTasks()) {
-            runDailyTimer(currentHour, task);
+            runDailyTimer(currentHour, task, forced);
         }
     }
 
@@ -392,26 +334,6 @@ public class Timers implements Startable, Stoppable {
      */
     public Collection<EveryDay> getDailyTasks() {
         return Collections.unmodifiableCollection(everyDay.getParts());
-    }
-
-    private void runDailyTimer(int currentHour, EveryDay task) {
-        Optional<Integer> executionHour = getExecutionHour(task);
-        if (executionHour.isEmpty()) {
-            LOG.WARN("Skipping daily timer %s as config key '%s' is missing!",
-                     task.getClass().getName(),
-                     TIMER_DAILY_PREFIX + task.getConfigKeyName());
-            return;
-        }
-
-        if (executionHour.get() != currentHour) {
-            return;
-        }
-
-        if (orchestration != null && !orchestration.shouldRunDailyTask(task.getConfigKeyName())) {
-            return;
-        }
-
-        executeTask(task);
     }
 
     /**
@@ -427,5 +349,96 @@ public class Timers implements Startable, Stoppable {
         }
 
         return Optional.of(Sirius.getSettings().getInt(configPath));
+    }
+
+    private void startResourceWatcher() {
+        if (reloadTimer == null) {
+            reloadTimer = new Timer(true);
+            reloadTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    watchLoadedResources();
+                }
+            }, RELOAD_INTERVAL, RELOAD_INTERVAL);
+        }
+    }
+
+    private void watchLoadedResources() {
+        Thread.currentThread().setName("Resource-Watch");
+        loadedFiles.forEach(resource -> {
+            long lastModified = resource.file.lastModified();
+            if (lastModified > resource.lastModified) {
+                resource.lastModified = resource.file.lastModified();
+                LOG.INFO("Reloading: %s", resource.file.toString());
+                try {
+                    resource.callback.run();
+                } catch (Exception exception) {
+                    Exceptions.handle()
+                              .withSystemErrorMessage("Error reloading %s: %s (%s)", resource.file.toString())
+                              .error(exception)
+                              .handle();
+                }
+            }
+        });
+    }
+
+    private void startTimer() {
+        try {
+            timerLock.lock();
+            try {
+                if (timer != null) {
+                    timer.cancel();
+                }
+                timer = new Timer(true);
+                timer.schedule(new InnerTimerTask(), TEN_SECONDS_IN_MILLIS, TEN_SECONDS_IN_MILLIS);
+            } finally {
+                timerLock.unlock();
+            }
+        } catch (Exception exception) {
+            Exceptions.handle(LOG, exception);
+        }
+    }
+
+    private void executeTask(final TimedTask task) {
+        tasks.executor(TIMER)
+             .dropOnOverload(() -> Exceptions.handle()
+                                             .to(LOG)
+                                             .withSystemErrorMessage(
+                                                     "Dropping timer task '%s' (%s) due to system overload!",
+                                                     task,
+                                                     task.getClass())
+                                             .handle())
+             .start(() -> {
+                 try {
+                     Watch watch = Watch.start();
+                     task.runTimer();
+                     if (watch.elapsed(TimeUnit.SECONDS, false) > 1) {
+                         LOG.WARN("TimedTask '%s' (%s) took over a second to complete! "
+                                  + "Consider executing the work in a separate executor!", task, task.getClass());
+                     }
+                 } catch (Exception exception) {
+                     Exceptions.handle(LOG, exception);
+                 }
+             });
+    }
+
+    private void runDailyTimer(int currentHour, EveryDay task, boolean forced) {
+        Optional<Integer> executionHour = getExecutionHour(task);
+        if (executionHour.isEmpty()) {
+            LOG.WARN("Skipping daily timer %s as config key '%s' is missing!",
+                     task.getClass().getName(),
+                     TIMER_DAILY_PREFIX + task.getConfigKeyName());
+            return;
+        }
+
+        if (executionHour.get() != currentHour) {
+            return;
+        }
+
+        if (!forced && orchestration != null && !orchestration.shouldRunDailyTask(task.getConfigKeyName())) {
+            return;
+        }
+
+        executeTask(task);
     }
 }
