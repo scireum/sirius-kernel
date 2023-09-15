@@ -66,7 +66,7 @@ public class Files {
      *
      * @param path the path to parse
      * @return the file extension (<tt>txt</tt> for <tt>test.txt</tt>) without the leading dot. Returns <tt>null</tt> if
-     * the input is empty or does not contain a file extension. The a file contains several extensions, like
+     * the input is empty or does not contain a file extension. If a file contains several extensions, like
      * <tt>.txt.zip</tt>, only the last is returned.
      */
     @Nullable
