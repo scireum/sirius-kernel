@@ -11,6 +11,7 @@ package sirius.kernel.commons;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,6 +62,10 @@ public class Json {
                               .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
                               .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                               .registerModule(new JavaTimeModule());
+
+    static {
+        MAPPER.getFactory().setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(25_000_000).build());
+    }
 
     private Json() {
     }
