@@ -393,6 +393,19 @@ public class Strings {
     }
 
     /**
+     * Counts the number of newlines in the given string.
+     *
+     * @param string the string to count the newlines in
+     * @return the number of newlines in the given string
+     */
+    public static long countNewlines(@Nullable Object string) {
+        if (isEmpty(string)) {
+            return 0;
+        }
+        return string.toString().chars().filter(character -> character == '\n').count();
+    }
+
+    /**
      * Returns a string representation of the given map.
      * <p>
      * Keys and values are separated by a colon (:) and entries by a new line.
