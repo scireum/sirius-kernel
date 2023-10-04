@@ -31,8 +31,8 @@ public class Dates {
      * @param dateTimes the date-time objects to compare
      * @return the latest date-time object or <tt>null</tt> if no date is given
      */
-    public static LocalDateTime computeLatestDateTimes(LocalDateTime... dateTimes) {
-        return Dates.computeLatestDateTimes(Arrays.asList(dateTimes));
+    public static LocalDateTime computeLatestDateTime(LocalDateTime... dateTimes) {
+        return Dates.computeLatestDateTime(Arrays.asList(dateTimes));
     }
 
     /**
@@ -41,7 +41,7 @@ public class Dates {
      * @param dateTimes a list of date-time objects to compare
      * @return the latest date-time object or <tt>null</tt> if no date is given
      */
-    public static LocalDateTime computeLatestDateTimes(List<LocalDateTime> dateTimes) {
+    public static LocalDateTime computeLatestDateTime(List<LocalDateTime> dateTimes) {
         return dateTimes.stream()
                         .filter(Objects::nonNull)
                         .max(LocalDateTime::compareTo)
