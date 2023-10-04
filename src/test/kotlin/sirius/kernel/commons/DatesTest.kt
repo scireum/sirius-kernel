@@ -33,4 +33,22 @@ class DatesTest {
         assertEquals(now, Dates.computeLatestDate(null, theDayBeforeYesterday, now, yesterday))
         assertEquals(null, null)
     }
+
+    @Test
+    fun computeEarliestDateTime() {
+        val theDayBeforeYesterday = LocalDateTime.now().minusDays(2)
+        val yesterday = LocalDateTime.now().minusDays(1)
+        val now = LocalDateTime.now()
+        assertEquals(theDayBeforeYesterday, Dates.computeEarliestDate(null, theDayBeforeYesterday, now, yesterday))
+        assertEquals(null, null)
+    }
+
+    @Test
+    fun computeEarliestDate() {
+        val theDayBeforeYesterday = LocalDate.now().minusDays(2)
+        val yesterday = LocalDate.now().minusDays(1)
+        val now = LocalDate.now()
+        assertEquals(theDayBeforeYesterday, Dates.computeEarliestDate(null, theDayBeforeYesterday, now, yesterday))
+        assertEquals(null, null)
+    }
 }

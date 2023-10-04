@@ -49,4 +49,30 @@ public class Dates {
                      .max(LocalDate::compareTo)
                      .orElse(null);
     }
+
+    /**
+     * Computes the earliest date-time of the given date-time objects.
+     *
+     * @param dateTimes the date-time objects to compare
+     * @return the earliest date-time object or <tt>null</tt> if no date is given
+     */
+    public static LocalDateTime computeEarliestDate(LocalDateTime... dateTimes) {
+        return Arrays.stream(dateTimes)
+                     .filter(Objects::nonNull)
+                     .min(LocalDateTime::compareTo)
+                     .orElse(null);
+    }
+
+    /**
+     * Computes the earliest date of the given date objects.
+     *
+     * @param dates the dates to compare
+     * @return the earliest date object or <tt>null</tt> if no date is given
+     */
+    public static LocalDate computeEarliestDate(LocalDate... dates) {
+        return Arrays.stream(dates)
+                     .filter(Objects::nonNull)
+                     .min(LocalDate::compareTo)
+                     .orElse(null);
+    }
 }
