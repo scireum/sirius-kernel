@@ -22,7 +22,7 @@ class DatesTest {
         val yesterday = LocalDateTime.now().minusDays(1)
         val now = LocalDateTime.now()
         assertEquals(now, Dates.computeLatestDateTime(null, theDayBeforeYesterday, now, yesterday))
-        assertEquals(null, null)
+        assertEquals(null, Dates.computeLatestDateTime(null, null, null))
     }
 
     @Test
@@ -31,7 +31,7 @@ class DatesTest {
         val yesterday = LocalDate.now().minusDays(1)
         val now = LocalDate.now()
         assertEquals(now, Dates.computeLatestDate(null, theDayBeforeYesterday, now, yesterday))
-        assertEquals(null, null)
+        assertEquals(null, Dates.computeLatestDate(null, null, null))
     }
 
     @Test
@@ -40,7 +40,7 @@ class DatesTest {
         val yesterday = LocalDateTime.now().minusDays(1)
         val now = LocalDateTime.now()
         assertEquals(theDayBeforeYesterday, Dates.computeEarliestDateTime(null, theDayBeforeYesterday, now, yesterday))
-        assertEquals(null, null)
+        assertEquals(null, Dates.computeEarliestDateTime(null, null, null))
     }
 
     @Test
@@ -49,6 +49,6 @@ class DatesTest {
         val yesterday = LocalDate.now().minusDays(1)
         val now = LocalDate.now()
         assertEquals(theDayBeforeYesterday, Dates.computeEarliestDate(null, theDayBeforeYesterday, now, yesterday))
-        assertEquals(null, null)
+        assertEquals(null, Dates.computeEarliestDate(null, null, null))
     }
 }
