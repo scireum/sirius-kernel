@@ -103,6 +103,12 @@ public class Dates {
         return computeEarliestDate(Arrays.asList(dates));
     }
 
+    /**
+     * Computes the earliest date of the given date objects.
+     *
+     * @param dates a list of date objects to compare
+     * @return the earliest date object or <tt>null</tt> if no date is given
+     */
     public static LocalDate computeEarliestDate(List<LocalDate> dates) {
         return dates.stream()
                     .filter(Objects::nonNull)
