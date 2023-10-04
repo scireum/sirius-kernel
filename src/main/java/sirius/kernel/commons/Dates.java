@@ -11,6 +11,7 @@ package sirius.kernel.commons;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -30,11 +31,21 @@ public class Dates {
      * @param dateTimes the date-time objects to compare
      * @return the latest date-time object or <tt>null</tt> if no date is given
      */
-    public static LocalDateTime computeLatestDate(LocalDateTime... dateTimes) {
-        return Arrays.stream(dateTimes)
-                     .filter(Objects::nonNull)
-                     .max(LocalDateTime::compareTo)
-                     .orElse(null);
+    public static LocalDateTime computeLatestDateTimes(LocalDateTime... dateTimes) {
+        return Dates.computeLatestDateTimes(Arrays.asList(dateTimes));
+    }
+
+    /**
+     * Computes the latest date-time of the given date-time objects.
+     *
+     * @param dateTimes a list of date-time objects to compare
+     * @return the latest date-time object or <tt>null</tt> if no date is given
+     */
+    public static LocalDateTime computeLatestDateTimes(List<LocalDateTime> dateTimes) {
+        return dateTimes.stream()
+                        .filter(Objects::nonNull)
+                        .max(LocalDateTime::compareTo)
+                        .orElse(null);
     }
 
     /**
@@ -44,10 +55,19 @@ public class Dates {
      * @return the latest date object or <tt>null</tt> if no date is given
      */
     public static LocalDate computeLatestDate(LocalDate... dates) {
-        return Arrays.stream(dates)
-                     .filter(Objects::nonNull)
-                     .max(LocalDate::compareTo)
-                     .orElse(null);
+        return computeLatestDate(Arrays.asList(dates));
+    }
+
+    /**
+     * Computes the latest date of the given date objects.
+     * @param dates a list of date objects to compare
+     * @return the latest date object or <tt>null</tt> if no date is given
+     */
+    public static LocalDate computeLatestDate(List<LocalDate> dates) {
+        return dates.stream()
+                    .filter(Objects::nonNull)
+                    .max(LocalDate::compareTo)
+                    .orElse(null);
     }
 
     /**
@@ -56,11 +76,21 @@ public class Dates {
      * @param dateTimes the date-time objects to compare
      * @return the earliest date-time object or <tt>null</tt> if no date is given
      */
-    public static LocalDateTime computeEarliestDate(LocalDateTime... dateTimes) {
-        return Arrays.stream(dateTimes)
-                     .filter(Objects::nonNull)
-                     .min(LocalDateTime::compareTo)
-                     .orElse(null);
+    public static LocalDateTime computeEarliestDateTime(LocalDateTime... dateTimes) {
+        return computeEarliestDateTime(Arrays.asList(dateTimes));
+    }
+
+    /**
+     * Computes the earliest date-time of the given date-time objects.
+     *
+     * @param dateTimes a list of date-time objects to compare
+     * @return the earliest date-time object or <tt>null</tt> if no date is given
+     */
+    public static LocalDateTime computeEarliestDateTime(List<LocalDateTime> dateTimes) {
+        return dateTimes.stream()
+                        .filter(Objects::nonNull)
+                        .min(LocalDateTime::compareTo)
+                        .orElse(null);
     }
 
     /**
@@ -70,9 +100,13 @@ public class Dates {
      * @return the earliest date object or <tt>null</tt> if no date is given
      */
     public static LocalDate computeEarliestDate(LocalDate... dates) {
-        return Arrays.stream(dates)
-                     .filter(Objects::nonNull)
-                     .min(LocalDate::compareTo)
-                     .orElse(null);
+        return computeEarliestDate(Arrays.asList(dates));
+    }
+
+    public static LocalDate computeEarliestDate(List<LocalDate> dates) {
+        return dates.stream()
+                    .filter(Objects::nonNull)
+                    .min(LocalDate::compareTo)
+                    .orElse(null);
     }
 }
