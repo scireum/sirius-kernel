@@ -17,7 +17,7 @@ import kotlin.test.assertTrue
 
 @NightlyTest
 @ExtendWith(SiriusExtension::class)
-class BackgroundLoopSpec {
+class BackgroundLoopTest {
     @Test
     fun `BackgroundLoop limits to max frequency`() {
         val currentCounter = FastTestLoop.counter.toInt()
