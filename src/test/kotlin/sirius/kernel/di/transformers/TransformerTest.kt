@@ -8,8 +8,6 @@
 
 package sirius.kernel.di.transformers
 
-import sirius.kernel.BaseSpecification
-
 class TransformersSpec extends BaseSpecification {
 
     def "Transforming two classes regularly"() {
@@ -17,7 +15,7 @@ class TransformersSpec extends BaseSpecification {
         def parent = new ParentClass()
         expect:
         parent.tryAs(TargetClass.class).isPresent()
-        parent.as(TargetClass.class) instanceof TargetClass
+                parent.as(TargetClass.class) instanceof TargetClass
     }
 
     def "Transforming first child class"() {
@@ -25,7 +23,7 @@ class TransformersSpec extends BaseSpecification {
         def firstChild = new FirstChildClass()
         expect:
         firstChild.tryAs(TargetClass.class).isPresent()
-        firstChild.as(TargetClass.class) instanceof TargetClass
+                firstChild.as(TargetClass.class) instanceof TargetClass
     }
 
     def "Transforming second child class"() {
@@ -33,6 +31,6 @@ class TransformersSpec extends BaseSpecification {
         def secondChild = new SecondChildClass()
         expect:
         secondChild.tryAs(TargetClass.class).isPresent()
-        secondChild.as(TargetClass.class) instanceof TargetClass
+                secondChild.as(TargetClass.class) instanceof TargetClass
     }
 }
