@@ -8,18 +8,12 @@
 
 package sirius.kernel.async
 
-import sirius.kernel.BaseSpecification
-import sirius.kernel.commons.ValueHolder
-import sirius.kernel.di.std.Part
-
-import java.time.Duration
-
-class TasksSpec extends BaseSpecification {
+class TasksTest extends BaseSpecification {
 
     @Part
     public static Tasks tasks
 
-    static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10)
+            static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10)
 
     def "An executor executes work in the calling thread when full"() {
         given: "a future the synchronize the threads"
