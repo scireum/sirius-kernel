@@ -8,34 +8,63 @@
 
 package sirius.kernel.di.transformers
 
-class AutotransformerSpec extends BaseSpecification {
+import org.junit.jupiter.api.Assertions.assertInstanceOf
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
+import kotlin.test.assertTrue
 
-    def "Autotransforming into a subclass of TargetClassAutotransform works directly"() {
-        given:
-        def parent = new ParentClass()
-        expect:
-        parent.tryAs(TargetClassAutotransformChild.class).isPresent()
-                parent.as(TargetClassAutotransformChild.class) instanceof TargetClassAutotransformChild
+@ExtendWith(SiriusExtension::class)
+class AutotransformerSpec {
+
+    @Test
+    fun `Autotransforming into a subclass of TargetClassAutotransform works directly`() {
+        val parent = ParentClass()
+        assertTrue {
+            parent.tryAs(TargetClassAutotransformChild::class.java).isPresent
+        }
+        assertInstanceOf(
+                TargetClassAutotransformChild::class.java,
+                parent.`as`(TargetClassAutotransformChild::class.java)
+        )
     }
 
-    def "Autotransforming into a subclass of TargetClassAutotransform must not instantiate twice"() {
-        given:
-        def parent = new ParentClass()
-        expect:
-        parent.tryAs(TargetClassAutotransformChild.class).isPresent()
-                parent.as(TargetClassAutotransformChild.class) instanceof TargetClassAutotransformChild
-                parent.tryAs(TargetClassAutotransform.class).isPresent()
-                        parent.as(TargetClassAutotransform.class) instanceof TargetClassAutotransform
+    @Test
+    fun `Autotransforming into a subclass of TargetClassAutotransform must not instantiate twice`() {
+        val parent = ParentClass()
+        assertTrue {
+            parent.tryAs(TargetClassAutotransformChild::class.java).isPresent
+        }
+        assertInstanceOf(
+                TargetClassAutotransformChild::class.java,
+                parent.`as`(TargetClassAutotransformChild::class.java)
+        )
+        assertTrue {
+            parent.tryAs(TargetClassAutotransform::class.java).isPresent
+        }
+        assertInstanceOf(
+                TargetClassAutotransform::class.java,
+                parent.`as`(TargetClassAutotransform::class.java)
+        )
     }
 
-    def "Autotransforming mixture of targets and target"() {
-        given:
-        def parent = new ParentClass()
-        expect:
-        parent.tryAs(TargetClassAutotransformChildWeird.class).isPresent()
-                parent.as(TargetClassAutotransformChildWeird.class) instanceof TargetClassAutotransformChildWeird
-                parent.tryAs(TargetClassAutotransform.class).isPresent()
-                        parent.as(TargetClassAutotransform.class) instanceof TargetClassAutotransform
+    @Test
+    fun `Autotransforming mixture of targets and target`() {
+        val parent = ParentClass()
+        assertTrue {
+            parent.tryAs(TargetClassAutotransformChildWeird::class.java).isPresent
+        }
+        assertInstanceOf(
+                TargetClassAutotransformChildWeird::class.java,
+                parent.`as`(TargetClassAutotransformChildWeird::class.java)
+        )
+        assertTrue {
+            parent.tryAs(TargetClassAutotransform::class.java).isPresent
+        }
+        assertInstanceOf(
+                TargetClassAutotransform::class.java,
+                parent.`as`(TargetClassAutotransform::class.java)
+        )
     }
 
 }
