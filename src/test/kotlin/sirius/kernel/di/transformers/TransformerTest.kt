@@ -8,29 +8,48 @@
 
 package sirius.kernel.di.transformers
 
-class TransformersSpec extends BaseSpecification {
+import org.junit.jupiter.api.Assertions.assertInstanceOf
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
+import kotlin.test.assertTrue
 
-    def "Transforming two classes regularly"() {
-        given:
-        def parent = new ParentClass()
-        expect:
-        parent.tryAs(TargetClass.class).isPresent()
-                parent.as(TargetClass.class) instanceof TargetClass
+@ExtendWith(SiriusExtension::class)
+class TransformersSpec {
+
+    @Test
+    fun `Transforming two classes regularly`() {
+        val parent = ParentClass()
+        assertTrue {
+            parent.tryAs(TargetClass::class.java).isPresent
+        }
+        assertInstanceOf(
+                TargetClass::class.java,
+                parent.`as`(TargetClass::class.java)
+        )
     }
 
-    def "Transforming first child class"() {
-        given:
-        def firstChild = new FirstChildClass()
-        expect:
-        firstChild.tryAs(TargetClass.class).isPresent()
-                firstChild.as(TargetClass.class) instanceof TargetClass
+    @Test
+    fun `Transforming first child class`() {
+        val firstChild = FirstChildClass()
+        assertTrue {
+            firstChild.tryAs(TargetClass::class.java).isPresent
+        }
+        assertInstanceOf(
+                TargetClass::class.java,
+                firstChild.`as`(TargetClass::class.java)
+        )
     }
 
-    def "Transforming second child class"() {
-        given:
-        def secondChild = new SecondChildClass()
-        expect:
-        secondChild.tryAs(TargetClass.class).isPresent()
-                secondChild.as(TargetClass.class) instanceof TargetClass
+    @Test
+    fun `Transforming second child class`() {
+        val secondChild = SecondChildClass()
+        assertTrue {
+            secondChild.tryAs(TargetClass::class.java).isPresent
+        }
+        assertInstanceOf(
+                TargetClass::class.java,
+                secondChild.`as`(TargetClass::class.java)
+        )
     }
 }
