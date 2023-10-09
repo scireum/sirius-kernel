@@ -115,4 +115,59 @@ public class Dates {
                     .min(LocalDate::compareTo)
                     .orElse(null);
     }
+
+    /**
+     * Checks if the given date-time is before the other date-time.
+     *
+     * @param dateTime the date-time to check
+     * @param otherDateTime the date-time to compare
+     * @return <tt>true</tt> if the given date-time is before the other date-time, <tt>false</tt> otherwise
+     */
+    public static boolean isBefore(LocalDateTime dateTime, LocalDateTime otherDateTime) {
+        if (dateTime == null || otherDateTime == null) {
+            return false;
+        }
+        return dateTime.isBefore(otherDateTime);
+    }
+
+    /**
+     * Checks if the given date is before the other date.
+     * @param date the date to check
+     * @param otherDate the date to compare
+     * @return <tt>true</tt> if the given date is before the other date, <tt>false</tt> otherwise
+     */
+    public static boolean isBefore(LocalDate date, LocalDate otherDate) {
+        if (date == null || otherDate == null) {
+            return false;
+        }
+        return date.isBefore(otherDate);
+    }
+
+    /**
+     * Checks if the given date-time is after the other date-time.
+     *
+     * @param dateTime the date-time to check
+     * @param otherDateTime the date-time to compare
+     * @return <tt>true</tt> if the given date-time is after the other date-time, <tt>false</tt> otherwise
+     */
+    public static boolean isAfter(LocalDateTime dateTime, LocalDateTime otherDateTime) {
+        if (dateTime == null || otherDateTime == null) {
+            return false;
+        }
+        return dateTime.isAfter(otherDateTime);
+    }
+
+    /**
+     * Checks if the given date is after the other date.
+     *
+     * @param date the date to check
+     * @param otherDate the date to compare
+     * @return <tt>true</tt> if the given date is after the other date, <tt>false</tt> otherwise
+     */
+    public static boolean isAfter(LocalDate date, LocalDate otherDate) {
+        if (date == null || otherDate == null) {
+            return false;
+        }
+        return date.isAfter(otherDate);
+    }
 }
