@@ -8,8 +8,6 @@
 
 package sirius.kernel.di.transformers
 
-import sirius.kernel.BaseSpecification
-
 class AutotransformerSpec extends BaseSpecification {
 
     def "Autotransforming into a subclass of TargetClassAutotransform works directly"() {
@@ -17,7 +15,7 @@ class AutotransformerSpec extends BaseSpecification {
         def parent = new ParentClass()
         expect:
         parent.tryAs(TargetClassAutotransformChild.class).isPresent()
-        parent.as(TargetClassAutotransformChild.class) instanceof TargetClassAutotransformChild
+                parent.as(TargetClassAutotransformChild.class) instanceof TargetClassAutotransformChild
     }
 
     def "Autotransforming into a subclass of TargetClassAutotransform must not instantiate twice"() {
@@ -25,9 +23,9 @@ class AutotransformerSpec extends BaseSpecification {
         def parent = new ParentClass()
         expect:
         parent.tryAs(TargetClassAutotransformChild.class).isPresent()
-        parent.as(TargetClassAutotransformChild.class) instanceof TargetClassAutotransformChild
-        parent.tryAs(TargetClassAutotransform.class).isPresent()
-        parent.as(TargetClassAutotransform.class) instanceof TargetClassAutotransform
+                parent.as(TargetClassAutotransformChild.class) instanceof TargetClassAutotransformChild
+                parent.tryAs(TargetClassAutotransform.class).isPresent()
+                        parent.as(TargetClassAutotransform.class) instanceof TargetClassAutotransform
     }
 
     def "Autotransforming mixture of targets and target"() {
@@ -35,9 +33,9 @@ class AutotransformerSpec extends BaseSpecification {
         def parent = new ParentClass()
         expect:
         parent.tryAs(TargetClassAutotransformChildWeird.class).isPresent()
-        parent.as(TargetClassAutotransformChildWeird.class) instanceof TargetClassAutotransformChildWeird
-        parent.tryAs(TargetClassAutotransform.class).isPresent()
-        parent.as(TargetClassAutotransform.class) instanceof TargetClassAutotransform
+                parent.as(TargetClassAutotransformChildWeird.class) instanceof TargetClassAutotransformChildWeird
+                parent.tryAs(TargetClassAutotransform.class).isPresent()
+                        parent.as(TargetClassAutotransform.class) instanceof TargetClassAutotransform
     }
 
 }
