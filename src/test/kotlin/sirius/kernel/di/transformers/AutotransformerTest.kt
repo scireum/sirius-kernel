@@ -14,8 +14,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import kotlin.test.assertTrue
 
+/**
+ * Tests the [AutoTransform] mechanism.
+ */
 @ExtendWith(SiriusExtension::class)
-class AutotransformerSpec {
+class AutotransformerTest {
 
     @Test
     fun `Autotransforming into a subclass of TargetClassAutotransform works directly`() {

@@ -14,8 +14,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import kotlin.test.assertTrue
 
+/**
+ * Tests the [Transformer] class.
+ */
 @ExtendWith(SiriusExtension::class)
-class TransformersSpec {
+class TransformerTest {
 
     @Test
     fun `Transforming two classes regularly`() {
