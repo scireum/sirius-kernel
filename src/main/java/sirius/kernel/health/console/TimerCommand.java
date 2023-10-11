@@ -16,70 +16,70 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.timer.Timers;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Console command which reports the last execution of the timer tasks.
  * <p>
- * It also permits to call an timer out of schedule
+ * It also permits to call a timer out of schedule.
  */
 @Register
 public class TimerCommand implements Command {
 
     private static final String LINE_FORMAT = "%20s %-30s";
 
-    private static final Set<String> ACCEPTED_PARAMS = Set.of("all", "oneMinute", "tenMinutes", "oneHour", "everyDay");
+    // matching is intentionally case-insensitive, and we compare lower-case values
+    private static final Set<String> ACCEPTED_PARAMS =
+            Stream.of("all", "oneMinute", "tenMinutes", "oneHour", "everyDay")
+                  .map(String::toLowerCase)
+                  .collect(Collectors.toSet());
 
-    private static final String USAGE = "Usage: timer all|oneMinute|tenMinutes|oneHour|everyDay <hour>";
+    private static final String FORCE_PARAM_LONG = "--force";
+    private static final String FORCE_PARAM_SHORT = "-f";
+
+    private static final String USAGE = "Usage: timer [-f] all|oneMinute|tenMinutes|oneHour|everyDay <hour>";
 
     @Part
-    private Timers ts;
+    private Timers timers;
 
     @Override
-    public void execute(Output output, String... params) throws Exception {
-        if (params.length == 0) {
+    public void execute(Output output, String... parameters) throws Exception {
+        List<String> parameterList = new ArrayList<>(List.of(parameters));
+        boolean forced = extractForceParameter(parameterList);
+        String scope = extractScope(parameterList);
+
+        if (parameterList.isEmpty()) {
             output.line(USAGE);
-        } else if (!ACCEPTED_PARAMS.contains(params[0])) {
-            output.apply("'%s' is not an accepted parameter!", params[0]);
+        } else if (!ACCEPTED_PARAMS.contains(scope.toLowerCase())) {
+            output.apply("'%s' is not an accepted parameter!", scope);
             output.line(USAGE);
         } else {
-            if ("all".equalsIgnoreCase(params[0]) || "oneMinute".equalsIgnoreCase(params[0])) {
-                output.line("Executing one minute timers...");
-                ts.runOneMinuteTimers();
-            }
-            if ("all".equalsIgnoreCase(params[0]) || "tenMinutes".equalsIgnoreCase(params[0])) {
-                output.line("Executing ten minute timers...");
-                ts.runTenMinuteTimers();
-            }
-            if ("all".equalsIgnoreCase(params[0]) || "oneHour".equalsIgnoreCase(params[0])) {
-                output.line("Executing one hour timers...");
-                ts.runOneHourTimers();
-            }
-            if ("everyDay".equalsIgnoreCase(params[0])) {
-                int currentHour = Values.of(params).at(1).asInt(25);
-                output.line("Executing daily timers for hour: " + currentHour);
-                ts.runEveryDayTimers(currentHour);
-            }
+            executeCommand(scope, parameterList, forced, output);
         }
 
         output.blankLine();
         output.line("System Timers - Last Execution");
         output.separator();
-        output.apply(LINE_FORMAT, "One-Minute", ts.getLastOneMinuteExecution());
-        output.apply(LINE_FORMAT, "Ten-Minutes", ts.getLastTenMinutesExecution());
-        output.apply(LINE_FORMAT, "One-Hour", ts.getLastHourExecution());
+        output.apply(LINE_FORMAT, "One-Minute", timers.getLastOneMinuteExecution());
+        output.apply(LINE_FORMAT, "Ten-Minutes", timers.getLastTenMinutesExecution());
+        output.apply(LINE_FORMAT, "One-Hour", timers.getLastHourExecution());
         output.separator();
         output.blankLine();
         output.line("Daily Tasks");
         output.separator();
 
-        ts.getDailyTasks()
-          .stream()
-          .map(task -> Tuple.create(Sirius.getSettings().getInt(Timers.TIMER_DAILY_PREFIX + task.getConfigKeyName()),
-                                    task.getConfigKeyName()))
-          .sorted(Comparator.comparingInt(Tuple::getFirst))
-          .forEach(hourAndTask -> output.apply("%2sh: %s", hourAndTask.getFirst(), hourAndTask.getSecond()));
+        timers.getDailyTasks()
+              .stream()
+              .map(task -> Tuple.create(Sirius.getSettings()
+                                              .getInt(Timers.TIMER_DAILY_PREFIX + task.getConfigKeyName()),
+                                        task.getConfigKeyName()))
+              .sorted(Comparator.comparingInt(Tuple::getFirst))
+              .forEach(hourAndTask -> output.apply("%2sh: %s", hourAndTask.getFirst(), hourAndTask.getSecond()));
 
         output.separator();
     }
@@ -93,5 +93,50 @@ public class TimerCommand implements Command {
     @Override
     public String getDescription() {
         return "Reports the last timer runs and executes them out of schedule.";
+    }
+
+    private String extractScope(List<String> parameters) {
+        if (parameters.isEmpty()) {
+            return "";
+        }
+
+        String scope = parameters.get(0);
+        parameters.remove(0);
+        return scope;
+    }
+
+    private boolean extractForceParameter(List<String> parameters) {
+        if (parameters.contains(FORCE_PARAM_LONG)) {
+            parameters.remove(FORCE_PARAM_LONG);
+            return true;
+        }
+
+        if (parameters.contains(FORCE_PARAM_SHORT)) {
+            parameters.remove(FORCE_PARAM_SHORT);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void executeCommand(String scope, List<String> parameters, boolean forced, Output output) {
+        if ("all".equalsIgnoreCase(scope) || "oneMinute".equalsIgnoreCase(scope)) {
+            output.line("Executing one minute timers...");
+            timers.runOneMinuteTimers();
+        }
+        if ("all".equalsIgnoreCase(scope) || "tenMinutes".equalsIgnoreCase(scope)) {
+            output.line("Executing ten minute timers...");
+            timers.runTenMinuteTimers();
+        }
+        if ("all".equalsIgnoreCase(scope) || "oneHour".equalsIgnoreCase(scope)) {
+            output.line("Executing one hour timers...");
+            timers.runOneHourTimers();
+        }
+        if ("everyDay".equalsIgnoreCase(scope)) {
+            int currentHour = Values.of(parameters).at(0).asInt(25);
+            String forcedMessage = forced ? " (forced)" : "";
+            output.line("Executing daily timers for hour: " + currentHour + forcedMessage);
+            timers.runEveryDayTimers(currentHour, forced);
+        }
     }
 }

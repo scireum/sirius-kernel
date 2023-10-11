@@ -96,7 +96,7 @@ public class MultiMap<K, V> {
     /**
      * Adds the given value to the list of values kept for the given key.
      * <p>
-     * Note that the values for a given key don't from a <tt>Set</tt>. Therefore, adding the same value twice
+     * Note that the values for a given key don't form a <tt>Set</tt>. Therefore, adding the same value twice
      * for the same key, will result in having a value list containing the added element twice.
      *
      * @param key   the key for which the value is added to the map

@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
+/**
+ * Tests the [Files] class.
+ */
 internal class FilesTest {
 
     @Test

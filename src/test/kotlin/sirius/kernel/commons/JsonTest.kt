@@ -22,7 +22,9 @@ import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-
+/**
+ * Tests the [Json] class.
+ */
 class JsonTest {
 
     @Test
@@ -214,9 +216,39 @@ class JsonTest {
     }
 
     @Test
+    fun `tryGetArrayAtIndex works with arrays as POJO Nodes`() {
+        val node = Json.createArray().addPOJO(listOf(1, 2, 3)).add(123)
+
+        val presentArray: Optional<ArrayNode> = Json.tryGetArrayAtIndex(node, 0)
+        assertTrue(presentArray.isPresent)
+        assertEquals(3, presentArray.get().size())
+
+        val notAnArray: Optional<ArrayNode> = Json.tryGetArrayAtIndex(node, 1)
+        assertTrue(!notAnArray.isPresent)
+
+        val missingArray: Optional<ArrayNode> = Json.tryGetArrayAtIndex(node, 2)
+        assertTrue(!missingArray.isPresent)
+    }
+
+    @Test
     fun `tryGetArray works as expected`() {
         val json = """{ "foo": [1, 2, 3], "bar": 123 }"""
         val node = Json.parseObject(json)
+
+        val presentArray: Optional<ArrayNode> = Json.tryGetArray(node, "foo")
+        assertTrue(presentArray.isPresent)
+        assertEquals(3, presentArray.get().size())
+
+        val notAnArray: Optional<ArrayNode> = Json.tryGetArray(node, "bar")
+        assertTrue(!notAnArray.isPresent)
+
+        val missingArray: Optional<ArrayNode> = Json.tryGetArray(node, "baz")
+        assertTrue(!missingArray.isPresent)
+    }
+
+    @Test
+    fun `tryGetArray works with arrays as POJO Nodes`() {
+        val node = Json.createObject().putPOJO("foo", listOf(1, 2, 3)).put("bar", 123)
 
         val presentArray: Optional<ArrayNode> = Json.tryGetArray(node, "foo")
         assertTrue(presentArray.isPresent)
@@ -242,6 +274,22 @@ class JsonTest {
         assertTrue(!notAnArray.isPresent)
 
         val missingArray: Optional<ArrayNode> = Json.tryGetArrayAt(node, Json.createPointer("baz"))
+        assertTrue(!missingArray.isPresent)
+    }
+
+    @Test
+    fun `tryGetArrayAt works with arrays as POJO Nodes`() {
+        val node = Json.createObject()
+                .set<ObjectNode>("nested", Json.createObject().putPOJO("foo", listOf(1, 2, 3)).put("bar", 123))
+
+        val presentArray: Optional<ArrayNode> = Json.tryGetArrayAt(node, Json.createPointer("nested/foo"))
+        assertTrue(presentArray.isPresent)
+        assertEquals(3, presentArray.get().size())
+
+        val notAnArray: Optional<ArrayNode> = Json.tryGetArrayAt(node, Json.createPointer("nested/bar"))
+        assertTrue(!notAnArray.isPresent)
+
+        val missingArray: Optional<ArrayNode> = Json.tryGetArrayAt(node, Json.createPointer("nested/baz"))
         assertTrue(!missingArray.isPresent)
     }
 

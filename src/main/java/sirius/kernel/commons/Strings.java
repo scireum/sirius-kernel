@@ -575,10 +575,11 @@ public class Strings {
         return value;
     }
 
+    protected static final String REGEX_DETECT_XML = "</?[a-zA-Z][^>]*>";
     /**
      * Defines a pattern (regular expression) to detect XML tags.
      */
-    public static final Pattern PATTERN_DETECT_XML = Pattern.compile("</?[a-zA-Z][^>]*>");
+    public static final Pattern PATTERN_DETECT_XML = Pattern.compile(REGEX_DETECT_XML);
 
     /**
      * Determines if the given content contains XML tags.
@@ -592,6 +593,25 @@ public class Strings {
         }
 
         return PATTERN_DETECT_XML.matcher(content).find();
+    }
+
+    protected static final Pattern DETECT_ALLOWED_HTML_REGEX =
+            Pattern.compile("</?(" + String.join("|", StringCleanup.ALLOWED_HTML_TAG_NAMES) + ")\\b[^>]*>",
+                            Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Determines if the given content contains HTML tags that are {@linkplain #DETECT_ALLOWED_HTML_REGEX allowed} in
+     * the system.
+     *
+     * @param content the content to check
+     * @return <tt>true</tt> if allowed HTML tags were found, <tt>false</tt> otherwise
+     */
+    public static boolean containsAllowedHtml(@Nullable String content) {
+        if (Strings.isEmpty(content)) {
+            return false;
+        }
+
+        return DETECT_ALLOWED_HTML_REGEX.matcher(content).find();
     }
 
     /**
