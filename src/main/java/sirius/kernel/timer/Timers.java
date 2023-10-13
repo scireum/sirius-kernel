@@ -112,7 +112,7 @@ public class Timers implements Startable, Stoppable {
     private static final int RELOAD_INTERVAL = 1000;
 
     /**
-     * Determines the start and stop order of the timers lifecycle. Exposed as public so that
+     * Determines the start and stop order of the timer's lifecycle. Exposed as public so that
      * dependent lifecycles can determine their own priority based on this.
      */
     public static final int LIFECYCLE_PRIORITY = 1000;
@@ -307,7 +307,7 @@ public class Timers implements Startable, Stoppable {
      * Executes all daily timers (implementing <tt>EveryDay</tt>) if applicable, or if outOfASchedule is <tt>true</tt>.
      *
      * @param currentHour determines the current hour. Most probably this will be wall-clock time. However, for
-     *                    out-of-schedule eecution, this can be set to any value.
+     *                    out-of-schedule execution, this can be set to any value.
      */
     public void runEveryDayTimers(int currentHour) {
         runEveryDayTimers(currentHour, false);
