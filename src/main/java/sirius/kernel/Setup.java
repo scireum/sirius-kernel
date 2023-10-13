@@ -33,6 +33,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -343,9 +344,11 @@ public class Setup {
         // Load component configurations
         Sirius.getClasspath()
               .find(Pattern.compile("application-([^.]*?)\\.conf"))
-              .forEach(value -> result.set(loadConfig(value.group(),
-                                                      () -> ConfigFactory.parseResources(loader, value.group()),
-                                                      result.get())));
+              .map(Matcher::group)
+              .sorted()
+              .forEach(configPath -> result.set(loadConfig(configPath,
+                                                           () -> ConfigFactory.parseResources(loader, configPath),
+                                                           result.get())));
 
         if (Sirius.class.getResource("/application.conf") != null) {
             result.set(loadConfig("application.conf",
