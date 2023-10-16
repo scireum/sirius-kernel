@@ -31,6 +31,7 @@ import java.net.URLConnection;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -346,7 +347,7 @@ public class Sirius {
             // Load test configurations (will override component configs)
             classpath.find(Pattern.compile("component-test-([^.]*?)\\.conf"))
                      .map(Matcher::group)
-                     .sorted()
+                     .sorted(Comparator.reverseOrder())
                      .forEach(configPath -> {
                          try {
                              LOG.INFO("Loading test config: %s", configPath);
@@ -361,7 +362,7 @@ public class Sirius {
         classpath.find(Pattern.compile("component-([^\\-]*?)([^.]*?)\\.conf"))
                  .map(Matcher::group)
                  .filter(configPath -> !"test".equals(configPath))
-                 .sorted()
+                 .sorted(Comparator.reverseOrder())
                  .forEach(configPath -> {
                      try {
                          LOG.INFO("Loading config: %s", configPath);
