@@ -331,7 +331,7 @@ public class Outcall {
      * Sets the connect-timeout and read-timeout to the values specified in the config block http.outcall.timeouts.*
      * where * equals the configKey parameter.
      * <p>
-     * See the http.outcall.timeouts.soap block in component-kernel.conf for reference.
+     * See the http.outcall.timeouts.soap block in component-050-kernel.conf for reference.
      *
      * @param configKey the config key of the timeout configuration block
      * @return this for fluent method calls

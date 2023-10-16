@@ -26,12 +26,12 @@ import java.util.function.Supplier;
 /**
  * Tracks the execution of a blocking operation.
  * <p>
- * The operations framework is used to track blocking operations which might possibly hang. As a blocking operation
+ * The operations framework is used to track blocking operations which might hang. As a blocking operation
  * cannot be checked by the calling thread itself, the classical alternative would be to fork a thread which
  * monitors the operation. As this approach does not scale very well, the operations framework creates a
- * lighweight <tt>Operation</tt> object around a potentially blocking operation using a try-with-resources block.
+ * lightweight <tt>Operation</tt> object around a potentially blocking operation using a try-with-resources block.
  * <p>
- * A metrics provider will check for all operations and use its limits (set by <tt>component-kernel.conf</tt>,
+ * A metrics provider will check for all operations and use its limits (set by <tt>component-050-kernel.conf</tt>,
  * to warn if too many operations are active (or are probably hanging).
  * <p>
  * Other frameworks can provider further help: <tt>SIRIUS-WEB</tt> e.g. provides a list of all operations
