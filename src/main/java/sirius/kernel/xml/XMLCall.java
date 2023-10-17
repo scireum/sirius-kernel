@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.function.BooleanSupplier;
 
 /**
  * Simple call to send XML to a server (URL) and receive XML back.
@@ -29,6 +30,7 @@ public class XMLCall {
     private final Outcall outcall;
     private NamespaceContext namespaceContext;
     private Log debugLogger = Log.get("xml");
+    private BooleanSupplier isDebugLogActive = () -> true;
 
     /**
      * Creates a new XMLCall for the given URI and Content-Type.
@@ -110,6 +112,21 @@ public class XMLCall {
     }
 
     /**
+     * Logs the request and the resulting response to the given {@code logger} using the <tt>FINE</tt> level.
+     * <p>
+     * The default logger is "xml".
+     *
+     * @param logger           the logger to log to
+     * @param isDebugLogActive a supplier which returns true if the debug log is active
+     * @return the XML call itself for fluent method calls
+     */
+    public XMLCall withFineLogger(Log logger, BooleanSupplier isDebugLogActive) {
+        this.debugLogger = logger;
+        this.isDebugLogActive = isDebugLogActive;
+        return this;
+    }
+
+    /**
      * Adds a custom header field to the call
      *
      * @param name  name of the field
@@ -174,7 +191,7 @@ public class XMLCall {
     }
 
     private InputStream getInputStream() throws IOException {
-        if (debugLogger != null && debugLogger.isFINE()) {
+        if (debugLogger != null && debugLogger.isFINE() && isDebugLogActive.getAsBoolean()) {
             // log the request, even when parsing fails
             try (InputStream body = getResponseBody()) {
                 byte[] bytes = body.readAllBytes();
