@@ -244,7 +244,7 @@ public class SOAPClient {
      * @param isDebugLogActive the supplier to determine the active state
      * @return the client itself for fluent method calls
      */
-    public SOAPClient withIsDebuglogActive(BooleanSupplier isDebugLogActive) {
+    public SOAPClient withIsDebugLogActive(BooleanSupplier isDebugLogActive) {
         this.isDebugLogActive = isDebugLogActive;
         return this;
     }

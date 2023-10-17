@@ -13,6 +13,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.Formatter;
 
+import javax.annotation.Nonnull;
 import javax.xml.namespace.NamespaceContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -120,7 +121,7 @@ public class XMLCall {
      * @param isDebugLogActive a supplier which returns true if the debug log is active
      * @return the XML call itself for fluent method calls
      */
-    public XMLCall withFineLogger(Log logger, BooleanSupplier isDebugLogActive) {
+    public XMLCall withFineLogger(Log logger, @Nonnull BooleanSupplier isDebugLogActive) {
         this.debugLogger = logger;
         this.isDebugLogActive = isDebugLogActive;
         return this;
