@@ -576,7 +576,7 @@ public class Strings {
     }
 
     protected static final String REGEX_DETECT_XML_TAGS = "</?[a-zA-Z][^>]*>";
-    protected static final String REGEX_DETECT_ENTITIES = "&[a-zA-Z]+[0-9]{0,2};";
+    protected static final String REGEX_DETECT_ENTITIES = "&#?[a-zA-Z0-9]*;";
     /**
      * Defines a pattern (regular expression) to detect XML tags and entities.
      */
