@@ -181,7 +181,7 @@ public class StringCleanup {
                                                                       TAG_UL,
                                                                       TAG_LI);
 
-    private static final Pattern PATTERN_STRIP_XML = Pattern.compile("\\s*" + Strings.REGEX_DETECT_XML + "\\s*");
+    private static final Pattern PATTERN_STRIP_XML = Pattern.compile("\\s*" + Strings.REGEX_DETECT_XML_TAGS + "\\s*");
     private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
     static {
