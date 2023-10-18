@@ -575,17 +575,19 @@ public class Strings {
         return value;
     }
 
-    protected static final String REGEX_DETECT_XML = "</?[a-zA-Z][^>]*>";
+    protected static final String REGEX_DETECT_XML_TAGS = "</?[a-zA-Z][^>]*>";
+    protected static final String REGEX_DETECT_ENTITIES = "&[a-zA-Z]+[0-9]{0,2};";
     /**
-     * Defines a pattern (regular expression) to detect XML tags.
+     * Defines a pattern (regular expression) to detect XML tags and entities.
      */
-    public static final Pattern PATTERN_DETECT_XML = Pattern.compile(REGEX_DETECT_XML);
+    public static final Pattern PATTERN_DETECT_XML =
+            Pattern.compile(Strings.join("|", REGEX_DETECT_XML_TAGS, REGEX_DETECT_ENTITIES));
 
     /**
-     * Determines if the given content contains XML tags.
+     * Determines if the given content contains XML tags or entities.
      *
      * @param content the content to check
-     * @return <tt>true</tt> if XML tags were found, <tt>false</tt> otherwise
+     * @return <tt>true</tt> if XML tags or entities were found, <tt>false</tt> otherwise
      */
     public static boolean probablyContainsXml(@Nullable String content) {
         if (Strings.isEmpty(content)) {

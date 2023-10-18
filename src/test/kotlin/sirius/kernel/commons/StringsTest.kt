@@ -264,8 +264,11 @@ class StringsTest {
         assertTrue(Strings.probablyContainsXml("<br test=\"foo\">"))
         assertTrue(Strings.probablyContainsXml("</div>"))
         assertTrue(Strings.probablyContainsXml("<namespace:element>"))
+        assertTrue(Strings.probablyContainsXml("test&amp;test"))
+        assertTrue(Strings.probablyContainsXml("test&frac12;test"))
         assertFalse(Strings.probablyContainsXml("foo having < 3 m, with >= 3 m"))
         assertFalse(Strings.probablyContainsXml("foo having <3 m, with > 3 m"))
+        assertFalse(Strings.probablyContainsXml("test & amp ; test"))
     }
 
     @Test
