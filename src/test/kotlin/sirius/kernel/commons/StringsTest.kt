@@ -270,6 +270,7 @@ class StringsTest {
         assertFalse(Strings.probablyContainsXml("foo having < 3 m, with >= 3 m"))
         assertFalse(Strings.probablyContainsXml("foo having <3 m, with > 3 m"))
         assertFalse(Strings.probablyContainsXml("test & amp ; test"))
+        assertFalse(Strings.probablyContainsXml("test &; test"))
     }
 
     @Test
