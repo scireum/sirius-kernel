@@ -207,7 +207,7 @@ public class CallContext {
      */
     public static void setCurrent(CallContext context) {
         currentContext.set(context);
-        contextMap.put(Thread.currentThread().getId(), context);
+        contextMap.put(Thread.currentThread().threadId(), context);
     }
 
     /**
@@ -219,7 +219,7 @@ public class CallContext {
             context.detachContext();
         }
         currentContext.remove();
-        contextMap.remove(Thread.currentThread().getId());
+        contextMap.remove(Thread.currentThread().threadId());
     }
 
     /**

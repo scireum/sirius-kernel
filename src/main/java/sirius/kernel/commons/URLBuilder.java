@@ -218,7 +218,7 @@ public class URLBuilder {
      */
     public URL asURL() {
         try {
-            return new URL(url.toString());
+            return URI.create(url.toString()).toURL();
         } catch (MalformedURLException exception) {
             throw new IllegalStateException(Strings.apply("Could not create URL: %s", exception.getMessage()));
         }
