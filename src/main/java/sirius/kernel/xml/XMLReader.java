@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serial;
 import java.io.StringReader;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -199,7 +200,7 @@ public class XMLReader extends DefaultHandler {
 
     private InputSource tryResolveEntity(String systemId, Function<String, InputStream> resourceLocator)
             throws IOException {
-        URL url = new URL(systemId);
+        URL url = URI.create(systemId).toURL();
         if (!"file".equals(url.getProtocol())) {
             return emptyResource();
         }

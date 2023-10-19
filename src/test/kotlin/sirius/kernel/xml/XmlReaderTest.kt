@@ -60,12 +60,12 @@ internal class XmlReaderTest {
         val shouldToggle = ValueHolder.of(false)
         val shouldNotToggle = ValueHolder.of(false)
         val reader = XMLReader()
-        reader.addHandler("doc/test/value") { node: StructuredNode? ->
+        reader.addHandler("doc/test/value") { _: StructuredNode? ->
             shouldToggle.set(
                     true
             )
         }
-        reader.addHandler("value") { node: StructuredNode? -> shouldNotToggle.set(true) }
+        reader.addHandler("value") { _: StructuredNode? -> shouldNotToggle.set(true) }
 
         reader.parse(
                 ByteArrayInputStream(//language=xml

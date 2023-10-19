@@ -61,7 +61,7 @@ public class Exec {
         public void run() {
             try (InputStreamReader isr = new InputStreamReader(stream); BufferedReader br = new BufferedReader(isr)) {
                 Thread.currentThread()
-                      .setName(StreamEater.class.getSimpleName() + "-" + Thread.currentThread().getId());
+                      .setName(StreamEater.class.getSimpleName() + "-" + Thread.currentThread().threadId());
                 String line = br.readLine();
                 while (line != null) {
                     logger.append(line);

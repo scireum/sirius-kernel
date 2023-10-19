@@ -201,7 +201,7 @@ class ValueTest {
     @Test
     fun `map() does not call the mapper on an empty Value`() {
         var count = 0
-        val mapper: (value: Any) -> String = { value ->
+        val mapper: (value: Any) -> String = { _ ->
             count++
             ""
         }
@@ -212,7 +212,7 @@ class ValueTest {
     @Test
     fun `flatMap() does not call the mapper on an empty Value`() {
         var count = 0
-        val mapper: (value: Any) -> Optional<Value> = { value ->
+        val mapper: (value: Any) -> Optional<Value> = { _ ->
             count++
             Optional.empty()
         }
@@ -240,4 +240,3 @@ class ValueTest {
         assertEquals("x y", Value.of("x").tryAppend(" ", "y").asString())
     }
 }
-

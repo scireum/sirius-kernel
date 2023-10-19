@@ -59,7 +59,7 @@ public class ThreadsCommand implements Command {
                                   boolean includeWaiting,
                                   String threadName,
                                   Map.Entry<Thread, StackTraceElement[]> thread) {
-        ThreadInfo info = t.getThreadInfo(thread.getKey().getId());
+        ThreadInfo info = t.getThreadInfo(thread.getKey().threadId());
         if (!"all".equalsIgnoreCase(threadName) && !thread.getKey()
                                                           .getName()
                                                           .toLowerCase()
@@ -80,7 +80,7 @@ public class ThreadsCommand implements Command {
         }
         output.separator();
 
-        Optional<CallContext> cc = CallContext.getContext(thread.getKey().getId());
+        Optional<CallContext> cc = CallContext.getContext(thread.getKey().threadId());
         if (cc.isPresent()) {
             output.line("Mapped Diagnostic Context");
             output.separator();

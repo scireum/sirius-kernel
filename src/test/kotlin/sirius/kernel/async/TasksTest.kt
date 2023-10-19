@@ -36,14 +36,14 @@ class TasksTest {
         }
         // we start another task for the blocked executor
         val task2Future: Future = tasks.executor("test-limited").start {
-            executorThread.set(Thread.currentThread().id)
+            executorThread.set(Thread.currentThread().threadId())
             thread2Finished.success()
         }
         // we wait until all background tasks are done
         task1Future.await(DEFAULT_TIMEOUT)
         task2Future.await(DEFAULT_TIMEOUT)
         // we expect the second task to be executed in the calling thread
-        assertEquals(Thread.currentThread().id, executorThread.get())
+        assertEquals(Thread.currentThread().threadId(), executorThread.get())
     }
 
     @Test
@@ -85,12 +85,12 @@ class TasksTest {
         val task2Thread: ValueHolder<Long> = ValueHolder.of(null)
         // we start one tasks which blocks the executor
         tasks.executor("test-unlimited").start {
-            task1Thread.set(Thread.currentThread().id)
+            task1Thread.set(Thread.currentThread().threadId())
             thread2Started.await(DEFAULT_TIMEOUT)
         }
         // we start another task for the blocked executor
         tasks.executor("test-unlimited").start {
-            task2Thread.set(Thread.currentThread().id)
+            task2Thread.set(Thread.currentThread().threadId())
             thread2Finished.success()
         }
         thread2Started.success()
@@ -99,7 +99,7 @@ class TasksTest {
         // we expect both tasks to be executed in the same thread
         assertEquals(task1Thread.get(), task2Thread.get())
         // we expect both tasks not to be executed in the main thread
-        assertNotEquals(Thread.currentThread().id, task1Thread.get())
+        assertNotEquals(Thread.currentThread().threadId(), task1Thread.get())
     }
 
     @Test
@@ -111,12 +111,12 @@ class TasksTest {
         val task2Thread: ValueHolder<Long> = ValueHolder.of(null)
         // we start one tasks which blocks the executor
         tasks.executor("test-parallel").start {
-            task1Thread.set(Thread.currentThread().id)
+            task1Thread.set(Thread.currentThread().threadId())
             thread2Finished.await(DEFAULT_TIMEOUT)
         }
         // we start another task for the blocked executor
         tasks.executor("test-parallel").start {
-            task2Thread.set(Thread.currentThread().id)
+            task2Thread.set(Thread.currentThread().threadId())
             thread2Finished.success()
         }
         // we wait until all background tasks are done
@@ -124,7 +124,7 @@ class TasksTest {
         // we expect both tasks to be executed in different threads
         assertNotEquals(task1Thread.get(), task2Thread.get())
         // we expect both tasks not to be executed in the main thread
-        assertNotEquals(Thread.currentThread().id, task1Thread.get())
+        assertNotEquals(Thread.currentThread().threadId(), task1Thread.get())
     }
 
     companion object {

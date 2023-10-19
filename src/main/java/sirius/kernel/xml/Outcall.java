@@ -777,7 +777,7 @@ public class Outcall {
             Exceptions.ignore(exception);
             try {
                 // There are illegal chars in the redirect header url, try again with encoding the header
-                URL urlObject = new URL(location);
+                URL urlObject = URI.create(location).toURL();
                 return new URI(urlObject.getProtocol(),
                                urlObject.getUserInfo(),
                                urlObject.getHost(),
