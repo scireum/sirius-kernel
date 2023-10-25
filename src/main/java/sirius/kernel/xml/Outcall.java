@@ -116,7 +116,7 @@ public class Outcall {
     /**
      * If the {@link #timeoutBlacklist} contains more than the given number of entries, we remove all expired ones
      * manually. These might be hosts which are only connected sporadically and had a hiccup. Everything else will be
-     * kept clean in {@link #checkTimeoutBlacklist(URI)}.
+     * kept clean in {@link #checkTimeoutBlacklist()}.
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
 
@@ -133,7 +133,7 @@ public class Outcall {
 
     private HttpClient client;
     private HttpRequest request;
-    private final String blacklistId;
+    private String blacklistId;
     private final HttpClient.Builder clientBuilder;
     private final HttpRequest.Builder requestBuilder;
     private HttpResponse<InputStream> response;
@@ -179,24 +179,9 @@ public class Outcall {
      * Uses the uri's host as blacklist id.
      *
      * @param uri the url to call
-     * @throws IOException if the host is blacklisted
      */
-    public Outcall(URI uri) throws IOException {
-        this(uri, uri.getHost());
-    }
-
-    /**
-     * Creates a new <tt>Outcall</tt> to the given URL.
-     *
-     * @param uri         the url to call
-     * @param blacklistId the id for the blacklist
-     * @throws IOException if the host is blacklisted
-     */
-    public Outcall(URI uri, String blacklistId) throws IOException {
-        this.blacklistId = blacklistId;
-
-        checkTimeoutBlacklist(uri);
-
+    public Outcall(URI uri) {
+        this.blacklistId = uri.getHost();
         clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
         requestBuilder = HttpRequest.newBuilder(uri)
                                     .header(HEADER_USER_AGENT, buildDefaultUserAgent())
@@ -444,7 +429,7 @@ public class Outcall {
      * even though an error was received.
      *
      * @return the response, with the body as {@link InputStream}
-     * @throws IOException in case of any IO error
+     * @throws IOException in case of any IO error or blacklisting
      */
     public HttpResponse<InputStream> getResponse() throws IOException {
         connect();
@@ -452,6 +437,7 @@ public class Outcall {
     }
 
     private void connect() throws IOException {
+        checkTimeoutBlacklist();
         if (response != null) {
             return;
         }
@@ -511,7 +497,7 @@ public class Outcall {
         }
     }
 
-    private void checkTimeoutBlacklist(URI uri) throws IOException {
+    private void checkTimeoutBlacklist() throws IOException {
         if (connectTimeoutBlacklistDuration.isZero()) {
             return;
         }
@@ -521,7 +507,8 @@ public class Outcall {
             if (timeout > System.currentTimeMillis()) {
                 throw new IOException(Strings.apply(
                         "Connecting to host %s with blacklistid %s is currently rejected due to connectivity issues.",
-                        uri.getHost(), blacklistId));
+                        request.uri().getHost(),
+                        blacklistId));
             } else {
                 timeoutBlacklist.remove(blacklistId);
             }
@@ -822,5 +809,15 @@ public class Outcall {
 
     public static Duration getDefaultReadTimeout() {
         return defaultReadTimeout;
+    }
+
+    /**
+     * Sets a custom blacklist id.
+     * The default blacklist id is the host of the uri.
+     *
+     * @param blacklistId The custom blacklist id to set.
+     */
+    public void setBlacklistId(@Nonnull String blacklistId) {
+        this.blacklistId = blacklistId;
     }
 }
