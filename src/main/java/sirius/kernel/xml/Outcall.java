@@ -437,10 +437,11 @@ public class Outcall {
     }
 
     private void connect() throws IOException {
-        checkTimeoutBlacklist();
         if (response != null) {
             return;
         }
+
+        checkTimeoutBlacklist();
 
         if (oAuthAccessToken != null) {
             setRequestProperty(HEADER_AUTHORIZATION, oAuthAccessToken.get());
