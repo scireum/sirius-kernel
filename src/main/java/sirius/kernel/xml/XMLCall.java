@@ -46,6 +46,19 @@ public class XMLCall {
     }
 
     /**
+     * Creates a new XMLCall for the given URI and Content-Type.
+     *
+     * @param uri         the target URI to call
+     * @param blacklistId the id for the blacklist to use.
+     * @param contentType the value of the Content-Type property for requests
+     * @throws IOException in case the URI is blacklisted
+     */
+    protected XMLCall(URI uri, String blacklistId, String contentType) throws IOException {
+        this.outcall = new Outcall(uri, blacklistId);
+        this.outcall.setRequestProperty("Content-Type", contentType);
+    }
+
+    /**
      * Creates a new XMLCall for the given url with Content-Type 'text/xml'.
      *
      * @param url the target URL to call
