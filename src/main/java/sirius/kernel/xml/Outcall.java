@@ -133,6 +133,7 @@ public class Outcall {
 
     private HttpClient client;
     private HttpRequest request;
+    private final String blacklistId;
     private final HttpClient.Builder clientBuilder;
     private final HttpRequest.Builder requestBuilder;
     private HttpResponse<InputStream> response;
@@ -175,11 +176,25 @@ public class Outcall {
 
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
+     * Uses the uri's host as blacklist id.
      *
      * @param uri the url to call
      * @throws IOException if the host is blacklisted
      */
     public Outcall(URI uri) throws IOException {
+        this(uri, uri.getHost());
+    }
+
+    /**
+     * Creates a new <tt>Outcall</tt> to the given URL.
+     *
+     * @param uri         the url to call
+     * @param blacklistId the id for the blacklist
+     * @throws IOException if the host is blacklisted
+     */
+    public Outcall(URI uri, String blacklistId) throws IOException {
+        this.blacklistId = blacklistId;
+
         checkTimeoutBlacklist(uri);
 
         clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
@@ -501,14 +516,14 @@ public class Outcall {
             return;
         }
 
-        Long timeout = timeoutBlacklist.get(uri.getHost());
+        Long timeout = timeoutBlacklist.get(blacklistId);
         if (timeout != null) {
             if (timeout > System.currentTimeMillis()) {
                 throw new IOException(Strings.apply(
-                        "Connecting to host %s is currently rejected due to connectivity issues.",
-                        uri.getHost()));
+                        "Connecting to host %s with blacklistid %s is currently rejected due to connectivity issues.",
+                        uri.getHost(), blacklistId));
             } else {
-                timeoutBlacklist.remove(uri.getHost());
+                timeoutBlacklist.remove(blacklistId);
             }
         }
     }
@@ -519,12 +534,12 @@ public class Outcall {
         }
 
         long now = System.currentTimeMillis();
-        timeoutBlacklist.put(request.uri().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
+        timeoutBlacklist.put(blacklistId, now + connectTimeoutBlacklistDuration.toMillis());
         if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGH_WATERMARK) {
             // We collected a bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
-            timeoutBlacklist.forEach((host, timeout) -> {
+            timeoutBlacklist.forEach((id, timeout) -> {
                 if (timeout < now) {
-                    timeoutBlacklist.remove(host);
+                    timeoutBlacklist.remove(id);
                 }
             });
         }
