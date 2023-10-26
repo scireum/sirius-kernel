@@ -116,7 +116,7 @@ public class Outcall {
     /**
      * If the {@link #timeoutBlacklist} contains more than the given number of entries, we remove all expired ones
      * manually. These might be hosts which are only connected sporadically and had a hiccup. Everything else will be
-     * kept clean in {@link #checkTimeoutBlacklist(URI)}.
+     * kept clean in {@link #checkTimeoutBlacklist()}.
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
 
@@ -133,6 +133,7 @@ public class Outcall {
 
     private HttpClient client;
     private HttpRequest request;
+    private String blacklistId;
     private final HttpClient.Builder clientBuilder;
     private final HttpRequest.Builder requestBuilder;
     private HttpResponse<InputStream> response;
@@ -175,13 +176,12 @@ public class Outcall {
 
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
+     * Uses the uri's host as blacklist id.
      *
      * @param uri the url to call
-     * @throws IOException if the host is blacklisted
      */
-    public Outcall(URI uri) throws IOException {
-        checkTimeoutBlacklist(uri);
-
+    public Outcall(URI uri) {
+        this.blacklistId = uri.getHost();
         clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
         requestBuilder = HttpRequest.newBuilder(uri)
                                     .header(HEADER_USER_AGENT, buildDefaultUserAgent())
@@ -429,7 +429,7 @@ public class Outcall {
      * even though an error was received.
      *
      * @return the response, with the body as {@link InputStream}
-     * @throws IOException in case of any IO error
+     * @throws IOException in case of any IO error or blacklisting
      */
     public HttpResponse<InputStream> getResponse() throws IOException {
         connect();
@@ -440,6 +440,8 @@ public class Outcall {
         if (response != null) {
             return;
         }
+
+        checkTimeoutBlacklist();
 
         if (oAuthAccessToken != null) {
             setRequestProperty(HEADER_AUTHORIZATION, oAuthAccessToken.get());
@@ -496,19 +498,20 @@ public class Outcall {
         }
     }
 
-    private void checkTimeoutBlacklist(URI uri) throws IOException {
+    private void checkTimeoutBlacklist() throws IOException {
         if (connectTimeoutBlacklistDuration.isZero()) {
             return;
         }
 
-        Long timeout = timeoutBlacklist.get(uri.getHost());
+        Long timeout = timeoutBlacklist.get(blacklistId);
         if (timeout != null) {
             if (timeout > System.currentTimeMillis()) {
                 throw new IOException(Strings.apply(
-                        "Connecting to host %s is currently rejected due to connectivity issues.",
-                        uri.getHost()));
+                        "Connecting to host %s with blacklistid %s is currently rejected due to connectivity issues.",
+                        request.uri().getHost(),
+                        blacklistId));
             } else {
-                timeoutBlacklist.remove(uri.getHost());
+                timeoutBlacklist.remove(blacklistId);
             }
         }
     }
@@ -519,12 +522,12 @@ public class Outcall {
         }
 
         long now = System.currentTimeMillis();
-        timeoutBlacklist.put(request.uri().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
+        timeoutBlacklist.put(blacklistId, now + connectTimeoutBlacklistDuration.toMillis());
         if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGH_WATERMARK) {
             // We collected a bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
-            timeoutBlacklist.forEach((host, timeout) -> {
+            timeoutBlacklist.forEach((id, timeout) -> {
                 if (timeout < now) {
-                    timeoutBlacklist.remove(host);
+                    timeoutBlacklist.remove(id);
                 }
             });
         }
@@ -807,5 +810,15 @@ public class Outcall {
 
     public static Duration getDefaultReadTimeout() {
         return defaultReadTimeout;
+    }
+
+    /**
+     * Sets a custom blacklist id.
+     * The default blacklist id is the host of the uri.
+     *
+     * @param blacklistId The custom blacklist id to set.
+     */
+    public void setBlacklistId(@Nonnull String blacklistId) {
+        this.blacklistId = blacklistId;
     }
 }

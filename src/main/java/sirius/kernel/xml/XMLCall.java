@@ -38,9 +38,8 @@ public class XMLCall {
      *
      * @param uri         the target URI to call
      * @param contentType the value of the Content-Type property for requests
-     * @throws IOException in case the URI is blacklisted
      */
-    protected XMLCall(URI uri, String contentType) throws IOException {
+    protected XMLCall(URI uri, String contentType) {
         this.outcall = new Outcall(uri);
         this.outcall.setRequestProperty("Content-Type", contentType);
     }
