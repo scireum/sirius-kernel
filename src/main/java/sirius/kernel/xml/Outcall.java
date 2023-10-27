@@ -507,8 +507,7 @@ public class Outcall {
         if (timeout != null) {
             if (timeout > System.currentTimeMillis()) {
                 throw new IOException(Strings.apply(
-                        "Connecting to host %s with blacklistid %s is currently rejected due to connectivity issues.",
-                        request.uri().getHost(),
+                        "Connections with blacklistid %s are currently rejected due to connectivity issues.",
                         blacklistId));
             } else {
                 timeoutBlacklist.remove(blacklistId);
