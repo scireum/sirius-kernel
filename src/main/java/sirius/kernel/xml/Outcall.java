@@ -507,7 +507,7 @@ public class Outcall {
         if (timeout != null) {
             if (timeout > System.currentTimeMillis()) {
                 throw new IOException(Strings.apply(
-                        "Connections with blacklistid %s are currently rejected due to connectivity issues.",
+                        "Connections with blacklist identifier %s are currently rejected due to connectivity issues.",
                         blacklistId));
             } else {
                 timeoutBlacklist.remove(blacklistId);
