@@ -267,9 +267,8 @@ public class Outcall {
      * @param user     the username to use
      * @param password the password to use
      * @return the outcall itself for fluent method calls
-     * @throws IOException in case of any IO error
      */
-    public Outcall setAuthParams(String user, String password) throws IOException {
+    public Outcall setAuthParams(String user, String password) {
         if (Strings.isEmpty(user)) {
             return this;
         }
@@ -351,9 +350,8 @@ public class Outcall {
      * @param params  the data to POST
      * @param charset the charset to use when encoding the post data
      * @return the outcall itself for fluent method calls
-     * @throws IOException in case of any IO error
      */
-    public Outcall postData(Context params, Charset charset) throws IOException {
+    public Outcall postData(Context params, Charset charset) {
         this.charset = charset;
 
         StringBuilder parameterString = new StringBuilder();
@@ -389,9 +387,8 @@ public class Outcall {
      * Note that {@link #postFromOutput()} can not be invoked on this call, as we will send no body at all.
      *
      * @return the outcall itself for fluent method calls
-     * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
-    public Outcall markAsHeadRequest() throws IOException {
+    public Outcall markAsHeadRequest() {
         modifyRequest().method(REQUEST_METHOD_HEAD, HttpRequest.BodyPublishers.noBody());
         return this;
     }
