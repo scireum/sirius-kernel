@@ -295,12 +295,11 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         if (nesting.isEmpty()) {
             throw new IllegalArgumentException("Invalid result structure. No array to close");
         }
-        Element e = nesting.getFirst();
-        nesting.removeFirst();
-        if (e.getType() != ElementType.ARRAY) {
+        Element element = nesting.removeFirst();
+        if (element.getType() != ElementType.ARRAY) {
             throw new IllegalArgumentException("Invalid result structure. No array to close");
         }
-        endArray(e.getName());
+        endArray(element.getName());
         return this;
     }
 
@@ -309,12 +308,11 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         if (nesting.isEmpty()) {
             throw new IllegalArgumentException("Invalid result structure. No object to close");
         }
-        Element e = nesting.getFirst();
-        nesting.removeFirst();
-        if (e.getType() != ElementType.OBJECT) {
+        Element element = nesting.removeFirst();
+        if (element.getType() != ElementType.OBJECT) {
             throw new IllegalArgumentException("Invalid result structure. No object to close");
         }
-        endObject(e.getName());
+        endObject(element.getName());
         return this;
     }
 

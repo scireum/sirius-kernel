@@ -100,9 +100,7 @@ public class TimerCommand implements Command {
             return "";
         }
 
-        String scope = parameters.getFirst();
-        parameters.removeFirst();
-        return scope;
+        return parameters.removeFirst();
     }
 
     private boolean extractForceParameter(List<String> parameters) {
