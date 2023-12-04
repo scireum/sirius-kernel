@@ -289,7 +289,7 @@ public class Tasks implements Startable, Stoppable, Killable {
             }
 
             long now = System.currentTimeMillis();
-            return Math.max(0, schedulerQueue.get(0).waitUntil - now);
+            return Math.max(0, schedulerQueue.getFirst().waitUntil - now);
         }
     }
 

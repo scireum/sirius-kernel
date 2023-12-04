@@ -100,8 +100,8 @@ public class TimerCommand implements Command {
             return "";
         }
 
-        String scope = parameters.get(0);
-        parameters.remove(0);
+        String scope = parameters.getFirst();
+        parameters.removeFirst();
         return scope;
     }
 

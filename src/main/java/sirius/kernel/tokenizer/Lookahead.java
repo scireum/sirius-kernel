@@ -145,7 +145,7 @@ public abstract class Lookahead<T> {
         }
         while (numberOfItems-- > 0) {
             if (!itemBuffer.isEmpty()) {
-                itemBuffer.remove(0);
+                itemBuffer.removeFirst();
             } else {
                 if (endReached) {
                     return;

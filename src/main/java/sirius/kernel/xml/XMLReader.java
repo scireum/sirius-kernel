@@ -92,7 +92,7 @@ public class XMLReader extends DefaultHandler {
         // Delegate to active handlers and deletes them if they are finished...
         activeHandlers.removeIf(handler -> handler.endElement(name));
 
-        currentPath.remove(currentPath.size() - 1);
+        currentPath.removeLast();
     }
 
     @Override

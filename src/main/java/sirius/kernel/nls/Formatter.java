@@ -415,7 +415,7 @@ public class Formatter {
             next.replacementFound = true;
         }
         currentBlock = blocks.get(blocks.size() - 2);
-        blocks.remove(blocks.size() - 1);
+        blocks.removeLast();
         return currentBlock;
     }
 
