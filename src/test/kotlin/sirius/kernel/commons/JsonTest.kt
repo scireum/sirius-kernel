@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -358,6 +359,18 @@ class JsonTest {
     }
 
     @Test
+    fun `Json#getValueAmount keeps precision`() {
+        val inputJson = """{"number":1.23456789}"""
+        val node = Json.parseObject(inputJson)
+
+        val parsedAmount = Json.getValueAmount(node, "number")
+        assertEquals(Amount.ofRounded(BigDecimal.valueOf(1.23456789)), parsedAmount)
+
+        val outputJson = Json.createObject().putPOJO("number", parsedAmount).toString()
+        assertEquals(outputJson, inputJson)
+    }
+
+    @Test
     fun `tryValueString reads string value from string, number and boolean`() {
         val json =
                 """{ "number": 123, "string": "blablabla", "null": null, "bool": true, "obj": {"a": "b"}, "array": [] }"""
@@ -399,4 +412,5 @@ class JsonTest {
         assertEquals(JsonPointer.compile("/foo"), Json.createPointer("foo"))
         assertEquals(JsonPointer.compile("/foo/0/bar"), Json.createPointer("foo", 0, "bar"))
     }
+
 }
