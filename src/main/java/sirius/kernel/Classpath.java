@@ -156,7 +156,7 @@ public class Classpath {
         List<String> path = new ArrayList<>();
         File iter = child;
         while (iter != null && !Objects.equals(iter, reference)) {
-            path.add(0, iter.getName());
+            path.addFirst(iter.getName());
             iter = iter.getParentFile();
         }
 

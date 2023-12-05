@@ -163,11 +163,11 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     protected void updateStatistics() {
         usesHistory.add(getUses());
         if (usesHistory.size() > MAX_HISTORY) {
-            usesHistory.remove(0);
+            usesHistory.removeFirst();
         }
         hitRateHistory.add(getHitRate());
         if (hitRateHistory.size() > MAX_HISTORY) {
-            hitRateHistory.remove(0);
+            hitRateHistory.removeFirst();
         }
         hits.reset();
         misses.reset();

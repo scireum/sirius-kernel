@@ -84,7 +84,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         if (nesting.isEmpty()) {
             return ElementType.UNKNOWN;
         }
-        return nesting.get(0).getType();
+        return nesting.getFirst().getType();
     }
 
     /**
@@ -96,16 +96,16 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         if (nesting.isEmpty()) {
             return true;
         }
-        return nesting.get(0).isEmpty();
+        return nesting.getFirst().isEmpty();
     }
 
     @Override
     public StructuredOutput beginArray(String name) {
         startArray(name);
         if (!nesting.isEmpty()) {
-            nesting.get(0).setEmpty(false);
+            nesting.getFirst().setEmpty(false);
         }
-        nesting.add(0, new Element(ElementType.ARRAY, name));
+        nesting.addFirst(new Element(ElementType.ARRAY, name));
 
         return this;
     }
@@ -224,9 +224,9 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
     public StructuredOutput beginObject(String name, Attribute... attributes) {
         startObject(name, attributes);
         if (!nesting.isEmpty()) {
-            nesting.get(0).setEmpty(false);
+            nesting.getFirst().setEmpty(false);
         }
-        nesting.add(0, new Element(ElementType.OBJECT, name));
+        nesting.addFirst(new Element(ElementType.OBJECT, name));
         return this;
     }
 
@@ -295,12 +295,11 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         if (nesting.isEmpty()) {
             throw new IllegalArgumentException("Invalid result structure. No array to close");
         }
-        Element e = nesting.get(0);
-        nesting.remove(0);
-        if (e.getType() != ElementType.ARRAY) {
+        Element element = nesting.removeFirst();
+        if (element.getType() != ElementType.ARRAY) {
             throw new IllegalArgumentException("Invalid result structure. No array to close");
         }
-        endArray(e.getName());
+        endArray(element.getName());
         return this;
     }
 
@@ -309,12 +308,11 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         if (nesting.isEmpty()) {
             throw new IllegalArgumentException("Invalid result structure. No object to close");
         }
-        Element e = nesting.get(0);
-        nesting.remove(0);
-        if (e.getType() != ElementType.OBJECT) {
+        Element element = nesting.removeFirst();
+        if (element.getType() != ElementType.OBJECT) {
             throw new IllegalArgumentException("Invalid result structure. No object to close");
         }
-        endObject(e.getName());
+        endObject(element.getName());
         return this;
     }
 
@@ -336,7 +334,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
         } else {
             writeProperty(name, data);
         }
-        nesting.get(0).setEmpty(false);
+        nesting.getFirst().setEmpty(false);
         return this;
     }
 
@@ -373,7 +371,7 @@ public abstract class AbstractStructuredOutput implements StructuredOutput {
             writeAmountProperty(name, amount.toString(numberFormat).asString());
         }
 
-        nesting.get(0).setEmpty(false);
+        nesting.getFirst().setEmpty(false);
         return this;
     }
 

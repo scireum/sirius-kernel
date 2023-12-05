@@ -38,11 +38,11 @@ public class ParseException extends Exception {
      */
     public static ParseException create(List<ParseError> errors) {
         if (errors.size() == 1) {
-            return new ParseException(errors.get(0).getMessage(), errors);
+            return new ParseException(errors.getFirst().getMessage(), errors);
         } else if (errors.size() > 1) {
             return new ParseException(String.format("%d errors occured. First: %s",
                                                     errors.size(),
-                                                    errors.get(0).getMessage()), errors);
+                                                    errors.getFirst().getMessage()), errors);
         } else {
             return new ParseException("An unknown error occured", errors);
         }
