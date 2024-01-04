@@ -325,7 +325,7 @@ public class CallContext {
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public <C extends SubContext> C get(Class<C> contextType) {
+    public <C extends SubContext> C get(@Nonnull Class<C> contextType) {
         try {
             SubContext result = subContexts.get(contextType);
             if (result == null) {
@@ -353,8 +353,44 @@ public class CallContext {
      * @param instance    the instance to set
      * @param <C>         the type of the sub-context
      */
-    public <C extends SubContext> void set(Class<C> contextType, C instance) {
+    public <C extends SubContext> void set(@Nonnull Class<C> contextType, @Nonnull C instance) {
         subContexts.put(contextType, instance);
+    }
+
+    /**
+     * Returns the sub context of the given type.
+     * <p>
+     * Note: In contrast to {@link #get(Class)}, this method will not create a new instance if none is present.
+     *
+     * @param contextType the type of the sub-context to be returned
+     * @param <C>         the type of the sub-context
+     * @return an instance of the given type or <tt>null</tt> if no instance was available
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public <C extends SubContext> C tryGetSubContext(@Nonnull Class<C> contextType) {
+        return (C) subContexts.get(contextType);
+    }
+
+    /**
+     * Determines if a sub context of the given type is present.
+     *
+     * @param contextType the type of the sub-context to be returned
+     * @param <C>         the type of the sub-context
+     * @return <tt>true</tt> if a sub context of the given type is present
+     */
+    public <C extends SubContext> boolean hasSubContext(@Nonnull Class<C> contextType) {
+        return subContexts.containsKey(contextType) && subContexts.get(contextType) != null;
+    }
+
+    /**
+     * Removes the sub context of the given type.
+     *
+     * @param contextType the type of the sub-context to be removed
+     * @param <C>         the type of the sub-context
+     */
+    public <C extends SubContext> void removeSubContext(@Nonnull Class<C> contextType) {
+        subContexts.remove(contextType);
     }
 
     /**
