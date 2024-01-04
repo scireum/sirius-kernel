@@ -322,10 +322,26 @@ public class CallContext {
      * @param contextType the type of the sub-context to be returned.
      * @param <C>         the type of the sub-context
      * @return an instance of the given type. If no instance was available, a new one is created
+     * @deprecated use {@link #getSubContext(Class)} instead.
+     */
+    @Nonnull
+    @Deprecated(since = "2023-01-04", forRemoval = true)
+    public <C extends SubContext> C get(@Nonnull Class<C> contextType) {
+        return getSubContext(contextType);
+    }
+
+    /**
+     * Returns or creates the sub context of the given type.
+     * <p>
+     * The class of the sub context must provide a no-args constructor, as it will be instantiated if non existed.
+     *
+     * @param contextType the type of the sub-context to be returned.
+     * @param <C>         the type of the sub-context
+     * @return an instance of the given type. If no instance was available, a new one is created
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public <C extends SubContext> C get(@Nonnull Class<C> contextType) {
+    public <C extends SubContext> C getSubContext(@Nonnull Class<C> contextType) {
         try {
             SubContext result = subContexts.get(contextType);
             if (result == null) {
@@ -352,15 +368,31 @@ public class CallContext {
      * @param contextType the type of the context to set
      * @param instance    the instance to set
      * @param <C>         the type of the sub-context
+     * @deprecated use {@link #setSubContext(Class, SubContext)} instead.
      */
+    @Deprecated(since = "2023-01-04", forRemoval = true)
     public <C extends SubContext> void set(@Nonnull Class<C> contextType, @Nonnull C instance) {
+        setSubContext(contextType, instance);
+    }
+
+    /**
+     * Installs the given sub context.
+     * <p>
+     * This should only be used if required (e.g. in test environments to replace/mock objects). Otherwise, a
+     * call to {@link #getSubContext(Class)} will initialize the requested sub context.
+     *
+     * @param contextType the type of the context to set
+     * @param instance    the instance to set
+     * @param <C>         the type of the sub-context
+     */
+    public <C extends SubContext> void setSubContext(@Nonnull Class<C> contextType, @Nonnull C instance) {
         subContexts.put(contextType, instance);
     }
 
     /**
      * Returns the sub context of the given type.
      * <p>
-     * Note: In contrast to {@link #get(Class)}, this method will not create a new instance if none is present.
+     * Note: In contrast to {@link #getSubContext(Class)}, this method will not create a new instance if none is present.
      *
      * @param contextType the type of the sub-context to be returned
      * @param <C>         the type of the sub-context
