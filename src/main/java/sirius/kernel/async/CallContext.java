@@ -322,12 +322,12 @@ public class CallContext {
      * @param contextType the type of the sub-context to be returned.
      * @param <C>         the type of the sub-context
      * @return an instance of the given type. If no instance was available, a new one is created
-     * @deprecated use {@link #getSubContext(Class)} instead.
+     * @deprecated use {@link #getOrCreateSubContext(Class)} instead.
      */
     @Nonnull
     @Deprecated(since = "2023-01-04", forRemoval = true)
     public <C extends SubContext> C get(@Nonnull Class<C> contextType) {
-        return getSubContext(contextType);
+        return getOrCreateSubContext(contextType);
     }
 
     /**
@@ -341,7 +341,7 @@ public class CallContext {
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public <C extends SubContext> C getSubContext(@Nonnull Class<C> contextType) {
+    public <C extends SubContext> C getOrCreateSubContext(@Nonnull Class<C> contextType) {
         try {
             SubContext result = subContexts.get(contextType);
             if (result == null) {
@@ -379,7 +379,7 @@ public class CallContext {
      * Installs the given sub context.
      * <p>
      * This should only be used if required (e.g. in test environments to replace/mock objects). Otherwise, a
-     * call to {@link #getSubContext(Class)} will initialize the requested sub context.
+     * call to {@link #getOrCreateSubContext(Class)} will initialize the requested sub context.
      *
      * @param contextType the type of the context to set
      * @param instance    the instance to set
@@ -392,16 +392,15 @@ public class CallContext {
     /**
      * Returns the sub context of the given type.
      * <p>
-     * Note: In contrast to {@link #getSubContext(Class)}, this method will not create a new instance if none is present.
+     * Note: In contrast to {@link #getOrCreateSubContext(Class)}, this method will not create a new instance if none is present.
      *
      * @param contextType the type of the sub-context to be returned
      * @param <C>         the type of the sub-context
      * @return an instance of the given type or <tt>null</tt> if no instance was available
      */
-    @Nullable
     @SuppressWarnings("unchecked")
-    public <C extends SubContext> C tryGetSubContext(@Nonnull Class<C> contextType) {
-        return (C) subContexts.get(contextType);
+    public <C extends SubContext> Optional<C> tryGetSubContext(@Nonnull Class<C> contextType) {
+        return Optional.ofNullable((C) subContexts.get(contextType));
     }
 
     /**
