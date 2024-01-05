@@ -19,9 +19,10 @@ import java.util.function.Supplier;
  * Provides an interface between a running task and a monitoring system.
  * <p>
  * Any task or background job can access its <tt>TaskContext</tt> using either {@link TaskContext#get()} or
- * {@link sirius.kernel.async.CallContext#get(Class)}. This provides an interface to a monitoring system which
- * might be present (by calling {@link sirius.kernel.async.TaskContext#setAdapter(TaskContextAdapter)}. If no
- * monitoring is available, the default mechanisms of the platform are used.
+ * {@link sirius.kernel.async.CallContext#getOrCreateSubContext(Class)} (Class)}.
+ * This provides an interface to a monitoring system which might be present
+ * (by calling {@link sirius.kernel.async.TaskContext#setAdapter(TaskContextAdapter)}.
+ * If no monitoring is available, the default mechanisms of the platform are used.
  */
 public class TaskContext implements SubContext {
     /**
@@ -52,8 +53,8 @@ public class TaskContext implements SubContext {
     /**
      * Generates a new TaskContext.
      * <p>
-     * Normally this is should only be invoked by {@link CallContext}. Use {@link CallContext#get(Class)} to obtain an
-     * instance.
+     * Normally this is should only be invoked by {@link CallContext}.
+     * Use {@link CallContext#getOrCreateSubContext(Class)} to obtain an instance.
      */
     public TaskContext() {
         this.adapter = new BasicTaskContextAdapter(this);
@@ -68,7 +69,7 @@ public class TaskContext implements SubContext {
      * @return the task context for the current thread
      */
     public static TaskContext get() {
-        return CallContext.getCurrent().get(TaskContext.class);
+        return CallContext.getCurrent().getOrCreateSubContext(TaskContext.class);
     }
 
     /**

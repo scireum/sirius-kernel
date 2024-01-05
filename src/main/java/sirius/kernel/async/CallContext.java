@@ -36,11 +36,11 @@ import java.util.function.Supplier;
 /**
  * A CallContext is attached to each thread managed by sirius.
  * <p>
- * It provides access to different sub-contexts via {@link #get(Class)}. Also, it provides access to the mapped
- * diagnostic context (MDC). This can be filled by various parts of the framework (like which request-uri is
- * currently being processed, which user is currently active etc.) and will be attached to each error. Also, each
- * context comes with a new "flow-id". This can be used to trace an execution across different threads and even
- * across different cluster nodes.
+ * It provides access to different sub-contexts via {@link #getOrCreateSubContext(Class)}.
+ * Also, it provides access to the mapped diagnostic context (MDC).
+ * This can be filled by various parts of the framework (like which request-uri is currently being processed, which user
+ * is currently active etc.) and will be attached to each error. Also, each context comes with a new "flow-id".
+ * This can be used to trace an execution across different threads and even across different cluster nodes.
  * <p>
  * Tasks which fork async subtasks will automatically pass on their current context. Therefore, essential information
  * can be passed along, without having to provide a method parameter for each value. Since sub-contexts can be of any

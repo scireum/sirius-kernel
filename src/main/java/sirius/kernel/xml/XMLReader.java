@@ -13,7 +13,6 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
@@ -65,7 +64,7 @@ public class XMLReader extends DefaultHandler {
     public XMLReader() {
         try {
             documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            taskContext = CallContext.getCurrent().get(TaskContext.class);
+            taskContext = TaskContext.get();
         } catch (ParserConfigurationException exception) {
             throw Exceptions.handle(exception);
         }
