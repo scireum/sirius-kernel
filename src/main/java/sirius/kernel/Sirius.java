@@ -281,7 +281,7 @@ public class Sirius {
      * These are <tt>settings.conf</tt>, <tt>develop.conf</tt>, <tt>test.conf</tt>
      * and finally, <tt>instance.conf</tt>.
      */
-    private static void setupLocalConfig() {
+    protected static void setupLocalConfig() {
         LOG.INFO("Loading local config...");
         LOG.INFO(SEPARATOR_LINE);
 
