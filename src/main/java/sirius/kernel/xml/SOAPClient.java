@@ -102,6 +102,7 @@ public class SOAPClient {
     private final BasicNamespaceContext namespaceContext = new BasicNamespaceContext();
     private List<Attribute> namespaceDefinitions;
     private String actionPrefix = "";
+    private String contentTypeHeader = "text/xml";
     private Consumer<XMLCall> callEnhancer;
     private final Map<String, URL> customEndpoints = new HashMap<>();
     private Consumer<BiConsumer<String, Object>> defaultParameterProvider;
@@ -166,6 +167,18 @@ public class SOAPClient {
      */
     public SOAPClient withActionPrefix(@Nonnull String prefix) {
         this.actionPrefix = prefix;
+        return this;
+    }
+
+    /**
+     * Defines a custom value for the "Content-Type" HTTP header to use for requests. By default, the header is set
+     * to "text/xml".
+     *
+     * @param contentTypeHeader the content type to use for requests
+     * @return the client itself for fluent method calls
+     */
+    public SOAPClient withCustomContentTypeHeader(@Nonnull String contentTypeHeader) {
+        this.contentTypeHeader = contentTypeHeader;
         return this;
     }
 
@@ -311,7 +324,8 @@ public class SOAPClient {
 
         try (Operation op = new Operation(() -> Strings.apply("SOAP %s -> %s", action, effectiveEndpoint),
                                           Duration.ofSeconds(15))) {
-            XMLCall call = XMLCall.to(effectiveEndpoint.toURI()).withFineLogger(LOG, isDebugLogActive);
+            XMLCall call =
+                    XMLCall.to(effectiveEndpoint.toURI(), contentTypeHeader).withFineLogger(LOG, isDebugLogActive);
             call.getOutcall().withConfiguredTimeout(SOAP_TIMEOUT_CONFIG_KEY);
             call.withNamespaceContext(namespaceContext);
             if (callEnhancer != null) {
