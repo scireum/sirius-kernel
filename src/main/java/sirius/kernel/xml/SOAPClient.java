@@ -98,11 +98,13 @@ public class SOAPClient {
      */
     public static final String SOAP_TIMEOUT_CONFIG_KEY = "soap";
 
+    private static final String DEFAULT_CONTENT_TYPE_HEADER = "text/xml";
+
     private final URL endpoint;
     private final BasicNamespaceContext namespaceContext = new BasicNamespaceContext();
     private List<Attribute> namespaceDefinitions;
     private String actionPrefix = "";
-    private String contentTypeHeader = "text/xml";
+    private String contentTypeHeader = DEFAULT_CONTENT_TYPE_HEADER;
     private Consumer<XMLCall> callEnhancer;
     private final Map<String, URL> customEndpoints = new HashMap<>();
     private Consumer<BiConsumer<String, Object>> defaultParameterProvider;
@@ -172,7 +174,7 @@ public class SOAPClient {
 
     /**
      * Defines a custom value for the "Content-Type" HTTP header to use for requests. By default, the header is set
-     * to "text/xml".
+     * to {@link #DEFAULT_CONTENT_TYPE_HEADER}.
      *
      * @param contentTypeHeader the content type to use for requests
      * @return the client itself for fluent method calls
