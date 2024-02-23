@@ -13,6 +13,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.Formatter;
 
+import javax.annotation.Nonnull;
 import javax.xml.namespace.NamespaceContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -20,6 +21,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.function.BooleanSupplier;
 
 /**
  * Simple call to send XML to a server (URL) and receive XML back.
@@ -29,15 +31,15 @@ public class XMLCall {
     private final Outcall outcall;
     private NamespaceContext namespaceContext;
     private Log debugLogger = Log.get("xml");
+    private BooleanSupplier isDebugLogActive = () -> true;
 
     /**
      * Creates a new XMLCall for the given URI and Content-Type.
      *
      * @param uri         the target URI to call
      * @param contentType the value of the Content-Type property for requests
-     * @throws IOException in case the URI is blacklisted
      */
-    protected XMLCall(URI uri, String contentType) throws IOException {
+    protected XMLCall(URI uri, String contentType) {
         this.outcall = new Outcall(uri);
         this.outcall.setRequestProperty("Content-Type", contentType);
     }
@@ -110,6 +112,21 @@ public class XMLCall {
     }
 
     /**
+     * Logs the request and the resulting response to the given {@code logger} using the <tt>FINE</tt> level.
+     * <p>
+     * The default logger is "xml".
+     *
+     * @param logger           the logger to log to
+     * @param isDebugLogActive a supplier which returns true if the debug log is active
+     * @return the XML call itself for fluent method calls
+     */
+    public XMLCall withFineLogger(Log logger, @Nonnull BooleanSupplier isDebugLogActive) {
+        this.debugLogger = logger;
+        this.isDebugLogActive = isDebugLogActive;
+        return this;
+    }
+
+    /**
      * Adds a custom header field to the call
      *
      * @param name  name of the field
@@ -174,7 +191,7 @@ public class XMLCall {
     }
 
     private InputStream getInputStream() throws IOException {
-        if (debugLogger != null && debugLogger.isFINE()) {
+        if (debugLogger != null && debugLogger.isFINE() && isDebugLogActive.getAsBoolean()) {
             // log the request, even when parsing fails
             try (InputStream body = getResponseBody()) {
                 byte[] bytes = body.readAllBytes();

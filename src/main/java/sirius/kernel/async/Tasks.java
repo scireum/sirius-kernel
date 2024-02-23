@@ -52,7 +52,7 @@ import java.util.function.Supplier;
  * thread-pools (via <tt>async.executor</tt>) as well as auto transfer of the current {@link CallContext} to the
  * called thread.
  * <p>
- * Additionally helper-methods for creating and aggregating instances {@link Promise} are provided, which are the
+ * Additionally, helper-methods for creating and aggregating instances {@link Promise} are provided, which are the
  * main interaction model when dealing with async and non-blocking execution.
  */
 @ParametersAreNonnullByDefault
@@ -289,7 +289,7 @@ public class Tasks implements Startable, Stoppable, Killable {
             }
 
             long now = System.currentTimeMillis();
-            return Math.max(0, schedulerQueue.get(0).waitUntil - now);
+            return Math.max(0, schedulerQueue.getFirst().waitUntil - now);
         }
     }
 

@@ -33,6 +33,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -238,7 +239,7 @@ public class Setup {
     /**
      * Sets the DNS cache to a sane value.
      * <p>
-     * By default java infinitely caches all DNS entries. Will be changed to 10 seconds...
+     * By default, java infinitely caches all DNS entries. Will be changed to 10 seconds...
      */
     protected void setupDNSCache() {
         Sirius.LOG.FINE("Setting DNS-Cache to 10 seconds...");
@@ -268,7 +269,7 @@ public class Setup {
      * Initializes log4j as logging framework.
      * <p>
      * In development mode, we log everything to the console. In production mode, we use a rolling file appender and
-     * log into the logs directory.
+     * log into the "logs" directory.
      */
     protected void setupLogging() {
         Logger rootLogger = LogManager.getLogManager().getLogger("");
@@ -330,8 +331,8 @@ public class Setup {
     /**
      * Loads the main application configuration which is shipped with the app.
      * <p>
-     * By default this loads "application.conf" from the classpath. Also "application-*.conf
-     * are loaded in case it is splitted into several parts.
+     * By default, this loads "application.conf" from the classpath. Also, "application-*.conf
+     * are loaded in case it is split into several parts.
      *
      * @return the main application config. This will override all component configs but be overridden by developer,
      * test and instance configs
@@ -343,9 +344,11 @@ public class Setup {
         // Load component configurations
         Sirius.getClasspath()
               .find(Pattern.compile("application-([^.]*?)\\.conf"))
-              .forEach(value -> result.set(loadConfig(value.group(),
-                                                      () -> ConfigFactory.parseResources(loader, value.group()),
-                                                      result.get())));
+              .map(Matcher::group)
+              .sorted()
+              .forEach(configPath -> result.set(loadConfig(configPath,
+                                                           () -> ConfigFactory.parseResources(loader, configPath),
+                                                           result.get())));
 
         if (Sirius.class.getResource("/application.conf") != null) {
             result.set(loadConfig("application.conf",
@@ -361,7 +364,7 @@ public class Setup {
     /**
      * Applies the test configuration to the given config object.
      * <p>
-     * By default this loads and applies "test.conf" from the classpath.
+     * By default, this loads and applies "test.conf" from the classpath.
      *
      * @param config the config to enhance
      * @return the enhanced config
@@ -396,7 +399,7 @@ public class Setup {
     /**
      * Applies the corresponding configuration to the given config object.
      * <p>
-     * By default this loads and applies the given "instance.conf", "develop.conf", "staging.conf" or "productive.conf"
+     * By default, this loads and applies the given "instance.conf", "develop.conf", "staging.conf" or "productive.conf"
      * from the file system.
      *
      * @param config     the config to amend
@@ -419,7 +422,7 @@ public class Setup {
     /**
      * Loads <b>and parses</b> the environment.
      * <p>
-     * {@link ConfigFactory} by default treats every environment variable as key instead of as path. Therefore we
+     * {@link ConfigFactory} by default treats every environment variable as key instead of as path. Therefore, we
      * manually load the environment be treating variables as path so that compound keys like sirius.nodeName
      * can be specified.
      *

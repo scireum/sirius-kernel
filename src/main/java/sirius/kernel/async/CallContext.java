@@ -36,11 +36,11 @@ import java.util.function.Supplier;
 /**
  * A CallContext is attached to each thread managed by sirius.
  * <p>
- * It provides access to different sub-contexts via {@link #get(Class)}. Also, it provides access to the mapped
- * diagnostic context (MDC). This can be filled by various parts of the framework (like which request-uri is
- * currently being processed, which user is currently active etc.) and will be attached to each error. Also, each
- * context comes with a new "flow-id". This can be used to trace an execution across different threads and even
- * across different cluster nodes.
+ * It provides access to different sub-contexts via {@link #getOrCreateSubContext(Class)}.
+ * Also, it provides access to the mapped diagnostic context (MDC).
+ * This can be filled by various parts of the framework (like which request-uri is currently being processed, which user
+ * is currently active etc.) and will be attached to each error. Also, each context comes with a new "flow-id".
+ * This can be used to trace an execution across different threads and even across different cluster nodes.
  * <p>
  * Tasks which fork async subtasks will automatically pass on their current context. Therefore, essential information
  * can be passed along, without having to provide a method parameter for each value. Since sub-contexts can be of any
@@ -207,7 +207,7 @@ public class CallContext {
      */
     public static void setCurrent(CallContext context) {
         currentContext.set(context);
-        contextMap.put(Thread.currentThread().getId(), context);
+        contextMap.put(Thread.currentThread().threadId(), context);
     }
 
     /**
@@ -219,7 +219,7 @@ public class CallContext {
             context.detachContext();
         }
         currentContext.remove();
-        contextMap.remove(Thread.currentThread().getId());
+        contextMap.remove(Thread.currentThread().threadId());
     }
 
     /**
@@ -322,10 +322,26 @@ public class CallContext {
      * @param contextType the type of the sub-context to be returned.
      * @param <C>         the type of the sub-context
      * @return an instance of the given type. If no instance was available, a new one is created
+     * @deprecated use {@link #getOrCreateSubContext(Class)} instead.
+     */
+    @Nonnull
+    @Deprecated(since = "2023-01-04", forRemoval = true)
+    public <C extends SubContext> C get(@Nonnull Class<C> contextType) {
+        return getOrCreateSubContext(contextType);
+    }
+
+    /**
+     * Returns or creates the sub context of the given type.
+     * <p>
+     * The class of the sub context must provide a no-args constructor, as it will be instantiated if non existed.
+     *
+     * @param contextType the type of the sub-context to be returned.
+     * @param <C>         the type of the sub-context
+     * @return an instance of the given type. If no instance was available, a new one is created
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public <C extends SubContext> C get(Class<C> contextType) {
+    public <C extends SubContext> C getOrCreateSubContext(@Nonnull Class<C> contextType) {
         try {
             SubContext result = subContexts.get(contextType);
             if (result == null) {
@@ -352,9 +368,60 @@ public class CallContext {
      * @param contextType the type of the context to set
      * @param instance    the instance to set
      * @param <C>         the type of the sub-context
+     * @deprecated use {@link #setSubContext(Class, SubContext)} instead.
      */
-    public <C extends SubContext> void set(Class<C> contextType, C instance) {
+    @Deprecated(since = "2023-01-04", forRemoval = true)
+    public <C extends SubContext> void set(@Nonnull Class<C> contextType, @Nonnull C instance) {
+        setSubContext(contextType, instance);
+    }
+
+    /**
+     * Installs the given sub context.
+     * <p>
+     * This should only be used if required (e.g. in test environments to replace/mock objects). Otherwise, a
+     * call to {@link #getOrCreateSubContext(Class)} will initialize the requested sub context.
+     *
+     * @param contextType the type of the context to set
+     * @param instance    the instance to set
+     * @param <C>         the type of the sub-context
+     */
+    public <C extends SubContext> void setSubContext(@Nonnull Class<C> contextType, @Nonnull C instance) {
         subContexts.put(contextType, instance);
+    }
+
+    /**
+     * Returns the sub context of the given type.
+     * <p>
+     * Note: In contrast to {@link #getOrCreateSubContext(Class)}, this method will not create a new instance if none is present.
+     *
+     * @param contextType the type of the sub-context to be returned
+     * @param <C>         the type of the sub-context
+     * @return an instance of the given type or <tt>null</tt> if no instance was available
+     */
+    @SuppressWarnings("unchecked")
+    public <C extends SubContext> Optional<C> tryGetSubContext(@Nonnull Class<C> contextType) {
+        return Optional.ofNullable((C) subContexts.get(contextType));
+    }
+
+    /**
+     * Determines if a sub context of the given type is present.
+     *
+     * @param contextType the type of the sub-context to be returned
+     * @param <C>         the type of the sub-context
+     * @return <tt>true</tt> if a sub context of the given type is present
+     */
+    public <C extends SubContext> boolean hasSubContext(@Nonnull Class<C> contextType) {
+        return subContexts.containsKey(contextType) && subContexts.get(contextType) != null;
+    }
+
+    /**
+     * Removes the sub context of the given type.
+     *
+     * @param contextType the type of the sub-context to be removed
+     * @param <C>         the type of the sub-context
+     */
+    public <C extends SubContext> void removeSubContext(@Nonnull Class<C> contextType) {
+        subContexts.remove(contextType);
     }
 
     /**

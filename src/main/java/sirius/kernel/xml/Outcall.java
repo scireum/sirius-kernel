@@ -15,6 +15,7 @@ import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Average;
@@ -110,13 +111,16 @@ public class Outcall {
      * <p>
      * These hosts are blacklisted for a short amount of time ({@link #connectTimeoutBlacklistDuration}) to prevent
      * cascading failures.
+     * <p>
+     * We log a warning for each host which is blacklisted and is called again. To make sure this doesn't spam the logs,
+     * we only log once and then set the second value of the tuple to <tt>true</tt> to prevent further log messages.
      */
-    private static final Map<String, Long> timeoutBlacklist = new ConcurrentHashMap<>();
+    private static final Map<String, Tuple<Long, Boolean>> timeoutBlacklist = new ConcurrentHashMap<>();
 
     /**
      * If the {@link #timeoutBlacklist} contains more than the given number of entries, we remove all expired ones
      * manually. These might be hosts which are only connected sporadically and had a hiccup. Everything else will be
-     * kept clean in {@link #checkTimeoutBlacklist(URI)}.
+     * kept clean in {@link #checkTimeoutBlacklist()}.
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
 
@@ -133,6 +137,7 @@ public class Outcall {
 
     private HttpClient client;
     private HttpRequest request;
+    private String blacklistId;
     private final HttpClient.Builder clientBuilder;
     private final HttpRequest.Builder requestBuilder;
     private HttpResponse<InputStream> response;
@@ -175,13 +180,12 @@ public class Outcall {
 
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
+     * Uses the uri's host as blacklist id.
      *
      * @param uri the url to call
-     * @throws IOException if the host is blacklisted
      */
-    public Outcall(URI uri) throws IOException {
-        checkTimeoutBlacklist(uri);
-
+    public Outcall(URI uri) {
+        this.blacklistId = uri.getHost();
         clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
         requestBuilder = HttpRequest.newBuilder(uri)
                                     .header(HEADER_USER_AGENT, buildDefaultUserAgent())
@@ -267,9 +271,8 @@ public class Outcall {
      * @param user     the username to use
      * @param password the password to use
      * @return the outcall itself for fluent method calls
-     * @throws IOException in case of any IO error
      */
-    public Outcall setAuthParams(String user, String password) throws IOException {
+    public Outcall setAuthParams(String user, String password) {
         if (Strings.isEmpty(user)) {
             return this;
         }
@@ -331,7 +334,7 @@ public class Outcall {
      * Sets the connect-timeout and read-timeout to the values specified in the config block http.outcall.timeouts.*
      * where * equals the configKey parameter.
      * <p>
-     * See the http.outcall.timeouts.soap block in component-kernel.conf for reference.
+     * See the http.outcall.timeouts.soap block in component-050-kernel.conf for reference.
      *
      * @param configKey the config key of the timeout configuration block
      * @return this for fluent method calls
@@ -351,9 +354,8 @@ public class Outcall {
      * @param params  the data to POST
      * @param charset the charset to use when encoding the post data
      * @return the outcall itself for fluent method calls
-     * @throws IOException in case of any IO error
      */
-    public Outcall postData(Context params, Charset charset) throws IOException {
+    public Outcall postData(Context params, Charset charset) {
         this.charset = charset;
 
         StringBuilder parameterString = new StringBuilder();
@@ -389,9 +391,8 @@ public class Outcall {
      * Note that {@link #postFromOutput()} can not be invoked on this call, as we will send no body at all.
      *
      * @return the outcall itself for fluent method calls
-     * @throws IOException if the method cannot be reset or if the requested method isn't valid for HTTP.
      */
-    public Outcall markAsHeadRequest() throws IOException {
+    public Outcall markAsHeadRequest() {
         modifyRequest().method(REQUEST_METHOD_HEAD, HttpRequest.BodyPublishers.noBody());
         return this;
     }
@@ -429,7 +430,7 @@ public class Outcall {
      * even though an error was received.
      *
      * @return the response, with the body as {@link InputStream}
-     * @throws IOException in case of any IO error
+     * @throws IOException in case of any IO error or blacklisting
      */
     public HttpResponse<InputStream> getResponse() throws IOException {
         connect();
@@ -440,6 +441,8 @@ public class Outcall {
         if (response != null) {
             return;
         }
+
+        checkTimeoutBlacklist();
 
         if (oAuthAccessToken != null) {
             setRequestProperty(HEADER_AUTHORIZATION, oAuthAccessToken.get());
@@ -496,20 +499,30 @@ public class Outcall {
         }
     }
 
-    private void checkTimeoutBlacklist(URI uri) throws IOException {
+    private void checkTimeoutBlacklist() throws IOException {
         if (connectTimeoutBlacklistDuration.isZero()) {
             return;
         }
 
-        Long timeout = timeoutBlacklist.get(uri.getHost());
-        if (timeout != null) {
-            if (timeout > System.currentTimeMillis()) {
+        Tuple<Long, Boolean> blacklistedHostInformation = timeoutBlacklist.get(blacklistId);
+        if (blacklistedHostInformation == null) {
+            return;
+        }
+
+        Long timeout = blacklistedHostInformation.getFirst();
+        if (timeout == null) {
+            return;
+        }
+
+        if (timeout > System.currentTimeMillis()) {
+            if (Boolean.FALSE.equals(blacklistedHostInformation.getSecond())) {
+                blacklistedHostInformation.setSecond(true);
                 throw new IOException(Strings.apply(
-                        "Connecting to host %s is currently rejected due to connectivity issues.",
-                        uri.getHost()));
-            } else {
-                timeoutBlacklist.remove(uri.getHost());
+                        "Connections with blacklist identifier %s are currently rejected due to connectivity issues.",
+                        blacklistId));
             }
+        } else {
+            timeoutBlacklist.remove(blacklistId);
         }
     }
 
@@ -519,12 +532,12 @@ public class Outcall {
         }
 
         long now = System.currentTimeMillis();
-        timeoutBlacklist.put(request.uri().getHost(), now + connectTimeoutBlacklistDuration.toMillis());
+        timeoutBlacklist.put(blacklistId, Tuple.create(now + connectTimeoutBlacklistDuration.toMillis(), false));
         if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGH_WATERMARK) {
             // We collected a bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
-            timeoutBlacklist.forEach((host, timeout) -> {
-                if (timeout < now) {
-                    timeoutBlacklist.remove(host);
+            timeoutBlacklist.forEach((id, timeout) -> {
+                if (timeout.getFirst() < now) {
+                    timeoutBlacklist.remove(id);
                 }
             });
         }
@@ -777,7 +790,7 @@ public class Outcall {
             Exceptions.ignore(exception);
             try {
                 // There are illegal chars in the redirect header url, try again with encoding the header
-                URL urlObject = new URL(location);
+                URL urlObject = URI.create(location).toURL();
                 return new URI(urlObject.getProtocol(),
                                urlObject.getUserInfo(),
                                urlObject.getHost(),
@@ -807,5 +820,15 @@ public class Outcall {
 
     public static Duration getDefaultReadTimeout() {
         return defaultReadTimeout;
+    }
+
+    /**
+     * Sets a custom blacklist id.
+     * The default blacklist id is the host of the uri.
+     *
+     * @param blacklistId The custom blacklist id to set.
+     */
+    public void setBlacklistId(@Nonnull String blacklistId) {
+        this.blacklistId = blacklistId;
     }
 }

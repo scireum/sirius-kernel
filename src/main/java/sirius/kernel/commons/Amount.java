@@ -243,9 +243,24 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
      * @return the internally used <tt>BigDecimal</tt>
      */
     @Nullable
-    @JsonValue
     public BigDecimal getAmount() {
         return value;
+    }
+
+    /**
+     * Unwraps the internally used <tt>BigDecimal</tt> with rounding like in {@link #toMachineString()} applied.
+     * This is used for Jackson Object Mapping.
+     *
+     * @return the internally used <tt>BigDecimal</tt> with rounding applied
+     */
+    @Nullable
+    @JsonValue
+    private BigDecimal getRoundedAmount() {
+        if (rounded) {
+            return getAmount();
+        } else {
+            return round(2, RoundingMode.HALF_UP).getAmount();
+        }
     }
 
     @Override

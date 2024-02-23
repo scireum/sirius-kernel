@@ -49,13 +49,13 @@ public class MemoryBasedHealthMonitor implements ExceptionHandler, LogTap {
                     unique = false;
                 }
             }
-            incidents.add(0, incident);
+            incidents.addFirst(incident);
             numIncidents.inc();
             if (unique) {
                 numUniqueIncidents.inc();
             }
             while (incidents.size() > maxErrors) {
-                incidents.remove(incidents.size() - 1);
+                incidents.removeLast();
             }
         }
     }
@@ -63,10 +63,10 @@ public class MemoryBasedHealthMonitor implements ExceptionHandler, LogTap {
     @Override
     public void handleLogMessage(LogMessage msg) {
         synchronized (messages) {
-            messages.add(0, msg);
+            messages.addFirst(msg);
             numLogMessages.inc();
             while (messages.size() > maxMsg) {
-                messages.remove(messages.size() - 1);
+                messages.removeLast();
             }
         }
     }

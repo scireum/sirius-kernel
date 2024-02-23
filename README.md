@@ -17,7 +17,7 @@ the core frameworks and a fair amount of commonly used classes.
 
 ## Important files of this module:
 
-* [Default configuration](src/main/resources/component-kernel.conf)
+* [Default configuration](src/main/resources/component-050-kernel.conf)
 * [Maven setup](pom.xml).
 
 ## The Kernel

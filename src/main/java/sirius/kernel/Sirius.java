@@ -31,9 +31,11 @@ import java.net.URLConnection;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -279,7 +281,7 @@ public class Sirius {
      * These are <tt>settings.conf</tt>, <tt>develop.conf</tt>, <tt>test.conf</tt>
      * and finally, <tt>instance.conf</tt>.
      */
-    private static void setupLocalConfig() {
+    protected static void setupLocalConfig() {
         LOG.INFO("Loading local config...");
         LOG.INFO(SEPARATOR_LINE);
 
@@ -343,27 +345,32 @@ public class Sirius {
 
         if (isStartedAsTest()) {
             // Load test configurations (will override component configs)
-            classpath.find(Pattern.compile("component-test-([^.]*?)\\.conf")).forEach(value -> {
-                try {
-                    LOG.INFO("Loading test config: %s", value.group());
-                    config = config.withFallback(ConfigFactory.parseResources(setup.getLoader(), value.group()));
-                } catch (Exception exception) {
-                    handleConfigError(value.group(), exception);
-                }
-            });
+            classpath.find(Pattern.compile("component-test-([^.]*?)\\.conf"))
+                     .map(Matcher::group)
+                     .sorted(Comparator.reverseOrder())
+                     .forEach(configPath -> {
+                         try {
+                             LOG.INFO("Loading test config: %s", configPath);
+                             config = config.withFallback(ConfigFactory.parseResources(setup.getLoader(), configPath));
+                         } catch (Exception exception) {
+                             handleConfigError(configPath, exception);
+                         }
+                     });
         }
 
         // Load component configurations
-        classpath.find(Pattern.compile("component-([^\\-]*?)([^.]*?)\\.conf")).forEach(value -> {
-            if (!"test".equals(value.group(1))) {
-                try {
-                    LOG.INFO("Loading config: %s", value.group());
-                    config = config.withFallback(ConfigFactory.parseResources(setup.getLoader(), value.group()));
-                } catch (Exception exception) {
-                    handleConfigError(value.group(), exception);
-                }
-            }
-        });
+        classpath.find(Pattern.compile("component-([^\\-]*?)([^.]*?)\\.conf"))
+                 .map(Matcher::group)
+                 .filter(configPath -> !"test".equals(configPath))
+                 .sorted(Comparator.reverseOrder())
+                 .forEach(configPath -> {
+                     try {
+                         LOG.INFO("Loading config: %s", configPath);
+                         config = config.withFallback(ConfigFactory.parseResources(setup.getLoader(), configPath));
+                     } catch (Exception exception) {
+                         handleConfigError(configPath, exception);
+                     }
+                 });
 
         config = config.resolve();
 

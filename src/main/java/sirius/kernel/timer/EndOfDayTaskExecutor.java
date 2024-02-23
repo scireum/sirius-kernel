@@ -117,7 +117,7 @@ public class EndOfDayTaskExecutor implements EveryDay {
             Exceptions.handle()
                       .to(Log.BACKGROUND)
                       .error(exception)
-                      .withSystemErrorMessage("An error occured when executing end of day task %s (%s): %s (%s)",
+                      .withSystemErrorMessage("An error occurred when executing end of day task %s (%s): %s (%s)",
                                               task.getName(),
                                               task.getClass())
                       .handle();

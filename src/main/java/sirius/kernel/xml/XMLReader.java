@@ -13,7 +13,6 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serial;
 import java.io.StringReader;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +64,7 @@ public class XMLReader extends DefaultHandler {
     public XMLReader() {
         try {
             documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            taskContext = CallContext.getCurrent().get(TaskContext.class);
+            taskContext = TaskContext.get();
         } catch (ParserConfigurationException exception) {
             throw Exceptions.handle(exception);
         }
@@ -91,7 +91,7 @@ public class XMLReader extends DefaultHandler {
         // Delegate to active handlers and deletes them if they are finished...
         activeHandlers.removeIf(handler -> handler.endElement(name));
 
-        currentPath.remove(currentPath.size() - 1);
+        currentPath.removeLast();
     }
 
     @Override
@@ -199,7 +199,7 @@ public class XMLReader extends DefaultHandler {
 
     private InputSource tryResolveEntity(String systemId, Function<String, InputStream> resourceLocator)
             throws IOException {
-        URL url = new URL(systemId);
+        URL url = URI.create(systemId).toURL();
         if (!"file".equals(url.getProtocol())) {
             return emptyResource();
         }

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -97,10 +98,13 @@ public class SOAPClient {
      */
     public static final String SOAP_TIMEOUT_CONFIG_KEY = "soap";
 
+    private static final String DEFAULT_CONTENT_TYPE_HEADER = "text/xml";
+
     private final URL endpoint;
     private final BasicNamespaceContext namespaceContext = new BasicNamespaceContext();
     private List<Attribute> namespaceDefinitions;
     private String actionPrefix = "";
+    private String contentTypeHeader = DEFAULT_CONTENT_TYPE_HEADER;
     private Consumer<XMLCall> callEnhancer;
     private final Map<String, URL> customEndpoints = new HashMap<>();
     private Consumer<BiConsumer<String, Object>> defaultParameterProvider;
@@ -111,6 +115,8 @@ public class SOAPClient {
     private boolean trustSelfSignedCertificates;
 
     private static final Average responseTime = new Average();
+
+    private BooleanSupplier isDebugLogActive = () -> true;
 
     /**
      * Creates a new client which talks to the given endpoint.
@@ -163,6 +169,18 @@ public class SOAPClient {
      */
     public SOAPClient withActionPrefix(@Nonnull String prefix) {
         this.actionPrefix = prefix;
+        return this;
+    }
+
+    /**
+     * Defines a custom value for the "Content-Type" HTTP header to use for requests. By default, the header is set
+     * to {@link #DEFAULT_CONTENT_TYPE_HEADER}.
+     *
+     * @param contentTypeHeader the content type to use for requests
+     * @return the client itself for fluent method calls
+     */
+    public SOAPClient withCustomContentTypeHeader(@Nonnull String contentTypeHeader) {
+        this.contentTypeHeader = contentTypeHeader;
         return this;
     }
 
@@ -235,6 +253,18 @@ public class SOAPClient {
     }
 
     /**
+     * Makes it possible to use a supplier to determine whether the debug logging is active.
+     * The Logger must be on FINE level for this to have any effect.
+     *
+     * @param isDebugLogActive the supplier to determine the active state
+     * @return the client itself for fluent method calls
+     */
+    public SOAPClient withIsDebugLogActive(BooleanSupplier isDebugLogActive) {
+        this.isDebugLogActive = isDebugLogActive;
+        return this;
+    }
+
+    /**
      * Determines if SOAP faults should be thrown as {@link SOAPFaultException}.
      * <p>
      * Otherwise, a SOAP fault will be handled as {@link HandledException}. The <tt>SOAPFaultException</tt> will
@@ -296,7 +326,8 @@ public class SOAPClient {
 
         try (Operation op = new Operation(() -> Strings.apply("SOAP %s -> %s", action, effectiveEndpoint),
                                           Duration.ofSeconds(15))) {
-            XMLCall call = XMLCall.to(effectiveEndpoint.toURI()).withFineLogger(LOG);
+            XMLCall call =
+                    XMLCall.to(effectiveEndpoint.toURI(), contentTypeHeader).withFineLogger(LOG, isDebugLogActive);
             call.getOutcall().withConfiguredTimeout(SOAP_TIMEOUT_CONFIG_KEY);
             call.withNamespaceContext(namespaceContext);
             if (callEnhancer != null) {

@@ -568,7 +568,7 @@ public class Json {
             return Amount.NOTHING;
         }
         if (node.isNumber()) {
-            return Amount.of(node.decimalValue());
+            return Amount.ofRounded(node.decimalValue());
         }
         if (node.isTextual()) {
             return Amount.ofMachineString(node.textValue());
