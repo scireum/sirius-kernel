@@ -1,0 +1,25 @@
+name: Enforce PR Labels
+on:
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize]
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: mheap/github-action-required-labels@v5
+        with:
+          mode: minimum
+          count: 1
+          labels: "💣 BREAKING CHANGE, 🧬 Enhancement, 🐛 Bugfix, 🛠️ Maintenance, ⬆️ Dependencies"
+          add_comment: true
+          message: "This PR can only be merged after at least one of our categorizing labels has been added: {{ provided }}"
+      - uses: mheap/github-action-required-labels@v5
+        with:
+          mode: exactly
+          count: 0
+          labels: "🎁 Next version, 🖐 Keep open, 🕔 Wait for sirius"
+          add_comment: true
+          message: "This PR can only be merged after all blocking labels have been removed: {{ provided }}"
