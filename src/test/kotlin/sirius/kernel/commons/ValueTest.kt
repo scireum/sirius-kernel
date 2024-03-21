@@ -114,12 +114,16 @@ class ValueTest {
     @Test
     fun `Test asBoolean with default`() {
         assertEquals(false, Value.of("").asBoolean(false))
-        assertEquals(false, Value.of("false").asBoolean(false))
-        assertEquals(true, Value.of("true").asBoolean(false))
         assertEquals(false, Value.of(false).asBoolean(false))
-        assertEquals(true, Value.of(true).asBoolean(false))
-        assertEquals(true, Value.of(NLS.get("NLS.yes")).asBoolean(false))
+        assertEquals(false, Value.of("false").asBoolean(false))
+        assertEquals(false, Value.of(0).asBoolean(false))
+        assertEquals(false, Value.of("0").asBoolean(false))
         assertEquals(false, Value.of(NLS.get("NLS.no")).asBoolean(false))
+        assertEquals(true, Value.of(true).asBoolean(false))
+        assertEquals(true, Value.of("true").asBoolean(false))
+        assertEquals(true, Value.of(1).asBoolean(false))
+        assertEquals(true, Value.of("1").asBoolean(false))
+        assertEquals(true, Value.of(NLS.get("NLS.yes")).asBoolean(false))
     }
 
     @Test

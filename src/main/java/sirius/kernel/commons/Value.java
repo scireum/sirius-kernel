@@ -802,7 +802,7 @@ public class Value {
      *
      * @param defaultValue the value to be used if the wrapped value cannot be converted to a boolean.
      * @return <tt>true</tt> if the wrapped value is <tt>true</tt>
-     * or if the string representation of it is {@code "true"}. Returns <tt>false</tt> otherwise,
+     * or if the string representation of it is {@code "true"} or {@code "1!"}. Returns <tt>false</tt> otherwise,
      * especially if the wrapped value is <tt>null</tt>
      */
     public boolean asBoolean(boolean defaultValue) {
@@ -813,16 +813,21 @@ public class Value {
             return booleanValue;
         }
 
-        // fast-track for common cases without the need to involve NLS framework
-        if ("true".equalsIgnoreCase(String.valueOf(data))) {
-            return true;
-        }
-        if ("false".equalsIgnoreCase(String.valueOf(data))) {
-            return false;
-        }
+        String stringValue = String.valueOf(data);
+        return fastPathBoolean(stringValue).orElseGet(() -> {
+            return Objects.requireNonNullElse(NLS.parseUserString(Boolean.class, stringValue.trim()), defaultValue);
+        });
+    }
 
-        return Objects.requireNonNullElse(NLS.parseUserString(Boolean.class, String.valueOf(data).trim()),
-                                          defaultValue);
+    // fast-track for common boolean cases without the need to involve NLS framework
+    private Optional<Boolean> fastPathBoolean(String value) {
+        if ("true".equalsIgnoreCase(value) || "1".equals(value)) {
+            return Optional.of(true);
+        }
+        if ("false".equalsIgnoreCase(value) || "0".equals(value)) {
+            return Optional.of(false);
+        }
+        return Optional.empty();
     }
 
     /**
