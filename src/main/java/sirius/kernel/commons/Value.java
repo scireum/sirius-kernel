@@ -803,7 +803,7 @@ public class Value {
      *
      * @param defaultValue the value to be used if the wrapped value cannot be converted to a boolean.
      * @return <tt>true</tt> if the wrapped value is <tt>true</tt>
-     * or if the string representation of it is {@code "true"} or {@code "1!"}. Returns <tt>false</tt> otherwise,
+     * or if the string representation of it is {@code "true"} or {@code "1"}. Returns <tt>false</tt> otherwise,
      * especially if the wrapped value is <tt>null</tt>
      */
     public boolean asBoolean(boolean defaultValue) {
