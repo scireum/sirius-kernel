@@ -374,4 +374,20 @@ class AmountTest {
 
         assertEquals(result, a.remainder(b))
     }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', textBlock = """
+        0.420          | 0.42
+        1.0            | 1
+        200            | 200
+        200.0000       | 200
+        600.010        | 600.01"""
+    )
+    fun `getAmountWithoutTrailingZeros() works as expected`(
+        @ConvertWith(AmountConverter::class) a: Amount,
+        result: String,
+    ) {
+        assertEquals(result, a.fetchAmountWithoutTrailingZeros()?.toPlainString())
+    }
 }
