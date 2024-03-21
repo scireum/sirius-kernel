@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -245,6 +246,22 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
     @Nullable
     public BigDecimal getAmount() {
         return value;
+    }
+
+    /**
+     * Unwraps the internally used <tt>BigDecimal</tt> like {@link #getAmount()}, but also strips trailing zeros from
+     * the decimal part.
+     *
+     * @return the amount with trailing zeros stripped of the decimal part
+     */
+    @Nullable
+    public BigDecimal fetchAmountWithoutTrailingZeros() {
+        return Optional.ofNullable(value)
+                       .map(BigDecimal::stripTrailingZeros)
+                       .map(bigDecimal -> bigDecimal.scale() < 0 ?
+                                          bigDecimal.setScale(0, RoundingMode.UNNECESSARY) :
+                                          bigDecimal)
+                       .orElse(null);
     }
 
     /**
