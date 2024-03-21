@@ -135,12 +135,36 @@ class ValueTest {
     }
 
     @Test
-    fun `Test coerce boolean and without default`() {
+    fun `Test coerce boolean without default`() {
         assertEquals(false, Value.of("").coerce(Boolean::class.java, null))
         assertEquals(false, Value.of("false").coerce(Boolean::class.java, null))
         assertEquals(true, Value.of("true").coerce(Boolean::class.java, null))
+        assertEquals(false, Value.of("0").coerce(Boolean::class.java, null))
+        assertEquals(true, Value.of("1").coerce(Boolean::class.java, null))
         assertEquals(false, Value.of(false).coerce(Boolean::class.java, null))
         assertEquals(true, Value.of(true).coerce(Boolean::class.java, null))
+    }
+
+    @Test
+    fun `Test coerce boolean with default true`() {
+        assertEquals(true, Value.of("").coerce(Boolean::class.java, true))
+        assertEquals(false, Value.of("false").coerce(Boolean::class.java, true))
+        assertEquals(true, Value.of("true").coerce(Boolean::class.java, true))
+        assertEquals(false, Value.of("0").coerce(Boolean::class.java, true))
+        assertEquals(true, Value.of("1").coerce(Boolean::class.java, true))
+        assertEquals(false, Value.of(false).coerce(Boolean::class.java, true))
+        assertEquals(true, Value.of(true).coerce(Boolean::class.java, true))
+    }
+
+    @Test
+    fun `Test coerce boolean with default false`() {
+        assertEquals(false, Value.of("").coerce(Boolean::class.java, false))
+        assertEquals(false, Value.of("false").coerce(Boolean::class.java, false))
+        assertEquals(true, Value.of("true").coerce(Boolean::class.java, false))
+        assertEquals(false, Value.of("0").coerce(Boolean::class.java, false))
+        assertEquals(true, Value.of("1").coerce(Boolean::class.java, false))
+        assertEquals(false, Value.of(false).coerce(Boolean::class.java, false))
+        assertEquals(true, Value.of(true).coerce(Boolean::class.java, false))
     }
 
     @Test

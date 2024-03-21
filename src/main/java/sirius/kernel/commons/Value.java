@@ -528,12 +528,13 @@ public class Value {
     public <T> T coerce(Class<T> targetClazz, T defaultValue) {
         if (Boolean.class.equals(targetClazz) || boolean.class.equals(targetClazz)) {
             if (isEmptyString()) {
-                return (T) Boolean.FALSE;
+                return defaultValue != null ? defaultValue : (T) Boolean.FALSE;
             }
             if (data instanceof Boolean) {
                 return (T) data;
             }
-            return (T) NLS.parseMachineString(Boolean.class, String.valueOf(data));
+            String stringValue = String.valueOf(data).trim();
+            return (T) fastPathBoolean(stringValue).orElseGet(() -> NLS.parseMachineString(Boolean.class, stringValue));
         }
         if (data == null) {
             return defaultValue;
@@ -813,9 +814,9 @@ public class Value {
             return booleanValue;
         }
 
-        String stringValue = String.valueOf(data);
+        String stringValue = String.valueOf(data).trim();
         return fastPathBoolean(stringValue).orElseGet(() -> {
-            return Objects.requireNonNullElse(NLS.parseUserString(Boolean.class, stringValue.trim()), defaultValue);
+            return Objects.requireNonNullElse(NLS.parseUserString(Boolean.class, stringValue), defaultValue);
         });
     }
 
