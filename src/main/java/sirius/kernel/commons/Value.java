@@ -534,7 +534,7 @@ public class Value {
                 return (T) data;
             }
             String stringValue = String.valueOf(data).trim();
-            return (T) fastPathBoolean(stringValue).orElseGet(() -> NLS.parseMachineString(Boolean.class, stringValue));
+            return (T) parseWithoutNLS(stringValue).orElseGet(() -> NLS.parseMachineString(Boolean.class, stringValue));
         }
         if (data == null) {
             return defaultValue;
@@ -815,13 +815,18 @@ public class Value {
         }
 
         String stringValue = String.valueOf(data).trim();
-        return fastPathBoolean(stringValue).orElseGet(() -> {
+        return parseWithoutNLS(stringValue).orElseGet(() -> {
             return Objects.requireNonNullElse(NLS.parseUserString(Boolean.class, stringValue), defaultValue);
         });
     }
 
-    // fast-track for common boolean cases without the need to involve NLS framework
-    private Optional<Boolean> fastPathBoolean(String value) {
+    /**
+     * Fast-track for common boolean cases without the need to involve NLS framework
+     *
+     * @param value the value to parse
+     * @return an optional boolean value
+     */
+    private Optional<Boolean> parseWithoutNLS(String value) {
         if ("true".equalsIgnoreCase(value) || "1".equals(value)) {
             return Optional.of(true);
         }
