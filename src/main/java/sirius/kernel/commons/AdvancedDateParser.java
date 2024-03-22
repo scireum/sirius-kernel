@@ -27,7 +27,7 @@ import java.util.TreeSet;
  * A flexible parser for dates in various formats.
  * <p>
  * It can parse formats like DD.MM.YYYY, DD-MM-YYYY, MM/DD/YYYY or ISO dates like YYYY-MM-DDTHH:MM:SS along with some
- * modifiers as decribed below.
+ * modifiers as described below.
  * <p>
  * A valid expression is defined by the following grammar:
  * <ul>

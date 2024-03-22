@@ -528,12 +528,13 @@ public class Value {
     public <T> T coerce(Class<T> targetClazz, T defaultValue) {
         if (Boolean.class.equals(targetClazz) || boolean.class.equals(targetClazz)) {
             if (isEmptyString()) {
-                return (T) Boolean.FALSE;
+                return defaultValue != null ? defaultValue : (T) Boolean.FALSE;
             }
             if (data instanceof Boolean) {
                 return (T) data;
             }
-            return (T) NLS.parseMachineString(Boolean.class, String.valueOf(data));
+            String stringValue = String.valueOf(data).trim();
+            return (T) parseWithoutNLS(stringValue).orElseGet(() -> NLS.parseMachineString(Boolean.class, stringValue));
         }
         if (data == null) {
             return defaultValue;
@@ -802,7 +803,7 @@ public class Value {
      *
      * @param defaultValue the value to be used if the wrapped value cannot be converted to a boolean.
      * @return <tt>true</tt> if the wrapped value is <tt>true</tt>
-     * or if the string representation of it is {@code "true"}. Returns <tt>false</tt> otherwise,
+     * or if the string representation of it is {@code "true"} or {@code "1"}. Returns <tt>false</tt> otherwise,
      * especially if the wrapped value is <tt>null</tt>
      */
     public boolean asBoolean(boolean defaultValue) {
@@ -813,16 +814,26 @@ public class Value {
             return booleanValue;
         }
 
-        // fast-track for common cases without the need to involve NLS framework
-        if ("true".equalsIgnoreCase(String.valueOf(data))) {
-            return true;
-        }
-        if ("false".equalsIgnoreCase(String.valueOf(data))) {
-            return false;
-        }
+        String stringValue = String.valueOf(data).trim();
+        return parseWithoutNLS(stringValue).orElseGet(() -> {
+            return Objects.requireNonNullElse(NLS.parseUserString(Boolean.class, stringValue), defaultValue);
+        });
+    }
 
-        return Objects.requireNonNullElse(NLS.parseUserString(Boolean.class, String.valueOf(data).trim()),
-                                          defaultValue);
+    /**
+     * Fast-track for common boolean cases without the need to involve NLS framework
+     *
+     * @param value the value to parse
+     * @return an optional boolean value
+     */
+    private Optional<Boolean> parseWithoutNLS(String value) {
+        if ("true".equalsIgnoreCase(value) || "1".equals(value)) {
+            return Optional.of(true);
+        }
+        if ("false".equalsIgnoreCase(value) || "0".equals(value)) {
+            return Optional.of(false);
+        }
+        return Optional.empty();
     }
 
     /**
