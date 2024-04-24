@@ -38,18 +38,18 @@ class NLSTest {
                             "42.1",
                             Integer::class.java,
                             IllegalArgumentException::class.java,
-                            "Bitte geben Sie eine gültige Zahl ein. '42.1' ist ungültig."
+                            "Bitte geben Sie eine gültige Ganzzahl ein. '42.1' ist ungültig."
                     ),
                     Arguments.of(
                             "42,1",
                             Integer::class.java,
                             IllegalArgumentException::class.java,
-                            "Bitte geben Sie eine gültige Zahl ein. '42,1' ist ungültig."
+                            "Bitte geben Sie eine gültige Ganzzahl ein. '42,1' ist ungültig."
                     ),
                     Arguments.of(
                             "2999999999",
                             Integer::class.java, IllegalArgumentException::class.java,
-                            "Bitte geben Sie eine gültige Zahl ein. '2999999999' ist ungültig."
+                            "Bitte geben Sie eine gültige Ganzzahl ein. '2999999999' ist ungültig."
                     ),
                     Arguments.of(
                             "blub",

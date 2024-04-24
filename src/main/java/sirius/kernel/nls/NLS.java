@@ -1060,7 +1060,7 @@ public class NLS {
             try {
                 return (V) Integer.valueOf(parseMachineString(BigDecimal.class, value).intValueExact());
             } catch (IllegalArgumentException | ArithmeticException exception) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(),
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidIntegerNumber").set("value", value).format(),
                                                    exception);
             }
         }
@@ -1068,7 +1068,7 @@ public class NLS {
             try {
                 return (V) Long.valueOf(parseMachineString(BigDecimal.class, value).longValueExact());
             } catch (IllegalArgumentException | ArithmeticException exception) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(),
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidIntegerNumber").set("value", value).format(),
                                                    exception);
             }
         }
@@ -1176,7 +1176,7 @@ public class NLS {
             try {
                 return (V) Integer.valueOf(parseDecimalNumberFromUser(value, language).intValueExact());
             } catch (NumberFormatException | ArithmeticException exception) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(),
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidIntegerNumber").set("value", value).format(),
                                                    exception);
             }
         }
@@ -1184,7 +1184,7 @@ public class NLS {
             try {
                 return (V) Long.valueOf(parseDecimalNumberFromUser(value, language).longValueExact());
             } catch (NumberFormatException | ArithmeticException exception) {
-                throw new IllegalArgumentException(fmtr("NLS.errInvalidNumber").set("value", value).format(),
+                throw new IllegalArgumentException(fmtr("NLS.errInvalidIntegerNumber").set("value", value).format(),
                                                    exception);
             }
         }
