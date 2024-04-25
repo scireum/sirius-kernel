@@ -463,6 +463,20 @@ public class StringCleanup {
     }
 
     /**
+     * Capitalizes the first character of the given string.
+     *
+     * @param input the input to process
+     * @return the resulting string
+     */
+    public static String capitalize(@Nonnull String input) {
+        char titleCasedChar = Character.toTitleCase(input.charAt(0));
+        if (titleCasedChar == input.charAt(0)) {
+            return input;
+        }
+        return titleCasedChar + input.substring(1);
+    }
+
+    /**
      * Removes all {@linkplain #PATTERN_STRIP_XML XML tags} from the given string.
      *
      * @param input the input to process

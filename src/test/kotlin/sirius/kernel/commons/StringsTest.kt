@@ -204,6 +204,18 @@ class StringsTest {
                 UnaryOperator { input: String? -> StringCleanup.uppercase(input!!) })
         )
         assertEquals(
+            "Hello",
+            Strings.cleanup("hello", UnaryOperator { input: String? -> StringCleanup.capitalize(input!!) })
+        )
+        assertEquals(
+            "HeLLo",
+            Strings.cleanup("heLLo", UnaryOperator { input: String? -> StringCleanup.capitalize(input!!) })
+        )
+        assertEquals(
+            "-hello-",
+            Strings.cleanup("-hello-", UnaryOperator { input: String? -> StringCleanup.capitalize(input!!) })
+        )
+        assertEquals(
                 "Hello",
                 Strings.cleanup("Hel-lo", UnaryOperator { input: String? -> StringCleanup.removePunctuation(input!!) })
         )
