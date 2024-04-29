@@ -160,7 +160,7 @@ class AmountTest {
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         4.2            | 42             | 46.2
         42             | 4.2            | 46.2
         0              | 42             | 42 
@@ -169,9 +169,9 @@ class AmountTest {
         42             |                | 42 """
     )
     fun `add() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) b: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) b: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
 
         assertEquals(result, a.add(b))
@@ -179,7 +179,7 @@ class AmountTest {
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         4.2            | 42             | -37.8
         42             | 4.2            | 37.8
          0             | 42             | -42
@@ -188,9 +188,9 @@ class AmountTest {
         42             |                | 42 """
     )
     fun `subtract() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) b: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) b: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
 
         assertEquals(result, a.subtract(b))
@@ -198,7 +198,7 @@ class AmountTest {
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         4.2            | 42             | 176.4
         42             | 4.2            | 176.4
         0              | 42             | 0
@@ -207,16 +207,16 @@ class AmountTest {
         42             |                |   """
     )
     fun `times() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) b: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) b: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
         assertEquals(result, a.times(b))
     }
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         4.2            | 42             | 0.1
         42             | 4.2            | 10
         0              | 42             | 0
@@ -225,16 +225,16 @@ class AmountTest {
         42             |                |    """
     )
     fun `divideBy() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) b: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) b: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
         assertEquals(result, a.divideBy(b))
     }
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         4.2            | -4.2
         -4.2           | 4.2
         42             | -42
@@ -243,15 +243,15 @@ class AmountTest {
                        |    """
     )
     fun `negate() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
         assertEquals(result, a.negate())
     }
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         4.2            | 10             | 4.62
         0              | 42             | 0
         42             | 0              | 42
@@ -259,9 +259,9 @@ class AmountTest {
         42             |                | 42 """
     )
     fun `increasePercent() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) b: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) b: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
 
         assertEquals(result, a.increasePercent(b))
@@ -269,7 +269,7 @@ class AmountTest {
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         4.2            | 10             | 3.78
         0              | 42             | 0
         42             | 0              | 42
@@ -277,9 +277,9 @@ class AmountTest {
         42             |                | 42"""
     )
     fun `decreasePercent() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) b: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) b: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
 
         assertEquals(result, a.decreasePercent(b))
@@ -287,7 +287,7 @@ class AmountTest {
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         4.2            | 42             | 10
         0              | 42             | 0
         42             | 0              | 
@@ -295,9 +295,9 @@ class AmountTest {
         42             |                | """
     )
     fun `percentageOf() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) b: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) b: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
 
         assertEquals(result, a.percentageOf(b))
@@ -305,7 +305,7 @@ class AmountTest {
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         4.62           | 4.2            | 10
         0              | 42             | -100
         42             | 0              | 
@@ -313,9 +313,9 @@ class AmountTest {
         42             |                |  """
     )
     fun `percentageDifferenceOf() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) b: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) b: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
 
         assertEquals(result, a.percentageDifferenceOf(b))
@@ -323,7 +323,7 @@ class AmountTest {
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         0.42           | 42
         1              | 100
         2              | 200
@@ -331,8 +331,8 @@ class AmountTest {
                        |  """
     )
     fun `toPercent() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
 
         assertEquals(result, a.toPercent())
@@ -341,7 +341,7 @@ class AmountTest {
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         42                 | 0.42
         100                | 1
         200                | 2
@@ -349,8 +349,8 @@ class AmountTest {
                            |  """
     )
     fun `asDecimal() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
 
         assertEquals(result, a.asDecimal())
@@ -358,7 +358,7 @@ class AmountTest {
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', textBlock = """
+        delimiter = '|', textBlock = """
         10             | 2              | 0
         10             | 3              | 1
         10             | 0              | 
@@ -367,11 +367,27 @@ class AmountTest {
         10             |                |  """
     )
     fun `remainder() works as expected`(
-            @ConvertWith(AmountConverter::class) a: Amount,
-            @ConvertWith(AmountConverter::class) b: Amount,
-            @ConvertWith(AmountConverter::class) result: Amount,
+        @ConvertWith(AmountConverter::class) a: Amount,
+        @ConvertWith(AmountConverter::class) b: Amount,
+        @ConvertWith(AmountConverter::class) result: Amount,
     ) {
 
         assertEquals(result, a.remainder(b))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', textBlock = """
+        0.420          | 0.42
+        1.0            | 1
+        200            | 200
+        200.0000       | 200
+        600.010        | 600.01"""
+    )
+    fun `getAmountWithoutTrailingZeros() works as expected`(
+        @ConvertWith(AmountConverter::class) a: Amount,
+        result: String,
+    ) {
+        assertEquals(result, a.fetchAmountWithoutTrailingZeros()?.toPlainString())
     }
 }

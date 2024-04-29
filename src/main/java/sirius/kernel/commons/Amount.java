@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -30,7 +31,7 @@ import java.util.function.Supplier;
  * <p>
  * Adds some extended computations as well as locale aware formatting options to perform "exact" computations on
  * numeric value. The internal representation is <tt>BigDecimal</tt> and uses MathContext.DECIMAL128 for
- * numerical operations. Also the scale of each value is fixed to 5 decimal places after the comma, since this is
+ * numerical operations. Also, the scale of each value is fixed to 5 decimal places after the comma, since this is
  * enough for most business applications and rounds away any rounding errors introduced by doubles.
  * <p>
  * A textual representation can be created by calling one of the <tt>toString</tt> methods or by supplying
@@ -39,7 +40,7 @@ import java.util.function.Supplier;
  * Note that {@link #toMachineString()} to be used to obtain a technical representation suitable for file formats
  * like XML etc. This is also used by {@link NLS#toMachineString(Object)}. The default representation uses two
  * decimal digits. However, if the amount has bed {@link #round(int, RoundingMode) rounded}, the given amount
- * of decimals will be used in all subesquent call to {@link #toMachineString()}. Therefore, this can be used to
+ * of decimals will be used in all subsequent call to {@link #toMachineString()}. Therefore, this can be used to
  * control the exact formatting (e.g. when writing XML or JSON).
  * <p>
  * Being able to be <i>empty</i>, this class handles <tt>null</tt> values gracefully, which simplifies many operations.
@@ -245,6 +246,22 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
     @Nullable
     public BigDecimal getAmount() {
         return value;
+    }
+
+    /**
+     * Unwraps the internally used <tt>BigDecimal</tt> like {@link #getAmount()}, but also strips trailing zeros from
+     * the decimal part.
+     *
+     * @return the amount with trailing zeros stripped of the decimal part
+     */
+    @Nullable
+    public BigDecimal fetchAmountWithoutTrailingZeros() {
+        return Optional.ofNullable(value)
+                       .map(BigDecimal::stripTrailingZeros)
+                       .map(bigDecimal -> bigDecimal.scale() < 0 ?
+                                          bigDecimal.setScale(0, RoundingMode.UNNECESSARY) :
+                                          bigDecimal)
+                       .orElse(null);
     }
 
     /**
