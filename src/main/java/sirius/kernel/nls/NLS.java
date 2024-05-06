@@ -31,6 +31,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -548,7 +549,7 @@ public class NLS {
     }
 
     /**
-     * Converts a given integer ({@code Calendar.Monday...Calendar.Sunday}) into textual their representation.
+     * Converts a given integer ({@code Calendar.Monday...Calendar.Sunday}) into their textual representation.
      *
      * @param day the weekday to be translated. Use constants {@link Calendar#MONDAY} etc.
      * @return the name of the given weekday in the current language
@@ -568,6 +569,24 @@ public class NLS {
     }
 
     /**
+     * Converts a given weekday ({@link DayOfWeek#MONDAY} ... {@link DayOfWeek#SUNDAY}) into the textual representation.
+     *
+     * @param day the weekday to be translated. Use constants {@link DayOfWeek#MONDAY} etc.
+     * @return the name of the given weekday in the current language
+     */
+    public static String getDayOfWeek(DayOfWeek day) {
+        return switch (day) {
+            case DayOfWeek.MONDAY -> CommonKeys.MONDAY.translated();
+            case DayOfWeek.TUESDAY -> CommonKeys.TUESDAY.translated();
+            case DayOfWeek.WEDNESDAY -> CommonKeys.WEDNESDAY.translated();
+            case DayOfWeek.THURSDAY -> CommonKeys.THURSDAY.translated();
+            case DayOfWeek.FRIDAY -> CommonKeys.FRIDAY.translated();
+            case DayOfWeek.SATURDAY -> CommonKeys.SATURDAY.translated();
+            case DayOfWeek.SUNDAY -> CommonKeys.SUNDAY.translated();
+        };
+    }
+
+    /**
      * Returns a two letter abbreviation of the name of the given day, like {@code "Mo"}.
      *
      * @param day the weekday to be translated. Use constants {@link Calendar#MONDAY} etc.
@@ -575,6 +594,16 @@ public class NLS {
      * or {@code ""} if the given index was invalid.
      */
     public static String getDayOfWeekShort(int day) {
+        return Value.of(getDayOfWeek(day)).substring(0, 2);
+    }
+
+    /**
+     * Returns a two letter abbreviation of the name of the given day, like {@code "Mo"}.
+     *
+     * @param day the weekday to be translated. Use constants {@link DayOfWeek#MONDAY} etc.
+     * @return returns the first two letters of the name
+     */
+    public static String getDayOfWeekShort(DayOfWeek day) {
         return Value.of(getDayOfWeek(day)).substring(0, 2);
     }
 
