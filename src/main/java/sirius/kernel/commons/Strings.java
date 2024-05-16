@@ -39,6 +39,16 @@ import java.util.stream.Collectors;
 public class Strings {
 
     /**
+     * Contains the characters which should be used in order to depict an ellipsis.
+     */
+    private static final String ELLIPSIS = "…";
+
+    /**
+     * Contains the marker which should be used to depict that the string has been truncated.
+     */
+    private static final String TRUNCATED_MARKER = "[truncated]";
+
+    /**
      * Contains all characters which can safely be used for codes without too much confusion (e.g. 0 vs O are
      * excluded).
      */
@@ -410,22 +420,19 @@ public class Strings {
             return str;
         }
 
-        final String ellipsis = "…";
-        final String truncated = "[truncated]";
-
         if (charactersToPreserveAtTheEnd < 0) {
             charactersToPreserveAtTheEnd = 0;
         }
 
         StringBuilder signal = new StringBuilder();
         if (showEllipsis) {
-            signal.append(ellipsis);
+            signal.append(ELLIPSIS);
         }
         if (showTruncated) {
-            signal.append(truncated);
+            signal.append(TRUNCATED_MARKER);
         }
         if (charactersToPreserveAtTheEnd > 0 && showTruncated && showEllipsis) {
-            signal.append(ellipsis);
+            signal.append(ELLIPSIS);
         }
 
         int effectiveLength = length - signal.length() - charactersToPreserveAtTheEnd;
