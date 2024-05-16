@@ -395,6 +395,42 @@ public class Strings {
     }
 
     /**
+     * Truncates the given string while preserving characters at the end. Also adds a truncated signal in the middle to
+     * indicate that the string was truncated.
+     * <p>
+     * Note:
+     * The truncated string consists of three parts:
+     * <ul>
+     *     <li>
+     *         start - this is the first part of the string for which the algorithm tries to calculate an effective
+     *         length. This is done by subtracting the length of the truncated signal (13) and the characters to
+     *         preserve at the end from the given <tt>length</tt>. If for some reason the calculated effective length is
+     *         negative, the original provided length is taken. This means that the total length of the returned string
+     *         could be length + 13 + charactersToPreserveAtTheEnd. This is only the case if either the length is very
+     *         small or the charactersToPreserveAtTheEnd is ridiculously high.
+     *     </li>
+     *     <li>
+     *         middle - this is the truncated signal which is added in the middle of the truncated string. It consists
+     *         of 13 characters in total (<tt>…[truncated]…</tt>).
+     *     </li>
+     *     <li>
+     *         end - this is the last part of the original string and contains the characters which should be
+     *         preserved at the end of the input.
+     *     </li>
+     * </ul>
+     *
+     * @param input                        the object which string representation should be limited to the given length
+     * @param length                       the max. number of characters to return
+     * @param charactersToPreserveAtTheEnd the number of characters to preserve at the end of the string
+     * @return the truncated string with a signal in the middle and characters preserved at the end, or the full string
+     * if the <tt>input</tt> is shorter than the given length + charactersToPreserveAtTheEnd. However,
+     * if input is <tt>null</tt>, "" is returned.
+     */
+    public static String truncateMiddle(@Nullable Object input, int length, int charactersToPreserveAtTheEnd) {
+        return limit(input, length, true, true, charactersToPreserveAtTheEnd);
+    }
+
+    /**
      * Limits the length of the given string to the given length.
      *
      * @param input                        the object which string representation should be limited to the given length
@@ -406,11 +442,11 @@ public class Strings {
      * than <tt>length</tt>, the full value is returned. If input is <tt>null</tt>, "" is returned.
      * If <tt>charactersToPreserveAtTheEnd</tt> is negativ it is omitted.
      */
-    public static String limit(@Nullable Object input,
-                               int length,
-                               boolean showEllipsis,
-                               boolean showTruncated,
-                               int charactersToPreserveAtTheEnd) {
+    private static String limit(@Nullable Object input,
+                                int length,
+                                boolean showEllipsis,
+                                boolean showTruncated,
+                                int charactersToPreserveAtTheEnd) {
         if (isEmpty(input)) {
             return "";
         }
@@ -424,15 +460,15 @@ public class Strings {
             charactersToPreserveAtTheEnd = 0;
         }
 
-        String signal = generateTruncatedSignal(showEllipsis, showTruncated, charactersToPreserveAtTheEnd > 0);
-        int effectiveLength = length - signal.length() - charactersToPreserveAtTheEnd;
+        String middle = generateTruncatedSignal(showEllipsis, showTruncated, charactersToPreserveAtTheEnd > 0);
+        int effectiveLength = length - middle.length() - charactersToPreserveAtTheEnd;
         if (effectiveLength < 0) {
             effectiveLength = length;
         }
 
-        String truncatedStr = str.substring(0, effectiveLength).trim();
+        String start = str.substring(0, effectiveLength).trim();
         String end = str.substring(str.length() - charactersToPreserveAtTheEnd).trim();
-        return truncatedStr + signal + end;
+        return start + middle + end;
     }
 
     private static String generateTruncatedSignal(boolean showEllipsis,
