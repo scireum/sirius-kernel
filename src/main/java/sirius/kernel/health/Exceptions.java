@@ -494,7 +494,7 @@ public class Exceptions {
     }
 
     /**
-     * Generates a stack trace for the given throwable without the error message.
+     * Generates a stack trace for the given throwable and its causes without the error messages.
      *
      * @param throwable the throwable to generate the stack trace for
      * @return a string representation of the stack trace without the error message
@@ -529,6 +529,6 @@ public class Exceptions {
      */
     private static void appendStackTrace(StringBuilder stringBuilder, Throwable throwable) {
         Arrays.stream(throwable.getStackTrace())
-              .forEach(stackTraceElement -> stringBuilder.append("\tat  ").append(stackTraceElement).append("\n"));
+              .forEach(stackTraceElement -> stringBuilder.append("\t").append("at  ").append(stackTraceElement).append("\n"));
     }
 }
