@@ -381,15 +381,61 @@ public class Strings {
      * than <tt>length</tt>, the full value is returned. If input is <tt>null</tt>, "" is returned.
      */
     public static String limit(@Nullable Object input, int length, boolean showEllipsis) {
+        return limit(input, length, showEllipsis, false, 0);
+    }
+
+    /**
+     * Limits the length of the given string to the given length.
+     *
+     * @param input the object which string representation should be limited to the given length
+     * @param length the max. number of characters to return
+     * @param showEllipsis whether to append three dots if <tt>input</tt> is longer than <tt>length</tt>
+     * @param showTruncated whether to append a marker/signal if <tt>input</tt> is longer than <tt>length</tt>
+     * @param charactersToPreserveAtTheEnd the number of characters to preserve at the end of the string
+     * @return a part of the string representation of the given <tt>input</tt>. If input is shorter
+     * than <tt>length</tt>, the full value is returned. If input is <tt>null</tt>, "" is returned.
+     * If <tt>charactersToPreserveAtTheEnd</tt> is negativ it is omitted.
+     */
+    public static String limit(@Nullable Object input,
+                               int length,
+                               boolean showEllipsis,
+                               boolean showTruncated,
+                               int charactersToPreserveAtTheEnd) {
         if (isEmpty(input)) {
             return "";
         }
+
         String str = String.valueOf(input).trim();
-        if (str.length() > length) {
-            return str.substring(0, (showEllipsis ? length - 1 : length)) + (showEllipsis ? "…" : "");
-        } else {
+        if (str.length() <= length) {
             return str;
         }
+
+        final String ellipsis = "…";
+        final String truncated = "[truncated]";
+
+        if (charactersToPreserveAtTheEnd < 0) {
+            charactersToPreserveAtTheEnd = 0;
+        }
+
+        StringBuilder signal = new StringBuilder();
+        if (showEllipsis) {
+            signal.append(ellipsis);
+        }
+        if (showTruncated) {
+            signal.append(truncated);
+        }
+        if (charactersToPreserveAtTheEnd > 0 && showTruncated && showEllipsis) {
+            signal.append(ellipsis);
+        }
+
+        int effectiveLength = length - signal.length() - charactersToPreserveAtTheEnd;
+        if (effectiveLength < 0) {
+            effectiveLength = length;
+        }
+
+        String truncatedStr = str.substring(0, effectiveLength).trim();
+        String end = str.substring(str.length() - charactersToPreserveAtTheEnd).trim();
+        return truncatedStr + signal + end;
     }
 
     /**
