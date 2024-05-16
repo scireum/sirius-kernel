@@ -123,11 +123,11 @@ public class Exceptions {
          * one can add <tt>%s (%s)</tt> to the message provided here to output the actual error and
          * exception type if needed.
          *
-         * @param e the exception which needs to be attached to this error handler
+         * @param throwable the exception which needs to be attached to this error handler
          * @return <tt>this</tt> in order to fluently call more methods on this handler
          */
-        public ErrorHandler error(Throwable e) {
-            this.ex = e;
+        public ErrorHandler error(Throwable throwable) {
+            this.ex = throwable;
             return this;
         }
 
@@ -253,14 +253,14 @@ public class Exceptions {
                     IGNORED_EXCEPTIONS_LOG.INFO(result);
                 }
                 return result;
-            } catch (Exception t) {
+            } catch (Exception exception) {
                 // We call as few external methods a possible here, since things are really messed up right now
-                t.printStackTrace();
+                exception.printStackTrace();
                 return new HandledException("Kernel Panic: Exception-Handling threw another exception: "
-                                            + t.getMessage()
+                                            + exception.getMessage()
                                             + " ("
-                                            + t.getClass().getName()
-                                            + ")", Collections.emptyMap(), t);
+                                            + exception.getClass().getName()
+                                            + ")", Collections.emptyMap(), exception);
             }
         }
 
@@ -327,9 +327,9 @@ public class Exceptions {
 
         /*
          * Adds the exception message and the exception class to the given params array. Handles null values for
-         * e gracefully
+         * the throwable gracefully
          */
-        private Object[] extendParams(Throwable e, Object[] params) {
+        private Object[] extendParams(Throwable throwable, Object[] params) {
             Object[] newParams;
             if (params == null) {
                 newParams = new Object[2];
@@ -337,9 +337,9 @@ public class Exceptions {
                 newParams = new Object[params.length + 2];
                 System.arraycopy(params, 0, newParams, 0, params.length);
             }
-            if (e != null) {
-                newParams[newParams.length - 2] = e.getMessage();
-                newParams[newParams.length - 1] = e.getClass().getName();
+            if (throwable != null) {
+                newParams[newParams.length - 2] = throwable.getMessage();
+                newParams[newParams.length - 1] = throwable.getClass().getName();
             } else {
                 newParams[newParams.length - 2] = NLS.get("HandledException.unknownError");
                 newParams[newParams.length - 1] = "UnknownError";
@@ -393,24 +393,24 @@ public class Exceptions {
     /**
      * Boilerplate method the directly handle the given exception without a special message or logger
      *
-     * @param e the exception to handle
+     * @param throwable the exception to handle
      * @return a <tt>HandledException</tt> which notifies surrounding calls that an error occurred, which has
      * already been taken care of.
      */
-    public static HandledException handle(Throwable e) {
-        return handle().error(e).handle();
+    public static HandledException handle(Throwable throwable) {
+        return handle().error(throwable).handle();
     }
 
     /**
      * Boilerplate method the directly handle the given exception without a special message
      *
-     * @param log the logger used to log the exception
-     * @param e   the exception to handle
+     * @param log       the logger used to log the exception
+     * @param throwable the exception to handle
      * @return a <tt>HandledException</tt> which notifies surrounding calls that an error occurred, which has
      * already been taken care of.
      */
-    public static HandledException handle(Log log, Throwable e) {
-        return handle().error(e).to(log).handle();
+    public static HandledException handle(Log log, Throwable throwable) {
+        return handle().error(throwable).to(log).handle();
     }
 
     /**
@@ -433,11 +433,11 @@ public class Exceptions {
      * exception is wanted to be ignored. Additionally, the <tt>ignoredExceptions</tt> logger can be turned on,
      * to still see those exceptions.
      *
-     * @param t the exception to be ignored. This exception will be discarded unless the <tt>ignoredExceptions</tt>
-     *          logger is set to INFO.
+     * @param throwable the exception to be ignored. This exception will be discarded unless the <tt>ignoredExceptions</tt>
+     *                  logger is set to INFO.
      */
-    public static void ignore(Throwable t) {
-        IGNORED_EXCEPTIONS_LOG.INFO(t);
+    public static void ignore(Throwable throwable) {
+        IGNORED_EXCEPTIONS_LOG.INFO(throwable);
     }
 
     /**
@@ -463,8 +463,8 @@ public class Exceptions {
         List<Tuple<String, String>> mdc = CallContext.getCurrent().getMDC();
         if (mdc != null) {
             msg.append("\n---------------------------------------------------\n");
-            for (Tuple<String, String> t : mdc) {
-                msg.append(t.getFirst()).append(": ").append(t.getSecond()).append("\n");
+            for (Tuple<String, String> tuple : mdc) {
+                msg.append(tuple.getFirst()).append(": ").append(tuple.getSecond()).append("\n");
             }
         }
 
@@ -474,15 +474,15 @@ public class Exceptions {
     /**
      * Retrieves the actual root {@link Throwable} which ended in the given exception.
      *
-     * @param e the throwable to begin with
+     * @param throwable the throwable to begin with
      * @return the root {@link Throwable} of the given one
      */
-    public static Throwable getRootCause(@Nullable Throwable e) {
-        if (e == null) {
+    public static Throwable getRootCause(@Nullable Throwable throwable) {
+        if (throwable == null) {
             return null;
         }
 
-        Throwable cause = e;
+        Throwable cause = throwable;
 
         int circuitBreaker = 11;
         while (circuitBreaker > 0 && cause.getCause() != null && !cause.equals(cause.getCause())) {
