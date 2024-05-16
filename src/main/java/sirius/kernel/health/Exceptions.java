@@ -529,6 +529,6 @@ public class Exceptions {
      */
     private static void appendStackTrace(StringBuilder stringBuilder, Throwable throwable) {
         Arrays.stream(throwable.getStackTrace())
-              .forEach(stackTraceElement -> stringBuilder.append("\t").append("at  ").append(stackTraceElement).append("\n"));
+              .forEach(stackTraceElement -> stringBuilder.append("\t").append("at ").append(stackTraceElement).append("\n"));
     }
 }
