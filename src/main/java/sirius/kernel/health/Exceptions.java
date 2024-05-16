@@ -499,7 +499,7 @@ public class Exceptions {
      * @param throwable the throwable to generate the stack trace for
      * @return a string representation of the stack trace without the error message
      */
-    public static String printStackTraceWithoutErrorMessage(Throwable throwable) {
+    public static String buildStackTraceWithoutErrorMessage(Throwable throwable) {
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append(throwable.getClass().getName()).append(":").append("\n");
@@ -529,6 +529,9 @@ public class Exceptions {
      */
     private static void appendStackTrace(StringBuilder stringBuilder, Throwable throwable) {
         Arrays.stream(throwable.getStackTrace())
-              .forEach(stackTraceElement -> stringBuilder.append("\t").append("at  ").append(stackTraceElement).append("\n"));
+              .forEach(stackTraceElement -> stringBuilder.append("\t")
+                                                         .append("at ")
+                                                         .append(stackTraceElement)
+                                                         .append("\n"));
     }
 }
