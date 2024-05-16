@@ -406,7 +406,7 @@ public class Strings {
         }
 
         String str = String.valueOf(input).trim();
-        if (str.length() <= length) {
+        if (str.length() <= length + charactersToPreserveAtTheEnd || length < 0) {
             return str;
         }
 
