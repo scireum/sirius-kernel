@@ -424,17 +424,7 @@ public class Strings {
             charactersToPreserveAtTheEnd = 0;
         }
 
-        StringBuilder signal = new StringBuilder();
-        if (showEllipsis) {
-            signal.append(ELLIPSIS);
-        }
-        if (showTruncated) {
-            signal.append(TRUNCATED_MARKER);
-        }
-        if (charactersToPreserveAtTheEnd > 0 && showTruncated && showEllipsis) {
-            signal.append(ELLIPSIS);
-        }
-
+        String signal = generateTruncatedSignal(showEllipsis, showTruncated, charactersToPreserveAtTheEnd > 0);
         int effectiveLength = length - signal.length() - charactersToPreserveAtTheEnd;
         if (effectiveLength < 0) {
             effectiveLength = length;
@@ -443,6 +433,22 @@ public class Strings {
         String truncatedStr = str.substring(0, effectiveLength).trim();
         String end = str.substring(str.length() - charactersToPreserveAtTheEnd).trim();
         return truncatedStr + signal + end;
+    }
+
+    private static String generateTruncatedSignal(boolean showEllipsis,
+                                                  boolean showTruncated,
+                                                  boolean preserveCharactersAtEnd) {
+        StringBuilder signal = new StringBuilder();
+        if (showEllipsis) {
+            signal.append(ELLIPSIS);
+        }
+        if (showTruncated) {
+            signal.append(TRUNCATED_MARKER);
+        }
+        if (preserveCharactersAtEnd && showTruncated && showEllipsis) {
+            signal.append(ELLIPSIS);
+        }
+        return signal.toString();
     }
 
     /**
