@@ -8,6 +8,7 @@
 
 package sirius.kernel.health;
 
+import com.google.common.base.Throwables;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
@@ -17,6 +18,7 @@ import sirius.kernel.di.std.Parts;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -489,5 +491,44 @@ public class Exceptions {
         }
 
         return cause;
+    }
+
+    /**
+     * Generates a stack trace for the given throwable without the error message.
+     *
+     * @param throwable the throwable to generate the stack trace for
+     * @return a string representation of the stack trace without the error message
+     */
+    public static String printStackTraceWithoutErrorMessage(Throwable throwable) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append(throwable.getClass().getName()).append(":").append("\n");
+        appendStackTrace(stringBuilder, throwable);
+
+        try {
+            // The first element of the causal chain is always the throwable followed by its cause hierarchy.
+            // Therefore, the first element is skipped.
+            Throwables.getCausalChain(throwable).stream().skip(1).forEach(cause -> {
+                stringBuilder.append("Caused by: ").append(cause.getClass().getName()).append(":").append("\n");
+                appendStackTrace(stringBuilder, cause);
+            });
+        } catch (IllegalArgumentException exception) {
+            // This happens if the causal chain has a circular reference.
+            stringBuilder.append("Warning: Circular reference detected in causal chain. Skipping causes: ")
+                         .append(exception.getMessage());
+        }
+
+        return stringBuilder.toString();
+    }
+
+    /**
+     * Appends the stack trace of the given throwable to the given string builder.
+     *
+     * @param stringBuilder the string builder to append the stack trace to
+     * @param throwable     the throwable to append the stack trace of
+     */
+    private static void appendStackTrace(StringBuilder stringBuilder, Throwable throwable) {
+        Arrays.stream(throwable.getStackTrace())
+              .forEach(stackTraceElement -> stringBuilder.append("\tat  ").append(stackTraceElement).append("\n"));
     }
 }
