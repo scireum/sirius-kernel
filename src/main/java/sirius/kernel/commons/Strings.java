@@ -451,17 +451,17 @@ public class Strings {
             return "";
         }
 
-        String str = String.valueOf(input).trim();
-        if (str.length() <= length + charactersToPreserveAtTheEnd) {
-            return str;
-        }
-
         if (length < 0) {
             length = 0;
         }
 
         if (charactersToPreserveAtTheEnd < 0) {
             charactersToPreserveAtTheEnd = 0;
+        }
+
+        String str = String.valueOf(input).trim();
+        if (str.length() <= length + charactersToPreserveAtTheEnd) {
+            return str;
         }
 
         String middle = generateTruncatedSignal(showEllipsis, showTruncated, charactersToPreserveAtTheEnd > 0);
