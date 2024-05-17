@@ -403,15 +403,19 @@ public class Strings {
      * <ul>
      *     <li>
      *         start - this is the first part of the string for which the algorithm tries to calculate an effective
-     *         length. This is done by subtracting the length of the truncated signal (13) and the characters to
-     *         preserve at the end from the given <tt>length</tt>. If for some reason the calculated effective length is
-     *         negative, the original provided length is taken. This means that the total length of the returned string
-     *         could be length + 13 + charactersToPreserveAtTheEnd. This is only the case if either the length is very
-     *         small or the charactersToPreserveAtTheEnd is ridiculously high.
+     *         length. This is done by subtracting the length of the truncated signal (12 or 13) from the given length.
+     *         If the provided length is smaller then 13 or 14 the truncated signal length is omitted from the
+     *         calculation. In this case the input will be truncated to the given length, and the truncated signal will
+     *         be added at the end. This means that in this particular case the <tt>start</tt> string will have a length
+     *         of the provided length + 13 or length + 12. The truncated signal has either 12 or 13 characters,
+     *         depending on charactersToPreserveAtTheEnd. If charactersToPreserveAtTheEnd is greater than 0, the
+     *         truncated signal will have an additional ellipsis at the end, and therefore 13 characters in total.
      *     </li>
      *     <li>
      *         middle - this is the truncated signal which is added in the middle of the truncated string. It consists
-     *         of 13 characters in total (<tt>…[truncated]…</tt>).
+     *         of 12 or 13 characters in total (<tt>…[truncated]</tt> or <tt>…[truncated]…</tt>). depending on
+     *         charactersToPreserveAtTheEnd. If charactersToPreserveAtTheEnd is greater than 0, the truncated signal
+     *         will have an additional ellipsis at the end, and therefore 13 characters in total.
      *     </li>
      *     <li>
      *         end - this is the last part of the original string and contains the characters which should be
