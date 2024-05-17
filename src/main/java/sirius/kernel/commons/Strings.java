@@ -452,8 +452,12 @@ public class Strings {
         }
 
         String str = String.valueOf(input).trim();
-        if (str.length() <= length + charactersToPreserveAtTheEnd || length < 0) {
+        if (str.length() <= length + charactersToPreserveAtTheEnd) {
             return str;
+        }
+
+        if (length < 0) {
+            length = 0;
         }
 
         if (charactersToPreserveAtTheEnd < 0) {
