@@ -301,14 +301,35 @@ class StringsTest {
 
     @Test
     fun limit() {
+        // Szenario 1: no input present
         assertEquals("", Strings.limit(null, 10, false))
         assertEquals("", Strings.limit(null, 10, true))
+        assertEquals("", Strings.limit(null, -10, true))
+        assertEquals("", Strings.limit(null, -10, false))
+        assertEquals("", Strings.limit(null, 0, true))
+        assertEquals("", Strings.limit(null, 0, false))
+        // Szenario 2: input present but empty
         assertEquals("", Strings.limit("", 10, false))
         assertEquals("", Strings.limit("", 10, true))
+        assertEquals("", Strings.limit("", -10, true))
+        assertEquals("", Strings.limit("", -10, false))
+        // Szenario 3: input present and length is greater than input.length()
         assertEquals("ABCDE", Strings.limit("ABCDE", 10, false))
         assertEquals("ABCDE", Strings.limit("ABCDE", 10, true))
+        // Szenario 4: input present and length is smaller than input.length()
         assertEquals("ABCDEFGHIJ", Strings.limit("ABCDEFGHIJKLMNOP", 10, false))
         assertEquals("ABCDEFGHI…", Strings.limit("ABCDEFGHIJKLMNOP", 10, true))
+        // Szenario 5: input present and length is equal to input.length()
+        assertEquals("ABCDEFGHIJKLMNOP", Strings.limit("ABCDEFGHIJKLMNOP", 16, false))
+        assertEquals("ABCDEFGHIJKLMNOP", Strings.limit("ABCDEFGHIJKLMNOP", 16, true))
+        // Szenario 6: input present and length is 0
+        assertEquals("", Strings.limit("ABCDE", 0, false))
+        assertEquals("…", Strings.limit("ABCDE", 0, true))
+        // Szenario 7: input present and length is negative
+        assertEquals("…", Strings.limit("ABCDE", -1, true))
+        assertEquals("", Strings.limit("ABCDE", -7, false))
+        assertEquals("…", Strings.limit("ABCDEFGHIJKLMNOP", -9, true))
+        assertEquals("", Strings.limit("ABCDEFGHIJKLMNOP", -1000, false))
     }
 
 }
