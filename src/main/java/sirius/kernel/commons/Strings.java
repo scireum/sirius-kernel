@@ -465,7 +465,7 @@ public class Strings {
         }
 
         String middle = generateTruncatedSignal(showEllipsis, showTruncated, charactersToPreserveAtTheEnd > 0);
-        int effectiveLength = length - middle.length() - charactersToPreserveAtTheEnd;
+        int effectiveLength = length - middle.length();
         if (effectiveLength < 0) {
             effectiveLength = length;
         }
