@@ -463,9 +463,9 @@ public class Strings {
             charactersToPreserveAtTheEnd = 0;
         }
 
-        String str = String.valueOf(input).trim();
-        if (str.length() <= length + charactersToPreserveAtTheEnd) {
-            return str;
+        String trimmedInputString = String.valueOf(input).trim();
+        if (trimmedInputString.length() <= length + charactersToPreserveAtTheEnd) {
+            return trimmedInputString;
         }
 
         String middle = generateTruncatedSignal(showEllipsis, showTruncated, charactersToPreserveAtTheEnd > 0);
@@ -474,8 +474,8 @@ public class Strings {
             effectiveLength = length;
         }
 
-        String start = str.substring(0, effectiveLength).trim();
-        String end = str.substring(str.length() - charactersToPreserveAtTheEnd).trim();
+        String start = trimmedInputString.substring(0, effectiveLength).trim();
+        String end = trimmedInputString.substring(trimmedInputString.length() - charactersToPreserveAtTheEnd).trim();
         return start + middle + end;
     }
 
