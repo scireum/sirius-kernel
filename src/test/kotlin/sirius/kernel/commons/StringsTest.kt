@@ -332,4 +332,90 @@ class StringsTest {
         assertEquals("", Strings.limit("ABCDEFGHIJKLMNOP", -1000, false))
     }
 
+    @Test
+    fun truncatedMiddle() {
+        // Szenario 1: no input present
+        assertEquals("", Strings.truncateMiddle(null, 10, 10))
+        assertEquals("", Strings.truncateMiddle(null, 1, 10))
+        assertEquals("", Strings.truncateMiddle(null, 10, 1))
+        assertEquals("", Strings.truncateMiddle(null, 0, 1))
+        assertEquals("", Strings.truncateMiddle(null, 1, 0))
+        assertEquals("", Strings.truncateMiddle(null, 1, -1))
+        assertEquals("", Strings.truncateMiddle(null, -1, 0))
+        assertEquals("", Strings.truncateMiddle(null, -1, -1))
+        assertEquals("", Strings.truncateMiddle(null, 0, 0))
+        // Szenario 2: input present but empty
+        assertEquals("", Strings.truncateMiddle("", 10, 10))
+        assertEquals("", Strings.truncateMiddle("", 1, 10))
+        assertEquals("", Strings.truncateMiddle("", 10, 1))
+        assertEquals("", Strings.truncateMiddle("", 0, 1))
+        assertEquals("", Strings.truncateMiddle("", 1, 0))
+        assertEquals("", Strings.truncateMiddle("", 1, -1))
+        assertEquals("", Strings.truncateMiddle("", -1, 0))
+        assertEquals("", Strings.truncateMiddle("", -1, -1))
+        assertEquals("", Strings.truncateMiddle("", 0, 0))
+        // Szenario 3: input present and length is greater than input.length() and charactersToPreserveAtTheEnd is 0 or negative
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 10, 0))
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 10, -10))
+        // Szenario 4: input present and length is smaller than input.length() and charactersToPreserveAtTheEnd is 0 or negative
+        assertEquals("ABCDEFG-AB…[truncated]", Strings.truncateMiddle("ABCDEFG-ABCDEFG", 10, 0))
+        assertEquals("ABCDEFG-AB…[truncated]", Strings.truncateMiddle("ABCDEFG-ABCDEFG", 10, -10))
+        assertEquals("ABCDEFG-AB…[truncated]", Strings.truncateMiddle("ABCDEFG-ABCDEFG-ABCDEFG-ABCDEFG-ABCDEFG-ABCDEFG", 10, -10))
+        // Szenario 5: input present and length is equal to input.length() and charactersToPreserveAtTheEnd is 0 or negative
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 7, 0))
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 7, -10))
+        // Szenario 6: input present and length is 0 and charactersToPreserveAtTheEnd is 0 or negative
+        assertEquals("…[truncated]", Strings.truncateMiddle("ABCDEFG", 0, 0))
+        assertEquals("…[truncated]", Strings.truncateMiddle("ABCDEFG", 0, -10))
+        // Szenario 7: input present and length is negative and charactersToPreserveAtTheEnd is 0 or negative
+        assertEquals("…[truncated]", Strings.truncateMiddle("ABCDEFG", -10, 0))
+        assertEquals("…[truncated]", Strings.truncateMiddle("ABCDEFG", -10, -10))
+        // Szenario 8: input present and length is greater than input.length() and charactersToPreserveAtTheEnd is greater than length
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 10, 10000))
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 10, 11))
+        // Szenario 9: input present and length is greater than input.length() and charactersToPreserveAtTheEnd is greater than input.length()
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 10, 8))
+        // Szenario 10: input present and length is greater than input.length() and charactersToPreserveAtTheEnd is equal to input.length()
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 10, 7))
+        // Szenario 11: input present and length is smaller than input.length() and charactersToPreserveAtTheEnd is greater than length and length + charactersToPreserveAtTheEnd is smaller than input.length()
+        // Note: the ellipsis after the truncated signal is only added if there are characters to preserve at the end
+        // Note: the length of the truncated signal is only taken into account when limiting the input to length if length is greater than 13, otherwise the input will be truncated to the provided length and the truncated signal is added afterward
+        assertEquals("ABCDEFG-…[truncated]…This is the important part", Strings.truncateMiddle("ABCDEFG-ABCDEFG-This is the important part", 8, 26))
+        assertEquals("ABCDEFG-".length, 8)
+        assertEquals("This is the important part".length, 26)
+        // Szenario 12: input present and length is smaller than input.length() and charactersToPreserveAtTheEnd is greater than length and length + charactersToPreserveAtTheEnd is greater than input.length()
+        // Note: in the following case it is assumed that the whole string should be preserved because charactersToPreserveAtTheEnd is greater than input.length()
+        assertEquals("ABCDEFG-ABCDEFG-This is the important part", Strings.truncateMiddle("ABCDEFG-ABCDEFG-This is the important part", 0, 260))
+        assertEquals("ABCDEFG-ABCDEFG-This is the important part", Strings.truncateMiddle("ABCDEFG-ABCDEFG-This is the important part", -10, 260))
+        // Szenario 13: input present and length is smaller than input.length() and charactersToPreserveAtTheEnd is equal to length and length + charactersToPreserveAtTheEnd is equal to input.length()
+        // Note: in the following case it is assumed that the whole string should be preserved because length + charactersToPreserveAtTheEnd is equal to input.length()
+        assertEquals("ABCDEFG-ABCDEFG-This is the important part", Strings.truncateMiddle("ABCDEFG-ABCDEFG-This is the important part", 21, 21))
+        assertEquals("ABCDEFG-ABCDEFG-This is the important part".length, 42)
+        // Szenario 14: input present and length is equal to input.length() and charactersToPreserveAtTheEnd is greater than length
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 7, 8))
+        // Szenario 15: input present and length is equal to input.length() and charactersToPreserveAtTheEnd is greater than input.length()
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 7, 8000))
+        // Szenario 16: input present and length is equal to input.length() and charactersToPreserveAtTheEnd is equal to input.length()
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 7, 7))
+        // Szenario 17: input present and length is 0 and charactersToPreserveAtTheEnd is greater than length
+        assertEquals("…[truncated]…FG", Strings.truncateMiddle("ABCDEFG", 0, 2))
+        // Szenario 18: input present and length is 0 and charactersToPreserveAtTheEnd is greater than input.length()
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 0, 10))
+        // Szenario 19: input present and length is 0 and charactersToPreserveAtTheEnd is equal to input.length()
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 0, 7))
+        // Szenario 20: input present and length is negative and charactersToPreserveAtTheEnd is greater than length
+        assertEquals("…[truncated]…DEFG", Strings.truncateMiddle("ABCDEFG", -10, 4))
+        // Szenario 21: input present and length is negative and charactersToPreserveAtTheEnd is greater than input.length()
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", -10, 40))
+        // Szenario 22: input present and length is negative and charactersToPreserveAtTheEnd is equal to input.length()
+        assertEquals("ABCDEFG", Strings.truncateMiddle("ABCDEFG", 0, 7))
+        // Szenario 23: input present and length is smaller then input.length() and charactersToPreserveAtTheEnd is smaller then input.length()
+        val boringPart = "0123456789-0123456789-0123456789-"
+        val importantPart = "This is the important part"
+        val input = boringPart + importantPart
+        assertEquals("0123456789…[truncated]…This is the important part", Strings.truncateMiddle(input, 23, 26))
+        assertEquals("0123456789…[truncated]…".length, 23)
+        assertEquals("This is the important part".length, 26)
+    }
+
 }
