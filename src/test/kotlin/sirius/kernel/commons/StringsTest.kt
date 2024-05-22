@@ -314,6 +314,9 @@ class StringsTest {
         assertEquals("ABCDEFGHI…", Strings.limit("ABCDEFGHIJKLMNOP", 10, true))
         assertEquals("", Strings.limit("ABCDEFGHIJKLMNOP", -10, true))
         assertEquals("", Strings.limit("A", 0, true))
+        assertEquals("", Strings.limit("A", 0, false))
+        assertEquals("A", Strings.limit("A", 1, true))
+        assertEquals("A", Strings.limit("A", 1, false))
     }
 
 }
