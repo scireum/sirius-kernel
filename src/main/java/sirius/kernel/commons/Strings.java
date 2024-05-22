@@ -378,7 +378,7 @@ public class Strings {
      * @param length       the max. number of characters to return. Note: If the parameter is less than 1 an empty string is returned.
      * @param showEllipsis whether to append three dots if <tt>input</tt> is longer than <tt>length</tt>
      * @return a part of the string representation of the given <tt>input</tt>. If input is shorter
-     * than <tt>length</tt>, the full value is returned. If input is <tt>null</tt> or empty "" is returned. This also applies if <tt>length</tt> is less than 1.
+     * than <tt>length</tt>, the full value is returned. If input is <tt>null</tt> or empty, "" is returned. This also applies if <tt>length</tt> is less than 1.
      */
     public static String limit(@Nullable Object input, int length, boolean showEllipsis) {
         if (isEmpty(input) || length <= 0) {
