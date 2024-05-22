@@ -39,6 +39,16 @@ import java.util.stream.Collectors;
 public class Strings {
 
     /**
+     * Contains the characters which should be used in order to depict an ellipsis.
+     */
+    private static final String ELLIPSIS = "…";
+
+    /**
+     * Contains the marker/signal which should be used to depict that the string has been truncated.
+     */
+    private static final String TRUNCATED_SIGNAL = ELLIPSIS + "[truncated]" + ELLIPSIS;
+
+    /**
      * Contains all characters which can safely be used for codes without too much confusion (e.g. 0 vs O are
      * excluded).
      */
@@ -386,7 +396,7 @@ public class Strings {
         }
         String str = String.valueOf(input).trim();
         if (str.length() > length) {
-            return str.substring(0, (showEllipsis ? length - 1 : length)) + (showEllipsis ? "…" : "");
+            return str.substring(0, (showEllipsis ? length - ELLIPSIS.length() : length)) + (showEllipsis ? ELLIPSIS : "");
         } else {
             return str;
         }
@@ -412,15 +422,14 @@ public class Strings {
             return "";
         }
 
-        String middle = "…[truncated]…";
         String trimmedInputString = String.valueOf(input).trim();
-        if (trimmedInputString.length() <= charsToPreserve + middle.length()) {
+        if (trimmedInputString.length() <= charsToPreserve + TRUNCATED_SIGNAL.length()) {
             return trimmedInputString;
         }
 
         String start = trimmedInputString.substring(0, charsToPreserveFromStart).trim();
         String end = trimmedInputString.substring(trimmedInputString.length() - charsToPreserveFromEnd).trim();
-        return start + middle + end;
+        return start + TRUNCATED_SIGNAL + end;
     }
 
     /**
