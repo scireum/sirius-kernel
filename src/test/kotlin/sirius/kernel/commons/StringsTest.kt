@@ -319,4 +319,25 @@ class StringsTest {
         assertEquals("A", Strings.limit("A", 1, false))
     }
 
+    @Test
+    fun truncateMiddle() {
+        assertEquals("", Strings.truncateMiddle(null, 4, 4))
+        assertEquals("", Strings.truncateMiddle(null, -4, 4))
+        assertEquals("", Strings.truncateMiddle(null, 4, -4))
+        assertEquals("", Strings.truncateMiddle("", 4, 4))
+        assertEquals("", Strings.truncateMiddle("", -4, 4))
+        assertEquals("", Strings.truncateMiddle("", 4, -4))
+        assertEquals("", Strings.truncateMiddle("1234-6789", -4, 4))
+        assertEquals("", Strings.truncateMiddle("1234-6789", 4, -4))
+        assertEquals("", Strings.truncateMiddle("1234-6789", -4, -4))
+        assertEquals("", Strings.truncateMiddle("1234-6789", 0, 0))
+        assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 40, 0))
+        assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 0, 40))
+        assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 5, 4))
+        assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 4, 5))
+        assertEquals("1234…[truncated]…6789", Strings.truncateMiddle("1234-6789", 4, 4))
+        assertEquals("…[truncated]…6789", Strings.truncateMiddle("1234-6789", 0, 4))
+        assertEquals("1234…[truncated]…", Strings.truncateMiddle("1234-6789", 4, 0))
+        assertEquals("1…[truncated]…9", Strings.truncateMiddle("1234-6789", 1, 1))
+    }
 }
