@@ -388,7 +388,7 @@ public class Strings {
      * @param length       the max. number of characters to return. Note: If the parameter is less than 1 an empty string is returned.
      * @param showEllipsis whether to append three dots if <tt>input</tt> is longer than <tt>length</tt>
      * @return a part of the string representation of the given <tt>input</tt>. If input is shorter
-     * than <tt>length</tt>, the full value is returned. If input is <tt>null</tt> or empty, "" is returned. This also applies if <tt>length</tt> is less than 1.
+     * than <tt>length</tt>, the trimmed input value is returned. If input is <tt>null</tt> or empty, "" is returned. This also applies if <tt>length</tt> is less than 1.
      */
     public static String limit(@Nullable Object input, int length, boolean showEllipsis) {
         if (isEmpty(input) || length <= 0) {
@@ -406,13 +406,16 @@ public class Strings {
     /**
      * Truncates the given input in the middle by preserving characters from the start and end.
      * <p>
-     * Note: Adds a truncated signal in the form of "…[truncated]…" in the middle of the string.
+     * Note:
+     * Adds a truncated signal in the form of "…[truncated]…" in the middle of the string. This signal consist of 13 chars.
+     * The chars of the signal are considered when determining if a truncation is necessary. Therefore, a truncation only
+     * takes place if the input string is longer than <tt>charsToPreserveFromStart</tt> + <tt>charsToPreserveFromEnd</tt> + length of the truncated signal.
      *
      * @param input                    the input to truncate
      * @param charsToPreserveFromStart the number of characters to preserve from the start. Note that this value must be greater than or equal to 0.
      * @param charsToPreserveFromEnd   the number of characters to preserve from the end. Note that this value must be greater than or equal to 0.
      * @return a part of the string representation of the given <tt>input</tt> with a truncated signal added in the middle.
-     * If input is shorter than (<tt>charsToPreserveFromStart</tt> + <tt>charsToPreserveFromEnd</tt>), the full value is returned.
+     * If input is shorter than or equal to (<tt>charsToPreserveFromStart</tt> + <tt>charsToPreserveFromEnd</tt> + length of the truncated signal), the trimmed input value is returned.
      * If input is <tt>null</tt> or empty, "" is returned. This also applies if (<tt>charsToPreserveFromStart</tt> + <tt>charsToPreserveFromEnd</tt>) is 0.
      */
     public static String truncateMiddle(@Nullable Object input,
