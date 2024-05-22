@@ -381,7 +381,7 @@ public class Strings {
      * than <tt>length</tt>, the full value is returned. If input is <tt>null</tt>, "" is returned.
      */
     public static String limit(@Nullable Object input, int length, boolean showEllipsis) {
-        if (isEmpty(input)) {
+        if (isEmpty(input) || length < 0) {
             return "";
         }
         String str = String.valueOf(input).trim();
