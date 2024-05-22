@@ -335,9 +335,14 @@ class StringsTest {
         assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 0, 40))
         assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 5, 4))
         assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 4, 5))
-        assertEquals("1234…[truncated]…6789", Strings.truncateMiddle("1234-6789", 4, 4))
-        assertEquals("…[truncated]…6789", Strings.truncateMiddle("1234-6789", 0, 4))
-        assertEquals("1234…[truncated]…", Strings.truncateMiddle("1234-6789", 4, 0))
-        assertEquals("1…[truncated]…9", Strings.truncateMiddle("1234-6789", 1, 1))
+        assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 4, 4))
+        assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 0, 4))
+        assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 4, 0))
+        assertEquals("1234-6789", Strings.truncateMiddle("1234-6789", 1, 1))
+        assertEquals("1234…[truncated]…6789", Strings.truncateMiddle("123456789-123456789-123456789", 4, 4))
+        assertEquals("…[truncated]…6789", Strings.truncateMiddle("123456789-123456789-123456789", 0, 4))
+        assertEquals("1234…[truncated]…", Strings.truncateMiddle("123456789-123456789-123456789", 4, 0))
+        assertEquals("1…[truncated]…9", Strings.truncateMiddle("123456789-123456789-123456789", 1, 1))
+        assertEquals("12345678901234", Strings.truncateMiddle("12345678901234", 6, 6))
     }
 }

@@ -412,14 +412,15 @@ public class Strings {
             return "";
         }
 
+        String middle = "…[truncated]…";
         String trimmedInputString = String.valueOf(input).trim();
-        if (trimmedInputString.length() <= charsToPreserve) {
+        if (trimmedInputString.length() <= charsToPreserve + middle.length()) {
             return trimmedInputString;
         }
 
         String start = trimmedInputString.substring(0, charsToPreserveFromStart).trim();
         String end = trimmedInputString.substring(trimmedInputString.length() - charsToPreserveFromEnd).trim();
-        return start + "…[truncated]…" + end;
+        return start + middle + end;
     }
 
     /**
