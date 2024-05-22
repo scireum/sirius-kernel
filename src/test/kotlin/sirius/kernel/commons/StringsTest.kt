@@ -313,6 +313,7 @@ class StringsTest {
         assertEquals("ABCDEFGHIJ", Strings.limit("ABCDEFGHIJKLMNOP", 10, false))
         assertEquals("ABCDEFGHI…", Strings.limit("ABCDEFGHIJKLMNOP", 10, true))
         assertEquals("", Strings.limit("ABCDEFGHIJKLMNOP", -10, true))
+        assertEquals("", Strings.limit("A", 0, true))
     }
 
 }
