@@ -394,11 +394,12 @@ public class Strings {
         if (isEmpty(input) || length <= 0) {
             return "";
         }
-        String str = String.valueOf(input).trim();
-        if (str.length() > length) {
-            return str.substring(0, (showEllipsis ? length - ELLIPSIS.length() : length)) + (showEllipsis ? ELLIPSIS : "");
+        String trimmedInputString = String.valueOf(input).trim();
+        if (trimmedInputString.length() > length) {
+            return trimmedInputString.substring(0, (showEllipsis ? length - ELLIPSIS.length() : length))
+                   + (showEllipsis ? ELLIPSIS : "");
         } else {
-            return str;
+            return trimmedInputString;
         }
     }
 
