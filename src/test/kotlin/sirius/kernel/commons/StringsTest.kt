@@ -303,12 +303,20 @@ class StringsTest {
     fun limit() {
         assertEquals("", Strings.limit(null, 10, false))
         assertEquals("", Strings.limit(null, 10, true))
+        assertEquals("", Strings.limit(null, -10, true))
         assertEquals("", Strings.limit("", 10, false))
         assertEquals("", Strings.limit("", 10, true))
+        assertEquals("", Strings.limit("", -10, true))
         assertEquals("ABCDE", Strings.limit("ABCDE", 10, false))
         assertEquals("ABCDE", Strings.limit("ABCDE", 10, true))
+        assertEquals("", Strings.limit("ABCDE", -10, true))
         assertEquals("ABCDEFGHIJ", Strings.limit("ABCDEFGHIJKLMNOP", 10, false))
         assertEquals("ABCDEFGHI…", Strings.limit("ABCDEFGHIJKLMNOP", 10, true))
+        assertEquals("", Strings.limit("ABCDEFGHIJKLMNOP", -10, true))
+        assertEquals("", Strings.limit("A", 0, true))
+        assertEquals("", Strings.limit("A", 0, false))
+        assertEquals("A", Strings.limit("A", 1, true))
+        assertEquals("A", Strings.limit("A", 1, false))
     }
 
 }
