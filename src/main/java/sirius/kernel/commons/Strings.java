@@ -46,7 +46,7 @@ public class Strings {
     /**
      * Contains the marker/signal which should be used to depict that the string has been truncated.
      */
-    private static final String TRUNCATED_SIGNAL = ELLIPSIS + "[truncated]" + ELLIPSIS;
+    private static final String TRUNCATED_SIGNAL = ELLIPSIS + "[" + ELLIPSIS + "]" + ELLIPSIS;
 
     /**
      * Contains all characters which can safely be used for codes without too much confusion (e.g. 0 vs O are
@@ -407,7 +407,7 @@ public class Strings {
      * Truncates the given input in the middle by preserving characters from the start and end.
      * <p>
      * Note:
-     * Adds a truncated signal in the form of "…[truncated]…" in the middle of the string. This signal consist of 13 chars.
+     * Adds a truncated signal in the form of "…[…]…" in the middle of the string. This signal consist of 5 chars.
      * The chars of the signal are considered when determining if a truncation is necessary. Therefore, a truncation only
      * takes place if the input string is longer than <tt>charsToPreserveFromStart</tt> + <tt>charsToPreserveFromEnd</tt> + length of the truncated signal.
      *
