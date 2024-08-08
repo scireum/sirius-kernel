@@ -8,6 +8,9 @@
 
 package sirius.kernel.commons;
 
+import com.google.common.collect.Range;
+
+import javax.annotation.Nonnull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -42,10 +45,7 @@ public class Dates {
      * @return the latest date-time object or <tt>null</tt> if no date is given
      */
     public static LocalDateTime computeLatestDateTime(List<LocalDateTime> dateTimes) {
-        return dateTimes.stream()
-                        .filter(Objects::nonNull)
-                        .max(LocalDateTime::compareTo)
-                        .orElse(null);
+        return dateTimes.stream().filter(Objects::nonNull).max(LocalDateTime::compareTo).orElse(null);
     }
 
     /**
@@ -60,14 +60,12 @@ public class Dates {
 
     /**
      * Computes the latest date of the given date objects.
+     *
      * @param dates a list of date objects to compare
      * @return the latest date object or <tt>null</tt> if no date is given
      */
     public static LocalDate computeLatestDate(List<LocalDate> dates) {
-        return dates.stream()
-                    .filter(Objects::nonNull)
-                    .max(LocalDate::compareTo)
-                    .orElse(null);
+        return dates.stream().filter(Objects::nonNull).max(LocalDate::compareTo).orElse(null);
     }
 
     /**
@@ -87,10 +85,7 @@ public class Dates {
      * @return the earliest date-time object or <tt>null</tt> if no date is given
      */
     public static LocalDateTime computeEarliestDateTime(List<LocalDateTime> dateTimes) {
-        return dateTimes.stream()
-                        .filter(Objects::nonNull)
-                        .min(LocalDateTime::compareTo)
-                        .orElse(null);
+        return dateTimes.stream().filter(Objects::nonNull).min(LocalDateTime::compareTo).orElse(null);
     }
 
     /**
@@ -110,9 +105,42 @@ public class Dates {
      * @return the earliest date object or <tt>null</tt> if no date is given
      */
     public static LocalDate computeEarliestDate(List<LocalDate> dates) {
-        return dates.stream()
-                    .filter(Objects::nonNull)
-                    .min(LocalDate::compareTo)
-                    .orElse(null);
+        return dates.stream().filter(Objects::nonNull).min(LocalDate::compareTo).orElse(null);
+    }
+
+    /**
+     * Determines if the given date is before or after the given reference date.
+     *
+     * @param dateToCheck   the date to check
+     * @param referenceDate the reference date
+     * @return <tt>true</tt> if the date is before or after the reference date, <tt>false</tt> otherwise
+     */
+    public static boolean isBeforeOrEqual(@Nonnull LocalDate dateToCheck, @Nonnull LocalDate referenceDate) {
+        return Range.atMost(referenceDate).contains(dateToCheck);
+    }
+
+    /**
+     * Determines if the given date is after or equal to the given reference date.
+     *
+     * @param dateToCheck   the date to check
+     * @param referenceDate the reference date
+     * @return <tt>true</tt> if the date is after or equal to the reference date, <tt>false</tt> otherwise
+     */
+    public static boolean isAfterOrEqual(@Nonnull LocalDate dateToCheck, @Nonnull LocalDate referenceDate) {
+        return Range.atLeast(referenceDate).contains(dateToCheck);
+    }
+
+    /**
+     * Determines if the given date is within the given range.
+     *
+     * @param startDate   the range's start date
+     * @param endDate     the range's end date
+     * @param dateToCheck the date to check
+     * @return <tt>true</tt> if the date is within the range, <tt>false</tt> otherwise
+     */
+    public static boolean isWithinRange(@Nonnull LocalDate startDate,
+                                        @Nonnull LocalDate endDate,
+                                        @Nonnull LocalDate dateToCheck) {
+        return Range.closed(startDate, endDate).contains(dateToCheck);
     }
 }
