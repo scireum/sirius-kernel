@@ -8,8 +8,6 @@
 
 package sirius.kernel.commons;
 
-import com.google.common.collect.Range;
-
 import javax.annotation.Nonnull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -116,7 +114,7 @@ public class Dates {
      * @return <tt>true</tt> if the date is before or after the reference date, <tt>false</tt> otherwise
      */
     public static boolean isBeforeOrEqual(@Nonnull LocalDate dateToCheck, @Nonnull LocalDate referenceDate) {
-        return Range.atMost(referenceDate).contains(dateToCheck);
+        return dateToCheck.isBefore(referenceDate) || dateToCheck.equals(referenceDate);
     }
 
     /**
@@ -127,11 +125,11 @@ public class Dates {
      * @return <tt>true</tt> if the date is after or equal to the reference date, <tt>false</tt> otherwise
      */
     public static boolean isAfterOrEqual(@Nonnull LocalDate dateToCheck, @Nonnull LocalDate referenceDate) {
-        return Range.atLeast(referenceDate).contains(dateToCheck);
+        return dateToCheck.isAfter(referenceDate) || dateToCheck.equals(referenceDate);
     }
 
     /**
-     * Determines if the given date is within the given range.
+     * Determines if the given date is within the given range, inclusive the range dates.
      *
      * @param startDate   the range's start date
      * @param endDate     the range's end date
@@ -141,6 +139,6 @@ public class Dates {
     public static boolean isWithinRange(@Nonnull LocalDate startDate,
                                         @Nonnull LocalDate endDate,
                                         @Nonnull LocalDate dateToCheck) {
-        return Range.closed(startDate, endDate).contains(dateToCheck);
+        return isAfterOrEqual(dateToCheck, startDate) && isBeforeOrEqual(dateToCheck, endDate);
     }
 }
