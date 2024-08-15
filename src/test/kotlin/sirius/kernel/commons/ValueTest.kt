@@ -267,4 +267,18 @@ class ValueTest {
         assertEquals("x", Value.of("x").tryAppend(" ", null).asString())
         assertEquals("x y", Value.of("x").tryAppend(" ", "y").asString())
     }
+
+    @Test
+    fun `Test ignore of objects`() {
+        assertTrue(Value.of("A").ignore("A", "B").isEmptyString)
+        assertTrue(Value.of("A").ignore("B", "C").isFilled)
+        assertTrue(Value.of("0").ignore("0").isEmptyString)
+        assertTrue(Value.of("0").ignore(BigDecimal.ZERO).isFilled)
+        assertTrue(Value.of("1").ignore("0").isFilled)
+        assertTrue(Value.of(BigDecimal.ONE).ignore("1").isFilled)
+        assertTrue(Value.of(BigDecimal.ZERO).ignore(BigDecimal.ZERO).isEmptyString)
+        assertTrue(Value.of(BigDecimal.ZERO).ignore("0").isFilled)
+        assertTrue(Value.of(BigDecimal.valueOf(0)).ignore(BigDecimal.ZERO).isEmptyString)
+        assertTrue(Value.of(BigDecimal.valueOf(1)).ignore(BigDecimal.ZERO).isFilled)
+    }
 }

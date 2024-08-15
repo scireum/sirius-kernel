@@ -234,11 +234,11 @@ public class Value {
      * Otherwise, the current value is returned.
      */
     @Nonnull
-    public Value ignore(@Nonnull String... ignoredValues) {
+    public Value ignore(@Nonnull Object... ignoredValues) {
         if (isEmptyString()) {
             return this;
         }
-        for (String val : ignoredValues) {
+        for (Object val : ignoredValues) {
             if (data.equals(val)) {
                 return Value.EMPTY;
             }
