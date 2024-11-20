@@ -36,6 +36,17 @@ class StringsTest {
     }
 
     @Test
+    fun areAllEmpty() {
+        assertTrue { Strings.areAllEmpty(null, null) }
+        assertTrue { Strings.areAllEmpty("", "") }
+        assertTrue { Strings.areAllEmpty("", null) }
+        assertTrue { Strings.areAllEmpty(null, "") }
+        assertFalse { Strings.areAllEmpty("Test", null) }
+        assertFalse { Strings.areAllEmpty(null, "Test") }
+        assertFalse { Strings.areAllEmpty("Test", "Test") }
+    }
+
+    @Test
     fun equalIgnoreCase() {
         assertTrue { Strings.equalIgnoreCase("A", "a") }
         assertFalse { Strings.equalIgnoreCase("A", "b") }
@@ -51,7 +62,7 @@ class StringsTest {
         assertFalse { Strings.areEqual("a", "A") }
         assertTrue {
             Strings.areEqual(
-                    "a", "A"
+                "a", "A"
             ) { x: Any -> x.toString().lowercase(Locale.getDefault()) }
         }
         assertTrue { Strings.areEqual("", null) }
@@ -122,12 +133,12 @@ class StringsTest {
         assertEquals(listOf<Any>(), Strings.splitSmart("", 2))
         assertEquals(listOf("das ist", "ein", "Test"), Strings.splitSmart("das ist ein Test", 7))
         assertEquals(
-                listOf("lange-w", "örter-w", "erden-a", "uch-get", "rennt"),
-                Strings.splitSmart("lange-wörter-werden-auch-getrennt", 7)
+            listOf("lange-w", "örter-w", "erden-a", "uch-get", "rennt"),
+            Strings.splitSmart("lange-wörter-werden-auch-getrennt", 7)
         )
         assertEquals(
-                listOf("Ein langer Text kann in eine Zeile"),
-                Strings.splitSmart("Ein langer Text kann in eine Zeile", 40)
+            listOf("Ein langer Text kann in eine Zeile"),
+            Strings.splitSmart("Ein langer Text kann in eine Zeile", 40)
         )
     }
 
@@ -142,9 +153,10 @@ class StringsTest {
 
     @Test
     fun replaceAll() {
-        assertEquals("A&lt;B&amp;C&amp;&amp;D&amp;;&amp;E", Strings.replaceAll(
+        assertEquals(
+            "A&lt;B&amp;C&amp;&amp;D&amp;;&amp;E", Strings.replaceAll(
                 Pattern.compile("&([a-zA-Z0-9]{0,6};?)"), "A&lt;B&C&&D&;&E"
-        ) { s: String -> (if (s.endsWith(";") && !s.startsWith(";")) "&" else "&amp;") + s })
+            ) { s: String -> (if (s.endsWith(";") && !s.startsWith(";")) "&" else "&amp;") + s })
     }
 
     @Test
@@ -175,31 +187,33 @@ class StringsTest {
     @Test
     fun cleanup() {
         assertEquals(
-                "Hel lo", Strings.cleanup("Hel lo ", UnaryOperator { input: String? -> StringCleanup.trim(input!!) })
+            "Hel lo", Strings.cleanup("Hel lo ", UnaryOperator { input: String? -> StringCleanup.trim(input!!) })
         )
         assertEquals(
-                "Hel lo ",
-                Strings.cleanup(
-                        "Hel \t \t \r\n lo ",
-                        UnaryOperator { input: String? -> StringCleanup.reduceWhitespace(input!!) })
+            "Hel lo ",
+            Strings.cleanup(
+                "Hel \t \t \r\n lo ",
+                UnaryOperator { input: String? -> StringCleanup.reduceWhitespace(input!!) })
         )
         assertEquals(
-                "Hello",
-                Strings.cleanup(
-                        "Hel \t \t \n lo ",
-                        UnaryOperator { input: String? -> StringCleanup.removeWhitespace(input!!) })
+            "Hello",
+            Strings.cleanup(
+                "Hel \t \t \n lo ",
+                UnaryOperator { input: String? -> StringCleanup.removeWhitespace(input!!) })
         )
         assertEquals(
-                "Hello",
-                Strings.cleanup("Héllo", UnaryOperator { term: String? -> StringCleanup.reduceCharacters(term) })
+            "Hello",
+            Strings.cleanup("Héllo", UnaryOperator { term: String? -> StringCleanup.reduceCharacters(term) })
         )
         assertEquals(
-                "hello", Strings.cleanup("Héllo",
+            "hello", Strings.cleanup(
+                "Héllo",
                 UnaryOperator { term: String? -> StringCleanup.reduceCharacters(term) },
                 UnaryOperator { input: String? -> StringCleanup.lowercase(input!!) })
         )
         assertEquals(
-                "HELLO", Strings.cleanup("Héllo",
+            "HELLO", Strings.cleanup(
+                "Héllo",
                 UnaryOperator { term: String? -> StringCleanup.reduceCharacters(term) },
                 UnaryOperator { input: String? -> StringCleanup.uppercase(input!!) })
         )
@@ -216,55 +230,61 @@ class StringsTest {
             Strings.cleanup("-hello-", UnaryOperator { input: String? -> StringCleanup.capitalize(input!!) })
         )
         assertEquals(
-                "Hello",
-                Strings.cleanup("Hel-lo", UnaryOperator { input: String? -> StringCleanup.removePunctuation(input!!) })
+            "Hello",
+            Strings.cleanup("Hel-lo", UnaryOperator { input: String? -> StringCleanup.removePunctuation(input!!) })
         )
         assertEquals(
-                "Hello",
-                Strings.cleanup(
-                        "\u0008Hello",
-                        UnaryOperator { input: String? -> StringCleanup.removeControlCharacters(input!!) })
+            "Hello",
+            Strings.cleanup(
+                "\u0008Hello",
+                UnaryOperator { input: String? -> StringCleanup.removeControlCharacters(input!!) })
         )
         assertEquals(
-                "Test", Strings.cleanup("<b>Test</b>",
+            "Test", Strings.cleanup(
+                "<b>Test</b>",
                 UnaryOperator { input: String? -> StringCleanup.replaceXml(input) },
                 UnaryOperator { input: String? -> StringCleanup.trim(input!!) })
         )
         assertEquals(
-                "Test", Strings.cleanup("<b>Test<br><img /></b>",
+            "Test", Strings.cleanup(
+                "<b>Test<br><img /></b>",
                 UnaryOperator { input: String? -> StringCleanup.replaceXml(input) },
                 UnaryOperator { input: String? -> StringCleanup.trim(input!!) })
         )
         assertEquals(
-                "Test Blubb", Strings.cleanup("<b>Test<br><img />Blubb</b>",
+            "Test Blubb", Strings.cleanup(
+                "<b>Test<br><img />Blubb</b>",
                 UnaryOperator { input: String? -> StringCleanup.replaceXml(input) },
                 UnaryOperator { input: String? -> StringCleanup.trim(input!!) })
         )
         assertEquals(
-                "foo having < 3 m, with >= 3 m", Strings.cleanup("foo having < 3 m, with >= 3 m",
+            "foo having < 3 m, with >= 3 m", Strings.cleanup(
+                "foo having < 3 m, with >= 3 m",
                 UnaryOperator { input: String? -> StringCleanup.replaceXml(input) },
                 UnaryOperator { input: String? -> StringCleanup.trim(input!!) })
         )
         assertEquals(
-                "&lt;b&gt;Foo &lt;br /&gt; Bar&lt;/b&gt;",
-                Strings.cleanup("<b>Foo <br /> Bar</b>", UnaryOperator { input: String? ->
-                    StringCleanup.escapeXml(
-                            input
-                    )
-                })
+            "&lt;b&gt;Foo &lt;br /&gt; Bar&lt;/b&gt;",
+            Strings.cleanup("<b>Foo <br /> Bar</b>", UnaryOperator { input: String? ->
+                StringCleanup.escapeXml(
+                    input
+                )
+            })
         )
         assertEquals(
-                "Hello <br> World",
-                Strings.cleanup("Hello\nWorld", UnaryOperator { input: String? -> StringCleanup.nlToBr(input) })
+            "Hello <br> World",
+            Strings.cleanup("Hello\nWorld", UnaryOperator { input: String? -> StringCleanup.nlToBr(input) })
         )
         assertEquals(
-                "Testalert('Hello World!')", Strings.cleanup("Test<script>alert('Hello World!')</script>",
+            "Testalert('Hello World!')", Strings.cleanup(
+                "Test<script>alert('Hello World!')</script>",
                 UnaryOperator { input: String? -> StringCleanup.removeXml(input!!) })
         )
         assertEquals(
-                " äöüÄÖÜß<>\"'&* * * * * * ",
-                Strings.cleanup("&nbsp;&auml;&ouml;&uuml;&Auml;&Ouml;&Uuml;&szlig;&lt;&gt;&quot;&apos;&amp;&#8226;&#8226;&#8227;&#8227;&#8259;&#8259;",
-                        UnaryOperator { input: String? -> StringCleanup.decodeHtmlEntities(input!!) })
+            " äöüÄÖÜß<>\"'&* * * * * * ",
+            Strings.cleanup(
+                "&nbsp;&auml;&ouml;&uuml;&Auml;&Ouml;&Uuml;&szlig;&lt;&gt;&quot;&apos;&amp;&#8226;&#8226;&#8227;&#8227;&#8259;&#8259;",
+                UnaryOperator { input: String? -> StringCleanup.decodeHtmlEntities(input!!) })
         )
     }
 

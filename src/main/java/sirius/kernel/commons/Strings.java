@@ -117,6 +117,22 @@ public class Strings {
     }
 
     /**
+     * Checks if the string representations of the given objects are all "" or <tt>null</tt>.
+     *
+     * @param strings the objects which are to be checked
+     * @return <tt>true</tt> if all strings are <tt>null</tt> or "", <tt>false</tt> if one of them is filled
+     * @see #isEmpty(Object)
+     */
+    public static boolean areAllEmpty(Object... strings) {
+        for (Object string : strings) {
+            if (Strings.isFilled(string)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Compares the given <tt>Strings</tt> while treating upper- and lowercase characters as equal.
      * <p>
      * This is essentially the same as {@code left.equalsIgnoreCase(right)}
