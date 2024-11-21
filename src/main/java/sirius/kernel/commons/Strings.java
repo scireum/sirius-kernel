@@ -25,6 +25,7 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Provides various helper methods for dealing with Java <tt>Strings</tt>
@@ -114,6 +115,25 @@ public class Strings {
             return false;
         }
         return string.toString() != null && !string.toString().isEmpty();
+    }
+
+    /**
+     * Checks if the string representations of the given objects are all "" or <tt>null</tt>.
+     *
+     * @param first   the first object which is to be checked
+     * @param second  the second object which is to be checked
+     * @param further additional objects to be checked
+     * @return <tt>true</tt> if all strings are <tt>null</tt> or "", <tt>false</tt> if one of them is filled
+     * @see #isEmpty(Object)
+     */
+    public static boolean areAllEmpty(Object first, Object second, Object... further) {
+        if (Strings.isFilled(first) || Strings.isFilled(second)) {
+            return false;
+        }
+        if (further != null) {
+            return Stream.of(further).allMatch(Strings::isEmpty);
+        }
+        return true;
     }
 
     /**
