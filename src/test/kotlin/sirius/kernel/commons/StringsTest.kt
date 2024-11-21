@@ -41,9 +41,11 @@ class StringsTest {
         assertTrue { Strings.areAllEmpty("", "") }
         assertTrue { Strings.areAllEmpty("", null) }
         assertTrue { Strings.areAllEmpty(null, "") }
+        assertTrue { Strings.areAllEmpty(null, "", null, "") }
         assertFalse { Strings.areAllEmpty("Test", null) }
         assertFalse { Strings.areAllEmpty(null, "Test") }
         assertFalse { Strings.areAllEmpty("Test", "Test") }
+        assertFalse { Strings.areAllEmpty(null, "", null, "", "Test") }
     }
 
     @Test
