@@ -107,14 +107,14 @@ class StringsTest {
     }
 
     @Test
-    fun isUrl() {
-        assertTrue(Strings.isUrl("https://example.com"))
-        assertTrue(Strings.isUrl("HTTPS://example.com"))
-        assertTrue(Strings.isUrl("http://example.com"))
-        assertTrue(Strings.isUrl("Http://example.com?foo=bar"))
-        assertFalse(Strings.isUrl("HttpS"))
-        assertFalse(Strings.isUrl(""))
-        assertFalse(Strings.isUrl("For testing look at https://example.com"))
+    fun isHttpUrl() {
+        assertTrue(Strings.isHttpUrl("https://example.com"))
+        assertTrue(Strings.isHttpUrl("HTTPS://example.com"))
+        assertTrue(Strings.isHttpUrl("http://example.com"))
+        assertTrue(Strings.isHttpUrl("Http://example.com?foo=bar"))
+        assertFalse(Strings.isHttpUrl("HttpS"))
+        assertFalse(Strings.isHttpUrl(""))
+        assertFalse(Strings.isHttpUrl("For testing look at https://example.com"))
     }
 
     @Test
