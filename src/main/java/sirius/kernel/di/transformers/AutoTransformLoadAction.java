@@ -83,6 +83,7 @@ public class AutoTransformLoadAction implements ClassLoadAction {
         public T make(@Nonnull Object source) {
             try {
                 T result = createInstance(source);
+                globalContext.wire(result);
 
                 if (source instanceof Composable composable && additionalTargetTypes != null) {
                     for (Class<?> additionalTarget : additionalTargetTypes) {
@@ -90,7 +91,6 @@ public class AutoTransformLoadAction implements ClassLoadAction {
                     }
                 }
 
-                globalContext.wire(result);
                 return result;
             } catch (InvocationTargetException exception) {
                 if (exception.getCause() instanceof IllegalArgumentException) {
