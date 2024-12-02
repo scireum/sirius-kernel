@@ -275,6 +275,9 @@ public class Strings {
      * @return <tt>true</tt> if the given string is an HTTP(S) URL, <tt>false</tt> otherwise
      */
     public static boolean isHttpUrl(@Nullable String value) {
+        if (isEmpty(value)) {
+            return false;
+        }
         return HTTP_URL_PATTERN.matcher(value).find();
     }
 

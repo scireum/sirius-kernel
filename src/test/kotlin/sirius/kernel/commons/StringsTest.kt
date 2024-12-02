@@ -9,6 +9,8 @@
 package sirius.kernel.commons
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import java.util.*
 import java.util.function.UnaryOperator
 import java.util.regex.Pattern
@@ -106,19 +108,23 @@ class StringsTest {
         assertNull(Strings.firstFilled(""))
     }
 
-    @Test
-    fun isHttpUrl() {
-        assertTrue(Strings.isHttpUrl("https://example.com"))
-        assertTrue(Strings.isHttpUrl("HTTPS://example.com"))
-        assertTrue(Strings.isHttpUrl("http://example.com"))
-        assertTrue(Strings.isHttpUrl("Http://example.com?foo=bar"))
-        assertTrue(Strings.isHttpUrl("http://user:password@server.com/path"))
-        assertTrue(Strings.isHttpUrl("http://user@server.com/path"))
-        assertTrue(Strings.isHttpUrl("https://example.com/my/sample/page"))
-        assertTrue(Strings.isHttpUrl("http://example.com:8080/my/sample/page?user=foo&password=bar"))
-        assertFalse(Strings.isHttpUrl("HttpS"))
-        assertFalse(Strings.isHttpUrl(""))
-        assertFalse(Strings.isHttpUrl("For testing look at https://example.com"))
+    @ParameterizedTest
+    @CsvSource(
+        "true, https://example.com",
+        "true, HTTPS://example.com",
+        "true, http://example.com",
+        "true, Http://example.com?foo=bar",
+        "true, http://user:password@server.com/path",
+        "true, http://user@server.com/path",
+        "true, https://example.com/my/sample/page",
+        "true, http://example.com:8080/my/sample/page?user=foo&password=bar",
+        "false, HttpS",
+        "false, ",
+        "false, ''",
+        "false, For testing look at https://example.com"
+    )
+    fun isHttpUrl(isUrl: Boolean, url: String?) {
+        assertEquals(isUrl, Strings.isHttpUrl(url))
     }
 
     @Test
