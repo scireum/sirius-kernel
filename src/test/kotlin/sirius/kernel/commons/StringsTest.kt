@@ -9,6 +9,8 @@
 package sirius.kernel.commons
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import java.util.*
 import java.util.function.UnaryOperator
 import java.util.regex.Pattern
@@ -104,6 +106,25 @@ class StringsTest {
         assertNull(Strings.firstFilled())
         assertNull(Strings.firstFilled(null as String?))
         assertNull(Strings.firstFilled(""))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "true, https://example.com",
+        "true, HTTPS://example.com",
+        "true, http://example.com",
+        "true, Http://example.com?foo=bar",
+        "true, http://user:password@server.com/path",
+        "true, http://user@server.com/path",
+        "true, https://example.com/my/sample/page",
+        "true, http://example.com:8080/my/sample/page?user=foo&password=bar",
+        "false, HttpS",
+        "false, ",
+        "false, ''",
+        "false, For testing look at https://example.com"
+    )
+    fun isHttpUrl(isUrl: Boolean, url: String?) {
+        assertEquals(isUrl, Strings.isHttpUrl(url))
     }
 
     @Test

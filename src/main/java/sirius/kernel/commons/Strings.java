@@ -50,6 +50,11 @@ public class Strings {
     private static final String TRUNCATED_SIGNAL = ELLIPSIS + "[" + ELLIPSIS + "]" + ELLIPSIS;
 
     /**
+     * Contains the pattern to detect if a string is an HTTP(S) URL.
+     */
+    private static final Pattern HTTP_URL_PATTERN = Pattern.compile("^https?://", Pattern.CASE_INSENSITIVE);
+
+    /**
      * Contains all characters which can safely be used for codes without too much confusion (e.g. 0 vs O are
      * excluded).
      */
@@ -261,6 +266,19 @@ public class Strings {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns if the given string is an HTTP(S) URL.
+     *
+     * @param value the string to check
+     * @return <tt>true</tt> if the given string is an HTTP(S) URL, <tt>false</tt> otherwise
+     */
+    public static boolean isHttpUrl(@Nullable String value) {
+        if (isEmpty(value)) {
+            return false;
+        }
+        return HTTP_URL_PATTERN.matcher(value).find();
     }
 
     /**
