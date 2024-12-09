@@ -182,6 +182,8 @@ public class XMLReader extends DefaultHandler {
         try (stream) {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setXIncludeAware(false);
             SAXParser saxParser = factory.newSAXParser();
             org.xml.sax.XMLReader reader = saxParser.getXMLReader();
             reader.setEntityResolver(new EntityResolver() {
