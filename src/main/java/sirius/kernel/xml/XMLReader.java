@@ -17,6 +17,7 @@ import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -63,7 +64,9 @@ public class XMLReader extends DefaultHandler {
      */
     public XMLReader() {
         try {
-            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            documentBuilder = documentBuilderFactory.newDocumentBuilder();
             taskContext = TaskContext.get();
         } catch (ParserConfigurationException exception) {
             throw Exceptions.handle(exception);
@@ -178,6 +181,7 @@ public class XMLReader extends DefaultHandler {
     public void parse(InputStream stream, Function<String, InputStream> resourceLocator) throws IOException {
         try (stream) {
             SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             SAXParser saxParser = factory.newSAXParser();
             org.xml.sax.XMLReader reader = saxParser.getXMLReader();
             reader.setEntityResolver(new EntityResolver() {
