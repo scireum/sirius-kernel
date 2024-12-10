@@ -167,7 +167,7 @@ public class Files {
      * @param path the path to check
      * @return <tt>true</tt> if the path is hidden, <tt>false</tt> otherwise
      */
-    public static boolean isHidden(@Nullable String path) {
+    public static boolean isConsideredHidden(@Nullable String path) {
         return path != null && path.startsWith(".");
     }
 
@@ -180,7 +180,7 @@ public class Files {
      * @param path the path to check
      * @return <tt>true</tt> if the path is a metadata file that is listed in the METADATA_FILES list, <tt>false</tt> otherwise
      */
-    public static boolean isMetadata(@Nullable String path) {
+    public static boolean isConsideredMetadata(@Nullable String path) {
         if (Strings.isEmpty(path)) {
             return false;
         }
