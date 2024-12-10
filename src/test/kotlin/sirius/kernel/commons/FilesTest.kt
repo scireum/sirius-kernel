@@ -84,4 +84,28 @@ internal class FilesTest {
         assertNull(Files.toSaneFileName("   ").orElse(null))
         assertNull(Files.toSaneFileName("").orElse(null))
     }
+
+    @Test
+    fun `isConsideredHidden works as expected`(){
+        assertEquals(true, Files.isConsideredHidden(".test"));
+        assertEquals(true, Files.isConsideredHidden(".test.tmp"));
+        assertEquals(true, Files.isConsideredHidden("/folder1/.test.tmp"));
+        assertEquals(true, Files.isConsideredHidden("/folder1/folder2/.test"));
+        assertEquals(false, Files.isConsideredHidden("test"));
+        assertEquals(false, Files.isConsideredHidden("test.tmp"));
+        assertEquals(false, Files.isConsideredHidden("/folder1/test.tmp"));
+        assertEquals(false, Files.isConsideredHidden("/folder1/folder2/test"));
+        assertEquals(false, Files.isConsideredHidden("/folder1/folder2/"));
+        assertEquals(false,Files.isConsideredHidden(null));
+    }
+
+    @Test
+    fun `isConsideredMetadata works as expected`(){
+        assertEquals(true, Files.isConsideredMetadata("__MACOSX"));
+        assertEquals(true, Files.isConsideredMetadata("__MACOSX/test"));
+        assertEquals(true, Files.isConsideredMetadata(".DS_Store"));
+        assertEquals(true, Files.isConsideredMetadata("thumbs.db"));
+        assertEquals(false, Files.isConsideredMetadata("folder1/folder2/test"));
+        assertEquals(false, Files.isConsideredMetadata("test.pdf"));
+    }
 }
