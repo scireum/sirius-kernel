@@ -184,7 +184,7 @@ public class Files {
         if (Strings.isEmpty(path)) {
             return false;
         }
-        return METADATA_FILES.stream().anyMatch(path::startsWith);
+        return METADATA_FILES.stream().anyMatch(path::contains);
     }
 
     /**
