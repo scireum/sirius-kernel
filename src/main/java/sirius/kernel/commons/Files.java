@@ -164,7 +164,7 @@ public class Files {
      * @return <tt>true</tt> if the path is hidden, <tt>false</tt> otherwise
      */
     public static boolean isConsideredHidden(@Nullable String path) {
-        return path != null && path.startsWith(".");
+        return path != null && (path.startsWith(".") || path.contains("/."));
     }
 
     /**
