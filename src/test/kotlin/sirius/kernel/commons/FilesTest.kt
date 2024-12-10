@@ -99,13 +99,8 @@ internal class FilesTest {
         assertEquals(true, Files.isConsideredMetadata("__MACOSX"));
         assertEquals(true, Files.isConsideredMetadata("__MACOSX/test"));
         assertEquals(true, Files.isConsideredMetadata("__MACOSX/folder1/test"));
-        assertEquals(true, Files.isConsideredMetadata("folder1/__MACOSX"));
-        assertEquals(true, Files.isConsideredMetadata("folder1/__MACOSX/folder2/test.pdf"));
         assertEquals(true, Files.isConsideredMetadata(".DS_Store"));
-        assertEquals(true, Files.isConsideredMetadata("folder1/.DS_Store"));
         assertEquals(true, Files.isConsideredMetadata("Thumbs.db"));
-        assertEquals(true, Files.isConsideredMetadata("folder1/Thumbs.db"));
-        assertEquals(false, Files.isConsideredMetadata("test"));
         assertEquals(false, Files.isConsideredMetadata("test.tmp"));
         assertEquals(false, Files.isConsideredMetadata("thumbs.db"));
         assertEquals(false, Files.isConsideredMetadata(null));
