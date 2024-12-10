@@ -33,10 +33,7 @@ public class Files {
     /**
      * Contains a list of file names and endings which are considered to be metadata.
      */
-    private static final List<String> METADATA_FILES = List.of(
-            "__MACOSX",
-            ".DS_Store",
-            "Thumbs.db");
+    private static final List<String> METADATA_FILES = List.of("__MACOSX", ".DS_Store", "Thumbs.db");
 
     private Files() {
     }
