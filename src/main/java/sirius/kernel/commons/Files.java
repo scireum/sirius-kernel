@@ -261,7 +261,10 @@ public class Files {
      * @param path the path to split
      * @return a stream of all parts of the given path
      */
-    private static Stream<String> streamPath(String path) {
+    public static Stream<String> streamPath(String path) {
+        if(Strings.isEmpty(path)) {
+            return Stream.empty();
+        }
         Stream.Builder<String> builder = Stream.builder();
         builder.add(Files.getFilenameAndExtension(path));
         String parent = Files.getBasepath(path);
