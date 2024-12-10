@@ -160,6 +160,34 @@ public class Files {
     }
 
     /**
+     * Determines if the given path is hidden.
+     * <p>
+     * A path is considered hidden if it starts with a dot.
+     *
+     * @param path the path to check
+     * @return <tt>true</tt> if the path is hidden, <tt>false</tt> otherwise
+     */
+    public static boolean isHidden(@Nullable String path) {
+        return path != null && path.startsWith(".");
+    }
+
+    /**
+     * Determines if the given path is a metadata file.
+     * <p>
+     * A metadata file is a file which is not part of the actual content but rather contains metadata or is used by
+     * the operating system or other tools.
+     *
+     * @param path the path to check
+     * @return <tt>true</tt> if the path is a metadata file that is listed in the METADATA_FILES list, <tt>false</tt> otherwise
+     */
+    public static boolean isMetadata(@Nullable String path) {
+        if (Strings.isEmpty(path)) {
+            return false;
+        }
+        return METADATA_FILES.stream().anyMatch(path::contains);
+    }
+
+    /**
      * If the given file is not null and exists, tries to delete that file and logs when a file cannot be deleted. T
      * his is useful for error reporting and to diagnose why a file cannot be deleted.
      *
