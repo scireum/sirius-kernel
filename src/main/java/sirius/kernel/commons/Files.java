@@ -18,6 +18,7 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -27,6 +28,18 @@ import java.util.regex.Pattern;
 public class Files {
 
     private static final Pattern NON_PATH_CHARACTERS = Pattern.compile("[^a-zA-Z0-9\\-.]");
+
+    /**
+     * Contains a list of file names and endings which are considered to be metadata.
+     */
+    private static final List<String> METADATA_FILES = List.of(
+            "__MACOSX",
+            "thumbs.db",
+            ".ini",
+            "$RECYCLE.BIN",
+            ".sys",
+            ".tmp",
+            ".temp");
 
     private Files() {
     }
