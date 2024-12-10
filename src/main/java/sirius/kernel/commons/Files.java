@@ -158,15 +158,14 @@ public class Files {
      * <p>
      * A path is considered hidden if it starts with a dot.
      *
-     * @param path the path to check
+     * @param fileOrDirectoryName the path to check
      * @return <tt>true</tt> if the path is hidden, <tt>false</tt> otherwise
      */
-    public static boolean isConsideredHidden(@Nullable String path) {
-        try {
-            return getFilenameAndExtension(path).startsWith(".");
-        } catch (NullPointerException e) {
+    public static boolean isConsideredHidden(@Nullable String fileOrDirectoryName) {
+        if (Strings.isEmpty(fileOrDirectoryName)) {
             return false;
         }
+        return fileOrDirectoryName.startsWith(".");
     }
 
     /**
