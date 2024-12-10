@@ -178,9 +178,6 @@ public class Files {
      * @return <tt>true</tt> if the path is a metadata file that is listed in the METADATA_FILES list, <tt>false</tt> otherwise
      */
     public static boolean isConsideredMetadata(@Nullable String path) {
-        if (Strings.isEmpty(path)) {
-            return false;
-        }
         return streamPath(path).anyMatch(METADATA_FILES::contains);
     }
 
