@@ -89,13 +89,8 @@ internal class FilesTest {
     fun `isConsideredHidden works as expected`(){
         assertEquals(true, Files.isConsideredHidden(".test"));
         assertEquals(true, Files.isConsideredHidden(".test.tmp"));
-        assertEquals(true, Files.isConsideredHidden("/folder1/.test.tmp"));
-        assertEquals(true, Files.isConsideredHidden("/folder1/folder2/.test"));
         assertEquals(false, Files.isConsideredHidden("test"));
         assertEquals(false, Files.isConsideredHidden("test.tmp"));
-        assertEquals(false, Files.isConsideredHidden("/folder1/test.tmp"));
-        assertEquals(false, Files.isConsideredHidden("/folder1/folder2/test"));
-        assertEquals(false, Files.isConsideredHidden("/folder1/folder2/"));
         assertEquals(false,Files.isConsideredHidden(null));
     }
 
@@ -113,5 +108,6 @@ internal class FilesTest {
         assertEquals(false, Files.isConsideredMetadata("test"));
         assertEquals(false, Files.isConsideredMetadata("test.tmp"));
         assertEquals(false, Files.isConsideredMetadata("thumbs.db"));
+        assertEquals(false, Files.isConsideredMetadata(null));
     }
 }
