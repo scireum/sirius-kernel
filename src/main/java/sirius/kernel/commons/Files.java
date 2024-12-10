@@ -34,12 +34,8 @@ public class Files {
      */
     private static final List<String> METADATA_FILES = List.of(
             "__MACOSX",
-            "thumbs.db",
-            ".ini",
-            "$RECYCLE.BIN",
-            ".sys",
-            ".tmp",
-            ".temp");
+            ".DS_Store",
+            "thumbs.db");
 
     private Files() {
     }
