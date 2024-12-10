@@ -35,7 +35,7 @@ public class Files {
     private static final List<String> METADATA_FILES = List.of(
             "__MACOSX",
             ".DS_Store",
-            "thumbs.db");
+            "Thumbs.db");
 
     private Files() {
     }
