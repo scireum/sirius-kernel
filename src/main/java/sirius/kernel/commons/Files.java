@@ -174,11 +174,14 @@ public class Files {
      * A metadata file is a file which is not part of the actual content but rather contains metadata or is used by
      * the operating system or other tools.
      *
-     * @param path the path to check
+     * @param fileOrDirectoryName the path to check
      * @return <tt>true</tt> if the path is a metadata file that is listed in the METADATA_FILES list, <tt>false</tt> otherwise
      */
-    public static boolean isConsideredMetadata(@Nullable String path) {
-        return streamPath(path).anyMatch(METADATA_FILES::contains);
+    public static boolean isConsideredMetadata(@Nullable String fileOrDirectoryName) {
+        if (Strings.isEmpty(fileOrDirectoryName)) {
+            return false;
+        }
+        return METADATA_FILES.stream().anyMatch(fileOrDirectoryName::startsWith);
     }
 
     /**
