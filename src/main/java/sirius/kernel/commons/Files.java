@@ -180,7 +180,7 @@ public class Files {
         if (Strings.isEmpty(path)) {
             return false;
         }
-        return METADATA_FILES.stream().anyMatch(path::contains);
+        return METADATA_FILES.stream().anyMatch(path::startsWith);
     }
 
     /**
