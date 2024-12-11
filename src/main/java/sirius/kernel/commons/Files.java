@@ -18,8 +18,10 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Helperclass for handling files in Java 8.
@@ -27,6 +29,11 @@ import java.util.regex.Pattern;
 public class Files {
 
     private static final Pattern NON_PATH_CHARACTERS = Pattern.compile("[^a-zA-Z0-9\\-.]");
+
+    /**
+     * Contains a list of file names and endings which are considered to be metadata.
+     */
+    private static final List<String> METADATA_FILES = List.of("__MACOSX", ".DS_Store", "Thumbs.db");
 
     private Files() {
     }
@@ -147,8 +154,39 @@ public class Files {
     }
 
     /**
-     * If the given file is not null and exists, tries to delete that file and logs when a file cannot be deleted. T
-     * his is useful for error reporting and to diagnose why a file cannot be deleted.
+     * Determines if the given path is hidden.
+     * <p>
+     * A path is considered hidden if it starts with a dot.
+     *
+     * @param fileOrDirectoryName the path to check
+     * @return <tt>true</tt> if the path is hidden, <tt>false</tt> otherwise
+     */
+    public static boolean isConsideredHidden(@Nullable String fileOrDirectoryName) {
+        if (Strings.isEmpty(fileOrDirectoryName)) {
+            return false;
+        }
+        return fileOrDirectoryName.startsWith(".");
+    }
+
+    /**
+     * Determines if the given path is a metadata file.
+     * <p>
+     * A metadata file is a file which is not part of the actual content but rather contains metadata or is used by
+     * the operating system or other tools.
+     *
+     * @param fileOrDirectoryName the path to check
+     * @return <tt>true</tt> if the path is a metadata file that is listed in the METADATA_FILES list, <tt>false</tt> otherwise
+     */
+    public static boolean isConsideredMetadata(@Nullable String fileOrDirectoryName) {
+        if (Strings.isEmpty(fileOrDirectoryName)) {
+            return false;
+        }
+        return METADATA_FILES.stream().anyMatch(fileOrDirectoryName::startsWith);
+    }
+
+    /**
+     * If the given file is not null and exists, tries to delete that file and logs when a file cannot be deleted.
+     * This is useful for error reporting and to diagnose why a file cannot be deleted.
      *
      * @param file the file to delete
      */
@@ -212,5 +250,28 @@ public class Files {
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    /**
+     * Returns a stream of all parts of the given path.
+     * <p>
+     * The stream will contain the filename, the parent directory, the parent of the parent and so on.
+     *
+     * @param path the path to split
+     * @return a stream of all parts of the given path
+     */
+    public static Stream<String> streamPath(String path) {
+        if (Strings.isEmpty(path)) {
+            return Stream.empty();
+        }
+
+        Stream.Builder<String> builder = Stream.builder();
+        builder.add(Files.getFilenameAndExtension(path));
+        String parent = Files.getBasepath(path);
+        while (Strings.isFilled(parent)) {
+            builder.add(Files.getFilenameAndExtension(parent));
+            parent = Files.getBasepath(parent);
+        }
+        return builder.build();
     }
 }
