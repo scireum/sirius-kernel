@@ -148,16 +148,16 @@ internal class XmlReaderTest {
         reader.addHandler("root") { node: StructuredNode ->
             readString.set(node.queryString("."))
         }
-        assertThrows<IOException> {
-            reader.parse(
-                ByteArrayInputStream(//language=xml
-                    """
-                            <?xml version="1.0" encoding="UTF-8"?> 
-                            <!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/hosts">]> 
-                            <root>&xxe;</root>
-                        """.trimIndent().toByteArray()
-                )
+
+        reader.parse(
+            ByteArrayInputStream(//language=xml
+                """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/hosts">]>
+                    <root>&xxe;</root>
+                """.trimIndent().toByteArray()
             )
-        }
+        )
+        assertEquals(null, readString.get())
     }
 }
