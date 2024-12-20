@@ -160,4 +160,24 @@ internal class XmlReaderTest {
         )
         assertEquals(null, readString.get())
     }
+
+    @Test
+    fun `Reading xml with doctype is allowed`() {
+        val readString = ValueHolder.of<String?>(null)
+        val reader = XMLReader()
+        reader.addHandler("root") { node: StructuredNode ->
+            readString.set(node.queryString("."))
+        }
+
+        reader.parse(
+            ByteArrayInputStream(//language=xml
+                """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <!DOCTYPE SOMETHING SYSTEM "something.dtd">
+                    <root>content</root>
+                """.trimIndent().toByteArray()
+            )
+        )
+        assertEquals("content", readString.get())
+    }
 }
