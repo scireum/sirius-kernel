@@ -128,6 +128,26 @@ class StringsTest {
         assertEquals(isUrl, Strings.isHttpUrl(url))
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "true, https://example.com",
+        "true, HTTPS://example.com",
+        "false, http://example.com",
+        "false, Http://example.com?foo=bar",
+        "false, http://user:password@server.com/path",
+        "false, http://user@server.com/path",
+        "true, https://example.com/my/sample/page",
+        "false, http://example.com:8080/my/sample/page?user=foo&password=bar",
+        "false, https:// ;%@@ lol whatever i don't care",
+        "false, HttpS",
+        "false, ",
+        "false, ''",
+        "false, For testing look at https://example.com"
+    )
+    fun isHttpsUrl(isUrl: Boolean, url: String?) {
+        assertEquals(isUrl, Strings.isHttpsUrl(url))
+    }
+
     @Test
     fun urlEncode() {
         assertEquals("A%3FTEST%26B%C3%84%C3%96%C3%9C", Strings.urlEncode("A?TEST&BÄÖÜ"))

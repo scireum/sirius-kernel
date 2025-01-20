@@ -277,6 +277,16 @@ public class Strings {
                      url -> "http".equalsIgnoreCase(url.getProtocol()) || "https".equalsIgnoreCase(url.getProtocol()));
     }
 
+    /**
+     * Returns if the given string is an HTTPS URL, explicitly excluding unencrypted HTTP URLs.
+     *
+     * @param value the string to check
+     * @return <tt>true</tt> if the given string is an HTTPS URL, <tt>false</tt> otherwise
+     */
+    public static boolean isHttpsUrl(@Nullable String value) {
+        return isUrl(value, url -> "https".equalsIgnoreCase(url.getProtocol()));
+    }
+
     protected static boolean isUrl(@Nullable String value, Predicate<URL> checker) {
         if (isEmpty(value)) {
             return false;
