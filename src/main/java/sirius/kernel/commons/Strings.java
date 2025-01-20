@@ -12,6 +12,8 @@ import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.net.URI;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,11 +51,6 @@ public class Strings {
      * Contains the marker/signal which should be used to depict that the string has been truncated.
      */
     private static final String TRUNCATED_SIGNAL = ELLIPSIS + "[" + ELLIPSIS + "]" + ELLIPSIS;
-
-    /**
-     * Contains the pattern to detect if a string is an HTTP(S) URL.
-     */
-    private static final Pattern HTTP_URL_PATTERN = Pattern.compile("^https?://", Pattern.CASE_INSENSITIVE);
 
     /**
      * Contains all characters which can safely be used for codes without too much confusion (e.g. 0 vs O are
@@ -275,10 +273,20 @@ public class Strings {
      * @return <tt>true</tt> if the given string is an HTTP(S) URL, <tt>false</tt> otherwise
      */
     public static boolean isHttpUrl(@Nullable String value) {
+        return isUrl(value,
+                     url -> "http".equalsIgnoreCase(url.getProtocol()) || "https".equalsIgnoreCase(url.getProtocol()));
+    }
+
+    protected static boolean isUrl(@Nullable String value, Predicate<URL> checker) {
         if (isEmpty(value)) {
             return false;
         }
-        return HTTP_URL_PATTERN.matcher(value).find();
+
+        try {
+            return checker.test(URI.create(value).toURL());
+        } catch (Exception exception) {
+            return false;
+        }
     }
 
     /**
