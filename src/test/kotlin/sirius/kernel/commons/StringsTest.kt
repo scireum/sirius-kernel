@@ -118,6 +118,7 @@ class StringsTest {
         "true, http://user@server.com/path",
         "true, https://example.com/my/sample/page",
         "true, http://example.com:8080/my/sample/page?user=foo&password=bar",
+        "false, https:// ;%@@ lol whatever i don't care",
         "false, HttpS",
         "false, ",
         "false, ''",
