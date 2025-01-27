@@ -146,8 +146,7 @@ public class XMLGenerator extends XMLStructuredOutput {
     public static Document createDocument(@Nullable String namespaceURI,
                                           String qualifiedName,
                                           @Nullable DocumentType docType) throws ParserConfigurationException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        DocumentBuilderFactory factory = XmlUtil.createSecurityAwareDocumentBuilderFactory();
         DocumentBuilder builder = factory.newDocumentBuilder();
         DOMImplementation impl = builder.getDOMImplementation();
         return impl.createDocument(namespaceURI, qualifiedName, docType);
