@@ -42,4 +42,18 @@ internal class XMLStructuredInputTest {
         assertEquals("123456", input.root().queryString("."))
     }
 
+    @Test
+    fun `Preventing access to local resources works`() {
+        assertThrows<IOException> {
+            XMLStructuredInput(
+                ByteArrayInputStream(//language=xml
+                    """<?xml version="1.0" encoding="UTF-8"?>
+                    <!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/hosts">]>
+                    <root>&xxe;</root>
+                """.toByteArray()
+                ), null
+            )
+        }
+    }
+
 }
