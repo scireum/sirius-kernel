@@ -24,6 +24,9 @@ public class XmlUtil {
         DocumentBuilderFactory result = DocumentBuilderFactory.newInstance();
         result.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         result.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        result.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        result.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        result.setExpandEntityReferences(false);
         result.setXIncludeAware(false);
         return result;
     }
