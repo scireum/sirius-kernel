@@ -38,8 +38,8 @@ public class XMLStructuredInput implements StructuredInput {
      */
     public XMLStructuredInput(InputStream inputStream, @Nullable NamespaceContext namespaceContext) throws IOException {
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            DocumentBuilderFactory factory = XmlUtil.createSecurityAwareDocumentBuilderFactory();
+
             if (namespaceContext != null) {
                 factory.setNamespaceAware(true);
             }

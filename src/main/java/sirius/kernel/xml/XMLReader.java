@@ -64,8 +64,7 @@ public class XMLReader extends DefaultHandler {
      */
     public XMLReader() {
         try {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            DocumentBuilderFactory documentBuilderFactory = XmlUtil.createSecurityAwareDocumentBuilderFactory();;
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
             taskContext = TaskContext.get();
         } catch (ParserConfigurationException exception) {
