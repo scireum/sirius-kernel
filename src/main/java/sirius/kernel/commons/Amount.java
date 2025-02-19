@@ -109,6 +109,22 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
         return of(NLS.parseMachineString(BigDecimal.class, value));
     }
 
+    /// Converts the given string into a number. If the string is empty, <tt>NOTHING</tt> is returned.
+    /// If the string is malformed an exception will be thrown.
+    ///
+    /// In contrast to [#ofMachineString(String)], this method will not round the resulting Amount to the
+    /// configured scale of [#SCALE], but will keep the scale from input String.
+    ///
+    /// @param value the string value which should be converted into a numeric value.
+    /// @return an <tt>Amount</tt> representing the given input. <tt>NOTHING</tt> if the input was empty.
+    @Nonnull
+    public static Amount ofRoundedMachineString(@Nullable String value) {
+        if (Strings.isEmpty(value)) {
+            return NOTHING;
+        }
+        return ofRounded(NLS.parseMachineString(BigDecimal.class, value));
+    }
+
     /**
      * Converts the given string into a number which is formatted according the decimal symbols for the current locale.
      *
@@ -122,6 +138,22 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
             return NOTHING;
         }
         return NLS.parseUserString(Amount.class, value);
+    }
+
+    /// Converts the given string into a number which is formatted according the decimal symbols for the current locale.
+    ///
+    /// In contrast to [#ofUserString(String)], this method will not round the resulting Amount to the
+    /// configured scale of [#SCALE], but will keep the scale from input String.
+    ///
+    /// @param value the string value which should be converted into a numeric value.
+    /// @return an `Amount` representing the given input. `NOTHING` if the input was empty.
+    /// @see NLS
+    @Nonnull
+    public static Amount ofRoundedUserString(@Nullable String value) {
+        if (Strings.isEmpty(value)) {
+            return NOTHING;
+        }
+        return Amount.ofRounded(NLS.parseUserString(BigDecimal.class, value));
     }
 
     /**

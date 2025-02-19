@@ -1197,6 +1197,9 @@ public class NLS {
         if (Amount.class.equals(clazz)) {
             return (V) Amount.of(parseDecimalNumberFromUser(value, language));
         }
+        if (BigDecimal.class.equals(clazz)) {
+            return (V) parseDecimalNumberFromUser(value, language);
+        }
         if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
             if (NLS.get(CommonKeys.YES.key(), language).equalsIgnoreCase(value)) {
                 return (V) Boolean.TRUE;
