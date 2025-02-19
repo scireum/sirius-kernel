@@ -312,7 +312,7 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
         return value != null;
     }
 
-    /// If this actual number if empty, the given value will be returned. Otherwise this will be returned.
+    /// If this actual number if empty, the given value will be returned. Otherwise, this will be returned.
     ///
     /// @param valueIfNothing the value which is used if there is no internal value
     /// @return <tt>this</tt> if there is an internal value, <tt>valueIfNothing</tt> otherwise
@@ -411,8 +411,7 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
     ///
     /// @param other the operand to subtract from this.
     /// @return an <tt>Amount</tt> representing the difference of <tt>this</tt> and <tt>other</tt> if both values were
-    /// filled.
-    /// If <tt>other</tt> is empty, <tt>this</tt> is returned. If this is empty, <tt>NOTHING</tt> is returned.
+    /// filled. If <tt>other</tt> is empty, <tt>this</tt> is returned. If this is empty, <tt>NOTHING</tt> is returned.
     @Nonnull
     @CheckReturnValue
     public Amount subtract(@Nullable Amount other) {
@@ -429,8 +428,7 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
     ///
     /// @param other the operand to multiply with this.
     /// @return an <tt>Amount</tt> representing the product of <tt>this</tt> and <tt>other</tt> if both values were
-    /// filled.
-    /// If <tt>other</tt> is empty or if <tt>this</tt> is empty, <tt>NOTHING</tt> is returned.
+    /// filled. If <tt>other</tt> is empty or if <tt>this</tt> is empty, <tt>NOTHING</tt> is returned.
     @Nonnull
     @CheckReturnValue
     public Amount times(@Nonnull Amount other) {
@@ -780,8 +778,8 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
     /// Converts the number into a string according to the given <tt>format</tt>. The returned [Value] provides
     /// helpful methods to pre- or append texts like units or currency symbols while gracefully handling empty values.
     ///
-    /// @param format the `NumberFormat` used to obtain the number of decimal places,
-    ///                             the decimal format symbols and rounding mode
+    /// @param format the `NumberFormat` used to obtain the number of decimal places, the decimal format symbols
+    ///               and rounding mode
     /// @return a <tt>Value</tt> containing the string representation according to the given format
     /// or an empty <tt>Value</tt> if <tt>this</tt> is empty.
     /// @see Value#tryAppend(String, Object)
@@ -793,8 +791,8 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
     /// Converts the number into a string just like [#toString(NumberFormat)]. However, if the number has no
     /// decimal places, a rounded value (without .00) will be returned.
     ///
-    /// @param format the `NumberFormat` used to obtain the number of decimal places,
-    ///                             the decimal format symbols and rounding mode
+    /// @param format the `NumberFormat` used to obtain the number of decimal places, the decimal format symbols
+    ///               and rounding mode
     /// @return a <tt>Value</tt> containing the string representation according to the given format
     /// or an empty <tt>Value</tt> if <tt>this</tt> is empty. Omits 0 as decimal places.
     /// @see #toString()
@@ -815,7 +813,6 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
     ///   - K - kilo
     ///   - M - mega
     ///   - G - giga
-    ///
     ///
     /// An input of <tt>0.0341 V</tt> will be represented as <tt>34.1 mV</tt> if digits was 4 or 34 mV is digits was 2
     /// or less.
