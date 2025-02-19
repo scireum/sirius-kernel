@@ -148,7 +148,6 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
     /// @param amount the value which should be converted into an <tt>Amount</tt>
     /// @return an <tt>Amount</tt> representing the given input. <tt>NOTHING</tt> if the input was empty.
     @Nonnull
-    @JsonCreator
     public static Amount of(@Nullable BigDecimal amount) {
         if (amount == null) {
             return NOTHING;
@@ -164,6 +163,7 @@ public class Amount extends Number implements Comparable<Amount>, Serializable {
     /// @param amount the value which should be converted into an <tt>Amount</tt>
     /// @return an <tt>Amount</tt> representing the given input. <tt>NOTHING</tt> if the input was empty.
     @Nonnull
+    @JsonCreator
     public static Amount ofRounded(@Nullable BigDecimal amount) {
         if (amount == null) {
             return NOTHING;
