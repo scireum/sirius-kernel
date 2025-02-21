@@ -238,8 +238,8 @@ public class XMLCall {
     private String formatResponseForLogging(byte[] response) {
         try {
             return new XMLStructuredInput(new ByteArrayInputStream(response), namespaceContext).toString();
-        } catch (Exception e) {
-            Exceptions.ignore(e);
+        } catch (Exception exception) {
+            Exceptions.ignore(exception);
             return new String(response, outcall.getContentEncoding());
         }
     }
