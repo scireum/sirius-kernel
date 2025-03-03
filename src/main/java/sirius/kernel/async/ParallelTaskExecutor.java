@@ -24,8 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * soon as the first task is submitted. The underlying queue is unbounded and only limited by the memory available.
  * Once all tasks have been submitted, call {@link #shutdownWhenDone()} to wait for all pending tasks to complete.
  * <p>
- * Note that the current {@linkplain CallContext#getCurrent() current context} will be passed to the tasks when they
- * are executed.
+ * Note that the {@linkplain CallContext#getCurrent() current context} will be passed to the tasks when they are
+ * executed.
  */
 public class ParallelTaskExecutor {
 
