@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Executes tasks in parallel in the current node using virtual threads with a limit on concurrency.
  * <p>
  * After the executor has been initialized, submit tasks using {@link #submitTask(Runnable)}. They will start as
- * soon as the first task is submitted.
+ * soon as the first task is submitted. The underlying queue is unbounded and only limited by the memory available.
  * Once all tasks have been submitted, call {@link #shutdownWhenDone()} to wait for all pending tasks to complete.
  * <p>
  * Note that the current {@linkplain CallContext#getCurrent() current context} will be passed to the tasks when they
@@ -88,7 +88,7 @@ public class ParallelTaskExecutor {
                     Runnable task = taskQueue.take();
                     semaphore.acquire();
                     executor.submit(task);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException exception) {
                     Thread.currentThread().interrupt();
                     break;
                 }
