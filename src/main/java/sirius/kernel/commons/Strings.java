@@ -12,6 +12,8 @@ import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.net.URI;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,10 +23,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Provides various helper methods for dealing with Java <tt>Strings</tt>
@@ -37,6 +41,16 @@ import java.util.stream.Collectors;
  * @see Value
  */
 public class Strings {
+
+    /**
+     * Contains the characters which should be used in order to depict an ellipsis.
+     */
+    private static final String ELLIPSIS = "…";
+
+    /**
+     * Contains the marker/signal which should be used to depict that the string has been truncated.
+     */
+    private static final String TRUNCATED_SIGNAL = ELLIPSIS + "[" + ELLIPSIS + "]" + ELLIPSIS;
 
     /**
      * Contains all characters which can safely be used for codes without too much confusion (e.g. 0 vs O are
@@ -104,6 +118,25 @@ public class Strings {
             return false;
         }
         return string.toString() != null && !string.toString().isEmpty();
+    }
+
+    /**
+     * Checks if the string representations of the given objects are all "" or <tt>null</tt>.
+     *
+     * @param first   the first object which is to be checked
+     * @param second  the second object which is to be checked
+     * @param further additional objects to be checked
+     * @return <tt>true</tt> if all strings are <tt>null</tt> or "", <tt>false</tt> if one of them is filled
+     * @see #isEmpty(Object)
+     */
+    public static boolean areAllEmpty(Object first, Object second, Object... further) {
+        if (Strings.isFilled(first) || Strings.isFilled(second)) {
+            return false;
+        }
+        if (further != null) {
+            return Stream.of(further).allMatch(Strings::isEmpty);
+        }
+        return true;
     }
 
     /**
@@ -231,6 +264,39 @@ public class Strings {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns if the given string is an HTTP(S) URL.
+     *
+     * @param value the string to check
+     * @return <tt>true</tt> if the given string is an HTTP(S) URL, <tt>false</tt> otherwise
+     */
+    public static boolean isHttpUrl(@Nullable String value) {
+        return isUrl(value,
+                     url -> "http".equalsIgnoreCase(url.getProtocol()) || "https".equalsIgnoreCase(url.getProtocol()));
+    }
+
+    /**
+     * Returns if the given string is an HTTPS URL, explicitly excluding unencrypted HTTP URLs.
+     *
+     * @param value the string to check
+     * @return <tt>true</tt> if the given string is an HTTPS URL, <tt>false</tt> otherwise
+     */
+    public static boolean isHttpsUrl(@Nullable String value) {
+        return isUrl(value, url -> "https".equalsIgnoreCase(url.getProtocol()));
+    }
+
+    protected static boolean isUrl(@Nullable String value, Predicate<URL> checker) {
+        if (isEmpty(value)) {
+            return false;
+        }
+
+        try {
+            return checker.test(URI.create(value).toURL());
+        } catch (Exception exception) {
+            return false;
+        }
     }
 
     /**
@@ -375,21 +441,55 @@ public class Strings {
      * Limits the length of the given string to the given length.
      *
      * @param input        the object which string representation should be limited to the given length
-     * @param length       the max. number of characters to return
+     * @param length       the max. number of characters to return. Note: If the parameter is less than 1 an empty string is returned.
      * @param showEllipsis whether to append three dots if <tt>input</tt> is longer than <tt>length</tt>
      * @return a part of the string representation of the given <tt>input</tt>. If input is shorter
-     * than <tt>length</tt>, the full value is returned. If input is <tt>null</tt>, "" is returned.
+     * than <tt>length</tt>, the trimmed input value is returned. If input is <tt>null</tt> or empty, "" is returned. This also applies if <tt>length</tt> is less than 1.
      */
     public static String limit(@Nullable Object input, int length, boolean showEllipsis) {
-        if (isEmpty(input)) {
+        if (isEmpty(input) || length <= 0) {
             return "";
         }
-        String str = String.valueOf(input).trim();
-        if (str.length() > length) {
-            return str.substring(0, (showEllipsis ? length - 1 : length)) + (showEllipsis ? "…" : "");
+        String trimmedInputString = String.valueOf(input).trim();
+        if (trimmedInputString.length() > length) {
+            return trimmedInputString.substring(0, (showEllipsis ? length - ELLIPSIS.length() : length))
+                   + (showEllipsis ? ELLIPSIS : "");
         } else {
-            return str;
+            return trimmedInputString;
         }
+    }
+
+    /**
+     * Truncates the given input in the middle by preserving characters from the start and end.
+     * <p>
+     * Note:
+     * Adds a truncated signal in the form of "…[…]…" in the middle of the string. This signal consist of 5 chars.
+     * The chars of the signal are considered when determining if a truncation is necessary. Therefore, a truncation only
+     * takes place if the input string is longer than <tt>charsToPreserveFromStart</tt> + <tt>charsToPreserveFromEnd</tt> + length of the truncated signal.
+     *
+     * @param input                    the input to truncate
+     * @param charsToPreserveFromStart the number of characters to preserve from the start. Note that this value must be greater than or equal to 0.
+     * @param charsToPreserveFromEnd   the number of characters to preserve from the end. Note that this value must be greater than or equal to 0.
+     * @return a part of the string representation of the given <tt>input</tt> with a truncated signal added in the middle.
+     * If input is shorter than or equal to (<tt>charsToPreserveFromStart</tt> + <tt>charsToPreserveFromEnd</tt> + length of the truncated signal), the trimmed input value is returned.
+     * If input is <tt>null</tt> or empty, "" is returned. This also applies if (<tt>charsToPreserveFromStart</tt> + <tt>charsToPreserveFromEnd</tt>) is 0.
+     */
+    public static String truncateMiddle(@Nullable Object input,
+                                        int charsToPreserveFromStart,
+                                        int charsToPreserveFromEnd) {
+        int charsToPreserve = charsToPreserveFromStart + charsToPreserveFromEnd;
+        if (isEmpty(input) || charsToPreserveFromStart < 0 || charsToPreserveFromEnd < 0 || charsToPreserve == 0) {
+            return "";
+        }
+
+        String trimmedInputString = String.valueOf(input).trim();
+        if (trimmedInputString.length() <= charsToPreserve + TRUNCATED_SIGNAL.length()) {
+            return trimmedInputString;
+        }
+
+        String start = trimmedInputString.substring(0, charsToPreserveFromStart).trim();
+        String end = trimmedInputString.substring(trimmedInputString.length() - charsToPreserveFromEnd).trim();
+        return start + TRUNCATED_SIGNAL + end;
     }
 
     /**

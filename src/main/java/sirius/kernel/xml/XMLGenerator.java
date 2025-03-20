@@ -16,6 +16,7 @@ import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -145,7 +146,7 @@ public class XMLGenerator extends XMLStructuredOutput {
     public static Document createDocument(@Nullable String namespaceURI,
                                           String qualifiedName,
                                           @Nullable DocumentType docType) throws ParserConfigurationException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = XmlUtil.createSecurityAwareDocumentBuilderFactory();
         DocumentBuilder builder = factory.newDocumentBuilder();
         DOMImplementation impl = builder.getDOMImplementation();
         return impl.createDocument(namespaceURI, qualifiedName, docType);

@@ -17,6 +17,7 @@ import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -37,11 +38,11 @@ import java.util.TreeMap;
 import java.util.function.Function;
 
 /**
- * A combination of DOM and SAX parser which permits to parse very large XML files while conveniently handling sub tree
+ * A combination of DOM and SAX parser which permits to parse very large XML files while conveniently handling subtree
  * using a DOM and xpath api.
  * <p>
  * Used SAX to parse a given XML file. A set of {@link NodeHandler} objects can be given, which get notified if
- * a sub-tree below a given tag was parsed. This sub-tree is available as DOM and can conveniently be processed
+ * a subtree below a given tag was parsed. This subtree is available as DOM and can conveniently be processed
  * using xpath.
  */
 public class XMLReader extends DefaultHandler {
@@ -56,14 +57,15 @@ public class XMLReader extends DefaultHandler {
     /**
      * Creates a new XMLReader.
      * <p>
-     * Use {@link #addHandler(String, NodeHandler)} tobind handlers to tags and then call one of the <tt>parse</tt>
+     * Use {@link #addHandler(String, NodeHandler)} to bind handlers to tags and then call one of the <tt>parse</tt>
      * methods to process the XML file.
      * <p>
      * To interrupt processing use {@link TaskContext#cancel()}.
      */
     public XMLReader() {
         try {
-            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            DocumentBuilderFactory documentBuilderFactory = XmlUtil.createSecurityAwareDocumentBuilderFactory();;
+            documentBuilder = documentBuilderFactory.newDocumentBuilder();
             taskContext = TaskContext.get();
         } catch (ParserConfigurationException exception) {
             throw Exceptions.handle(exception);
@@ -133,7 +135,7 @@ public class XMLReader extends DefaultHandler {
      * Registers a new handler for a qualified name of a node.
      * <p>
      * Note that this can be either the node name itself or it can be the path to the node separated by
-     * "/". Therefore &lt;foo&gt;&lt;bar&gt; would be matched by <tt>bar</tt> and by <tt>foo/bar</tt>, where
+     * "/". Therefore, &lt;foo&gt;&lt;bar&gt; would be matched by <tt>bar</tt> and by <tt>foo/bar</tt>, where
      * the path always has precedence over the single node name.
      * <p>
      * Handlers are invoked after the complete node was read. Namespaces are ignored for now which eases
@@ -141,7 +143,7 @@ public class XMLReader extends DefaultHandler {
      * could be easily added by replacing String with QName here.
      *
      * @param name    the qualified name of the tag which should be parsed and processed
-     * @param handler the NodeHandler used to process the parsed DOM sub-tree
+     * @param handler the NodeHandler used to process the parsed DOM subtree
      */
     public void addHandler(String name, NodeHandler handler) {
         handlers.put(name, handler);
@@ -159,7 +161,7 @@ public class XMLReader extends DefaultHandler {
     }
 
     /**
-     * Used to handle the an abort via {@link TaskContext}
+     * Used to handle an abort via {@link TaskContext}
      */
     static class UserInterruptException extends RuntimeException {
 
@@ -178,6 +180,11 @@ public class XMLReader extends DefaultHandler {
     public void parse(InputStream stream, Function<String, InputStream> resourceLocator) throws IOException {
         try (stream) {
             SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            factory.setXIncludeAware(false);
             SAXParser saxParser = factory.newSAXParser();
             org.xml.sax.XMLReader reader = saxParser.getXMLReader();
             reader.setEntityResolver(new EntityResolver() {

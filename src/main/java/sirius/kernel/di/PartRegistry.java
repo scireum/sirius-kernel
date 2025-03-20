@@ -195,12 +195,11 @@ class PartRegistry implements MutableGlobalContext {
 
     @Override
     public void registerPart(Object part, Class<?>... implementedInterfaces) {
-        String customizationName = Sirius.getCustomizationName(part.getClass().getName());
-        if (!Sirius.isActiveCustomization(customizationName)) {
+        if (!Sirius.isActiveCustomization(Sirius.getCustomizationName(part.getClass().getName()))) {
             return;
         }
         Object successor = shadowMap.get(part.getClass());
-        Class<?> predecessor = determinePredecessor(part, customizationName);
+        Class<?> predecessor = determinePredecessor(part);
 
         registerPart(part, implementedInterfaces, predecessor, successor);
     }
@@ -225,7 +224,7 @@ class PartRegistry implements MutableGlobalContext {
         }
     }
 
-    private Class<?> determinePredecessor(Object part, String customizationName) {
+    private Class<?> determinePredecessor(Object part) {
         Class<?> predecessor = part.getClass().isAnnotationPresent(Replace.class) ?
                                part.getClass().getAnnotation(Replace.class).value() :
                                null;
@@ -233,15 +232,10 @@ class PartRegistry implements MutableGlobalContext {
             return null;
         }
 
-        if (customizationName == null) {
-            if (Sirius.isStartedAsTest() && part.getClass().getSimpleName().endsWith("Mock")) {
-                Injector.LOG.WARN("%s is mocked by %s", predecessor, part.getClass());
-            } else {
-                Injector.LOG.WARN(
-                        "@Replace should be only used within a customization. %s (%s) seems to be a base class!",
-                        part,
-                        part.getClass());
-            }
+        if (Sirius.isStartedAsTest() && part.getClass().getSimpleName().endsWith("Mock")) {
+            Injector.LOG.WARN("%s is mocked by %s", predecessor, part.getClass());
+        } else {
+            Injector.LOG.INFO("Part %s is replaced by %s using @Replace", predecessor, part.getClass());
         }
 
         shadowMap.put(predecessor, part);

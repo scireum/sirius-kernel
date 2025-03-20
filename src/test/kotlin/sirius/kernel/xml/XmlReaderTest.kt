@@ -9,11 +9,13 @@
 package sirius.kernel.xml
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.ValueHolder
 import sirius.kernel.health.Counter
 import java.io.ByteArrayInputStream
+import java.io.IOException
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -137,5 +139,45 @@ internal class XmlReaderTest {
 
         assertEquals(0, attributes.size)
         assertEquals("", attribute.get())
+    }
+
+    @Test
+    fun `Reading an external entity is not allowed`() {
+        val readString = ValueHolder.of<String?>(null)
+        val reader = XMLReader()
+        reader.addHandler("root") { node: StructuredNode ->
+            readString.set(node.queryString("."))
+        }
+
+        reader.parse(
+            ByteArrayInputStream(//language=xml
+                """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/hosts">]>
+                    <root>&xxe;</root>
+                """.trimIndent().toByteArray()
+            )
+        )
+        assertEquals(null, readString.get())
+    }
+
+    @Test
+    fun `Reading xml with doctype is allowed`() {
+        val readString = ValueHolder.of<String?>(null)
+        val reader = XMLReader()
+        reader.addHandler("root") { node: StructuredNode ->
+            readString.set(node.queryString("."))
+        }
+
+        reader.parse(
+            ByteArrayInputStream(//language=xml
+                """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <!DOCTYPE SOMETHING SYSTEM "something.dtd">
+                    <root>content</root>
+                """.trimIndent().toByteArray()
+            )
+        )
+        assertEquals("content", readString.get())
     }
 }

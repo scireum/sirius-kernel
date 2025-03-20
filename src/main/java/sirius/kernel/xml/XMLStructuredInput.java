@@ -14,6 +14,7 @@ import sirius.kernel.commons.Explain;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,7 +38,8 @@ public class XMLStructuredInput implements StructuredInput {
      */
     public XMLStructuredInput(InputStream inputStream, @Nullable NamespaceContext namespaceContext) throws IOException {
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = XmlUtil.createSecurityAwareDocumentBuilderFactory();
+
             if (namespaceContext != null) {
                 factory.setNamespaceAware(true);
             }
