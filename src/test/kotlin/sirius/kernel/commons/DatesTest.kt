@@ -8,9 +8,9 @@
 
 package sirius.kernel.commons
 
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
