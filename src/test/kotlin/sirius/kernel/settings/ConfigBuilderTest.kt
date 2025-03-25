@@ -8,7 +8,7 @@
 
 package sirius.kernel.settings
 
-import kotlin.test.Test
+import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 /**
@@ -21,8 +21,8 @@ class ConfigBuilderTest {
         val configBuilder = ConfigBuilder()
         configBuilder.addVariable("scope.foo", "true")
         assertEquals(//language=HOCON
-                "scope.foo = true",
-                configBuilder.toString()
+            "scope.foo = true",
+            configBuilder.toString()
         )
     }
 
@@ -32,13 +32,13 @@ class ConfigBuilderTest {
         configBuilder.addVariable("scope.foo", "true")
         configBuilder.addVariable("scope.bar", "false")
         assertEquals(//language=HOCON
-                """
+            """
                     scope {
                         foo = true
                         bar = false
                     }
                 """.trimIndent(),
-                configBuilder.toString()
+            configBuilder.toString()
         )
     }
 
@@ -54,7 +54,7 @@ class ConfigBuilderTest {
         configBuilder.addVariable("foo.bar.test", "42")
 
         assertEquals(//language=HOCON
-                """
+            """
                     foo = "disabled"
                     foo.bar.test = 42
                     
@@ -72,7 +72,7 @@ class ConfigBuilderTest {
                         }
                     }
                 """.trimIndent(),
-                configBuilder.toString()
+            configBuilder.toString()
         )
     }
 
