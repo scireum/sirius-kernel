@@ -217,7 +217,7 @@ public class StructuredNode {
             NodeList result = (NodeList) compile(xpath).evaluate(node, XPathConstants.NODESET);
             List<StructuredNode> resultList = new ArrayList<>(result.getLength());
             for (int i = 0; i < result.getLength(); i++) {
-                resultList.add(new StructuredNode(result.item(i), namespaceContext));
+                resultList.add(new StructuredNode(result.item(i).cloneNode(true), namespaceContext));
             }
             return resultList;
         } catch (XPathExpressionException exception) {
