@@ -205,19 +205,40 @@ public class StructuredNode {
     }
 
     /**
-     * Returns a list of nodes at the relative path.
+     * Returns a list of nodes at the relative path without cloning them to allow accessing the parent node and siblings
+     * nodes as well as modifying the original document.
      *
      * @param xpath the xpath used to retrieve the resulting nodes
      * @return the list of nodes returned by the given xpath expression
      * @throws IllegalArgumentException if an invalid xpath was given
+     * @see #queryNodeList(String, boolean) to clone nodes for improved performance
      */
     @Nonnull
     public List<StructuredNode> queryNodeList(String xpath) {
+        return queryNodeList(xpath, false);
+    }
+
+    /**
+     * Returns a list of nodes at the relative path.
+     * <p>
+     * Note, that cloning nodes improves querying performance massively for later nodes in the list as they are detached
+     * from the original document resulting in queries that do not need to traverse the whole document up to the node.
+     * However, the parent node and siblings of cloned nodes can no longer be accessed and modifying data does not
+     * affect the original document.
+     *
+     * @param xpath      the xpath used to retrieve the resulting nodes
+     * @param cloneNodes whether to clone the nodes before returning them
+     * @return the list of nodes returned by the given xpath expression
+     * @throws IllegalArgumentException if an invalid xpath was given
+     */
+    @Nonnull
+    public List<StructuredNode> queryNodeList(String xpath, boolean cloneNodes) {
         try {
             NodeList result = (NodeList) compile(xpath).evaluate(node, XPathConstants.NODESET);
             List<StructuredNode> resultList = new ArrayList<>(result.getLength());
             for (int i = 0; i < result.getLength(); i++) {
-                resultList.add(new StructuredNode(result.item(i).cloneNode(true), namespaceContext));
+                Node item = cloneNodes ? result.item(i).cloneNode(true) : result.item(i);
+                resultList.add(new StructuredNode(item, namespaceContext));
             }
             return resultList;
         } catch (XPathExpressionException exception) {
