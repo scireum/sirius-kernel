@@ -167,12 +167,6 @@ public class Outcall {
                 userAgentString.append("/");
                 userAgentString.append(version);
             }
-            String baseUrl = Sirius.getSettings().getString("product.baseUrl");
-            if (Strings.isFilled(baseUrl)) {
-                userAgentString.append(" (+");
-                userAgentString.append(baseUrl);
-                userAgentString.append(")");
-            }
             defaultUserAgent = userAgentString.toString();
         }
         return defaultUserAgent;
