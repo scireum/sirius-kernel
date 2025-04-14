@@ -81,6 +81,7 @@ public class Emojis {
         emojiTrie.put("😪", Boolean.TRUE);
         emojiTrie.put("🤤", Boolean.TRUE);
         emojiTrie.put("😴", Boolean.TRUE);
+        emojiTrie.put("🫩", Boolean.TRUE);
         emojiTrie.put("😷", Boolean.TRUE);
         emojiTrie.put("🤒", Boolean.TRUE);
         emojiTrie.put("🤕", Boolean.TRUE);
@@ -3494,6 +3495,7 @@ public class Emojis {
         emojiTrie.put("🧑‍🧒", Boolean.TRUE);
         emojiTrie.put("🧑‍🧒‍🧒", Boolean.TRUE);
         emojiTrie.put("👣", Boolean.TRUE);
+        emojiTrie.put("🫆", Boolean.TRUE);
         emojiTrie.put("🏻", Boolean.TRUE);
         emojiTrie.put("🏼", Boolean.TRUE);
         emojiTrie.put("🏽", Boolean.TRUE);
@@ -3663,6 +3665,7 @@ public class Emojis {
         emojiTrie.put("🪹", Boolean.TRUE);
         emojiTrie.put("🪺", Boolean.TRUE);
         emojiTrie.put("🍄", Boolean.TRUE);
+        emojiTrie.put("🪾", Boolean.TRUE);
         emojiTrie.put("🍇", Boolean.TRUE);
         emojiTrie.put("🍈", Boolean.TRUE);
         emojiTrie.put("🍉", Boolean.TRUE);
@@ -3702,6 +3705,7 @@ public class Emojis {
         emojiTrie.put("🫚", Boolean.TRUE);
         emojiTrie.put("🫛", Boolean.TRUE);
         emojiTrie.put("🍄‍🟫", Boolean.TRUE);
+        emojiTrie.put("🫜", Boolean.TRUE);
         emojiTrie.put("🍞", Boolean.TRUE);
         emojiTrie.put("🥐", Boolean.TRUE);
         emojiTrie.put("🥖", Boolean.TRUE);
@@ -4245,6 +4249,7 @@ public class Emojis {
         emojiTrie.put("🪘", Boolean.TRUE);
         emojiTrie.put("🪇", Boolean.TRUE);
         emojiTrie.put("🪈", Boolean.TRUE);
+        emojiTrie.put("🪉", Boolean.TRUE);
         emojiTrie.put("📱", Boolean.TRUE);
         emojiTrie.put("📲", Boolean.TRUE);
         emojiTrie.put("☎️", Boolean.TRUE);
@@ -4422,6 +4427,7 @@ public class Emojis {
         emojiTrie.put("🧰", Boolean.TRUE);
         emojiTrie.put("🧲", Boolean.TRUE);
         emojiTrie.put("🪜", Boolean.TRUE);
+        emojiTrie.put("🪏", Boolean.TRUE);
         emojiTrie.put("⚗️", Boolean.TRUE);
         emojiTrie.put("⚗", Boolean.TRUE);
         emojiTrie.put("🧪", Boolean.TRUE);
@@ -4667,6 +4673,7 @@ public class Emojis {
         emojiTrie.put("®", Boolean.TRUE);
         emojiTrie.put("™️", Boolean.TRUE);
         emojiTrie.put("™", Boolean.TRUE);
+        emojiTrie.put("🫟", Boolean.TRUE);
         emojiTrie.put("#️⃣", Boolean.TRUE);
         emojiTrie.put("#⃣", Boolean.TRUE);
         emojiTrie.put("*️⃣", Boolean.TRUE);
@@ -4844,6 +4851,7 @@ public class Emojis {
         emojiTrie.put("🇨🇳", Boolean.TRUE);
         emojiTrie.put("🇨🇴", Boolean.TRUE);
         emojiTrie.put("🇨🇵", Boolean.TRUE);
+        emojiTrie.put("🇨🇶", Boolean.TRUE);
         emojiTrie.put("🇨🇷", Boolean.TRUE);
         emojiTrie.put("🇨🇺", Boolean.TRUE);
         emojiTrie.put("🇨🇻", Boolean.TRUE);
