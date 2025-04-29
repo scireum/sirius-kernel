@@ -736,19 +736,6 @@ public class Strings {
     }
 
     /**
-     * Removes all umlauts and other decorated latin characters.
-     *
-     * @param input the term to reduce characters in
-     * @return the term with all decorated latin characters replaced
-     * @deprecated Use {@link StringCleanup#reduceCharacters(String)} or
-     * * {@code Strings.cleanup(input, Cleanup::reduceCharacters)} instead
-     */
-    @Deprecated
-    public static String reduceCharacters(String input) {
-        return StringCleanup.reduceCharacters(input);
-    }
-
-    /**
      * Shortens a string to the given number of chars,
      * cutting of at most half of the string and adding ... if something has been cut of.
      *
