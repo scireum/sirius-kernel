@@ -51,6 +51,21 @@ class StringsTest {
     }
 
     @Test
+    fun areAllFilled() {
+        assertFalse { Strings.areAllFilled(null, null) }
+        assertFalse { Strings.areAllFilled("", "") }
+        assertFalse { Strings.areAllFilled("", null) }
+        assertFalse { Strings.areAllFilled(null, "") }
+        assertFalse { Strings.areAllFilled(null, "", null, "") }
+        assertFalse { Strings.areAllFilled("Test", null) }
+        assertFalse { Strings.areAllFilled(null, "Test") }
+        assertTrue { Strings.areAllFilled("Test", "Test") }
+        assertFalse { Strings.areAllFilled(null, "", null, "", "Test") }
+        assertFalse { Strings.areAllFilled(null, "", "Test") }
+        assertTrue { Strings.areAllFilled("Test", "Test", "Test") }
+    }
+
+    @Test
     fun equalIgnoreCase() {
         assertTrue { Strings.equalIgnoreCase("A", "a") }
         assertFalse { Strings.equalIgnoreCase("A", "b") }

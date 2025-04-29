@@ -140,6 +140,25 @@ public class Strings {
     }
 
     /**
+     * Checks if the string representations of the given objects are not "" or <tt>null</tt>.
+     *
+     * @param first   the first object which is to be checked
+     * @param second  the second object which is to be checked
+     * @param further additional objects to be checked
+     * @return <tt>true</tt> if all strings are not <tt>null</tt> or "", <tt>false</tt> if one of them is empty
+     * @see #isFilled(Object)
+     */
+    public static boolean areAllFilled(Object first, Object second, Object... further) {
+        if (Strings.isEmpty(first) || Strings.isEmpty(second)) {
+            return false;
+        }
+        if (further != null) {
+            return Stream.of(further).allMatch(Strings::isFilled);
+        }
+        return true;
+    }
+
+    /**
      * Compares the given <tt>Strings</tt> while treating upper- and lowercase characters as equal.
      * <p>
      * This is essentially the same as {@code left.equalsIgnoreCase(right)}
@@ -714,19 +733,6 @@ public class Strings {
         }
 
         return DETECT_ALLOWED_HTML_REGEX.matcher(content).find();
-    }
-
-    /**
-     * Removes all umlauts and other decorated latin characters.
-     *
-     * @param input the term to reduce characters in
-     * @return the term with all decorated latin characters replaced
-     * @deprecated Use {@link StringCleanup#reduceCharacters(String)} or
-     * * {@code Strings.cleanup(input, Cleanup::reduceCharacters)} instead
-     */
-    @Deprecated
-    public static String reduceCharacters(String input) {
-        return StringCleanup.reduceCharacters(input);
     }
 
     /**
