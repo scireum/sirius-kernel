@@ -195,7 +195,7 @@ public class XMLCall {
             // log the request, even when parsing fails
             try (InputStream body = getResponseBody()) {
                 byte[] bytes = body.readAllBytes();
-                logRequest(new String(bytes, outcall.getContentEncoding()));
+                logRequest(bytes);
                 return new ByteArrayInputStream(bytes);
             }
         }
@@ -214,15 +214,15 @@ public class XMLCall {
         return outcall.getResponse().body();
     }
 
-    private void logRequest(String response) throws IOException {
+    private void logRequest(byte[] response) throws IOException {
         debugLogger.FINE(Formatter.create("""
                                                   ---------- call ----------
                                                   ${httpMethod} ${url} [
-                                                                               
+                                                  
                                                   ${callBody}]
                                                   ---------- response ----------
                                                   HTTP-Response-Code: ${responseCode}
-                                                                               
+                                                  
                                                   ${response}
                                                   ---------- end ----------
                                                   """)
@@ -231,7 +231,16 @@ public class XMLCall {
                                   .set("callBody",
                                        outcall.getRequest().bodyPublisher().isPresent() ? getOutput() : null)
                                   .set("responseCode", getOutcall().getResponseCode())
-                                  .set("response", response)
+                                  .set("response", formatResponseForLogging(response))
                                   .smartFormat());
+    }
+
+    private String formatResponseForLogging(byte[] response) {
+        try {
+            return new XMLStructuredInput(new ByteArrayInputStream(response), namespaceContext).toString();
+        } catch (Exception exception) {
+            Exceptions.ignore(exception);
+            return new String(response, outcall.getContentEncoding());
+        }
     }
 }

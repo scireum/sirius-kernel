@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>13.1.0</version>
+        <version>14.0.1</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
     <name>SIRIUS kernel</name>
@@ -22,6 +22,7 @@
 
     <dependencies>
         <!-- Provides the tools to load the system configuration -->
+        <!-- Changelog: https://github.com/lightbend/config/releases -->
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
@@ -29,20 +30,23 @@
         </dependency>
 
         <!-- Useful helper classes by Google -->
+        <!-- Changelog: https://github.com/google/guava/releases -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.3.1-jre</version>
+            <version>33.4.0-jre</version>
         </dependency>
 
         <!-- JSR305 annotations like @Nonnull etc. -->
+        <!-- Changelog: https://github.com/spotbugs/spotbugs/releases -->
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.8.6</version>
+            <version>4.9.1</version>
         </dependency>
 
         <!-- Required logging bridge to make slf4j log to our logging system -->
+        <!-- Changelog: https://www.slf4j.org/news.html -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
@@ -50,6 +54,7 @@
         </dependency>
 
         <!-- Used to auto-start Docker environments. Excluding dependencies not required for docker-compose. -->
+        <!-- Changelog: https://github.com/palantir/docker-compose-rule/releases -->
         <dependency>
             <groupId>com.palantir.docker.compose</groupId>
             <artifactId>docker-compose-rule-core</artifactId>
@@ -66,12 +71,14 @@
             </exclusions>
         </dependency>
         <!-- Required, as the version provided by docker-compose-rule-core has security issues -->
+        <!-- Changelog: https://github.com/apache/commons-io/blob/master/RELEASE-NOTES.txt -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.18.0</version>
         </dependency>
         <!-- Required, as the version provided by docker-compose-rule-core has security issues -->
+        <!-- Changelog: https://github.com/FasterXML/jackson/wiki/Jackson-Releases -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

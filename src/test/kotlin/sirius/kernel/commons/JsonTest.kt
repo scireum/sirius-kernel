@@ -413,4 +413,12 @@ class JsonTest {
         assertEquals(JsonPointer.compile("/foo/0/bar"), Json.createPointer("foo", 0, "bar"))
     }
 
+    @Test
+    fun `Amounts with large scale get handled properly`() {
+        val inputAmount = Amount.ofRounded(BigDecimal("1.23456789"))
+        val jsonString = Json.MAPPER.writeValueAsString(inputAmount)
+        val parsedAmount = Json.MAPPER.convertValue(jsonString, Amount::class.java)
+        assertEquals(inputAmount, parsedAmount)
+    }
+
 }
