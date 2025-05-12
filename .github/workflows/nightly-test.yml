@@ -1,7 +1,7 @@
 name: Nightly Tests
 on:
   schedule:
-    - cron: '40 * * * *' # Every day at midnight TODO 0 Uhr
+    - cron: '0 0 * * *'
 
 jobs:
   test:
@@ -22,16 +22,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Test project inlcuding nightly tests
+      - name: Test project including nightly tests
         run: mvn clean test
 
   notify:
-    if: failure() # Nur bei Fehlern benachrichtigen
+    #if: failure() # Nur bei Fehlern benachrichtigen TODO DO-409
     runs-on: ubuntu-latest
     steps:
       - name: Send Slack notification
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{
             "channel": "scireum-dev",
-            "text": "TEST TEST TEST Nightly Tests failed [Details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          }' ${{secrets.MEMOIO_SCIREUM_DEV}}
+            "text": "Nightly Tests failed [Details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }' ${{ secrets.MEMOIO_SCIREUM_DEV }}

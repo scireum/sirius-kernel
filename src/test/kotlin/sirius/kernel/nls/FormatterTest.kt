@@ -27,7 +27,7 @@ class FormatterTest {
 
         val result = Formatter.create(pattern).set("foo", "bar").format()
 
-        assertEquals("Test TODO REMOVE bar", result)
+        assertEquals("Test bar", result)
     }
 
     @Test
