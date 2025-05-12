@@ -1,0 +1,36 @@
+name: Nightly Tests
+on:
+  schedule:
+    - cron: '12 16 * * *' # Every day at midnight TODO 0 Uhr
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: scireum/sirius-build-jdk23
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            /root/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Compile project
+        run: mvn clean test
+
+  notify:
+    if: failure() # Nur bei Fehlern benachrichtigen
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "channel": "scireum-dev",
+            "text": "TEST TEST TEST Nightly Tests failed [Details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }' ${{secrets.MEMOIO_SCIREUM_DEV}}
