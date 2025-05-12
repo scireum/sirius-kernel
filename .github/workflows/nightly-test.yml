@@ -1,7 +1,8 @@
 name: Nightly Tests
 on:
   schedule:
-    - cron: '20 14 * * *' # Every day at midnight TODO 0 Uhr
+    - cron: '40 * * * *' # Every day at midnight TODO 0 Uhr
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -21,7 +22,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Compile project
+      - name: Test project inlcuding nightly tests
         run: mvn clean test
 
   notify:
