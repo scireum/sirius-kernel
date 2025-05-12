@@ -1,7 +1,7 @@
 name: Nightly Tests
 on:
   schedule:
-    - cron: '12 16 * * *' # Every day at midnight TODO 0 Uhr
+    - cron: '20 14 * * *' # Every day at midnight TODO 0 Uhr
 jobs:
   test:
     runs-on: ubuntu-latest
