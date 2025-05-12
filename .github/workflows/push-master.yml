@@ -1,0 +1,16 @@
+name: Compile on push to master branch
+on:
+  push:
+    branches:
+      - master
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    container:
+      image: scireum/sirius-build-jdk23
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Compile project
+        run: mvn clean compile
