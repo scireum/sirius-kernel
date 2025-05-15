@@ -26,12 +26,12 @@ jobs:
         run: mvn clean test
 
   notify:
-    #if: failure() # Nur bei Fehlern benachrichtigen TODO DO-409
+    if: failure()
     runs-on: ubuntu-latest
     steps:
       - name: Send Slack notification
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{
             "channel": "scireum-dev",
-            "text": "Nightly Tests failed [Details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            "text": "Nightly Tests failed for **${{ github.event.repository.name }}**: [Details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
           }' ${{ secrets.MEMOIO_SCIREUM_DEV }}
