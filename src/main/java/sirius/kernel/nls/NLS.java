@@ -460,7 +460,7 @@ public class NLS {
      * @return the translated string or the original string if it doesn't start with a $ sign or if no matching
      * translation was found
      */
-    public static String smartGet(@Nonnull String keyOrString) {
+    public static String smartGet(String keyOrString) {
         return smartGet(keyOrString, null);
     }
 
@@ -474,7 +474,7 @@ public class NLS {
      */
     @SuppressWarnings("squid:S2583")
     @Explain("Duplicate null check as predicate is not enforced by the compiler")
-    public static String smartGet(@Nonnull String keyOrString, @Nullable String language) {
+    public static String smartGet(String keyOrString, @Nullable String language) {
         if (keyOrString == null) {
             return keyOrString;
         }
