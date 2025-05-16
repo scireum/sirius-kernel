@@ -1454,4 +1454,25 @@ public class NLS {
                + " "
                + UNITS[index];
     }
+
+    /**
+     * Quotes the given string for use in a NLS message using localized quotation marks.
+     *
+     * @param value the string to be quoted
+     * @return the quoted string
+     */
+    public static String quote(String value) {
+        return NLS.fmtr("NLS.quoted").set("value", value).format();
+    }
+
+    /**
+     * Quotes the given string for use in a NLS message using localized quotation marks.
+     *
+     * @param value    the string to be quoted
+     * @param language a two-letter language code for which quoting is requested
+     * @return the quoted string
+     */
+    public static String quote(String value, String language) {
+        return NLS.fmtr("NLS.quoted", language).set("value", value).format();
+    }
 }
