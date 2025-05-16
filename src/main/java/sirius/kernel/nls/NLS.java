@@ -1456,23 +1456,48 @@ public class NLS {
     }
 
     /**
-     * Quotes the given string using localized quotation marks.
+     * Quotes the given string using localized primary quotation marks. In English, for instance, a string will be
+     * wrapped into “…”.
      *
      * @param value the string to be quoted
      * @return the quoted string
      */
     public static String quote(String value) {
-        return NLS.fmtr("NLS.quoted").set("value", value).format();
+        return NLS.fmtr("NLS.quoted.primary").set("value", value).format();
     }
 
     /**
-     * Quotes the given string using localized quotation marks.
+     * Quotes the given string using localized primary quotation marks. In English, for instance, a string will be
+     * wrapped into “…”.
      *
      * @param value    the string to be quoted
      * @param language a two-letter language code for which quoting is requested
      * @return the quoted string
      */
     public static String quote(String value, String language) {
-        return NLS.fmtr("NLS.quoted", language).set("value", value).format();
+        return NLS.fmtr("NLS.quoted.primary", language).set("value", value).format();
+    }
+
+    /**
+     * Quotes the given string using localized secondary quotation marks. In English, for instance, a string will be
+     * wrapped into ‘…’.
+     *
+     * @param value the string to be quoted
+     * @return the quoted string
+     */
+    public static String quoteSecondary(String value) {
+        return NLS.fmtr("NLS.quoted.secondary").set("value", value).format();
+    }
+
+    /**
+     * Quotes the given string using localized secondary quotation marks. In English, for instance, a string will be
+     * wrapped into ‘…’.
+     *
+     * @param value    the string to be quoted
+     * @param language a two-letter language code for which quoting is requested
+     * @return the quoted string
+     */
+    public static String quoteSecondary(String value, String language) {
+        return NLS.fmtr("NLS.quoted.secondary", language).set("value", value).format();
     }
 }

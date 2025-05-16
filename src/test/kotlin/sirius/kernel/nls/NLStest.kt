@@ -468,13 +468,19 @@ class NLSTest {
 
     @Test
     fun `quoting works in German`() {
-        val result = NLS.quote("test", "de")
-        assertEquals("„test“", result)
+        val resultPrimary = NLS.quote("test", "de")
+        assertEquals("„test“", resultPrimary)
+
+        val resultSecondary = NLS.quoteSecondary("test", "de")
+        assertEquals("‚test‘", resultSecondary)
     }
 
     @Test
     fun `quoting works in English`() {
-        val result = NLS.quote("test", "en")
-        assertEquals("“test”", result)
+        val resultPrimary = NLS.quote("test", "en")
+        assertEquals("“test”", resultPrimary)
+
+        val resultSecondary = NLS.quoteSecondary("test", "en")
+        assertEquals("‘test’", resultSecondary)
     }
 }
