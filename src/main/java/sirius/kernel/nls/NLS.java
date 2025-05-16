@@ -487,9 +487,9 @@ public class NLS {
     }
 
     /**
-     * Creates a formatted using the pattern supplied by the translation value for the given <tt>property</tt>.
+     * Creates a formatter using the pattern supplied by the translation value for the given <tt>property</tt>.
      *
-     * @param property the property to used to retrieve a translated pattern
+     * @param property the property to use for retrieving a translated pattern
      * @return a <tt>Formatter</tt> initialized with the translated text of the given property
      */
     public static Formatter fmtr(@Nonnull String property) {
@@ -497,9 +497,9 @@ public class NLS {
     }
 
     /**
-     * Creates a formatted using the pattern supplied by the translation value for the given <tt>property</tt>.
+     * Creates a formatter using the pattern supplied by the translation value for the given <tt>property</tt>.
      *
-     * @param property the property to used to retrieve a translated pattern
+     * @param property the property to use for retrieving a translated pattern
      * @param language a two-letter language code for which the translation is requested
      * @return a <tt>Formatter</tt> initialized with the translated text of the given property
      */
