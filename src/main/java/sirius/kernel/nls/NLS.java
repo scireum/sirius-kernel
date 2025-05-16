@@ -460,7 +460,7 @@ public class NLS {
      * @return the translated string or the original string if it doesn't start with a $ sign or if no matching
      * translation was found
      */
-    public static String smartGet(@Nonnull String keyOrString) {
+    public static String smartGet(String keyOrString) {
         return smartGet(keyOrString, null);
     }
 
@@ -474,7 +474,7 @@ public class NLS {
      */
     @SuppressWarnings("squid:S2583")
     @Explain("Duplicate null check as predicate is not enforced by the compiler")
-    public static String smartGet(@Nonnull String keyOrString, @Nullable String language) {
+    public static String smartGet(String keyOrString, @Nullable String language) {
         if (keyOrString == null) {
             return keyOrString;
         }
@@ -487,9 +487,9 @@ public class NLS {
     }
 
     /**
-     * Creates a formatted using the pattern supplied by the translation value for the given <tt>property</tt>.
+     * Creates a formatter using the pattern supplied by the translation value for the given <tt>property</tt>.
      *
-     * @param property the property to used to retrieve a translated pattern
+     * @param property the property to use for retrieving a translated pattern
      * @return a <tt>Formatter</tt> initialized with the translated text of the given property
      */
     public static Formatter fmtr(@Nonnull String property) {
@@ -497,9 +497,9 @@ public class NLS {
     }
 
     /**
-     * Creates a formatted using the pattern supplied by the translation value for the given <tt>property</tt>.
+     * Creates a formatter using the pattern supplied by the translation value for the given <tt>property</tt>.
      *
-     * @param property the property to used to retrieve a translated pattern
+     * @param property the property to use for retrieving a translated pattern
      * @param language a two-letter language code for which the translation is requested
      * @return a <tt>Formatter</tt> initialized with the translated text of the given property
      */
@@ -1453,5 +1453,51 @@ public class NLS {
         return Amount.of(sizeAsFloat).toSmartRoundedString(NumberFormat.MACHINE_TWO_DECIMAL_PLACES)
                + " "
                + UNITS[index];
+    }
+
+    /**
+     * Quotes the given string using localized primary quotation marks. In English, for instance, a string will be
+     * wrapped into “…”.
+     *
+     * @param value the string to be quoted
+     * @return the quoted string
+     */
+    public static String quote(String value) {
+        return NLS.fmtr("NLS.quoted.primary").set("value", value).format();
+    }
+
+    /**
+     * Quotes the given string using localized primary quotation marks. In English, for instance, a string will be
+     * wrapped into “…”.
+     *
+     * @param value    the string to be quoted
+     * @param language a two-letter language code for which quoting is requested
+     * @return the quoted string
+     */
+    public static String quote(String value, String language) {
+        return NLS.fmtr("NLS.quoted.primary", language).set("value", value).format();
+    }
+
+    /**
+     * Quotes the given string using localized secondary quotation marks. In English, for instance, a string will be
+     * wrapped into ‘…’.
+     *
+     * @param value the string to be quoted
+     * @return the quoted string
+     */
+    public static String quoteSecondary(String value) {
+        return NLS.fmtr("NLS.quoted.secondary").set("value", value).format();
+    }
+
+    /**
+     * Quotes the given string using localized secondary quotation marks. In English, for instance, a string will be
+     * wrapped into ‘…’.
+     *
+     * @param value    the string to be quoted
+     * @param language a two-letter language code for which quoting is requested
+     * @return the quoted string
+     */
+    public static String quoteSecondary(String value, String language) {
+        return NLS.fmtr("NLS.quoted.secondary", language).set("value", value).format();
     }
 }
