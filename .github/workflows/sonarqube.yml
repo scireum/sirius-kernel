@@ -24,7 +24,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Replace version in pom.xml
-        run: sed -i 's/DEVELOPMENT-SNAPSHOT/${{ github.ref_name }}/g' pom.xml
+        run: sed -i 's/DEVELOPMENT-SNAPSHOT/sonar-test/g' pom.xml
 
       - name: Analyze project with SonarQube
         run: mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.projectKey=scireum_sirius-kernel_81e9dc44-1749-4a49-a1f6-686fdb86bad3 -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
