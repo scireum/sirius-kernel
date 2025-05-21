@@ -1,0 +1,20 @@
+name: Automatic Release on dev-Tag
+
+on:
+  push:
+    tags:
+      - "dev-*.*.*"
+    
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Release
+        uses: softprops/action-gh-release@v2.2.2
+        with:
+          prerelease: true
+          generate_release_notes: true
