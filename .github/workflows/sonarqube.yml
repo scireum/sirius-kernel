@@ -1,8 +1,6 @@
 name: SonarQube Analysis
 on:
-  push:
-    branches:
-      - feature/ymo/DO-409-mvn-sonar
+  workflow_dispatch:
 
 jobs:
   sonarqube:
