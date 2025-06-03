@@ -118,6 +118,20 @@ class CSVWriterTest {
     }
 
     @Test
+    fun `escaping works for escape character and quotation with rfc escape character`() {
+        StringWriter().use { output ->
+            val writer = CSVWriter(output)
+            writer.withEscape('"')
+
+            writer.writeArray("quote and separator: a;b\"", "quote only: c\"")
+
+            assertEquals(""" 
+                "quote and separator: a;b""${'"'};quote only: c" 
+                """.trimIndent().trim(), output.toString())
+        }
+    }
+
+    @Test
     fun `throw an exception if we have to escape quotes, but there is no escape-char`() {
         StringWriter().use { output ->
             val writer = CSVWriter(output).withEscape(0.toChar())
