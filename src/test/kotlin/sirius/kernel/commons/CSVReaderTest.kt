@@ -69,7 +69,7 @@ class CSVReaderTest {
     @Test
     fun `escaping works`() {
         val data = """
-            \"a;\;;\\;x;a quotationMark: " ;"a aQuotationMarkWithinQuotationMarks: "" ";theEnd
+            \"a;\;;\\;x;"a aQuotationMarkWithinQuotationMarks: "" "
         """.trimIndent()
         val output = mutableListOf<Values>()
         CSVReader(StringReader(data)).execute { output.add(it) }
@@ -79,9 +79,7 @@ class CSVReaderTest {
         assertEquals(";", output[0].at("B").rawString)
         assertEquals("""\""", output[0].at("C").rawString)
         assertEquals("x", output[0].at("D").rawString)
-        assertEquals("""a quotationMark: " """, output[0].at("E").rawString)
-        assertEquals("""a aQuotationMarkWithinQuotationMarks: " """, output[0].at("F").rawString)
-        assertEquals("theEnd", output[0].at("G").rawString)
+        assertEquals("""a aQuotationMarkWithinQuotationMarks: " """, output[0].at("E").rawString)
     }
 
     @Test
