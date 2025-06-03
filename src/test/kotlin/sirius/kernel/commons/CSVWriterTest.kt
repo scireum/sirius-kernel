@@ -132,8 +132,61 @@ class CSVWriterTest {
             )
         }
     }
+
+    @Test
+    fun `rfc4180 example 2-5`() {
+        StringWriter().use { output ->
+            val writer = CSVWriter(output)
+            writer.withEscape('"').withSeparator(',').withForceQuotation(true)
+            writer.writeArray("aaa", "bbb", "ccc")
+            writer.withForceQuotation(false)
+            writer.writeArray("zzz", "yyy", "xxx")
+
+            assertEquals(
+                """
+            "aaa","bbb","ccc"
+            zzz,yyy,xxx""".trimIndent(), output.toString()
+            )
         }
     }
+
+    @Test
+    fun `rfc4180 example 2-6`() {
+        StringWriter().use { output ->
+            val writer = CSVWriter(output)
+            writer.withEscape('"').withSeparator(',').withForceQuotation(true)
+            writer.writeArray("aaa", "b\nbb", "ccc")
+            writer.withForceQuotation(false)
+            writer.writeArray("zzz", "yyy", "xxx")
+
+            assertEquals(
+                """
+            "aaa","b
+            bb","ccc"
+            zzz,yyy,xxx
+           """.trimIndent(), output.toString()
+            )
+        }
+    }
+
+    @Test
+    fun `rfc4180 example 2-7 + extra line`() {
+        StringWriter().use { output ->
+            val writer = CSVWriter(output)
+            writer.withEscape('"').withSeparator(',').withForceQuotation(true)
+            writer.writeArray("aaa", "b\"bb", "ccc")
+            writer.withForceQuotation(false)
+            writer.writeArray("z\"zz", "yyy", "xxx")
+
+            assertEquals(
+                """
+            "aaa","b""bb","ccc"
+            "z""zz",yyy,xxx
+           """.trimIndent(), output.toString()
+            )
+        }
+    }
+
 
     @Test
     fun `throw an exception if we have to escape quotes, but there is no escape-char`() {
@@ -144,8 +197,8 @@ class CSVWriterTest {
                 writer.writeArray("\"a\";b")
             }
             assertEquals(
-                    "Cannot output a quotation character within a quoted string without an escape character.",
-                    exception.message
+                "Cannot output a quotation character within a quoted string without an escape character.",
+                exception.message
             )
         }
     }
@@ -159,8 +212,8 @@ class CSVWriterTest {
                 writer.writeArray("'a;b")
             }
             assertEquals(
-                    "Cannot output a column which contains the separator character ';' without an escape or quotation character.",
-                    exception.message
+                "Cannot output a column which contains the separator character ';' without an escape or quotation character.",
+                exception.message
             )
         }
     }
@@ -174,8 +227,8 @@ class CSVWriterTest {
                 writer.writeArray("a\nb")
             }
             assertEquals(
-                    "Cannot output a column which contains a line break without an quotation character.",
-                    exception.message
+                "Cannot output a column which contains a line break without an quotation character.",
+                exception.message
             )
         }
     }
