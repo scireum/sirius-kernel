@@ -102,7 +102,7 @@ class CSVWriterTest {
 
             writer.writeArray("a;b\"", "\\", "c")
 
-            assertEquals("\"a;b\\\"\";\\\\;c", output.toString())
+            assertEquals(""""a;b\"";\\;c""", output.toString())
         }
     }
 
