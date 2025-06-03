@@ -125,9 +125,13 @@ class CSVWriterTest {
 
             writer.writeArray("quote and separator: a;b\"", "quote only: c\"")
 
-            assertEquals(""" 
-                "quote and separator: a;b""${'"'};quote only: c" 
-                """.trimIndent().trim(), output.toString())
+            assertEquals(
+                """ 
+                "quote and separator: a;b""${'"'};"quote only: c""${'"'} 
+                """.trimIndent().trim(), output.toString()
+            )
+        }
+    }
         }
     }
 
