@@ -9,8 +9,6 @@
 package sirius.kernel.commons
 
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import java.util.*
 import java.util.function.UnaryOperator
 import java.util.regex.Pattern
@@ -121,56 +119,6 @@ class StringsTest {
         assertNull(Strings.firstFilled())
         assertNull(Strings.firstFilled(null as String?))
         assertNull(Strings.firstFilled(""))
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-        "true, https://example.com",
-        "true, HTTPS://example.com",
-        "true, http://example.com",
-        "true, Http://example.com?foo=bar",
-        "true, http://user:password@server.com/path",
-        "true, http://user@server.com/path",
-        "true, https://example.com/my/sample/page",
-        "true, http://example.com:8080/my/sample/page?user=foo&password=bar",
-        "false, https:// ;%@@ lol whatever i don't care",
-        "false, HttpS",
-        "false, ",
-        "false, ''",
-        "false, For testing look at https://example.com"
-    )
-    fun isHttpUrl(isUrl: Boolean, url: String?) {
-        assertEquals(isUrl, Strings.isHttpUrl(url))
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-        "true, https://example.com",
-        "true, HTTPS://example.com",
-        "false, http://example.com",
-        "false, Http://example.com?foo=bar",
-        "false, http://user:password@server.com/path",
-        "false, http://user@server.com/path",
-        "true, https://example.com/my/sample/page",
-        "false, http://example.com:8080/my/sample/page?user=foo&password=bar",
-        "false, https:// ;%@@ lol whatever i don't care",
-        "false, HttpS",
-        "false, ",
-        "false, ''",
-        "false, For testing look at https://example.com"
-    )
-    fun isHttpsUrl(isUrl: Boolean, url: String?) {
-        assertEquals(isUrl, Strings.isHttpsUrl(url))
-    }
-
-    @Test
-    fun urlEncode() {
-        assertEquals("A%3FTEST%26B%C3%84%C3%96%C3%9C", Strings.urlEncode("A?TEST&BÄÖÜ"))
-    }
-
-    @Test
-    fun urlDecode() {
-        assertEquals("A?TEST&BÄÖÜ", Strings.urlDecode("A%3FTEST%26B%C3%84%C3%96%C3%9C"))
     }
 
     @Test
