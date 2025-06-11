@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 /**
- * Tests the [Strings] class.
+ * Tests the [Urls] class.
  */
 class UrlsTest {
 
