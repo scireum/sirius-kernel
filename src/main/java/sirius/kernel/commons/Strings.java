@@ -12,18 +12,12 @@ import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -290,10 +284,11 @@ public class Strings {
      *
      * @param value the string to check
      * @return <tt>true</tt> if the given string is an HTTP(S) URL, <tt>false</tt> otherwise
+     * @deprecated use {@link Urls#isHttpUrl(String)} instead.
      */
+    @Deprecated(since = "2025-06-11", forRemoval = true)
     public static boolean isHttpUrl(@Nullable String value) {
-        return isUrl(value,
-                     url -> "http".equalsIgnoreCase(url.getProtocol()) || "https".equalsIgnoreCase(url.getProtocol()));
+        return Urls.isHttpUrl(value);
     }
 
     /**
@@ -301,21 +296,11 @@ public class Strings {
      *
      * @param value the string to check
      * @return <tt>true</tt> if the given string is an HTTPS URL, <tt>false</tt> otherwise
+     * @deprecated use {@link Urls#isHttpsUrl(String)} instead.
      */
+    @Deprecated(since = "2025-06-11", forRemoval = true)
     public static boolean isHttpsUrl(@Nullable String value) {
-        return isUrl(value, url -> "https".equalsIgnoreCase(url.getProtocol()));
-    }
-
-    protected static boolean isUrl(@Nullable String value, Predicate<URL> checker) {
-        if (isEmpty(value)) {
-            return false;
-        }
-
-        try {
-            return checker.test(URI.create(value).toURL());
-        } catch (Exception exception) {
-            return false;
-        }
+        return Urls.isHttpsUrl(value);
     }
 
     /**
@@ -323,13 +308,12 @@ public class Strings {
      *
      * @param value the value to be encoded.
      * @return an url encoded representation of value, using UTF-8 as character encoding.
+     * @deprecated use {@link Urls#encode(String)} instead.
      */
     @Nullable
+    @Deprecated(since = "2025-06-11", forRemoval = true)
     public static String urlEncode(@Nullable String value) {
-        if (isFilled(value)) {
-            return URLEncoder.encode(value, StandardCharsets.UTF_8);
-        }
-        return value;
+        return Urls.encode(value);
     }
 
     /**
@@ -337,13 +321,12 @@ public class Strings {
      *
      * @param value the value to be decoded.
      * @return an url decoded representation of value, using UTF-8 as character encoding.
+     * @deprecated use {@link Urls#decode(String)} instead.
      */
     @Nullable
+    @Deprecated(since = "2025-06-11", forRemoval = true)
     public static String urlDecode(@Nullable String value) {
-        if (isFilled(value)) {
-            return URLDecoder.decode(value, StandardCharsets.UTF_8);
-        }
-        return value;
+        return Urls.decode(value);
     }
 
     /**
