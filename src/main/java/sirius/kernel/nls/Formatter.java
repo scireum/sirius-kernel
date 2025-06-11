@@ -9,6 +9,7 @@
 package sirius.kernel.nls;
 
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Urls;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -233,7 +234,7 @@ public class Formatter {
         }
 
         if (urlEncode) {
-            replacement.put(property, Strings.urlEncode(value));
+            replacement.put(property, Urls.encode(value));
             return this;
         }
 

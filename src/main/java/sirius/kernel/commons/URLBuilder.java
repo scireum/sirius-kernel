@@ -187,7 +187,7 @@ public class URLBuilder {
         url.append("=");
         String stringValue = value == null ? "" : value.toString();
         if (urlEncode) {
-            stringValue = Strings.urlEncode(stringValue);
+            stringValue = Urls.encode(stringValue);
         }
         url.append(stringValue);
 
