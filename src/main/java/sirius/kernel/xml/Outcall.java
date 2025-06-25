@@ -15,7 +15,6 @@ import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Average;
@@ -111,11 +110,8 @@ public class Outcall {
      * <p>
      * These hosts are blacklisted for a short amount of time ({@link #connectTimeoutBlacklistDuration}) to prevent
      * cascading failures.
-     * <p>
-     * We log a warning for each host which is blacklisted and is called again. To make sure this doesn't spam the logs,
-     * we only log once and then set the second value of the tuple to <tt>true</tt> to prevent further log messages.
      */
-    private static final Map<String, Tuple<Long, Boolean>> timeoutBlacklist = new ConcurrentHashMap<>();
+    private static final Map<String, Long> timeoutBlacklist = new ConcurrentHashMap<>();
 
     /**
      * If the {@link #timeoutBlacklist} contains more than the given number of entries, we remove all expired ones
@@ -498,25 +494,15 @@ public class Outcall {
             return;
         }
 
-        Tuple<Long, Boolean> blacklistedHostInformation = timeoutBlacklist.get(blacklistId);
-        if(blacklistedHostInformation == null) {
-            return;
-        }
-
-        Long timeout = blacklistedHostInformation.getFirst();
-        if (timeout == null) {
-            return;
-        }
-
-        if (timeout > System.currentTimeMillis()) {
-            if (Boolean.FALSE.equals(blacklistedHostInformation.getSecond())) {
-                blacklistedHostInformation.setSecond(true);
+        Long timeout = timeoutBlacklist.get(blacklistId);
+        if (timeout != null) {
+            if (timeout > System.currentTimeMillis()) {
                 throw new IOException(Strings.apply(
                         "Connections with blacklist identifier %s are currently rejected due to connectivity issues.",
                         blacklistId));
+            } else {
+                timeoutBlacklist.remove(blacklistId);
             }
-        } else {
-            timeoutBlacklist.remove(blacklistId);
         }
     }
 
@@ -526,11 +512,11 @@ public class Outcall {
         }
 
         long now = System.currentTimeMillis();
-        timeoutBlacklist.put(blacklistId, new Tuple<>(now + connectTimeoutBlacklistDuration.toMillis(), false));
+        timeoutBlacklist.put(blacklistId, now + connectTimeoutBlacklistDuration.toMillis());
         if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGH_WATERMARK) {
             // We collected a bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
             timeoutBlacklist.forEach((id, timeout) -> {
-                if (timeout.getFirst() < now) {
+                if (timeout < now) {
                     timeoutBlacklist.remove(id);
                 }
             });
