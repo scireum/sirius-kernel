@@ -93,10 +93,10 @@ class JsonTest {
         val date = LocalDate.now()
         val time = LocalDateTime.now()
         val node = Json.createObject()
-                .put("foo", 123)
-                .put("bar", "baz")
-                .putPOJO("date", date)
-                .putPOJO("time", time)
+            .put("foo", 123)
+            .put("bar", "baz")
+            .putPOJO("date", date)
+            .putPOJO("time", time)
         val formattedTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(time)
         val json = Json.write(node)
         assertEquals("""{"foo":123,"bar":"baz","date":"$date","time":"$formattedTime"}""", json)
@@ -281,7 +281,7 @@ class JsonTest {
     @Test
     fun `tryGetArrayAt works with arrays as POJO Nodes`() {
         val node = Json.createObject()
-                .set<ObjectNode>("nested", Json.createObject().putPOJO("foo", listOf(1, 2, 3)).put("bar", 123))
+            .set<ObjectNode>("nested", Json.createObject().putPOJO("foo", listOf(1, 2, 3)).put("bar", 123))
 
         val presentArray: Optional<ArrayNode> = Json.tryGetArrayAt(node, Json.createPointer("nested/foo"))
         assertTrue(presentArray.isPresent)
@@ -346,7 +346,7 @@ class JsonTest {
     @Test
     fun `getValueAmount reads value from number and string`() {
         val json =
-                """{"number_1": 123,"number_2": -123,"number_3": 12.3,"number_4": 1.0E+2,"string": "123","null":null}"""
+            """{"number_1": 123,"number_2": -123,"number_3": 12.3,"number_4": 1.0E+2,"string": "123","null":null}"""
         val node = Json.parseObject(json)
 
         assertEquals(Amount.of(123L), Json.getValueAmount(node, "number_1"))
@@ -373,7 +373,7 @@ class JsonTest {
     @Test
     fun `tryValueString reads string value from string, number and boolean`() {
         val json =
-                """{ "number": 123, "string": "blablabla", "null": null, "bool": true, "obj": {"a": "b"}, "array": [] }"""
+            """{ "number": 123, "string": "blablabla", "null": null, "bool": true, "obj": {"a": "b"}, "array": [] }"""
         val node = Json.parseObject(json)
 
         assertEquals("123", Json.tryValueString(node, "number").get())

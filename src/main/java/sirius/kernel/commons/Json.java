@@ -64,7 +64,8 @@ public class Json {
                               .registerModule(new JavaTimeModule());
 
     static {
-        MAPPER.getFactory().setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(25_000_000).build());
+        MAPPER.getFactory()
+              .setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(25_000_000).build());
     }
 
     private Json() {
