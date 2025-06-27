@@ -421,4 +421,28 @@ class JsonTest {
         assertEquals(inputAmount, parsedAmount)
     }
 
+    @Test
+    fun `Read Amount from POJONode`() {
+        val inputAmount = Amount.ofRounded(BigDecimal("1.23456789"))
+        val objectNode = Json.createObject().putPOJO("amount", inputAmount)
+        val amountFromPojo = Json.getValueAmount(objectNode, "amount")
+        assertEquals(inputAmount, amountFromPojo)
+    }
+
+    @Test
+    fun `Read LocalDate from POJONode`() {
+        val inputDate = LocalDate.now()
+        val objectNode = Json.createObject().putPOJO("localDate", inputDate)
+        val localDateFromPojo = Json.tryValueDate(objectNode, "localDate").orElse(null)
+        assertEquals(inputDate, localDateFromPojo)
+    }
+
+    @Test
+    fun `Read LocalDateTime from POJONode`() {
+        val inputDateTime = LocalDateTime.now()
+        val objectNode = Json.createObject().putPOJO("localDateTime", inputDateTime)
+        val localDateTimeFromPojo = Json.tryValueDateTime(objectNode, "localDateTime").orElse(null)
+        assertEquals(inputDateTime, localDateTimeFromPojo)
+    }
+
 }
