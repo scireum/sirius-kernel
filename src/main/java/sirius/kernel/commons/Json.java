@@ -64,7 +64,8 @@ public class Json {
                               .registerModule(new JavaTimeModule());
 
     static {
-        MAPPER.getFactory().setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(25_000_000).build());
+        MAPPER.getFactory()
+              .setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(25_000_000).build());
     }
 
     private Json() {
@@ -573,6 +574,9 @@ public class Json {
         if (node.isTextual()) {
             return Amount.ofMachineString(node.textValue());
         }
+        if (node.isPojo()) {
+            return tryGetFromPojoNode(node, Amount.class).orElse(Amount.NOTHING);
+        }
         return Amount.NOTHING;
     }
 
@@ -587,6 +591,9 @@ public class Json {
     @Nonnull
     public static Optional<LocalDate> tryValueDate(@Nonnull JsonNode jsonNode, String fieldName) {
         JsonNode node = jsonNode.get(fieldName);
+        if (node != null && node.isPojo()) {
+            return tryGetFromPojoNode(node, LocalDate.class);
+        }
         if (node == null || node.isNull() || !node.isTextual()) {
             return Optional.empty();
         }
@@ -609,6 +616,9 @@ public class Json {
     @Nonnull
     public static Optional<LocalDateTime> tryValueDateTime(@Nonnull JsonNode jsonNode, String fieldName) {
         JsonNode node = jsonNode.get(fieldName);
+        if (node != null && node.isPojo()) {
+            return tryGetFromPojoNode(node, LocalDateTime.class);
+        }
         if (node == null || node.isNull() || !node.isTextual()) {
             return Optional.empty();
         }
@@ -617,5 +627,13 @@ public class Json {
         } catch (DateTimeParseException exception) {
             return Optional.empty();
         }
+    }
+
+    private static <T> Optional<T> tryGetFromPojoNode(JsonNode node, Class<T> targetClass) {
+        if (node.isPojo() && node instanceof POJONode pojoNode && targetClass.isInstance(pojoNode.getPojo())) {
+            return Optional.of(targetClass.cast(pojoNode.getPojo()));
+        }
+
+        return Optional.empty();
     }
 }
