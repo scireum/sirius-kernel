@@ -21,7 +21,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * Helperclass for handling files in Java 8.
@@ -250,28 +249,5 @@ public class Files {
                 return FileVisitResult.CONTINUE;
             }
         });
-    }
-
-    /**
-     * Returns a stream of all parts of the given path.
-     * <p>
-     * The stream will contain the filename, the parent directory, the parent of the parent and so on.
-     *
-     * @param path the path to split
-     * @return a stream of all parts of the given path
-     */
-    public static Stream<String> streamPath(String path) {
-        if (Strings.isEmpty(path)) {
-            return Stream.empty();
-        }
-
-        Stream.Builder<String> builder = Stream.builder();
-        builder.add(Files.getFilenameAndExtension(path));
-        String parent = Files.getBasepath(path);
-        while (Strings.isFilled(parent)) {
-            builder.add(Files.getFilenameAndExtension(parent));
-            parent = Files.getBasepath(parent);
-        }
-        return builder.build();
     }
 }

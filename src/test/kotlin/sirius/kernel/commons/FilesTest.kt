@@ -106,12 +106,4 @@ internal class FilesTest {
         assertEquals(false, Files.isConsideredMetadata(null));
     }
 
-    @Test
-    fun `streamPath works as expected`() {
-        assert(Files.streamPath("test1").toList().equals(listOf("test1")));
-        assertEquals(listOf("test2", "test1"), Files.streamPath("/test1/test2").toList());
-        assertEquals(listOf("test3", ".test2", "test1"), Files.streamPath("/test1/.test2/test3").toList());
-        assertEquals(listOf("test4.png", "test3", "test2", "test1"), Files.streamPath("/test1/test2/test3/test4.png").toList());
-        assertEquals(listOf(null, "test2", "test1"), Files.streamPath("/test1/test2/").toList());
-    }
 }
