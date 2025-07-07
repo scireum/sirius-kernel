@@ -376,23 +376,54 @@ class StringsTest {
     fun htmlToPlain() {
         assertEquals("", Strings.cleanup("", StringCleanup::htmlToPlainText))
 
-        assertEquals("""
+        assertEquals(
+            """
             something
             and another thing
-        """.trimIndent(), Strings.cleanup("<p>something<br>and another thing</p>", StringCleanup::htmlToPlainText, StringCleanup::trim))
+        """.trimIndent(),
+            Strings.cleanup(
+                "<p>something<br>and another thing</p>",
+                StringCleanup::htmlToPlainText,
+                StringCleanup::trim
+            )
+        )
 
-        assertEquals("""
+        assertEquals(
+            """
             first
 
             second
-        """.trimIndent(), Strings.cleanup("<p>first<br><br/>second</p>", StringCleanup::htmlToPlainText, StringCleanup::trim))
+        """.trimIndent(),
+            Strings.cleanup("<p>first<br><br/>second</p>", StringCleanup::htmlToPlainText, StringCleanup::trim)
+        )
 
-        assertEquals("""
+        assertEquals(
+            """
             after backtracking fix
-        """.trimIndent(), Strings.cleanup("after backtracking fix<br                   >", StringCleanup::htmlToPlainText, StringCleanup::trim))
+        """.trimIndent(),
+            Strings.cleanup(
+                "after backtracking fix<br                   >",
+                StringCleanup::htmlToPlainText,
+                StringCleanup::trim
+            )
+        )
 
-        assertEquals("The euro sign as hex entity is: €", Strings.cleanup("<p>The euro sign as hex entity is: &#x20AC;</p>", StringCleanup::htmlToPlainText, StringCleanup::trim))
-        assertEquals("The euro sign as decimal entity is: €", Strings.cleanup("<p>The euro sign as decimal entity is: &#8364;</p>", StringCleanup::htmlToPlainText, StringCleanup::trim))
+        assertEquals(
+            "The euro sign as hex entity is: €",
+            Strings.cleanup(
+                "<p>The euro sign as hex entity is: &#x20AC;</p>",
+                StringCleanup::htmlToPlainText,
+                StringCleanup::trim
+            )
+        )
+        assertEquals(
+            "The euro sign as decimal entity is: €",
+            Strings.cleanup(
+                "<p>The euro sign as decimal entity is: &#8364;</p>",
+                StringCleanup::htmlToPlainText,
+                StringCleanup::trim
+            )
+        )
 
     }
 }
