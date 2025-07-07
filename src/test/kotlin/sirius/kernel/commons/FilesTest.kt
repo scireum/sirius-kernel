@@ -86,24 +86,24 @@ internal class FilesTest {
     }
 
     @Test
-    fun `isConsideredHidden works as expected`(){
-        assertEquals(true, Files.isConsideredHidden(".test"));
-        assertEquals(true, Files.isConsideredHidden(".test.tmp"));
-        assertEquals(false, Files.isConsideredHidden("test"));
-        assertEquals(false, Files.isConsideredHidden("test.tmp"));
-        assertEquals(false,Files.isConsideredHidden(null));
+    fun `isConsideredHidden works as expected`() {
+        assertEquals(true, Files.isConsideredHidden(".test"))
+        assertEquals(true, Files.isConsideredHidden(".test.tmp"))
+        assertEquals(false, Files.isConsideredHidden("test"))
+        assertEquals(false, Files.isConsideredHidden("test.tmp"))
+        assertEquals(false, Files.isConsideredHidden(null))
     }
 
     @Test
-    fun `isConsideredMetadata works as expected`(){
-        assertEquals(true, Files.isConsideredMetadata("__MACOSX"));
-        assertEquals(true, Files.isConsideredMetadata("__MACOSX/test"));
-        assertEquals(true, Files.isConsideredMetadata("__MACOSX/folder1/test"));
-        assertEquals(true, Files.isConsideredMetadata(".DS_Store"));
-        assertEquals(true, Files.isConsideredMetadata("Thumbs.db"));
-        assertEquals(false, Files.isConsideredMetadata("test.tmp"));
-        assertEquals(false, Files.isConsideredMetadata("thumbs.db"));
-        assertEquals(false, Files.isConsideredMetadata(null));
+    fun `isConsideredMetadata works as expected`() {
+        assertEquals(true, Files.isConsideredMetadata("__MACOSX"))
+        assertEquals(true, Files.isConsideredMetadata("__MACOSX/test"))
+        assertEquals(true, Files.isConsideredMetadata("__MACOSX/folder1/test"))
+        assertEquals(true, Files.isConsideredMetadata(".DS_Store"))
+        assertEquals(true, Files.isConsideredMetadata("Thumbs.db"))
+        assertEquals(false, Files.isConsideredMetadata("test.tmp"))
+        assertEquals(false, Files.isConsideredMetadata("thumbs.db"))
+        assertEquals(false, Files.isConsideredMetadata(null))
     }
 
 }

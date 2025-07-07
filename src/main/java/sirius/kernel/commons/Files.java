@@ -86,7 +86,7 @@ public class Files {
      * Returns the basepath of the given path to a file.
      * <p>
      * The basepath is everything but the filename of the given path. So <tt>/foo/bar/test.txt</tt>
-     * will yield <tt>/foo/bar</tt> as as path. <tt>text.txt</tt> will yield <tt>null</tt>.
+     * will yield <tt>/foo/bar</tt> as the path. <tt>text.txt</tt> will yield <tt>null</tt>.
      * <p>
      * Note that both <tt>/</tt> and <tt>\</tt> are accepted as path separators and are preserved in the output.
      *
