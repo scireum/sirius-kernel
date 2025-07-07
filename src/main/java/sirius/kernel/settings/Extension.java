@@ -12,6 +12,7 @@ import com.typesafe.config.ConfigObject;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -41,6 +42,8 @@ public class Extension extends Settings implements Comparable<Extension> {
     protected final String id;
     private final ConfigObject configObject;
 
+    @SuppressWarnings("java:S2259")
+    @Explain("There is a check for null in the withFallback method, so this is safe.")
     protected Extension(String type, String id, ConfigObject configObject, ConfigObject defaultConfig) {
         super(withFallback(configObject, defaultConfig).toConfig(), false);
         this.configObject = withFallback(configObject, defaultConfig);
@@ -50,6 +53,12 @@ public class Extension extends Settings implements Comparable<Extension> {
     }
 
     private static ConfigObject withFallback(@Nullable ConfigObject config, @Nullable ConfigObject fallback) {
+        if (config == null && fallback == null) {
+            throw Exceptions.handle()
+                            .to(LOG)
+                            .withSystemErrorMessage("Cannot create an extension without a config or fallback")
+                            .handle();
+        }
         if (config == null || config.isEmpty()) {
             return fallback;
         } else if (fallback == null || fallback.isEmpty()) {
