@@ -392,5 +392,8 @@ class StringsTest {
             after backtracking fix
         """.trimIndent(), Strings.cleanup("after backtracking fix<br                   >", StringCleanup::htmlToPlainText, StringCleanup::trim))
 
+        assertEquals("The euro sign as hex entity is: €", Strings.cleanup("<p>The euro sign as hex entity is: &#x20AC;</p>", StringCleanup::htmlToPlainText, StringCleanup::trim))
+        assertEquals("The euro sign as decimal entity is: €", Strings.cleanup("<p>The euro sign as decimal entity is: &#8364;</p>", StringCleanup::htmlToPlainText, StringCleanup::trim))
+
     }
 }
