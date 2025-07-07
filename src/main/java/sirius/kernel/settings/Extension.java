@@ -56,7 +56,7 @@ public class Extension extends Settings implements Comparable<Extension> {
         if (config == null && fallback == null) {
             throw Exceptions.handle()
                             .to(LOG)
-                            .withSystemErrorMessage("Cannot create an extension without a config or fallback")
+                            .withSystemErrorMessage("Cannot create an extension without a config and fallback")
                             .handle();
         }
         if (config == null || config.isEmpty()) {
