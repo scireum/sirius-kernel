@@ -372,4 +372,25 @@ class StringsTest {
         assertEquals("1…[…]…9", Strings.truncateMiddle("123456789-123456789-123456789", 1, 1))
         assertEquals("12345678901234", Strings.truncateMiddle("12345678901234", 6, 6))
     }
+
+    @Test
+    fun htmlToPlain() {
+        assertEquals("", Strings.cleanup("", StringCleanup::htmlToPlainText))
+
+        assertEquals("""
+            something
+            and another thing
+        """.trimIndent(), Strings.cleanup("<p>something<br>and another thing</p>", StringCleanup::htmlToPlainText, StringCleanup::trim))
+
+        assertEquals("""
+            first
+
+            second
+        """.trimIndent(), Strings.cleanup("<p>first<br><br/>second</p>", StringCleanup::htmlToPlainText, StringCleanup::trim))
+
+        assertEquals("""
+            after backtracking fix
+        """.trimIndent(), Strings.cleanup("after backtracking fix<br                   >", StringCleanup::htmlToPlainText, StringCleanup::trim))
+
+    }
 }

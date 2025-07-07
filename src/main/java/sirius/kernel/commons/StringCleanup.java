@@ -40,7 +40,7 @@ public class StringCleanup {
     private static final Pattern PATTERN_NON_DIGIT = Pattern.compile("\\D");
     private static final Pattern PATTERN_DECIMAL_ENTITY = Pattern.compile("&(\\d+);");
     private static final Pattern PATTERN_HEX_ENTITY = Pattern.compile("&x0*([0-9a-fA-F]+);");
-    private static final Pattern PATTERN_BR_TAG = Pattern.compile("<(br|BR) */? *>");
+    private static final Pattern PATTERN_BR_TAG = Pattern.compile("<(br|BR) *+/? *+>");
     private static final Pattern PATTERN_LILI_TAG = Pattern.compile("<(/li|/LI)>\\r?\\n?\\t?<(li|LI)>");
     private static final Pattern PATTERN_LI_TAG = Pattern.compile("<(/?li|/?LI)>");
     private static final Pattern PATTERN_PP_TAG = Pattern.compile("<(/p|/P)>\\r?\\n?\\t?<([pP])>");
