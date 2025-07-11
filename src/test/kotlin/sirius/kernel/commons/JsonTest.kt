@@ -130,6 +130,7 @@ class JsonTest {
         assertEquals(mutableMapOf("foo" to 123, "bar" to "baz"), map)
     }
 
+    @Suppress("DEPRECATION", "removal")
     @Test
     fun `entries of array can be streamed properly`() {
         val array = Json.createArray().add(1).add(2).add(3)

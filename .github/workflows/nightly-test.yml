@@ -7,7 +7,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: scireum/sirius-build-jdk23
+      image: scireum/sirius-build-jdk24
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
