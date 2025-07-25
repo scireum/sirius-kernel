@@ -70,14 +70,15 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Required, as the version provided by docker-compose-rule-core has security issues -->
+
+        <!-- START:
+             Required, as the version provided by docker-compose-rule-core has security issues -->
         <!-- Changelog: https://github.com/apache/commons-io/blob/master/RELEASE-NOTES.txt -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.19.0</version>
         </dependency>
-        <!-- Required, as the version provided by docker-compose-rule-core has security issues -->
         <!-- Changelog: https://github.com/FasterXML/jackson/wiki/Jackson-Releases -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -87,5 +88,7 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
+        <!-- Required, as the version provided by docker-compose-rule-core has security issues
+             END: -->
     </dependencies>
 </project>
