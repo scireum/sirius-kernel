@@ -1,0 +1,64 @@
+name: Tag version, update pom.xml, deploy to Maven repository and notify
+on:
+  push:
+    tags:
+      - *
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: scireum/sirius-build-jdk24
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            /root/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Compile project
+        run: mvn clean compile
+
+      - name: Replace version in pom.xml
+        run: sed -i 's/DEVELOPMENT-SNAPSHOT/${{ github.ref_name }}/g' pom.xml
+
+      - name: Set up Maven settings.xml
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<EOF
+          <settings>
+            <servers>
+              <server>
+                <id>scireum-mvn</id>
+                <username>${MAVEN_PUBLIC_USERNAME}</username>
+                <password>${MAVEN_PUBLIC_PASSWORD}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+        env:
+          MAVEN_PUBLIC_USERNAME: ${{ secrets.MAVEN_PUBLIC_USERNAME }}
+          MAVEN_PUBLIC_PASSWORD: ${{ secrets.MAVEN_PUBLIC_PASSWORD }}
+
+      - name: Deploy to Maven repository
+        run: mvn clean deploy -DskipTests
+        env:
+          MAVEN_PUBLIC_USERNAME: ${{ secrets.MAVEN_PUBLIC_USERNAME }}
+          MAVEN_PUBLIC_PASSWORD: ${{ secrets.MAVEN_PUBLIC_PASSWORD }}
+
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "channel": "scireum-dev",
+            "text": "A new version is available: **${{ github.event.repository.name }}**  [${{ github.ref_name }}](https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }})"
+          }' ${{ secrets.MEMOIO_SCIREUM_DEV }}
