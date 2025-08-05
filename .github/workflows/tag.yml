@@ -2,7 +2,7 @@ name: Tag version, update pom.xml, deploy to Maven repository and notify
 on:
   push:
     tags:
-      - *
+      - "*"
 
 jobs:
   deploy:
