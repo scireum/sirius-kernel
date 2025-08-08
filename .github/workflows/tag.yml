@@ -32,26 +32,13 @@ jobs:
       - name: Set up Maven settings.xml
         run: |
           mkdir -p ~/.m2
-          cat > ~/.m2/settings.xml <<EOF
-          <settings>
-            <servers>
-              <server>
-                <id>scireum-mvn</id>
-                <username>${MAVEN_PUBLIC_USERNAME}</username>
-                <password>${MAVEN_PUBLIC_PASSWORD}</password>
-              </server>
-            </servers>
-          </settings>
-          EOF
-        env:
-          MAVEN_PUBLIC_USERNAME: ${{ secrets.MAVEN_PUBLIC_USERNAME }}
-          MAVEN_PUBLIC_PASSWORD: ${{ secrets.MAVEN_PUBLIC_PASSWORD }}
+          echo "${{ secrets.MAVEN_SETTINGS_XML }}" > ~/.m2/settings.xml
 
       - name: Deploy to Maven repository
         run: mvn clean deploy -DskipTests
         env:
-          MAVEN_PUBLIC_USERNAME: ${{ secrets.MAVEN_PUBLIC_USERNAME }}
-          MAVEN_PUBLIC_PASSWORD: ${{ secrets.MAVEN_PUBLIC_PASSWORD }}
+          MAVEN_USERNAME: ${{ secrets.MAVEN_PUBLIC_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PUBLIC_PASSWORD }}
 
   notify:
     runs-on: ubuntu-latest
