@@ -33,6 +33,9 @@ jobs:
         run: |
           mkdir -p ~/.m2
           echo "${{ secrets.MAVEN_SETTINGS_XML }}" > ~/.m2/settings.xml
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_PUBLIC_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PUBLIC_PASSWORD }}
 
       - name: Deploy to Maven repository
         run: mvn clean deploy -DskipTests
