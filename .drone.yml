@@ -56,25 +56,25 @@ steps:
       event:
         - pull_request
 
-  - name: deploy
-    image: scireum/sirius-build-jdk24
-    commands:
-      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
-      - mvn clean deploy -DskipTests
-    volumes: *scireum_volumes
-    when:
-      event:
-        - tag
-
-  - name: notify-tag-build
-    image: plugins/slack
-    settings:
-      webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
-      channel: scireum-dev
-      template: "A new version is available: **{{Repo.Name}}**: [{{Build.Tag}}](https://github.com/scireum/sirius-kernel/releases/tag/{{Build.Tag}})"
-    when:
-      event:
-        - tag
+#  - name: deploy
+#    image: scireum/sirius-build-jdk24
+#    commands:
+#      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
+#      - mvn clean deploy -DskipTests
+#    volumes: *scireum_volumes
+#    when:
+#      event:
+#        - tag
+#
+#  - name: notify-tag-build
+#    image: plugins/slack
+#    settings:
+#      webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
+#      channel: scireum-dev
+#      template: "A new version is available: **{{Repo.Name}}**: [{{Build.Tag}}](https://github.com/scireum/sirius-kernel/releases/tag/{{Build.Tag}})"
+#    when:
+#      event:
+#        - tag
 
   - name: sonar
     image: scireum/sirius-build-jdk24
