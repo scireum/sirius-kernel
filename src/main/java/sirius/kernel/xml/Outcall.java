@@ -499,7 +499,7 @@ public class Outcall {
         }
 
         Tuple<Long, Boolean> blacklistedHostInformation = timeoutBlacklist.get(blacklistId);
-        if(blacklistedHostInformation == null) {
+        if (blacklistedHostInformation == null) {
             return;
         }
 
@@ -526,7 +526,7 @@ public class Outcall {
         }
 
         long now = System.currentTimeMillis();
-        timeoutBlacklist.put(blacklistId, new Tuple<>(now + connectTimeoutBlacklistDuration.toMillis(), false));
+        timeoutBlacklist.put(blacklistId, Tuple.create(now + connectTimeoutBlacklistDuration.toMillis(), false));
         if (timeoutBlacklist.size() > TIMEOUT_BLACKLIST_HIGH_WATERMARK) {
             // We collected a bunch of hosts - try to some cleanup (remove all hosts for which the timeout expired)...
             timeoutBlacklist.forEach((id, timeout) -> {
