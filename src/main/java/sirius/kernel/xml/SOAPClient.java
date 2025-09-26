@@ -15,6 +15,7 @@ import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
+import sirius.kernel.io.IOExceptionSkipLog;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -362,6 +363,8 @@ public class SOAPClient {
             return handleResult(watch, action, effectiveEndpoint, result);
         } catch (SOAPFaultException | HandledException exception) {
             throw exception;
+        } catch (IOExceptionSkipLog exception) {
+            return handleIOExceptionSkipLog(watch, action, effectiveEndpoint, exception);
         } catch (Exception exception) {
             return handleGeneralFault(watch, action, effectiveEndpoint, exception);
         }
@@ -474,6 +477,20 @@ public class SOAPClient {
                                                 URL effectiveEndpoint,
                                                 Exception exception) {
         throw exceptionFilter.apply(Exceptions.handle()
+                                              .to(LOG)
+                                              .error(exception)
+                                              .withSystemErrorMessage(
+                                                      "An error occurred when executing '%s' against '%s': %s (%s)",
+                                                      action,
+                                                      effectiveEndpoint)
+                                              .handle());
+    }
+
+    private StructuredNode handleIOExceptionSkipLog(Watch watch,
+                                                    String action,
+                                                    URL effectiveEndpoint,
+                                                    IOExceptionSkipLog exception) {
+        throw exceptionFilter.apply(Exceptions.createHandled()
                                               .to(LOG)
                                               .error(exception)
                                               .withSystemErrorMessage(
