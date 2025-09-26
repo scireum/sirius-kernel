@@ -513,8 +513,9 @@ public class Outcall {
             if (Boolean.FALSE.equals(blacklistedHostInformation.getSecond())) {
                 blacklistedHostInformation.setSecond(true);
                 throw new IOException(Strings.apply(
-                        "Connections with blacklist identifier %s are currently rejected due to connectivity issues.",
-                        blacklistId));
+                        "Connections with blacklist identifier %s get rejected until %s due to connectivity issues.",
+                        blacklistId,
+                        LocalDateTime.ofEpochSecond(timeout / 1000, 0, ZoneOffset.UTC)));
             }
             throw new IOException(Strings.apply(
                     "Connections with blacklist identifier %s are currently rejected due to connectivity issues.",
