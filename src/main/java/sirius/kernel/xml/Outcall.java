@@ -21,6 +21,7 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Microtiming;
+import sirius.kernel.io.IoSkipLogException;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 
@@ -515,6 +516,9 @@ public class Outcall {
                         "Connections with blacklist identifier %s are currently rejected due to connectivity issues.",
                         blacklistId));
             }
+            throw new IOException(Strings.apply(
+                    "Connections with blacklist identifier %s are currently rejected due to connectivity issues.",
+                    blacklistId), new IoSkipLogException());
         } else {
             timeoutBlacklist.remove(blacklistId);
         }
