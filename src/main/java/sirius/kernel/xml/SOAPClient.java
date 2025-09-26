@@ -15,6 +15,7 @@ import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
+import sirius.kernel.io.IoSkipLogException;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -362,6 +363,8 @@ public class SOAPClient {
             return handleResult(watch, action, effectiveEndpoint, result);
         } catch (SOAPFaultException | HandledException exception) {
             throw exception;
+        } catch (IOException exception) {
+            return handleIOException(watch, action, effectiveEndpoint, exception);
         } catch (Exception exception) {
             return handleGeneralFault(watch, action, effectiveEndpoint, exception);
         }
@@ -481,6 +484,23 @@ public class SOAPClient {
                                                       action,
                                                       effectiveEndpoint)
                                               .handle());
+    }
+
+    private StructuredNode handleIOException(Watch watch,
+                                             String action,
+                                             URL effectiveEndpoint,
+                                             IOException ioException) {
+        if (ioException.getCause() instanceof IoSkipLogException) {
+            throw exceptionFilter.apply(Exceptions.createHandled()
+                                                  .to(LOG)
+                                                  .error(ioException)
+                                                  .withSystemErrorMessage(
+                                                          "An error occurred when executing '%s' against '%s': %s (%s)",
+                                                          action,
+                                                          effectiveEndpoint)
+                                                  .handle());
+        }
+        return handleGeneralFault(watch, action, effectiveEndpoint, ioException);
     }
 
     /**
