@@ -480,7 +480,7 @@ public class Outcall {
                 request = requestBuilder.build();
                 performRequest();
             }
-        } catch (InterruptedException exception) {
+        } catch (InterruptedException _) {
             Thread.currentThread().interrupt();
             throw new IOException("Thread was interrupted!");
         } catch (HttpTimeoutException | ConnectException | SocketTimeoutException exception) {
