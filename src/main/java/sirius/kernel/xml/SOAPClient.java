@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URL;
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -102,6 +103,7 @@ public class SOAPClient {
 
     private static final String DEFAULT_CONTENT_TYPE_HEADER = "text/xml";
 
+    private final String clientSelector;
     private final URL endpoint;
     private final BasicNamespaceContext namespaceContext = new BasicNamespaceContext();
     private List<Attribute> namespaceDefinitions;
@@ -126,11 +128,29 @@ public class SOAPClient {
      * Note that if the actual endpoint depends on the <tt>action</tt> of the call, use
      * {@link #withCustomEndpoint(String, URL)}.
      *
-     * @param endpoint the default endpoint to talk to
+     * @param clientSelector the selector used to cache the underlying {@link HttpClient} to facilitate connection pooling
+     *                       See {@link Outcall#modifyClient(String)}.
+     * @param endpoint       the default endpoint to talk to
      */
-    public SOAPClient(@Nonnull URL endpoint) {
+    public SOAPClient(String clientSelector, @Nonnull URL endpoint) {
+        this.clientSelector = clientSelector;
         this.endpoint = endpoint;
         this.withNamespace(SOAP_NAMESPACE, SOAP_NAMESPACE_URI);
+    }
+
+    /**
+     * Creates a new client which talks to the given endpoint.
+     * <p>
+     * Note that if the actual endpoint depends on the <tt>action</tt> of the call, use
+     * {@link #withCustomEndpoint(String, URL)}.
+     *
+     * @param endpoint the default endpoint to talk to
+     * @deprecated Use {@link SOAPClient#SOAPClient(String, URL)} instead and provide a proper client selector or
+     * choose <tt>null</tt> explicitly.
+     */
+    @Deprecated
+    public SOAPClient(@Nonnull URL endpoint) {
+        this(null, endpoint);
     }
 
     /**
@@ -330,14 +350,14 @@ public class SOAPClient {
                                           Duration.ofSeconds(15))) {
             XMLCall call =
                     XMLCall.to(effectiveEndpoint.toURI(), contentTypeHeader).withFineLogger(LOG, isDebugLogActive);
-            call.getOutcall().withConfiguredTimeout(SOAP_TIMEOUT_CONFIG_KEY);
+            call.getOutcall().withConfiguredTimeout(clientSelector, SOAP_TIMEOUT_CONFIG_KEY);
             call.withNamespaceContext(namespaceContext);
             if (callEnhancer != null) {
                 callEnhancer.accept(call);
             }
 
             if (trustSelfSignedCertificates) {
-                call.getOutcall().trustSelfSignedCertificates();
+                call.getOutcall().trustSelfSignedCertificates(clientSelector);
             }
 
             String soapAction = actionPrefix + action;

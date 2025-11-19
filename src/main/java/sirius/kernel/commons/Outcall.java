@@ -129,10 +129,22 @@ public class Outcall {
     @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
 
+    private static String defaultUserAgent;
+
+    private static final Average timeToFirstByte = new Average();
+
+    /**
+     * Contains a cache of re-usable clients based on their <tt>clientSelector</tt>.
+     */
+    private static final Map<String, HttpClient> cachedHttpClients = new ConcurrentHashMap<>();
+
+    private static final String DEFAULT_CLIENT_SELECTOR = "_default_";
+
+    private String clientSelector = DEFAULT_CLIENT_SELECTOR;
     private HttpClient client;
     private HttpRequest request;
     private String blacklistId;
-    private final HttpClient.Builder clientBuilder;
+    private HttpClient.Builder clientBuilder;
     private final HttpRequest.Builder requestBuilder;
     private HttpResponse<InputStream> response;
     private HttpClient.Redirect redirectPolicy = HttpClient.Redirect.NORMAL;
@@ -174,7 +186,6 @@ public class Outcall {
      */
     public Outcall(URI uri) {
         this.blacklistId = uri.getHost();
-        clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
         requestBuilder = HttpRequest.newBuilder(uri)
                                     .header(HEADER_USER_AGENT, buildDefaultUserAgent())
                                     .header(HEADER_ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
@@ -187,9 +198,35 @@ public class Outcall {
      * @return the underlying {@link HttpClient.Builder}
      */
     public HttpClient.Builder modifyClient() {
+        return modifyClient(null);
+    }
+
+    /**
+     * Allows to modify the client before the request is sent by returning the builder that is used to create it.
+     * <p>
+     * Note that if a non-null <tt>clientSelector</tt> is given, the resulting {@link HttpClient} created by the
+     * modified builder is cached and re-used with the benefit of having a connection pool to re-use connections
+     * across multiple requests.
+     *
+     * @param clientSelector a unique string for all occasions where the builder is customized the same way and thus
+     *                       the cached client can be re-used once it has been created
+     * @return the underlying {@link HttpClient.Builder}
+     */
+    public HttpClient.Builder modifyClient(String clientSelector) {
         if (client != null) {
             throw new IllegalStateException("Can no longer modify client, request has already been sent!");
         }
+
+        if (!DEFAULT_CLIENT_SELECTOR.equals(this.clientSelector)
+            && this.clientSelector != null
+            && !this.clientSelector.equals(clientSelector)) {
+            throw new IllegalStateException("Client selector cannot be changed");
+        }
+        this.clientSelector = clientSelector;
+        if (this.clientBuilder == null) {
+            this.clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
+        }
+
         return clientBuilder;
     }
 
@@ -277,12 +314,28 @@ public class Outcall {
      * This will make the connection trust <strong>only</strong> self-signed certificates!
      *
      * @return the outcall itself for fluent method calls
+     * @deprecated Use {@link #trustSelfSignedCertificates(String)}
      */
+    @Deprecated
     public Outcall trustSelfSignedCertificates() {
+        return trustSelfSignedCertificates(null);
+    }
+
+    /**
+     * Makes the underlying connection trust self-signed certs.
+     * <p>
+     * This will make the connection trust <strong>only</strong> self-signed certificates!
+     *
+     * @param clientSelector the selector used to cache the underlying {@link HttpClient} to facilitate connection pooling
+     *                       See {@link #modifyClient(String)}.
+     * @return the outcall itself for fluent method calls
+     */
+
+    public Outcall trustSelfSignedCertificates(String clientSelector) {
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
-            modifyClient().sslContext(sslContext);
+            modifyClient(clientSelector).sslContext(sslContext);
         } catch (NoSuchAlgorithmException | KeyManagementException exception) {
             throw Exceptions.handle(exception);
         }
@@ -293,13 +346,15 @@ public class Outcall {
     /**
      * Sets a specified timeout value, in milliseconds, to be used
      * when opening a communications link to the resource referenced
-     * by this outcall. If the timeout expires before the
-     * connection can be established, a
+     * by this outcall. If the timeout expires before the connection can be established, a
      * {@link java.net.http.HttpConnectTimeoutException} is raised. A timeout of zero is
      * interpreted as an infinite timeout.
      *
      * @param timeoutMillis specifies the connect-timeout value in milliseconds
+     * @deprecated Use {@code modifyClient().connectTimeout(Duration.ofMillis(timeoutMillis))} or
+     * {@link #withConfiguredTimeout(String, String)}
      */
+    @Deprecated
     public void setConnectTimeout(int timeoutMillis) {
         modifyClient().connectTimeout(Duration.ofMillis(timeoutMillis));
     }
@@ -326,11 +381,28 @@ public class Outcall {
      *
      * @param configKey the config key of the timeout configuration block
      * @return this for fluent method calls
+     * @deprecated Use {@link #withConfiguredTimeout(String, String)}
      */
+    @Deprecated
     public Outcall withConfiguredTimeout(@Nonnull String configKey) {
+        return withConfiguredTimeout(null, configKey);
+    }
+
+    /**
+     * Sets the connect-timeout and read-timeout to the values specified in the config block http.outcall.timeouts.*
+     * where * equals the configKey parameter.
+     * <p>
+     * See the http.outcall.timeouts block in component-050-kernel.conf for reference.
+     *
+     * @param clientSelector the selector used to cache the underlying {@link HttpClient} to facilitate connection pooling
+     *                       See {@link #modifyClient(String)}.
+     * @param configKey      the config key of the timeout configuration block
+     * @return this for fluent method calls
+     */
+    public Outcall withConfiguredTimeout(String clientSelector, @Nonnull String configKey) {
         Extension extension = Sirius.getSettings().getExtension("http.outcall.timeouts", configKey);
 
-        setConnectTimeout((int) extension.getConfig().getDuration("connectTimeout").toMillis());
+        modifyClient(clientSelector).connectTimeout(extension.getConfig().getDuration("connectTimeout"));
         setReadTimeout((int) extension.getConfig().getDuration("readTimeout").toMillis());
 
         return this;
@@ -437,7 +509,7 @@ public class Outcall {
         }
 
         if (client == null) {
-            client = clientBuilder.build();
+            this.client = setupClient();
         }
         if (request == null) {
             if (postFromOutput) {
@@ -455,6 +527,23 @@ public class Outcall {
             }
             installRedirectRequest(redirectedURI.get());
         }
+    }
+
+    private HttpClient setupClient() {
+        if (clientSelector != null) {
+            HttpClient cachedClient = cachedHttpClients.get(clientSelector);
+            if (cachedClient != null) {
+                return cachedClient;
+            }
+        }
+
+        HttpClient.Builder builder =
+                clientBuilder != null ? clientBuilder : HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
+        HttpClient result = builder.build();
+        if (clientSelector != null) {
+            cachedHttpClients.put(clientSelector, result);
+        }
+        return result;
     }
 
     private void performRequest() throws IOException {

@@ -28,7 +28,7 @@ internal class SOAPClientTest {
     @Test
     fun `Unsuccessful SOAPClient calls getting blacklisted get logged only once`() {
         // Use a non-existing endpoint to provoke an exception
-        val soapClient = SOAPClient(URI.create("http://localhost:2345").toURL())
+        val soapClient = SOAPClient(null, URI.create("http://localhost:2345").toURL())
 
         // First call with an expected, non blacklist exception
         assertThrows<HandledException> { soapClient.call("action") {} }
