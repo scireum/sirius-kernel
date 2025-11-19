@@ -468,7 +468,7 @@ public class SOAPClient {
      * Processes a successfully received SOAP result.
      * <p>
      * By default, this simply invokes the <tt>resultTransformer</tt>, but it can be overwritten by subclasses for
-     * additional logging / tracing. This can also modify the result being returned or throw an exception in stead.
+     * additional logging / tracing. This can also modify the result being returned or throw an exception instead.
      *
      * @param watch             the watch which record the total duration of the SOAP call
      * @param action            the action which was invoked
@@ -543,7 +543,12 @@ public class SOAPClient {
         return new CallBuilder(action, parameterNodeName);
     }
 
-    private class CallBuilder {
+    /**
+     * Used to build a simple and straight forward SOAP call.
+     *
+     * @see #call(String, String)
+     */
+    public class CallBuilder {
 
         private final String action;
         private final String method;

@@ -29,6 +29,8 @@ import java.util.function.BooleanSupplier;
  */
 public class XMLCall {
 
+    private static final String HEADER_CONTENT_TYPE = "Content-Type";
+
     private final Outcall outcall;
     private NamespaceContext namespaceContext;
     private Log debugLogger = Log.get("xml");
@@ -42,7 +44,7 @@ public class XMLCall {
      */
     protected XMLCall(URI uri, String contentType) {
         this.outcall = new Outcall(uri);
-        this.outcall.setRequestProperty("Content-Type", contentType);
+        this.outcall.setRequestProperty(HEADER_CONTENT_TYPE, contentType);
     }
 
     /**
@@ -182,7 +184,7 @@ public class XMLCall {
     public XMLStructuredInput getInput() throws IOException {
         // call #getInputStream() before checking for errors, as #getInputStream may log the request/response
         try (InputStream body = getInputStream()) {
-            String contentType = outcall.getHeaderField("content-type");
+            String contentType = outcall.getHeaderField(HEADER_CONTENT_TYPE);
             if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase().contains("xml"))) {
                 return new XMLStructuredInput(body, namespaceContext);
             }
