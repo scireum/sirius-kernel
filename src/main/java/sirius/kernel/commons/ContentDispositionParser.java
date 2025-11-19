@@ -4,16 +4,10 @@
  *
  * Copyright by scireum GmbH
  * http://www.scireum.de - info@scireum.de
- *
- * Based on DownloadUtils by mozilla-mobile/android-components
- * https://github.com/mozilla-mobile/android-components/blob/main/components/support/utils/src/main/java/mozilla/components/support/utils/DownloadUtils.kt
- * Right for use and modification was granted under the Mozilla Public License 2.0 , http://mozilla.org/MPL/2.0/
  */
 
-package sirius.kernel.xml;
+package sirius.kernel.commons;
 
-import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 
 import java.io.ByteArrayOutputStream;

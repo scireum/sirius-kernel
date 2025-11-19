@@ -9,6 +9,7 @@
 package sirius.kernel.xml;
 
 import sirius.kernel.async.Operation;
+import sirius.kernel.commons.Outcall;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.health.Average;

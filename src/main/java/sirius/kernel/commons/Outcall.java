@@ -6,17 +6,10 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.kernel.xml;
+package sirius.kernel.commons;
 
 import sirius.kernel.Sirius;
 import sirius.kernel.async.Operation;
-import sirius.kernel.commons.Context;
-import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.Monoflop;
-import sirius.kernel.commons.Streams;
-import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Tuple;
-import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
