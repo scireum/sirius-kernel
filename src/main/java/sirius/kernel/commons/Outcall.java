@@ -149,15 +149,12 @@ public class Outcall {
     private HttpResponse<InputStream> response;
     private HttpClient.Redirect redirectPolicy = HttpClient.Redirect.NORMAL;
     private Charset charset = StandardCharsets.UTF_8;
+    private Supplier<String> oAuthAccessToken;
+    private Runnable oAuthTokenRefresher;
 
     // Provide an output stream for old apis
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     private boolean postFromOutput = false;
-
-    private static String defaultUserAgent;
-    private static final Average timeToFirstByte = new Average();
-    private Supplier<String> oAuthAccessToken;
-    private Runnable oAuthTokenRefresher;
 
     /**
      * Builds the default user agent string as 'product.name/product.version (+product.baseUrl)', where version or
@@ -180,6 +177,7 @@ public class Outcall {
 
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
+     * <p>
      * Uses the uri's host as blacklist id.
      *
      * @param uri the url to call
@@ -196,7 +194,9 @@ public class Outcall {
      * Allows to modify the client before the request is sent by returning the builder that is used to create it.
      *
      * @return the underlying {@link HttpClient.Builder}
+     * @deprecated Use {@link #modifyClient(String)}
      */
+    @Deprecated
     public HttpClient.Builder modifyClient() {
         return modifyClient(null);
     }
@@ -377,7 +377,7 @@ public class Outcall {
      * Sets the connect-timeout and read-timeout to the values specified in the config block http.outcall.timeouts.*
      * where * equals the configKey parameter.
      * <p>
-     * See the http.outcall.timeouts.soap block in component-050-kernel.conf for reference.
+     * See the http.outcall.timeouts block in component-050-kernel.conf for reference.
      *
      * @param configKey the config key of the timeout configuration block
      * @return this for fluent method calls
