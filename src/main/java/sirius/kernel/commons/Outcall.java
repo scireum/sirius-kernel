@@ -796,6 +796,17 @@ public class Outcall {
         return this;
     }
 
+    /**
+     * Adds an externally computed or supplied bearer token, like a <b>JWT</b>.
+     *
+     * @param bearerToken the token to add as <tt>Authorization</tt> header.
+     * @return the current instance for fluent method calls
+     */
+    public Outcall withBearerToken(String bearerToken) {
+        this.oAuthAccessToken = () -> "Bearer " + bearerToken;
+        return this;
+    }
+
     private void installRedirectRequest(URI redirectedURI) {
         HttpRequest.Builder redirectBuilder = requestBuilder.copy();
         redirectBuilder.uri(redirectedURI);
