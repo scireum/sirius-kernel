@@ -404,17 +404,32 @@ public class Outcall {
     }
 
     /**
-     * Sets the read timeout to a specified timeout, in
-     * milliseconds. A non-zero value specifies the timeout when
-     * reading from Input stream when a connection is established to a
-     * resource. If the timeout expires before there is data available
-     * for read, a {@link java.net.http.HttpTimeoutException} is raised. A
-     * timeout of zero is interpreted as an infinite timeout.
+     * Sets the read timeout to a specified timeout, in milliseconds.
+     * <p>
+     * Specifies the timeout when reading from Input stream when a connection is established to a
+     * resource. If the timeout expires before there is data available for read, a
+     * {@link java.net.http.HttpTimeoutException} is raised.
      *
      * @param timeoutMillis specifies the timeout value to be used in milliseconds
+     * @deprecated Use {@link #setReadTimeout(Duration)}
      */
+    @Deprecated
     public void setReadTimeout(int timeoutMillis) {
         modifyRequest().timeout(Duration.ofMillis(timeoutMillis));
+    }
+
+    /**
+     * Sets the read timeout to a specified timeout.
+     * <p>
+     * Specifies the timeout when reading from Input stream when a connection is established to a
+     * resource. If the timeout expires before there is data available for read, a
+     * {@link java.net.http.HttpTimeoutException} is raised.
+     *
+     * @param readTimeout specifies the timeout value to be used
+     * @see #withConfiguredTimeout(String, String)
+     */
+    public void setReadTimeout(Duration readTimeout) {
+        modifyRequest().timeout(readTimeout);
     }
 
     /**
@@ -446,8 +461,14 @@ public class Outcall {
     public Outcall withConfiguredTimeout(@Nullable String clientSelector, @Nonnull String configKey) {
         Extension extension = Sirius.getSettings().getExtension("http.outcall.timeouts", configKey);
 
-        modifyClient(clientSelector).connectTimeout(extension.getConfig().getDuration("connectTimeout"));
-        setReadTimeout((int) extension.getConfig().getDuration("readTimeout").toMillis());
+        Duration connectTimeout = extension.getConfig().getDuration("connectTimeout");
+        if (!Duration.ZERO.equals(connectTimeout)) {
+            modifyClient(clientSelector).connectTimeout(connectTimeout);
+        }
+        Duration readTimeout = extension.getConfig().getDuration("readTimeout");
+        if (!Duration.ZERO.equals(readTimeout)) {
+            setReadTimeout(readTimeout);
+        }
 
         return this;
     }
