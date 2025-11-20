@@ -4,16 +4,10 @@
  *
  * Copyright by scireum GmbH
  * http://www.scireum.de - info@scireum.de
- *
- * Based on DownloadUtils by mozilla-mobile/android-components
- * https://github.com/mozilla-mobile/android-components/blob/main/components/support/utils/src/main/java/mozilla/components/support/utils/DownloadUtils.kt
- * Right for use and modification was granted under the Mozilla Public License 2.0 , http://mozilla.org/MPL/2.0/
  */
 
-package sirius.kernel.xml;
+package sirius.kernel.commons;
 
-import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 
 import java.io.ByteArrayOutputStream;
@@ -24,6 +18,12 @@ import java.util.regex.Pattern;
 
 /**
  * Static helper class which helps to parse filenames from content disposition headers
+ * <p>
+ * Based on DownloadUtils by mozilla-mobile/android-components
+ * <a href="https://github.com/mozilla-mobile/android-components/blob/main/components/support/utils/src/main/java/mozilla/components/support/utils/DownloadUtils.kt">DownloadUtils.kt on github.com/mozilla-mobile/android-components</a>
+ * <p>
+ * Right for use and modification was granted under the Mozilla Public License 2.0 ,
+ * <a href="http://mozilla.org/MPL/2.0/">MPL 2.0</a>
  */
 public class ContentDispositionParser {
 
@@ -67,8 +67,8 @@ public class ContentDispositionParser {
     /**
      * Format as defined in RFC 2616 and RFC 5987
      * Both inline and attachment types are supported.
-     * More details can be found
-     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
+     * More details can be found <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition">
+     * developer.mozilla.org: Content-Disposition</a>
      * <p>
      * The first segment is the [contentDispositionType], there you can find the documentation,
      * Next, it's the filename segment, where we have a filename="filename.ext"
@@ -154,7 +154,7 @@ public class ContentDispositionParser {
     /**
      * Tries to parse a file name from the given string which is from a content disposition header.
      * <p>
-     * The format of the header is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
+     * The format of the header is defined here: <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html">rfc2616-sec19</a>
      * This header provides a filename for content that is going to be downloaded to the file system.
      *
      * @param contentDisposition the content-disposition header as String

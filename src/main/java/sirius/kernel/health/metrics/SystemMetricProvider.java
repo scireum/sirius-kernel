@@ -17,7 +17,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
 import sirius.kernel.health.MemoryBasedHealthMonitor;
 import sirius.kernel.nls.NLS;
-import sirius.kernel.xml.Outcall;
+import sirius.kernel.commons.Outcall;
 import sirius.kernel.xml.SOAPClient;
 
 import java.lang.management.GarbageCollectorMXBean;

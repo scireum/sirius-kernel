@@ -8,7 +8,7 @@
 
 package sirius.kernel.io;
 
-import sirius.kernel.xml.Outcall;
+import sirius.kernel.commons.Outcall;
 
 import java.io.IOException;
 import java.io.Serial;
