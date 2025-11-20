@@ -8,6 +8,7 @@
 
 package sirius.kernel.commons;
 
+import com.google.common.net.HttpHeaders;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.Operation;
 import sirius.kernel.di.std.ConfigValue;
@@ -36,7 +37,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
-import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
@@ -87,16 +87,6 @@ public class Outcall {
                                           .withZone(ZoneOffset.UTC);
 
     /**
-     * Standard HTTP User-Agent header.
-     */
-    public static final String HEADER_USER_AGENT = "User-Agent";
-
-    /**
-     * Standard HTTP Accept header indicating expected response media types.
-     */
-    public static final String HEADER_ACCEPT = "Accept";
-
-    /**
      * Default Accept header value allowing any media type.
      */
     public static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
@@ -107,39 +97,16 @@ public class Outcall {
     public static final String REQUEST_METHOD_HEAD = "HEAD";
 
     /**
-     * Standard HTTP Content-Type header indicating request/response media type.
-     */
-    public static final String HEADER_CONTENT_TYPE = "Content-Type";
-
-    /**
-     * HTTP Location header used for redirects or resource references.
-     */
-    public static final String HEADER_LOCATION = "Location";
-
-    /**
-     * HTTP Content-Disposition header (e.g., for file downloads or attachments).
-     */
-    public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
-
-    /**
-     * HTTP If-Modified-Since header used for conditional requests.
-     */
-    public static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
-
-    /**
      * Content type for URL-encoded form data with UTF-8 encoding.
      */
     public static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
 
     /**
-     * HTTP Authorization header for authentication data.
-     */
-    public static final String HEADER_AUTHORIZATION = "Authorization";
-
-    /**
      * Prefix for Bearer token authorization scheme.
      */
     public static final String PREFIX_BEARER = "Bearer ";
+
+    private static final String PREFIX_BASIC = "Basic ";
 
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
 
@@ -229,8 +196,8 @@ public class Outcall {
     public Outcall(URI uri) {
         this.blacklistId = uri.getHost();
         requestBuilder = HttpRequest.newBuilder(uri)
-                                    .header(HEADER_USER_AGENT, buildDefaultUserAgent())
-                                    .header(HEADER_ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
+                                    .header(HttpHeaders.USER_AGENT, buildDefaultUserAgent())
+                                    .header(HttpHeaders.ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
                                     .timeout(defaultReadTimeout);
     }
 
@@ -329,7 +296,7 @@ public class Outcall {
      * @throws IllegalStateException if already connected
      */
     public Outcall setIfModifiedSince(LocalDateTime ifModifiedSince) {
-        setRequestProperty(HEADER_IF_MODIFIED_SINCE,
+        setRequestProperty(HttpHeaders.IF_MODIFIED_SINCE,
                            ifModifiedSince.atZone(ZoneId.systemDefault()).format(RFC2616_INSTANT));
         return this;
     }
@@ -348,7 +315,7 @@ public class Outcall {
 
         String userAndPassword = user + ":" + password;
         String encodedAuthorization = Base64.getEncoder().encodeToString(userAndPassword.getBytes(charset));
-        setRequestProperty(HEADER_AUTHORIZATION, "Basic " + encodedAuthorization);
+        setRequestProperty(HttpHeaders.AUTHORIZATION, PREFIX_BASIC + encodedAuthorization);
         return this;
     }
 
@@ -493,7 +460,7 @@ public class Outcall {
             parameterString.append("=");
             parameterString.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset));
         }
-        modifyRequest().setHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
+        modifyRequest().setHeader(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
                        .POST(HttpRequest.BodyPublishers.ofString(parameterString.toString(), charset));
 
         return this;
@@ -570,7 +537,7 @@ public class Outcall {
         checkTimeoutBlacklist();
 
         if (oAuthAccessToken != null) {
-            setRequestProperty(HEADER_AUTHORIZATION, oAuthAccessToken.get());
+            setRequestProperty(HttpHeaders.AUTHORIZATION, oAuthAccessToken.get());
         }
 
         if (client == null) {
@@ -623,7 +590,7 @@ public class Outcall {
                 oAuthTokenRefresher.run();
                 oAuthTokenRefresher = null;
 
-                requestBuilder.setHeader(HEADER_AUTHORIZATION, oAuthAccessToken.get());
+                requestBuilder.setHeader(HttpHeaders.AUTHORIZATION, oAuthAccessToken.get());
                 request = requestBuilder.build();
                 performRequest();
             }
@@ -751,7 +718,7 @@ public class Outcall {
      * @return an Optional containing the file name given by the header, or {@link Optional#empty()} if no file name is given
      */
     public Optional<String> parseFileNameFromContentDisposition() {
-        return ContentDispositionParser.parseFileName(getHeaderField(HEADER_CONTENT_DISPOSITION));
+        return ContentDispositionParser.parseFileName(getHeaderField(HttpHeaders.CONTENT_DISPOSITION));
     }
 
     /**
@@ -941,9 +908,9 @@ public class Outcall {
         };
     }
 
-    private URI makeRedirectedURI(HttpHeaders headers) throws IOException {
+    private URI makeRedirectedURI(java.net.http.HttpHeaders headers) throws IOException {
         String locationHeader =
-                headers.firstValue(HEADER_LOCATION).orElseThrow(() -> new ConnectException("Invalid redirection"));
+                headers.firstValue(HttpHeaders.LOCATION).orElseThrow(() -> new ConnectException("Invalid redirection"));
         return request.uri().resolve(makeURIFromLocation(locationHeader));
     }
 
