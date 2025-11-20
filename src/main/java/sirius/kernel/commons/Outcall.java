@@ -72,10 +72,6 @@ import java.util.regex.Pattern;
  */
 public class Outcall {
 
-    public static final String HEADER_USER_AGENT = "User-Agent";
-    public static final String HEADER_ACCEPT = "Accept";
-    public static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
-
     /**
      * Date time formatter as per
      * <a href="https://datatracker.ietf.org/doc/html/rfc2616#section-3.3.1">RFC 2616 section 3.3.1</a>
@@ -90,15 +86,62 @@ public class Outcall {
                                           .withChronology(IsoChronology.INSTANCE)
                                           .withZone(ZoneOffset.UTC);
 
-    private static final String REQUEST_METHOD_HEAD = "HEAD";
-    private static final String HEADER_CONTENT_TYPE = "Content-Type";
-    private static final String HEADER_LOCATION = "Location";
-    private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
-    private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
-    private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
+    /**
+     * Standard HTTP User-Agent header.
+     */
+    public static final String HEADER_USER_AGENT = "User-Agent";
+
+    /**
+     * Standard HTTP Accept header indicating expected response media types.
+     */
+    public static final String HEADER_ACCEPT = "Accept";
+
+    /**
+     * Default Accept header value allowing any media type.
+     */
+    public static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
+
+    /**
+     * HTTP HEAD request method (requests headers only, no body).
+     */
+    public static final String REQUEST_METHOD_HEAD = "HEAD";
+
+    /**
+     * Standard HTTP Content-Type header indicating request/response media type.
+     */
+    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+
+    /**
+     * HTTP Location header used for redirects or resource references.
+     */
+    public static final String HEADER_LOCATION = "Location";
+
+    /**
+     * HTTP Content-Disposition header (e.g., for file downloads or attachments).
+     */
+    public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
+
+    /**
+     * HTTP If-Modified-Since header used for conditional requests.
+     */
+    public static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
+
+    /**
+     * Content type for URL-encoded form data with UTF-8 encoding.
+     */
+    public static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
+
+    /**
+     * HTTP Authorization header for authentication data.
+     */
+    public static final String HEADER_AUTHORIZATION = "Authorization";
+
+    /**
+     * Prefix for Bearer token authorization scheme.
+     */
+    public static final String PREFIX_BEARER = "Bearer ";
+
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
-    private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
-    private static final int MAX_REDIRECTS = 5;
 
     /**
      * Keeps track of hosts for which we ran into a connect-timeout.
@@ -118,8 +161,6 @@ public class Outcall {
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
 
-    private static final String HEADER_AUTHORIZATION = "Authorization";
-
     @ConfigValue("http.outcall.timeouts.default.connectTimeout")
     private static Duration defaultConnectTimeout;
 
@@ -131,6 +172,8 @@ public class Outcall {
 
     private static String defaultUserAgent;
 
+    private static final X509TrustManager trustManagerForSelfSignedCerts = new TrustingSelfSignedTrustManager();
+
     private static final Average timeToFirstByte = new Average();
 
     /**
@@ -138,6 +181,7 @@ public class Outcall {
      */
     private static final Map<String, HttpClient> cachedHttpClients = new ConcurrentHashMap<>();
 
+    private static final int MAX_REDIRECTS = 5;
     private static final String DEFAULT_CLIENT_SELECTOR = "_default_";
 
     private String clientSelector = DEFAULT_CLIENT_SELECTOR;
@@ -334,7 +378,7 @@ public class Outcall {
     public Outcall trustSelfSignedCertificates(String clientSelector) {
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
+            sslContext.init(null, new TrustManager[]{trustManagerForSelfSignedCerts}, new SecureRandom());
             modifyClient(clientSelector).sslContext(sslContext);
         } catch (NoSuchAlgorithmException | KeyManagementException exception) {
             throw Exceptions.handle(exception);
@@ -789,6 +833,7 @@ public class Outcall {
      *                            perform the refresh of the token using OAuth refresh token flow. The token
      *                            must contain the proper authorization type, e.g. 'Bearer &lt;token&gt;'
      * @return the current instance for fluent method calls
+     * @see #PREFIX_BEARER
      */
     public Outcall withOAuth(Supplier<String> accessTokenSupplier, Runnable tokenRefresher) {
         this.oAuthAccessToken = accessTokenSupplier;
@@ -803,7 +848,7 @@ public class Outcall {
      * @return the current instance for fluent method calls
      */
     public Outcall withBearerToken(String bearerToken) {
-        this.oAuthAccessToken = () -> "Bearer " + bearerToken;
+        this.oAuthAccessToken = () -> PREFIX_BEARER + bearerToken;
         return this;
     }
 
