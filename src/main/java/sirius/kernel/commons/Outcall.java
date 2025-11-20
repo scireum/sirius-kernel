@@ -847,6 +847,8 @@ public class Outcall {
 
     /**
      * Enables OAuth token support for this outcall.
+     * <p>
+     * Note that this cannot be used alongside {@link #withBearerToken(String)} as these overwrite each other.
      *
      * @param accessTokenSupplier supplies the access token to be used for OAuth. It must contain the proper
      *                            authorization type, e.g. 'Bearer <token>'
@@ -864,6 +866,10 @@ public class Outcall {
 
     /**
      * Adds an externally computed or supplied bearer token, like a <b>JWT</b>.
+     * <p>
+     * Note that this cannot be used alongside {@link #withOAuth(Supplier, Runnable)} as these overwrite each other.
+     * <p>
+     * Also note that the "Bearer " prefix is applied automatically.
      *
      * @param bearerToken the token to add as <tt>Authorization</tt> header.
      * @return the current instance for fluent method calls
@@ -978,8 +984,8 @@ public class Outcall {
     /**
      * Executes the given task and returns its result while retrying the operation in case of an {@link IOException}.
      * <p>
-     * Executes the task and retries (up to two additional attempts) in case of an io error like a connection
-     * exception. Note that the task should be idempotent as it might be executed several times. If a non io error
+     * Executes the task and retries (up to two additional attempts) in case of an IO error like a connection
+     * exception. Note that the task should be idempotent as it might be executed several times. If a non IO error
      * occurs of the retries run out, the appropriate exception is re-thrown
      * <p>
      * Note that this applies a simple backoff strategy to wait a show amount of time before a retry.
@@ -990,7 +996,7 @@ public class Outcall {
      * @throws Exception any exception thrown by the task
      */
     public static <T> T ioRetry(Producer<T> task) throws Exception {
-        int attempts = 3;
+        int attempts = DEFAULT_ATTEMPTS;
         while (true) {
             attempts--;
             try {
@@ -1006,7 +1012,7 @@ public class Outcall {
     }
 
     /**
-     * Executes the given unit of work and retries in case of an io error.
+     * Executes the given unit of work and retries in case of an IO error.
      * <p>
      * For details, see {@link #ioRetry(Producer)}.
      *
