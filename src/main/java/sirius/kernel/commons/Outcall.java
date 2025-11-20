@@ -256,7 +256,7 @@ public class Outcall {
      *                       the cached client can be re-used once it has been created
      * @return the underlying {@link HttpClient.Builder}
      */
-    public HttpClient.Builder modifyClient(String clientSelector) {
+    public HttpClient.Builder modifyClient(@Nullable String clientSelector) {
         if (client != null) {
             throw new IllegalStateException("Can no longer modify client, request has already been sent!");
         }
@@ -375,7 +375,7 @@ public class Outcall {
      * @return the outcall itself for fluent method calls
      */
 
-    public Outcall trustSelfSignedCertificates(String clientSelector) {
+    public Outcall trustSelfSignedCertificates(@Nullable String clientSelector) {
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{trustManagerForSelfSignedCerts}, new SecureRandom());
@@ -443,7 +443,7 @@ public class Outcall {
      * @param configKey      the config key of the timeout configuration block
      * @return this for fluent method calls
      */
-    public Outcall withConfiguredTimeout(String clientSelector, @Nonnull String configKey) {
+    public Outcall withConfiguredTimeout(@Nullable String clientSelector, @Nonnull String configKey) {
         Extension extension = Sirius.getSettings().getExtension("http.outcall.timeouts", configKey);
 
         modifyClient(clientSelector).connectTimeout(extension.getConfig().getDuration("connectTimeout"));

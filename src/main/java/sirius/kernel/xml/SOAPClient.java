@@ -132,7 +132,7 @@ public class SOAPClient {
      *                       See {@link Outcall#modifyClient(String)}.
      * @param endpoint       the default endpoint to talk to
      */
-    public SOAPClient(String clientSelector, @Nonnull URL endpoint) {
+    public SOAPClient(@Nullable String clientSelector, @Nonnull URL endpoint) {
         this.clientSelector = clientSelector;
         this.endpoint = endpoint;
         this.withNamespace(SOAP_NAMESPACE, SOAP_NAMESPACE_URI);
