@@ -1001,9 +1001,10 @@ public class Outcall {
             attempts--;
             try {
                 return task.create();
-            } catch (Exception e) {
-                if (attempts == 0 || (!(e instanceof IOException) && !(e.getCause() instanceof IOException))) {
-                    throw e;
+            } catch (Exception exception) {
+                if (attempts == 0 || (!(exception instanceof IOException)
+                                      && !(exception.getCause() instanceof IOException))) {
+                    throw exception;
                 }
                 Wait.randomMillis((DEFAULT_ATTEMPTS - attempts) * DEFAULT_RETRY_DELAY_MILLIS,
                                   (1 + DEFAULT_ATTEMPTS - attempts) * DEFAULT_RETRY_DELAY_MILLIS);
