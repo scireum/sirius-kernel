@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.CookieManager;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
@@ -111,6 +112,14 @@ public class Outcall {
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
 
     /**
+     * Provides a constant for {@link #modifyClient(String)} to signal that the generated client must not be re-used or
+     * cached.
+     */
+    public static final String CLIENT_SELECTOR_NO_CACHE = null;
+
+    private static final String DEFAULT_CLIENT_SELECTOR = "_default_";
+
+    /**
      * Keeps track of hosts for which we ran into a connect-timeout.
      * <p>
      * These hosts are blacklisted for a short amount of time ({@link #connectTimeoutBlacklistDuration}) to prevent
@@ -149,7 +158,6 @@ public class Outcall {
     private static final Map<String, HttpClient> cachedHttpClients = new ConcurrentHashMap<>();
 
     private static final int MAX_REDIRECTS = 5;
-    private static final String DEFAULT_CLIENT_SELECTOR = "_default_";
 
     private String clientSelector = DEFAULT_CLIENT_SELECTOR;
     private HttpClient client;
@@ -220,7 +228,9 @@ public class Outcall {
      * across multiple requests.
      *
      * @param clientSelector a unique string for all occasions where the builder is customized the same way and thus
-     *                       the cached client can be re-used once it has been created
+     *                       the cached client can be re-used once it has been created.
+     *                       Use {@link #CLIENT_SELECTOR_NO_CACHE} to signal that the created client should not be
+     *                       re-used (e.g. if a {@link java.net.CookieManager} is used).
      * @return the underlying {@link HttpClient.Builder}
      */
     public HttpClient.Builder modifyClient(@Nullable String clientSelector) {
