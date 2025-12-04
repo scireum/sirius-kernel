@@ -74,11 +74,11 @@ public class ParallelTaskExecutor {
     public void shutdownWhenDone() {
         while (TaskContext.get().isActive()) {
             if (taskQueue.isEmpty() && taskCount.get() == 0) {
-                executor.close();
                 break;
             }
             Wait.millis(500);
         }
+        executor.close();
     }
 
     private void startProcessing() {
