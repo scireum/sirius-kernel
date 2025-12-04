@@ -88,7 +88,7 @@ public class ParallelTaskExecutor {
                     Runnable task = taskQueue.take();
                     semaphore.acquire();
                     executor.submit(task);
-                } catch (InterruptedException exception) {
+                } catch (InterruptedException _) {
                     Thread.currentThread().interrupt();
                     break;
                 }
