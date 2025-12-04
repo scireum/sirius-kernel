@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 /**
  * Executes tasks in parallel in the current node using virtual threads with a limit on concurrency.
@@ -34,6 +35,7 @@ public class ParallelTaskExecutor {
     private final Semaphore semaphore;
     private final AtomicInteger taskCount;
     private final CallContext currentContext;
+    private Supplier<Boolean> isActiveSupplier;
 
     /**
      * Creates a new parallel task executor.
@@ -46,7 +48,22 @@ public class ParallelTaskExecutor {
         this.taskQueue = new LinkedBlockingQueue<>();
         this.semaphore = new Semaphore(maxConcurrentTasks);
         this.taskCount = new AtomicInteger(0);
+        this.isActiveSupplier = () -> TaskContext.get().isActive();
         startProcessing();
+    }
+
+    /**
+     * Permits to override the active checker which is used to determine when to stop processing tasks.
+     * <p>
+     * By default, the executor checks whether the current {@link TaskContext} is still active which is enough
+     * is most cases, but more complex scenarios might require a custom check.
+     *
+     * @param isActiveSupplier the supplier which determines whether the executor is still active
+     * @return the executor itself for fluent method calls
+     */
+    public ParallelTaskExecutor withIsActiveSupplier(Supplier<Boolean> isActiveSupplier) {
+        this.isActiveSupplier = isActiveSupplier;
+        return this;
     }
 
     /**
@@ -69,10 +86,19 @@ public class ParallelTaskExecutor {
     }
 
     /**
+     * Determines whether the executor is still active.
+     *
+     * @return {@code true} if the executor is still active, {@code false} otherwise
+     */
+    public boolean isActive() {
+        return Boolean.TRUE.equals(isActiveSupplier.get());
+    }
+
+    /**
      * Waits for all tasks to complete and shuts down the executor.
      */
     public void shutdownWhenDone() {
-        while (TaskContext.get().isActive()) {
+        while (isActive()) {
             if (taskQueue.isEmpty() && taskCount.get() == 0) {
                 break;
             }
@@ -83,7 +109,7 @@ public class ParallelTaskExecutor {
 
     private void startProcessing() {
         Thread.startVirtualThread(() -> {
-            while (TaskContext.get().isActive()) {
+            while (isActive()) {
                 try {
                     Runnable task = taskQueue.take();
                     semaphore.acquire();
