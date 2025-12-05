@@ -14,6 +14,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -114,11 +115,12 @@ public class ParallelTaskExecutor {
                     Runnable task = taskQueue.take();
                     semaphore.acquire();
                     executor.submit(task);
-                } catch (InterruptedException _) {
+                } catch (InterruptedException | RejectedExecutionException _) {
                     Thread.currentThread().interrupt();
                     break;
                 }
             }
         });
+        taskQueue.clear();
     }
 }
