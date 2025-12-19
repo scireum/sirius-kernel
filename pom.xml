@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.5.0-jre</version>
+            <version>33.4.8-jre</version>
         </dependency>
 
         <!-- JSR305 annotations like @Nonnull etc. -->
