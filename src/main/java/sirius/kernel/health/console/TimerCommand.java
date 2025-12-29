@@ -9,6 +9,7 @@
 package sirius.kernel.health.console;
 
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Values;
 import sirius.kernel.di.std.Part;
@@ -53,7 +54,7 @@ public class TimerCommand implements Command {
         boolean forced = extractForceParameter(parameterList);
         String scope = extractScope(parameterList);
 
-        if (parameterList.isEmpty()) {
+        if (Strings.isEmpty(scope)) {
             output.line(USAGE);
         } else if (!ACCEPTED_PARAMS.contains(scope.toLowerCase())) {
             output.apply("'%s' is not an accepted parameter!", scope);

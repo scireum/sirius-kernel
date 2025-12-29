@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.kernel.xml;
+package sirius.kernel.commons;
 
 import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;

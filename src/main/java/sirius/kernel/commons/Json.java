@@ -34,9 +34,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * Provides a simple wrapper for Jackson to provide a more fluent API with some additional functions that provide useful
@@ -64,7 +64,8 @@ public class Json {
                               .registerModule(new JavaTimeModule());
 
     static {
-        MAPPER.getFactory().setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(25_000_000).build());
+        MAPPER.getFactory()
+              .setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(25_000_000).build());
     }
 
     private Json() {
@@ -285,10 +286,12 @@ public class Json {
      *
      * @param arrayNode the node to stream
      * @return a stream of the entries of the given node
+     * @deprecated since 2025/07/11, use {@link ArrayNode#valueStream()} instead.
      */
+    @Deprecated(since = "2025/07/11", forRemoval = true)
     @Nonnull
     public static Stream<JsonNode> streamEntries(@Nonnull ArrayNode arrayNode) {
-        return StreamSupport.stream(arrayNode.spliterator(), false);
+        return arrayNode.valueStream();
     }
 
     /**
@@ -325,11 +328,7 @@ public class Json {
      */
     @Nonnull
     public static Optional<ObjectNode> tryGetObjectAtIndex(@Nonnull ArrayNode arrayNode, int index) {
-        JsonNode node = arrayNode.get(index);
-        if (node == null || !node.isObject()) {
-            return Optional.empty();
-        }
-        return Optional.of((ObjectNode) node);
+        return arrayNode.optional(index).filter(JsonNode::isObject).map(ObjectNode.class::cast);
     }
 
     /**
@@ -355,11 +354,7 @@ public class Json {
      */
     @Nonnull
     public static Optional<ObjectNode> tryGetObject(@Nonnull ObjectNode objectNode, String fieldName) {
-        JsonNode node = objectNode.get(fieldName);
-        if (node == null || !node.isObject()) {
-            return Optional.empty();
-        }
-        return Optional.of((ObjectNode) node);
+        return objectNode.optional(fieldName).filter(JsonNode::isObject).map(ObjectNode.class::cast);
     }
 
     /**
@@ -490,11 +485,7 @@ public class Json {
      */
     @Nonnull
     public static Optional<JsonNode> tryGetAtIndex(@Nonnull ArrayNode arrayNode, int index) {
-        JsonNode node = arrayNode.get(index);
-        if (node == null || node.isNull()) {
-            return Optional.empty();
-        }
-        return Optional.of(node);
+        return arrayNode.optional(index).filter(Predicate.not(JsonNode::isNull));
     }
 
     /**
@@ -506,11 +497,7 @@ public class Json {
      */
     @Nonnull
     public static Optional<JsonNode> tryGet(@Nonnull ObjectNode objectNode, String fieldName) {
-        JsonNode node = objectNode.get(fieldName);
-        if (node == null || node.isNull()) {
-            return Optional.empty();
-        }
-        return Optional.of(node);
+        return objectNode.optional(fieldName).filter(Predicate.not(JsonNode::isNull));
     }
 
     /**
@@ -573,6 +560,9 @@ public class Json {
         if (node.isTextual()) {
             return Amount.ofMachineString(node.textValue());
         }
+        if (node.isPojo()) {
+            return tryGetFromPojoNode(node, Amount.class).orElse(Amount.NOTHING);
+        }
         return Amount.NOTHING;
     }
 
@@ -587,6 +577,9 @@ public class Json {
     @Nonnull
     public static Optional<LocalDate> tryValueDate(@Nonnull JsonNode jsonNode, String fieldName) {
         JsonNode node = jsonNode.get(fieldName);
+        if (node != null && node.isPojo()) {
+            return tryGetFromPojoNode(node, LocalDate.class);
+        }
         if (node == null || node.isNull() || !node.isTextual()) {
             return Optional.empty();
         }
@@ -609,6 +602,9 @@ public class Json {
     @Nonnull
     public static Optional<LocalDateTime> tryValueDateTime(@Nonnull JsonNode jsonNode, String fieldName) {
         JsonNode node = jsonNode.get(fieldName);
+        if (node != null && node.isPojo()) {
+            return tryGetFromPojoNode(node, LocalDateTime.class);
+        }
         if (node == null || node.isNull() || !node.isTextual()) {
             return Optional.empty();
         }
@@ -617,5 +613,13 @@ public class Json {
         } catch (DateTimeParseException exception) {
             return Optional.empty();
         }
+    }
+
+    private static <T> Optional<T> tryGetFromPojoNode(JsonNode node, Class<T> targetClass) {
+        if (node.isPojo() && node instanceof POJONode pojoNode && targetClass.isInstance(pojoNode.getPojo())) {
+            return Optional.of(targetClass.cast(pojoNode.getPojo()));
+        }
+
+        return Optional.empty();
     }
 }

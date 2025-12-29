@@ -128,9 +128,9 @@ public class ExtendedSettings extends Settings {
         }
 
         ConfigObject cfg = getConfig().getConfig(type).root();
-        ConfigObject def = (ConfigObject) cfg.get(Extension.DEFAULT);
 
         if (cfg.containsKey(Extension.DEFAULT)) {
+            ConfigObject def = (ConfigObject) cfg.get(Extension.DEFAULT);
             result = new Extension(type, Extension.DEFAULT, def, null);
             defaultsCache.put(type, result);
             return result;

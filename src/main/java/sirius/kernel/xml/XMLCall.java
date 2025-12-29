@@ -8,6 +8,8 @@
 
 package sirius.kernel.xml;
 
+import com.google.common.net.HttpHeaders;
+import sirius.kernel.commons.Outcall;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -41,7 +43,7 @@ public class XMLCall {
      */
     protected XMLCall(URI uri, String contentType) {
         this.outcall = new Outcall(uri);
-        this.outcall.setRequestProperty("Content-Type", contentType);
+        this.outcall.setRequestProperty(HttpHeaders.CONTENT_TYPE, contentType);
     }
 
     /**
@@ -181,7 +183,7 @@ public class XMLCall {
     public XMLStructuredInput getInput() throws IOException {
         // call #getInputStream() before checking for errors, as #getInputStream may log the request/response
         try (InputStream body = getInputStream()) {
-            String contentType = outcall.getHeaderField("content-type");
+            String contentType = outcall.getHeaderField(HttpHeaders.CONTENT_TYPE);
             if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase().contains("xml"))) {
                 return new XMLStructuredInput(body, namespaceContext);
             }

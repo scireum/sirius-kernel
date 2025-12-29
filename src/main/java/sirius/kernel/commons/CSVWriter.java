@@ -32,8 +32,9 @@ public class CSVWriter implements Closeable {
     private final Writer writer;
     private boolean firstLine = true;
     private char separator = ';';
-    private String separatorString = String.valueOf(';');
+    private String separatorString = String.valueOf(separator);
     private char quotation = '"';
+    private String quotationString = String.valueOf(quotation);
     private boolean isQuotationEmpty = false;
     private boolean forceQuotation = false;
     private char escape = '\\';
@@ -90,6 +91,7 @@ public class CSVWriter implements Closeable {
      */
     public CSVWriter withQuotation(char quotation) {
         this.quotation = quotation;
+        this.quotationString = String.valueOf(quotation);
         this.isQuotationEmpty = quotation == '\0';
         return this;
     }
@@ -137,10 +139,10 @@ public class CSVWriter implements Closeable {
     }
 
     /**
-     * Specifies wether or not all fields in the generated CSV should be enclosed with the specified quotation character.
+     * Specifies whether all fields in the generated CSV should be enclosed with the specified quotation character.
      * <p>
-     * By default this is <tt>false</tt>, which means only fields that require quotation because they contain
-     * the separator character or a line break are enclosed with quotations.
+     * By default, this is <tt>false</tt>, which means only fields that require quotation because they contain
+     * the separator character, the quotation character or a line break are enclosed with quotations.
      *
      * @param force if all fields should be quoted regardless of content or not
      * @return the writer itself for fluent method calls
@@ -230,7 +232,8 @@ public class CSVWriter implements Closeable {
         if (forceQuotation) {
             return true;
         }
-        return stringValue.contains(separatorString) || stringValue.contains("\n") || stringValue.contains("\r");
+        return stringValue.contains(separatorString) || stringValue.contains(quotationString) || stringValue.contains(
+                "\n") || stringValue.contains("\r");
     }
 
     /**

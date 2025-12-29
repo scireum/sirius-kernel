@@ -6,21 +6,16 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.kernel.xml;
+package sirius.kernel.commons;
 
+import com.google.common.net.HttpHeaders;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.Operation;
-import sirius.kernel.commons.Context;
-import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.Monoflop;
-import sirius.kernel.commons.Streams;
-import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Tuple;
-import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Microtiming;
+import sirius.kernel.io.IOExceptionSkipLog;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 
@@ -35,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.CookieManager;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
@@ -42,7 +38,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
-import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
@@ -78,10 +73,6 @@ import java.util.regex.Pattern;
  */
 public class Outcall {
 
-    public static final String HEADER_USER_AGENT = "User-Agent";
-    public static final String HEADER_ACCEPT = "Accept";
-    public static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
-
     /**
      * Date time formatter as per
      * <a href="https://datatracker.ietf.org/doc/html/rfc2616#section-3.3.1">RFC 2616 section 3.3.1</a>
@@ -96,15 +87,37 @@ public class Outcall {
                                           .withChronology(IsoChronology.INSTANCE)
                                           .withZone(ZoneOffset.UTC);
 
-    private static final String REQUEST_METHOD_HEAD = "HEAD";
-    private static final String HEADER_CONTENT_TYPE = "Content-Type";
-    private static final String HEADER_LOCATION = "Location";
-    private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
-    private static final String HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
-    private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
+    /**
+     * Default Accept header value allowing any media type.
+     */
+    public static final String HEADER_ACCEPT_DEFAULT_VALUE = "*/*";
+
+    /**
+     * HTTP HEAD request method (requests headers only, no body).
+     */
+    public static final String REQUEST_METHOD_HEAD = "HEAD";
+
+    /**
+     * Content type for URL-encoded form data with UTF-8 encoding.
+     */
+    public static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded; charset=utf-8";
+
+    /**
+     * Prefix for Bearer token authorization scheme.
+     */
+    public static final String PREFIX_BEARER = "Bearer ";
+
+    private static final String PREFIX_BASIC = "Basic ";
+
     private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
-    private static final X509TrustManager TRUST_SELF_SIGNED_CERTS = new TrustingSelfSignedTrustManager();
-    private static final int MAX_REDIRECTS = 5;
+
+    /**
+     * Provides a constant for {@link #modifyClient(String)} to signal that the generated client must not be re-used or
+     * cached.
+     */
+    public static final String CLIENT_SELECTOR_NO_CACHE = null;
+
+    private static final String DEFAULT_CLIENT_SELECTOR = "_default_";
 
     /**
      * Keeps track of hosts for which we ran into a connect-timeout.
@@ -124,8 +137,6 @@ public class Outcall {
      */
     private static final int TIMEOUT_BLACKLIST_HIGH_WATERMARK = 100;
 
-    private static final String HEADER_AUTHORIZATION = "Authorization";
-
     @ConfigValue("http.outcall.timeouts.default.connectTimeout")
     private static Duration defaultConnectTimeout;
 
@@ -135,23 +146,34 @@ public class Outcall {
     @ConfigValue("http.outcall.connectTimeoutBlacklistDuration")
     private static Duration connectTimeoutBlacklistDuration;
 
+    private static String defaultUserAgent;
+
+    private static final X509TrustManager trustManagerForSelfSignedCerts = new TrustingSelfSignedTrustManager();
+
+    private static final Average timeToFirstByte = new Average();
+
+    /**
+     * Contains a cache of re-usable clients based on their <tt>clientSelector</tt>.
+     */
+    private static final Map<String, HttpClient> cachedHttpClients = new ConcurrentHashMap<>();
+
+    private static final int MAX_REDIRECTS = 5;
+
+    private String clientSelector = DEFAULT_CLIENT_SELECTOR;
     private HttpClient client;
     private HttpRequest request;
     private String blacklistId;
-    private final HttpClient.Builder clientBuilder;
+    private HttpClient.Builder clientBuilder;
     private final HttpRequest.Builder requestBuilder;
     private HttpResponse<InputStream> response;
     private HttpClient.Redirect redirectPolicy = HttpClient.Redirect.NORMAL;
     private Charset charset = StandardCharsets.UTF_8;
+    private Supplier<String> oAuthAccessToken;
+    private Runnable oAuthTokenRefresher;
 
     // Provide an output stream for old apis
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     private boolean postFromOutput = false;
-
-    private static String defaultUserAgent;
-    private static final Average timeToFirstByte = new Average();
-    private Supplier<String> oAuthAccessToken;
-    private Runnable oAuthTokenRefresher;
 
     /**
      * Builds the default user agent string as 'product.name/product.version (+product.baseUrl)', where version or
@@ -174,16 +196,16 @@ public class Outcall {
 
     /**
      * Creates a new <tt>Outcall</tt> to the given URL.
+     * <p>
      * Uses the uri's host as blacklist id.
      *
      * @param uri the url to call
      */
     public Outcall(URI uri) {
         this.blacklistId = uri.getHost();
-        clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
         requestBuilder = HttpRequest.newBuilder(uri)
-                                    .header(HEADER_USER_AGENT, buildDefaultUserAgent())
-                                    .header(HEADER_ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
+                                    .header(HttpHeaders.USER_AGENT, buildDefaultUserAgent())
+                                    .header(HttpHeaders.ACCEPT, HEADER_ACCEPT_DEFAULT_VALUE)
                                     .timeout(defaultReadTimeout);
     }
 
@@ -191,11 +213,41 @@ public class Outcall {
      * Allows to modify the client before the request is sent by returning the builder that is used to create it.
      *
      * @return the underlying {@link HttpClient.Builder}
+     * @deprecated Use {@link #modifyClient(String)}
      */
+    @Deprecated
     public HttpClient.Builder modifyClient() {
+        return modifyClient(null);
+    }
+
+    /**
+     * Allows to modify the client before the request is sent by returning the builder that is used to create it.
+     * <p>
+     * Note that if a non-null <tt>clientSelector</tt> is given, the resulting {@link HttpClient} created by the
+     * modified builder is cached and re-used with the benefit of having a connection pool to re-use connections
+     * across multiple requests.
+     *
+     * @param clientSelector a unique string for all occasions where the builder is customized the same way and thus
+     *                       the cached client can be re-used once it has been created.
+     *                       Use {@link #CLIENT_SELECTOR_NO_CACHE} to signal that the created client should not be
+     *                       re-used (e.g. if a {@link java.net.CookieManager} is used).
+     * @return the underlying {@link HttpClient.Builder}
+     */
+    public HttpClient.Builder modifyClient(@Nullable String clientSelector) {
         if (client != null) {
             throw new IllegalStateException("Can no longer modify client, request has already been sent!");
         }
+
+        if (!DEFAULT_CLIENT_SELECTOR.equals(this.clientSelector)
+            && this.clientSelector != null
+            && !this.clientSelector.equals(clientSelector)) {
+            throw new IllegalStateException("Client selector cannot be changed");
+        }
+        this.clientSelector = clientSelector;
+        if (this.clientBuilder == null) {
+            this.clientBuilder = HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
+        }
+
         return clientBuilder;
     }
 
@@ -254,7 +306,7 @@ public class Outcall {
      * @throws IllegalStateException if already connected
      */
     public Outcall setIfModifiedSince(LocalDateTime ifModifiedSince) {
-        setRequestProperty(HEADER_IF_MODIFIED_SINCE,
+        setRequestProperty(HttpHeaders.IF_MODIFIED_SINCE,
                            ifModifiedSince.atZone(ZoneId.systemDefault()).format(RFC2616_INSTANT));
         return this;
     }
@@ -273,7 +325,7 @@ public class Outcall {
 
         String userAndPassword = user + ":" + password;
         String encodedAuthorization = Base64.getEncoder().encodeToString(userAndPassword.getBytes(charset));
-        setRequestProperty(HEADER_AUTHORIZATION, "Basic " + encodedAuthorization);
+        setRequestProperty(HttpHeaders.AUTHORIZATION, PREFIX_BASIC + encodedAuthorization);
         return this;
     }
 
@@ -283,12 +335,28 @@ public class Outcall {
      * This will make the connection trust <strong>only</strong> self-signed certificates!
      *
      * @return the outcall itself for fluent method calls
+     * @deprecated Use {@link #trustSelfSignedCertificates(String)}
      */
+    @Deprecated
     public Outcall trustSelfSignedCertificates() {
+        return trustSelfSignedCertificates(null);
+    }
+
+    /**
+     * Makes the underlying connection trust self-signed certs.
+     * <p>
+     * This will make the connection trust <strong>only</strong> self-signed certificates!
+     *
+     * @param clientSelector the selector used to cache the underlying {@link HttpClient} to facilitate connection pooling
+     *                       See {@link #modifyClient(String)}.
+     * @return the outcall itself for fluent method calls
+     */
+
+    public Outcall trustSelfSignedCertificates(@Nullable String clientSelector) {
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, new TrustManager[]{TRUST_SELF_SIGNED_CERTS}, new SecureRandom());
-            modifyClient().sslContext(sslContext);
+            sslContext.init(null, new TrustManager[]{trustManagerForSelfSignedCerts}, new SecureRandom());
+            modifyClient(clientSelector).sslContext(sslContext);
         } catch (NoSuchAlgorithmException | KeyManagementException exception) {
             throw Exceptions.handle(exception);
         }
@@ -299,45 +367,85 @@ public class Outcall {
     /**
      * Sets a specified timeout value, in milliseconds, to be used
      * when opening a communications link to the resource referenced
-     * by this outcall. If the timeout expires before the
-     * connection can be established, a
+     * by this outcall. If the timeout expires before the connection can be established, a
      * {@link java.net.http.HttpConnectTimeoutException} is raised. A timeout of zero is
      * interpreted as an infinite timeout.
      *
      * @param timeoutMillis specifies the connect-timeout value in milliseconds
+     * @deprecated Use {@code modifyClient().connectTimeout(Duration.ofMillis(timeoutMillis))} or
+     * {@link #withConfiguredTimeout(String, String)}
      */
+    @Deprecated
     public void setConnectTimeout(int timeoutMillis) {
         modifyClient().connectTimeout(Duration.ofMillis(timeoutMillis));
     }
 
     /**
-     * Sets the read timeout to a specified timeout, in
-     * milliseconds. A non-zero value specifies the timeout when
-     * reading from Input stream when a connection is established to a
-     * resource. If the timeout expires before there is data available
-     * for read, a {@link java.net.http.HttpTimeoutException} is raised. A
-     * timeout of zero is interpreted as an infinite timeout.
+     * Sets the read timeout to a specified timeout, in milliseconds.
+     * <p>
+     * Specifies the timeout when reading from Input stream when a connection is established to a
+     * resource. If the timeout expires before there is data available for read, a
+     * {@link java.net.http.HttpTimeoutException} is raised.
      *
      * @param timeoutMillis specifies the timeout value to be used in milliseconds
+     * @deprecated Use {@link #setReadTimeout(Duration)}
      */
+    @Deprecated
     public void setReadTimeout(int timeoutMillis) {
         modifyRequest().timeout(Duration.ofMillis(timeoutMillis));
+    }
+
+    /**
+     * Sets the read timeout to a specified timeout.
+     * <p>
+     * Specifies the timeout when reading from Input stream when a connection is established to a
+     * resource. If the timeout expires before there is data available for read, a
+     * {@link java.net.http.HttpTimeoutException} is raised.
+     *
+     * @param readTimeout specifies the timeout value to be used
+     * @see #withConfiguredTimeout(String, String)
+     */
+    public void setReadTimeout(Duration readTimeout) {
+        modifyRequest().timeout(readTimeout);
     }
 
     /**
      * Sets the connect-timeout and read-timeout to the values specified in the config block http.outcall.timeouts.*
      * where * equals the configKey parameter.
      * <p>
-     * See the http.outcall.timeouts.soap block in component-050-kernel.conf for reference.
+     * See the http.outcall.timeouts block in component-050-kernel.conf for reference.
      *
      * @param configKey the config key of the timeout configuration block
      * @return this for fluent method calls
+     * @deprecated Use {@link #withConfiguredTimeout(String, String)}
      */
+    @Deprecated
     public Outcall withConfiguredTimeout(@Nonnull String configKey) {
+        return withConfiguredTimeout(null, configKey);
+    }
+
+    /**
+     * Sets the connect-timeout and read-timeout to the values specified in the config block http.outcall.timeouts.*
+     * where * equals the configKey parameter.
+     * <p>
+     * See the http.outcall.timeouts block in component-050-kernel.conf for reference.
+     *
+     * @param clientSelector the selector used to cache the underlying {@link HttpClient} to facilitate connection pooling
+     *                       See {@link #modifyClient(String)}.
+     * @param configKey      the config key of the timeout configuration block
+     * @return this for fluent method calls
+     */
+    public Outcall withConfiguredTimeout(@Nullable String clientSelector, @Nonnull String configKey) {
         Extension extension = Sirius.getSettings().getExtension("http.outcall.timeouts", configKey);
 
-        setConnectTimeout((int) extension.getConfig().getDuration("connectTimeout").toMillis());
-        setReadTimeout((int) extension.getConfig().getDuration("readTimeout").toMillis());
+        Duration connectTimeout = extension.getConfig().getDuration("connectTimeout");
+        if (!Duration.ZERO.equals(connectTimeout)) {
+            modifyClient(clientSelector).connectTimeout(connectTimeout);
+        }
+        Duration readTimeout = extension.getConfig().getDuration("readTimeout");
+        if (!Duration.ZERO.equals(readTimeout)) {
+            setReadTimeout(readTimeout);
+        }
 
         return this;
     }
@@ -362,7 +470,7 @@ public class Outcall {
             parameterString.append("=");
             parameterString.append(URLEncoder.encode(NLS.toMachineString(entry.getValue()), charset));
         }
-        modifyRequest().setHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
+        modifyRequest().setHeader(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_FORM_URLENCODED)
                        .POST(HttpRequest.BodyPublishers.ofString(parameterString.toString(), charset));
 
         return this;
@@ -439,11 +547,11 @@ public class Outcall {
         checkTimeoutBlacklist();
 
         if (oAuthAccessToken != null) {
-            setRequestProperty(HEADER_AUTHORIZATION, oAuthAccessToken.get());
+            setRequestProperty(HttpHeaders.AUTHORIZATION, oAuthAccessToken.get());
         }
 
         if (client == null) {
-            client = clientBuilder.build();
+            this.client = setupClient();
         }
         if (request == null) {
             if (postFromOutput) {
@@ -463,6 +571,23 @@ public class Outcall {
         }
     }
 
+    private HttpClient setupClient() {
+        if (clientSelector != null) {
+            HttpClient cachedClient = cachedHttpClients.get(clientSelector);
+            if (cachedClient != null) {
+                return cachedClient;
+            }
+        }
+
+        HttpClient.Builder builder =
+                clientBuilder != null ? clientBuilder : HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
+        HttpClient result = builder.build();
+        if (clientSelector != null) {
+            cachedHttpClients.put(clientSelector, result);
+        }
+        return result;
+    }
+
     private void performRequest() throws IOException {
         Watch watch = Watch.start();
         try (Operation operation = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri()
@@ -475,11 +600,11 @@ public class Outcall {
                 oAuthTokenRefresher.run();
                 oAuthTokenRefresher = null;
 
-                requestBuilder.setHeader(HEADER_AUTHORIZATION, oAuthAccessToken.get());
+                requestBuilder.setHeader(HttpHeaders.AUTHORIZATION, oAuthAccessToken.get());
                 request = requestBuilder.build();
                 performRequest();
             }
-        } catch (InterruptedException exception) {
+        } catch (InterruptedException _) {
             Thread.currentThread().interrupt();
             throw new IOException("Thread was interrupted!");
         } catch (HttpTimeoutException | ConnectException | SocketTimeoutException exception) {
@@ -512,9 +637,13 @@ public class Outcall {
             if (Boolean.FALSE.equals(blacklistedHostInformation.getSecond())) {
                 blacklistedHostInformation.setSecond(true);
                 throw new IOException(Strings.apply(
-                        "Connections with blacklist identifier %s are currently rejected due to connectivity issues.",
-                        blacklistId));
+                        "Connections with blacklist identifier %s get rejected until %s due to connectivity issues.",
+                        blacklistId,
+                        LocalDateTime.ofEpochSecond(timeout / 1000, 0, ZoneOffset.UTC)));
             }
+            throw new IOExceptionSkipLog(Strings.apply(
+                    "Connections with blacklist identifier %s are currently rejected due to connectivity issues.",
+                    blacklistId));
         } else {
             timeoutBlacklist.remove(blacklistId);
         }
@@ -599,7 +728,7 @@ public class Outcall {
      * @return an Optional containing the file name given by the header, or {@link Optional#empty()} if no file name is given
      */
     public Optional<String> parseFileNameFromContentDisposition() {
-        return ContentDispositionParser.parseFileName(getHeaderField(HEADER_CONTENT_DISPOSITION));
+        return ContentDispositionParser.parseFileName(getHeaderField(HttpHeaders.CONTENT_DISPOSITION));
     }
 
     /**
@@ -695,6 +824,8 @@ public class Outcall {
 
     /**
      * Enables OAuth token support for this outcall.
+     * <p>
+     * Note that this cannot be used alongside {@link #withBearerToken(String)} as these overwrite each other.
      *
      * @param accessTokenSupplier supplies the access token to be used for OAuth. It must contain the proper
      *                            authorization type, e.g. 'Bearer <token>'
@@ -702,10 +833,26 @@ public class Outcall {
      *                            perform the refresh of the token using OAuth refresh token flow. The token
      *                            must contain the proper authorization type, e.g. 'Bearer &lt;token&gt;'
      * @return the current instance for fluent method calls
+     * @see #PREFIX_BEARER
      */
     public Outcall withOAuth(Supplier<String> accessTokenSupplier, Runnable tokenRefresher) {
         this.oAuthAccessToken = accessTokenSupplier;
         this.oAuthTokenRefresher = tokenRefresher;
+        return this;
+    }
+
+    /**
+     * Adds an externally computed or supplied bearer token, like a <b>JWT</b>.
+     * <p>
+     * Note that this cannot be used alongside {@link #withOAuth(Supplier, Runnable)} as these overwrite each other.
+     * <p>
+     * Also note that the "Bearer " prefix is applied automatically.
+     *
+     * @param bearerToken the token to add as <tt>Authorization</tt> header.
+     * @return the current instance for fluent method calls
+     */
+    public Outcall withBearerToken(String bearerToken) {
+        this.oAuthAccessToken = () -> PREFIX_BEARER + bearerToken;
         return this;
     }
 
@@ -771,9 +918,9 @@ public class Outcall {
         };
     }
 
-    private URI makeRedirectedURI(HttpHeaders headers) throws IOException {
+    private URI makeRedirectedURI(java.net.http.HttpHeaders headers) throws IOException {
         String locationHeader =
-                headers.firstValue(HEADER_LOCATION).orElseThrow(() -> new ConnectException("Invalid redirection"));
+                headers.firstValue(HttpHeaders.LOCATION).orElseThrow(() -> new ConnectException("Invalid redirection"));
         return request.uri().resolve(makeURIFromLocation(locationHeader));
     }
 
@@ -806,6 +953,55 @@ public class Outcall {
             case NEVER -> false;
             case NORMAL -> newScheme.equalsIgnoreCase(oldScheme) || "https".equalsIgnoreCase(newScheme);
         };
+    }
+
+    private static final int DEFAULT_ATTEMPTS = 3;
+    private static final int DEFAULT_RETRY_DELAY_MILLIS = 250;
+
+    /**
+     * Executes the given task and returns its result while retrying the operation in case of an {@link IOException}.
+     * <p>
+     * Executes the task and retries (up to two additional attempts) in case of an IO error like a connection
+     * exception. Note that the task should be idempotent as it might be executed several times. If a non IO error
+     * occurs of the retries run out, the appropriate exception is re-thrown
+     * <p>
+     * Note that this applies a simple backoff strategy to wait a show amount of time before a retry.
+     *
+     * @param task the task to execute
+     * @param <T>  the type returned by the task
+     * @return the return value generated by the task
+     * @throws Exception any exception thrown by the task
+     */
+    public static <T> T ioRetry(Producer<T> task) throws Exception {
+        int attempts = DEFAULT_ATTEMPTS;
+        while (true) {
+            attempts--;
+            try {
+                return task.create();
+            } catch (Exception exception) {
+                if (attempts == 0 || (!(exception instanceof IOException)
+                                      && !(exception.getCause() instanceof IOException))) {
+                    throw exception;
+                }
+                Wait.randomMillis((DEFAULT_ATTEMPTS - attempts) * DEFAULT_RETRY_DELAY_MILLIS,
+                                  (1 + DEFAULT_ATTEMPTS - attempts) * DEFAULT_RETRY_DELAY_MILLIS);
+            }
+        }
+    }
+
+    /**
+     * Executes the given unit of work and retries in case of an IO error.
+     * <p>
+     * For details, see {@link #ioRetry(Producer)}.
+     *
+     * @param unit the unit of work to execute. This should be idempotent as it might be invoked several times
+     * @throws Exception any exception thrown by the unit of work
+     */
+    public static void ioRetry(UnitOfWork unit) throws Exception {
+        ioRetry(() -> {
+            unit.execute();
+            return true;
+        });
     }
 
     public static Duration getDefaultConnectTimeout() {

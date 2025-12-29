@@ -1,0 +1,25 @@
+name: Execute Tests on Pull Request
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: scireum/sirius-build-jdk24
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            /root/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Compile and test project without nightly tests
+        run: mvn clean compile test -Dtest.excluded.groups=nightly

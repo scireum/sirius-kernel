@@ -69,16 +69,74 @@ class CSVReaderTest {
     @Test
     fun `escaping works`() {
         val data = """
-            \"a;\;;\\;x
+            \"a;\;;\\;x;"a aQuotationMarkWithinQuotationMarks: "" "
         """.trimIndent()
         val output = mutableListOf<Values>()
         CSVReader(StringReader(data)).execute { output.add(it) }
 
         assertEquals(1, output.size)
-        assertEquals("\"a", output[0].at("A").rawString)
+        assertEquals(""""a""", output[0].at("A").rawString)
         assertEquals(";", output[0].at("B").rawString)
-        assertEquals("\\", output[0].at("C").rawString)
+        assertEquals("""\""", output[0].at("C").rawString)
         assertEquals("x", output[0].at("D").rawString)
+        assertEquals("""a aQuotationMarkWithinQuotationMarks: " """, output[0].at("E").rawString)
+    }
+
+    @Test
+    fun `rfc4180 example 2-5`() {
+        val data = """
+            "aaa","bbb","ccc"
+            zzz,yyy,xxx
+           """.trimIndent()
+        val output = mutableListOf<Values>()
+        val csvReader = CSVReader(StringReader(data))
+        csvReader.withSeparator(',').withQuotation('"')
+        csvReader.execute { output.add(it) }
+
+        assertEquals(2, output.size)
+        assertEquals("aaa", output[0].at(0).rawString)
+        assertEquals("bbb", output[0].at(1).rawString)
+        assertEquals("ccc", output[0].at(2).rawString)
+        assertEquals("zzz", output[1].at(0).rawString)
+        assertEquals("yyy", output[1].at(1).rawString)
+        assertEquals("xxx", output[1].at(2).rawString)
+    }
+
+    @Test
+    fun `rfc4180 example 2-6`() {
+        val data = """
+            "aaa","b
+            bb","ccc"
+            zzz,yyy,xxx
+           """.trimIndent()
+        val output = mutableListOf<Values>()
+        val csvReader = CSVReader(StringReader(data))
+        csvReader.withSeparator(',').withQuotation('"')
+        csvReader.execute { output.add(it) }
+
+        assertEquals(2, output.size)
+        assertEquals("aaa", output[0].at(0).rawString)
+        assertEquals("b\nbb", output[0].at(1).rawString)
+        assertEquals("ccc", output[0].at(2).rawString)
+        assertEquals("zzz", output[1].at(0).rawString)
+        assertEquals("yyy", output[1].at(1).rawString)
+        assertEquals("xxx", output[1].at(2).rawString)
+    }
+
+    @Test
+    fun `rfc4180 example 2-7`() {
+        val data = """
+            "aaa","b""bb","ccc"
+           """.trimIndent()
+        val output = mutableListOf<Values>()
+        val csvReader = CSVReader(StringReader(data))
+        csvReader.withSeparator(',').withQuotation('"')
+        csvReader.execute { output.add(it) }
+
+        assertEquals(1, output.size)
+        assertEquals("aaa", output[0].at(0).rawString)
+        assertEquals("b\"bb", output[0].at(1).rawString)
+        assertEquals("ccc", output[0].at(2).rawString)
     }
 
     @Test
@@ -130,7 +188,7 @@ class CSVReaderTest {
         val output = mutableListOf<Values>()
 
         CSVReader(StringReader(data)).withSeparator(':').withQuotation('!').withEscape('&').notIgnoringWhitespaces()
-                .execute { output.add(it) }
+            .execute { output.add(it) }
 
         assertEquals(1, output.size)
         assertEquals("a", output[0].at("A").rawString)
@@ -167,7 +225,7 @@ class CSVReaderTest {
 
         val output = mutableListOf<Values>()
         CSVReader(StringReader(completeData)).withLimit(Limit(250, 100))
-                .execute { output.add(it) }
+            .execute { output.add(it) }
 
         assertEquals(50, output.size)
     }

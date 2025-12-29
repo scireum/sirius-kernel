@@ -32,6 +32,7 @@ class EmojiTest {
         assertTrue { Emojis.isEmoji("🔣") }
         assertTrue { Emojis.isEmoji("🎎") }
         assertTrue { Emojis.isEmoji("🥺") }
+        assertTrue { Emojis.isEmoji("🫆") }
 
         assertFalse { Emojis.isEmoji("") }
         assertFalse { Emojis.isEmoji("a") }

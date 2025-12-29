@@ -9,18 +9,21 @@
 package sirius.kernel.xml;
 
 import sirius.kernel.async.Operation;
+import sirius.kernel.commons.Outcall;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
+import sirius.kernel.io.IOExceptionSkipLog;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URL;
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -100,6 +103,7 @@ public class SOAPClient {
 
     private static final String DEFAULT_CONTENT_TYPE_HEADER = "text/xml";
 
+    private final String clientSelector;
     private final URL endpoint;
     private final BasicNamespaceContext namespaceContext = new BasicNamespaceContext();
     private List<Attribute> namespaceDefinitions;
@@ -124,11 +128,29 @@ public class SOAPClient {
      * Note that if the actual endpoint depends on the <tt>action</tt> of the call, use
      * {@link #withCustomEndpoint(String, URL)}.
      *
-     * @param endpoint the default endpoint to talk to
+     * @param clientSelector the selector used to cache the underlying {@link HttpClient} to facilitate connection pooling
+     *                       See {@link Outcall#modifyClient(String)}.
+     * @param endpoint       the default endpoint to talk to
      */
-    public SOAPClient(@Nonnull URL endpoint) {
+    public SOAPClient(@Nullable String clientSelector, @Nonnull URL endpoint) {
+        this.clientSelector = clientSelector;
         this.endpoint = endpoint;
         this.withNamespace(SOAP_NAMESPACE, SOAP_NAMESPACE_URI);
+    }
+
+    /**
+     * Creates a new client which talks to the given endpoint.
+     * <p>
+     * Note that if the actual endpoint depends on the <tt>action</tt> of the call, use
+     * {@link #withCustomEndpoint(String, URL)}.
+     *
+     * @param endpoint the default endpoint to talk to
+     * @deprecated Use {@link SOAPClient#SOAPClient(String, URL)} instead and provide a proper client selector or
+     * choose <tt>null</tt> explicitly.
+     */
+    @Deprecated
+    public SOAPClient(@Nonnull URL endpoint) {
+        this(null, endpoint);
     }
 
     /**
@@ -328,14 +350,14 @@ public class SOAPClient {
                                           Duration.ofSeconds(15))) {
             XMLCall call =
                     XMLCall.to(effectiveEndpoint.toURI(), contentTypeHeader).withFineLogger(LOG, isDebugLogActive);
-            call.getOutcall().withConfiguredTimeout(SOAP_TIMEOUT_CONFIG_KEY);
+            call.getOutcall().withConfiguredTimeout(clientSelector, SOAP_TIMEOUT_CONFIG_KEY);
             call.withNamespaceContext(namespaceContext);
             if (callEnhancer != null) {
                 callEnhancer.accept(call);
             }
 
             if (trustSelfSignedCertificates) {
-                call.getOutcall().trustSelfSignedCertificates();
+                call.getOutcall().trustSelfSignedCertificates(clientSelector);
             }
 
             String soapAction = actionPrefix + action;
@@ -362,6 +384,8 @@ public class SOAPClient {
             return handleResult(watch, action, effectiveEndpoint, result);
         } catch (SOAPFaultException | HandledException exception) {
             throw exception;
+        } catch (IOExceptionSkipLog exception) {
+            return handleIOExceptionSkipLog(watch, action, effectiveEndpoint, exception);
         } catch (Exception exception) {
             return handleGeneralFault(watch, action, effectiveEndpoint, exception);
         }
@@ -444,7 +468,7 @@ public class SOAPClient {
      * Processes a successfully received SOAP result.
      * <p>
      * By default, this simply invokes the <tt>resultTransformer</tt>, but it can be overwritten by subclasses for
-     * additional logging / tracing. This can also modify the result being returned or throw an exception in stead.
+     * additional logging / tracing. This can also modify the result being returned or throw an exception instead.
      *
      * @param watch             the watch which record the total duration of the SOAP call
      * @param action            the action which was invoked
@@ -483,6 +507,20 @@ public class SOAPClient {
                                               .handle());
     }
 
+    private StructuredNode handleIOExceptionSkipLog(Watch watch,
+                                                    String action,
+                                                    URL effectiveEndpoint,
+                                                    IOExceptionSkipLog exception) {
+        throw exceptionFilter.apply(Exceptions.createHandled()
+                                              .to(LOG)
+                                              .error(exception)
+                                              .withSystemErrorMessage(
+                                                      "An error occurred when executing '%s' against '%s': %s (%s)",
+                                                      action,
+                                                      effectiveEndpoint)
+                                              .handle());
+    }
+
     /**
      * Invokes the given action with a plain request object.
      * <p>
@@ -505,7 +543,12 @@ public class SOAPClient {
         return new CallBuilder(action, parameterNodeName);
     }
 
-    private class CallBuilder {
+    /**
+     * Used to build a simple and straight forward SOAP call.
+     *
+     * @see #call(String, String)
+     */
+    public class CallBuilder {
 
         private final String action;
         private final String method;

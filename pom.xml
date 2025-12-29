@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>14.0.1</version>
+        <version>14.2.0</version>
     </parent>
     <artifactId>sirius-kernel</artifactId>
     <name>SIRIUS kernel</name>
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
-            <version>1.4.3</version>
+            <version>1.4.5</version>
         </dependency>
 
         <!-- Useful helper classes by Google -->
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.4.0-jre</version>
+            <version>33.5.0-jre</version>
         </dependency>
 
         <!-- JSR305 annotations like @Nonnull etc. -->
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.9.1</version>
+            <version>4.9.7</version>
         </dependency>
 
         <!-- Required logging bridge to make slf4j log to our logging system -->
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.16</version>
+            <version>2.0.17</version>
         </dependency>
 
         <!-- Used to auto-start Docker environments. Excluding dependencies not required for docker-compose. -->
@@ -70,14 +70,15 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Required, as the version provided by docker-compose-rule-core has security issues -->
+
+        <!-- START:
+             Required, as the version provided by docker-compose-rule-core has security issues -->
         <!-- Changelog: https://github.com/apache/commons-io/blob/master/RELEASE-NOTES.txt -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.18.0</version>
+            <version>2.20.0</version>
         </dependency>
-        <!-- Required, as the version provided by docker-compose-rule-core has security issues -->
         <!-- Changelog: https://github.com/FasterXML/jackson/wiki/Jackson-Releases -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -87,5 +88,13 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
+        <!-- Changelog: https://commons.apache.org/proper/commons-lang/changes.html -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.19.0</version>
+        </dependency>
+        <!-- Required, as the version provided by docker-compose-rule-core has security issues
+             END: -->
     </dependencies>
 </project>
