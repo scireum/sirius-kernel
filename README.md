@@ -1,5 +1,6 @@
+# sirius-kernel
 ![sirius](docs/sirius.jpg)
-[![Build Status](https://drone.scireum.com/api/badges/scireum/sirius-kernel/status.svg?ref=refs/heads/develop)](https://drone.scireum.com/scireum/sirius-kernel)
+[![Build Status](https://drone.scireum.com/api/badges/scireum/sirius-kernel/status.svg?ref=refs/heads/main)](https://drone.scireum.com/scireum/sirius-kernel)
 
 Welcome to the **kernel module** of the SIRIUS OpenSource framework created by [scireum GmbH](https://www.scireum.de).
 To learn more about what SIRIUS is please refer to the following links:
@@ -110,6 +111,6 @@ See [TestSuite](src/test/java/TestSuite.java) as an example.
 For testing, we heavily rely on **Docker** (especially when external systems like databases are required).
 SIRIUS has a build-in helper to start and stop **docker-compose** setups.
 See [DockerHelper](src/main/java/sirius/kernel/DockerHelper.java) for a list of supported configuration
-settings or refer the [test setup](https://github.com/scireum/sirius-db/tree/master/src/test/resources)
+settings or refer the [test setup](https://github.com/scireum/sirius-db/tree/main/src/test/resources)
 of [sirius-db](https://github.com/scireum/sirius-db) and its
-[TestSuite](https://github.com/scireum/sirius-db/blob/master/src/test/java/TestSuite.java) as an elaborate example.
+[TestSuite](https://github.com/scireum/sirius-db/blob/main/src/test/java/TestSuite.java) as an elaborate example.

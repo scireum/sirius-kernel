@@ -1,8 +1,8 @@
-name: Compile on push to master branch
+name: Compile on push to main branch
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   compile:
     runs-on: ubuntu-latest

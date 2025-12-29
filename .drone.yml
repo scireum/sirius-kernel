@@ -23,7 +23,7 @@ steps:
     volumes: *scireum_volumes
     when:
       branch:
-        - master
+        - main
       event:
         - push
 
