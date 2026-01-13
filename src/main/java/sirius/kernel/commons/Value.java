@@ -719,6 +719,26 @@ public class Value {
     }
 
     /**
+     * Returns the wrapped data as a list of strings.
+     * <p>
+     * If the wrapped data is a collection, each element will be converted to a string using
+     * {@link Object#toString()}. If the wrapped data is not a collection, a list containing
+     * a single element representing the string value of the wrapped data will be returned.
+     *
+     * @return a list of strings representing the wrapped data
+     */
+    @Nonnull
+    public List<String> asStringList() {
+        if (data instanceof Collection<?>) {
+            return ((Collection<?>) data).stream().map(Object::toString).toList();
+        }
+        if (isEmptyString()) {
+            return List.of();
+        }
+        return List.of(asString());
+    }
+
+    /**
      * Returns the unprocessed string representation of the wrapped value.
      * <p>
      * In contrast to {@link #getString()} this method <b>will not</b> trim the wrapped string value.
