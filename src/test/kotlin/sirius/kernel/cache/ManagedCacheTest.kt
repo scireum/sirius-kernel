@@ -165,7 +165,8 @@ class ManagedCacheTest {
         cache.put("key1", "value1")
         cache.remove("key1")
 
-        Wait.millis(1001)
+        // wait a bit so that the listener can be invoked before we check the invocation flag
+        Wait.millis(101)
         assert(invoked) { "The removal listener was not invoked!" }
     }
 }
