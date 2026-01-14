@@ -152,4 +152,20 @@ class ManagedCacheTest {
         assertNotEquals(null, cache.get("Key4"))
         assertNotEquals(null, cache.get("Key5"))
     }
+
+    @Test
+    fun `a removal listener is correctly invoked upon eviction`() {
+        var invoked = false
+        val cache: ManagedCache<String, String> = ManagedCache("test-cache", null, null)
+        cache.onRemove { keyValueTuple ->
+            assertEquals("key1", keyValueTuple.getFirst())
+            assertEquals("value1", keyValueTuple.getSecond())
+            invoked = true
+        }
+        cache.put("key1", "value1")
+        cache.remove("key1")
+
+        Wait.millis(1001)
+        assert(invoked) { "The removal listener was not invoked!" }
+    }
 }
