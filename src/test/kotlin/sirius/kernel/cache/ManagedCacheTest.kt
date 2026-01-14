@@ -20,9 +20,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
 /**
- * Tests the [AdvancedDateParser] class.
+ * Tests the [ManagedCache] class.
  */
-
 @ExtendWith(SiriusExtension::class)
 @NightlyTest
 class ManagedCacheTest {
