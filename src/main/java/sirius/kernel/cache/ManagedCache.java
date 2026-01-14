@@ -21,6 +21,7 @@ import sirius.kernel.settings.Extension;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -50,7 +51,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     protected com.github.benmanes.caffeine.cache.Cache<K, CacheEntry<K, V>> data;
     protected Counter hits = new Counter();
     protected Counter misses = new Counter();
-    protected Date lastEvictionRun = null;
+    protected Instant lastEvictionRun = null;
     protected final String name;
     protected long timeToLive;
     protected final ValueVerifier<V> verifier;
@@ -132,8 +133,8 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     }
 
     @Override
-    public Date getLastEvictionRun() {
-        return (Date) lastEvictionRun.clone();
+    public Instant getLastEvictionRun() {
+        return lastEvictionRun;
     }
 
     protected void runEviction() {
@@ -143,7 +144,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         if (timeToLive <= 0) {
             return;
         }
-        lastEvictionRun = new Date();
+        lastEvictionRun = Instant.now();
         // Remove all outdated entries...
         long now = System.currentTimeMillis();
         int numEvicted = 0;
@@ -181,7 +182,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         data.asMap().clear();
         misses.reset();
         hits.reset();
-        lastEvictionRun = new Date();
+        lastEvictionRun = Instant.now();
     }
 
     @Override
