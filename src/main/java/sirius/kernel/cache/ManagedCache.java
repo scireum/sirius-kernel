@@ -362,7 +362,10 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     public void onRemoval(@Nullable Object key, @Nullable Object value, RemovalCause cause) {
         if (removeListener != null) {
             try {
-                removeListener.invoke(Tuple.create((K) key, (V) value));
+                removeListener.invoke(Tuple.create((K) key,
+                                                   Optional.ofNullable((CacheEntry<K, V>) value)
+                                                           .map(CacheEntry::getValue)
+                                                           .orElse(null)));
             } catch (Exception exception) {
                 Exceptions.handle(exception);
             }
