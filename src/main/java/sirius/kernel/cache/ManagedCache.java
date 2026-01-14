@@ -38,7 +38,7 @@ import java.util.function.BiPredicate;
  * @param <K> the type of the keys used by this cache
  * @param <V> the type of the values supported by this cache
  */
-class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object> {
+class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<K, CacheEntry<K, V>> {
 
     protected static final int MAX_HISTORY = 25;
     private static final double ONE_HUNDERT_PERCENT = 100d;
@@ -358,14 +358,11 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void onRemoval(@Nullable Object key, @Nullable Object value, RemovalCause cause) {
+    public void onRemoval(@Nullable K key, @Nullable CacheEntry<K, V> value, RemovalCause cause) {
         if (removeListener != null) {
             try {
-                removeListener.invoke(Tuple.create((K) key,
-                                                   Optional.ofNullable((CacheEntry<K, V>) value)
-                                                           .map(CacheEntry::getValue)
-                                                           .orElse(null)));
+                removeListener.invoke(Tuple.create(key,
+                                                   Optional.ofNullable(value).map(CacheEntry::getValue).orElse(null)));
             } catch (Exception exception) {
                 Exceptions.handle(exception);
             }
