@@ -53,6 +53,14 @@
             <version>2.0.17</version>
         </dependency>
 
+        <!-- More efficient caching library, a drop-in replacement for the (faulty?) Guava cache -->
+        <!-- Changelog: https://github.com/ben-manes/caffeine/releases -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.2.3</version>
+        </dependency>
+
         <!-- Used to auto-start Docker environments. Excluding dependencies not required for docker-compose. -->
         <!-- Changelog: https://github.com/palantir/docker-compose-rule/releases -->
         <dependency>

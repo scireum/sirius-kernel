@@ -8,9 +8,9 @@
 
 package sirius.kernel.cache;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
+import com.github.benmanes.caffeine.cache.RemovalListener;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Strings;
@@ -47,7 +47,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
 
     protected int maxSize;
     protected ValueComputer<K, V> computer;
-    protected com.google.common.cache.Cache<K, CacheEntry<K, V>> data;
+    protected com.github.benmanes.caffeine.cache.Cache<K, CacheEntry<K, V>> data;
     protected Counter hits = new Counter();
     protected Counter misses = new Counter();
     protected Date lastEvictionRun = null;
@@ -95,9 +95,9 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         this.timeToLive = cacheInfo.getMilliseconds(CONFIG_KEY_TTL);
         this.maxSize = cacheInfo.get(CONFIG_KEY_MAX_SIZE).getInteger();
         if (maxSize > 0) {
-            this.data = CacheBuilder.newBuilder().maximumSize(maxSize).removalListener(this).build();
+            this.data = Caffeine.newBuilder().maximumSize(maxSize).removalListener(this).build();
         } else {
-            this.data = CacheBuilder.newBuilder().removalListener(this).build();
+            this.data = Caffeine.newBuilder().removalListener(this).build();
         }
     }
 
@@ -116,7 +116,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         if (data == null) {
             return 0;
         }
-        return (int) data.size();
+        return (int) data.estimatedSize();
     }
 
     @Override
@@ -359,11 +359,10 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
 
     @Override
     @SuppressWarnings("unchecked")
-    public void onRemoval(RemovalNotification<Object, Object> notification) {
+    public void onRemoval(@Nullable Object key, @Nullable Object value, RemovalCause cause) {
         if (removeListener != null) {
             try {
-                CacheEntry<K, V> entry = (CacheEntry<K, V>) notification.getValue();
-                removeListener.invoke(Tuple.create(entry.getKey(), entry.getValue()));
+                removeListener.invoke(Tuple.create((K) key, (V) value));
             } catch (Exception exception) {
                 Exceptions.handle(exception);
             }
