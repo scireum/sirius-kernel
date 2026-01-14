@@ -8,9 +8,9 @@
 
 package sirius.kernel.cache;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
+import com.github.benmanes.caffeine.cache.RemovalListener;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Strings;
@@ -21,9 +21,9 @@ import sirius.kernel.settings.Extension;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +38,7 @@ import java.util.function.BiPredicate;
  * @param <K> the type of the keys used by this cache
  * @param <V> the type of the values supported by this cache
  */
-class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object> {
+class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<K, CacheEntry<K, V>> {
 
     protected static final int MAX_HISTORY = 25;
     private static final double ONE_HUNDERT_PERCENT = 100d;
@@ -47,10 +47,10 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
 
     protected int maxSize;
     protected ValueComputer<K, V> computer;
-    protected com.google.common.cache.Cache<K, CacheEntry<K, V>> data;
+    protected com.github.benmanes.caffeine.cache.Cache<K, CacheEntry<K, V>> data;
     protected Counter hits = new Counter();
     protected Counter misses = new Counter();
-    protected Date lastEvictionRun = null;
+    protected Instant lastEvictionRun = null;
     protected final String name;
     protected long timeToLive;
     protected final ValueVerifier<V> verifier;
@@ -95,9 +95,9 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         this.timeToLive = cacheInfo.getMilliseconds(CONFIG_KEY_TTL);
         this.maxSize = cacheInfo.get(CONFIG_KEY_MAX_SIZE).getInteger();
         if (maxSize > 0) {
-            this.data = CacheBuilder.newBuilder().maximumSize(maxSize).removalListener(this).build();
+            this.data = Caffeine.newBuilder().maximumSize(maxSize).removalListener(this).build();
         } else {
-            this.data = CacheBuilder.newBuilder().removalListener(this).build();
+            this.data = Caffeine.newBuilder().removalListener(this).build();
         }
     }
 
@@ -116,7 +116,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         if (data == null) {
             return 0;
         }
-        return (int) data.size();
+        return (int) data.estimatedSize();
     }
 
     @Override
@@ -132,8 +132,8 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     }
 
     @Override
-    public Date getLastEvictionRun() {
-        return (Date) lastEvictionRun.clone();
+    public Instant getLastEvictionRun() {
+        return lastEvictionRun;
     }
 
     protected void runEviction() {
@@ -143,7 +143,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         if (timeToLive <= 0) {
             return;
         }
-        lastEvictionRun = new Date();
+        lastEvictionRun = Instant.now();
         // Remove all outdated entries...
         long now = System.currentTimeMillis();
         int numEvicted = 0;
@@ -181,7 +181,7 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
         data.asMap().clear();
         misses.reset();
         hits.reset();
-        lastEvictionRun = new Date();
+        lastEvictionRun = Instant.now();
     }
 
     @Override
@@ -358,12 +358,11 @@ class ManagedCache<K, V> implements Cache<K, V>, RemovalListener<Object, Object>
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void onRemoval(RemovalNotification<Object, Object> notification) {
+    public void onRemoval(@Nullable K key, @Nullable CacheEntry<K, V> value, RemovalCause cause) {
         if (removeListener != null) {
             try {
-                CacheEntry<K, V> entry = (CacheEntry<K, V>) notification.getValue();
-                removeListener.invoke(Tuple.create(entry.getKey(), entry.getValue()));
+                removeListener.invoke(Tuple.create(key,
+                                                   Optional.ofNullable(value).map(CacheEntry::getValue).orElse(null)));
             } catch (Exception exception) {
                 Exceptions.handle(exception);
             }

@@ -20,9 +20,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
 /**
- * Tests the [AdvancedDateParser] class.
+ * Tests the [ManagedCache] class.
  */
-
 @ExtendWith(SiriusExtension::class)
 @NightlyTest
 class ManagedCacheTest {
@@ -152,5 +151,22 @@ class ManagedCacheTest {
         assertEquals(null, cache.get("Key3"))
         assertNotEquals(null, cache.get("Key4"))
         assertNotEquals(null, cache.get("Key5"))
+    }
+
+    @Test
+    fun `a removal listener is correctly invoked upon eviction`() {
+        var invoked = false
+        val cache: ManagedCache<String, String> = ManagedCache("test-cache", null, null)
+        cache.onRemove { keyValueTuple ->
+            assertEquals("key1", keyValueTuple.getFirst())
+            assertEquals("value1", keyValueTuple.getSecond())
+            invoked = true
+        }
+        cache.put("key1", "value1")
+        cache.remove("key1")
+
+        // wait a bit so that the listener can be invoked before we check the invocation flag
+        Wait.millis(101)
+        assert(invoked) { "The removal listener was not invoked!" }
     }
 }

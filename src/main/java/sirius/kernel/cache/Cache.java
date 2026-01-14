@@ -14,7 +14,7 @@ import sirius.kernel.commons.Tuple;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Date;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -98,7 +98,7 @@ public interface Cache<K, V> {
      *
      * @return the timestamp of the last eviction
      */
-    Date getLastEvictionRun();
+    Instant getLastEvictionRun();
 
     /**
      * Clears the complete cache
