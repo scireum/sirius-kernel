@@ -732,7 +732,7 @@ public class Value {
         if (data instanceof Collection<?> collection) {
             return collection.stream().map(Object::toString).toList();
         }
-        if (isEmptyString()) {
+        if (isNull()) {
             return List.of();
         }
         return List.of(asString());
