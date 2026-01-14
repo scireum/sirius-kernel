@@ -729,8 +729,8 @@ public class Value {
      */
     @Nonnull
     public List<String> asStringList() {
-        if (data instanceof Collection<?>) {
-            return ((Collection<?>) data).stream().map(Object::toString).toList();
+        if (data instanceof Collection<?> collection) {
+            return collection.stream().map(Object::toString).toList();
         }
         if (isEmptyString()) {
             return List.of();
