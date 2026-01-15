@@ -887,9 +887,9 @@ public class Outcall {
 
     private boolean isUnauthorized(int statusCode) {
         return switch (statusCode) {
-            case 400, 403 -> true;
+            case 400, 401 -> true;
             // 400: Bad Request => authorization might be missing
-            // 403: Forbidden => authentication might be valid, but authorization is missing
+            // 401: Unauthorized => authorization is missing
             default -> false;
         };
     }
