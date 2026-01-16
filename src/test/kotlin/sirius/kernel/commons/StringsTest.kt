@@ -432,5 +432,18 @@ class StringsTest {
                 StringCleanup::htmlToPlainText
             )
         )
+
+        assertEquals(
+            """
+                
+                
+                Hello
+                World
+            """.trimIndent(),
+            Strings.cleanup(
+                "<br />\n<br />\nHello<br />\n<i>World</i> ",
+                StringCleanup::htmlToPlainText
+            )
+        )
     }
 }
