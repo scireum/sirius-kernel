@@ -574,6 +574,7 @@ public class StringCleanup {
                 String normalizedLine = Strings.cleanup(lineText,
                                                         StringCleanup::removeXml,
                                                         StringCleanup::decodeHtmlEntities,
+                                                        StringCleanup::reduceWhitespace,
                                                         StringCleanup::trim);
                 builder.append(normalizedLine);
                 firstLine.toggle();

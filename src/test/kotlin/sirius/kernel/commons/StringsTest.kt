@@ -438,10 +438,10 @@ class StringsTest {
                 
                 
                 Hello
-                World
+                World and the universe
             """.trimIndent(),
             Strings.cleanup(
-                "<br />\n<br />\nHello<br />\n<i>World</i> ",
+                "<br />\n<br />\nHello<br />\n<i>World</i>   and the universe",
                 StringCleanup::htmlToPlainText
             )
         )
