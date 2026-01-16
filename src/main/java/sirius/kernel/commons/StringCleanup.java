@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Provides various methods to clean-up or reduce strings.
@@ -181,7 +182,7 @@ public class StringCleanup {
                                                                       TAG_UL,
                                                                       TAG_LI);
 
-    private static final Pattern PATTERN_STRIP_XML = Pattern.compile("\\s*" + Strings.REGEX_DETECT_XML_TAGS + "\\s*");
+    private static final Pattern PATTERN_STRIP_XML = Pattern.compile(Strings.REGEX_DETECT_XML_TAGS);
     private static final Map<Integer, String> unicodeMapping = new TreeMap<>();
 
     static {
@@ -546,11 +547,11 @@ public class StringCleanup {
      */
     @Nonnull
     public static String htmlToPlainText(@Nonnull String input) {
-        String normalizedText = input;
+        if (PATTERN_STRIP_XML.matcher(input).find()) {
+            // Start joining all lines. A browser does not recognize line breaks in the HTML source as these
+            // are just whitespaces. Handling of actual HTML line breaks happens in the following lines.
+            String normalizedText = input.lines().collect(Collectors.joining());
 
-        if (PATTERN_STRIP_XML.matcher(normalizedText).find()) {
-            // Reduce all contained whitespaces, tabs, and line breaks
-            normalizedText = Strings.cleanup(normalizedText, StringCleanup::reduceWhitespace);
             // Replace br tags with line breaks
             normalizedText = PATTERN_BR_TAG.matcher(normalizedText).replaceAll("\n");
             // Replace li tags with line breaks
@@ -563,21 +564,24 @@ public class StringCleanup {
             // Iterates the lines to clean them up properly, preserving the line breaks converted above,
             // as the RegEx used by removeXml would detect and clean them.
             StringBuilder builder = new StringBuilder();
+            Monoflop firstLine = Monoflop.create();
             normalizedText.lines().forEach(lineText -> {
-                if (!builder.isEmpty()) {
+                if (firstLine.isToggled()) {
                     builder.append("\n");
                 }
 
-                // Remove any other tags
-                String normalizedLine = Strings.cleanup(lineText, StringCleanup::removeXml);
-                // Decode entities
-                normalizedLine = Strings.cleanup(normalizedLine, StringCleanup::decodeHtmlEntities);
+                // Remove any other tags, decode entities and trim
+                String normalizedLine = Strings.cleanup(lineText,
+                                                        StringCleanup::removeXml,
+                                                        StringCleanup::decodeHtmlEntities,
+                                                        StringCleanup::trim);
                 builder.append(normalizedLine);
+                firstLine.toggle();
             });
             return builder.toString();
         }
 
-        return normalizedText;
+        return input;
     }
 
     /**
