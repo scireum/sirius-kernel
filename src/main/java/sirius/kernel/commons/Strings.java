@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
@@ -875,11 +875,12 @@ public class Strings {
      * @param lineConsumer the consumer to be applied for each line. The first parameter is the line number (starting at 1), the second is the corresponding line text.
      */
     public static void iterateLines(String text, BiConsumer<Integer, String> lineConsumer) {
-        try (Scanner scanner = new Scanner(text)) {
-            int lineNumber = 0;
-            while (scanner.hasNextLine()) {
-                lineConsumer.accept(++lineNumber, scanner.nextLine());
-            }
+        if (isEmpty(text)) {
+            return;
         }
+        AtomicInteger lineNumber = new AtomicInteger(0);
+        text.lines().forEach(line -> {
+            lineConsumer.accept(lineNumber.incrementAndGet(), line);
+        });
     }
 }
