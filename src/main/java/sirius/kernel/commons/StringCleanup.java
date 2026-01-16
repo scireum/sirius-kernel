@@ -559,10 +559,22 @@ public class StringCleanup {
             // Replace p tags with line breaks
             normalizedText = PATTERN_PP_TAG.matcher(normalizedText).replaceAll("\n");
             normalizedText = PATTERN_P_TAG.matcher(normalizedText).replaceAll("\n");
-            // Remove any other tags
-            normalizedText = Strings.cleanup(normalizedText, StringCleanup::removeXml);
-            // Decode entities
-            normalizedText = Strings.cleanup(normalizedText, StringCleanup::decodeHtmlEntities);
+
+            // Iterates the lines to clean them up properly, preserving the line breaks converted above,
+            // as the RegEx used by removeXml would detect and clean them.
+            StringBuilder builder = new StringBuilder();
+            normalizedText.lines().forEach(lineText -> {
+                if (!builder.isEmpty()) {
+                    builder.append("\n");
+                }
+
+                // Remove any other tags
+                String normalizedLine = Strings.cleanup(lineText, StringCleanup::removeXml);
+                // Decode entities
+                normalizedLine = Strings.cleanup(normalizedLine, StringCleanup::decodeHtmlEntities);
+                builder.append(normalizedLine);
+            });
+            return builder.toString();
         }
 
         return normalizedText;

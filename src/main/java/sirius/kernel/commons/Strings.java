@@ -304,10 +304,10 @@ public class Strings {
     }
 
     /**
-     * Returns an url encoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
+     * Returns a url encoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
      *
      * @param value the value to be encoded.
-     * @return an url encoded representation of value, using UTF-8 as character encoding.
+     * @return a url encoded representation of value, using UTF-8 as character encoding.
      * @deprecated use {@link Urls#encode(String)} instead.
      */
     @Nullable
@@ -317,10 +317,10 @@ public class Strings {
     }
 
     /**
-     * Returns an url decoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
+     * Returns a url decoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
      *
      * @param value the value to be decoded.
-     * @return an url decoded representation of value, using UTF-8 as character encoding.
+     * @return a url decoded representation of value, using UTF-8 as character encoding.
      * @deprecated use {@link Urls#decode(String)} instead.
      */
     @Nullable
@@ -497,7 +497,7 @@ public class Strings {
     /**
      * Returns a string representation of the given map.
      * <p>
-     * Keys and values are separated by a colon (:) and entries by a new line.
+     * Keys and values are separated by a colon {@code :} and entries by a new line.
      *
      * @param source to map to be converted to a string
      * @return a string representation of the given map, or "" if the map was null
@@ -631,7 +631,7 @@ public class Strings {
      * <p>
      * Note that empty/<tt>null</tt> inputs will always result in an empty string.
      *
-     * @param inputString the string to clean-up
+     * @param inputString the string to clean up
      * @param cleanups    the operations to perform, most probably some from {@link StringCleanup}
      * @return the cleaned up string
      * @see StringCleanup
@@ -656,7 +656,7 @@ public class Strings {
      * <p>
      * Note that empty/<tt>null</tt> inputs will always result in an empty string.
      *
-     * @param inputString the string to clean-up
+     * @param inputString the string to clean up
      * @param cleanups    the operations to perform, most probably some from {@link StringCleanup}
      * @return the cleaned up string
      * @see StringCleanup
@@ -751,7 +751,9 @@ public class Strings {
      * the replacement function.
      * <p>
      * To replace all occurrences of {@code #{X}} by {@code NLS.get("X")} one could use:
-     * {@code Strings.replaceAll(Pattern.compile("#\\{([^\\}]+)\\}"), someText, NLS::get)}
+     * <code>
+     * Strings.replaceAll(Pattern.compile("#\\{([^\\}]+)\\}"}, someText, NLS::get)
+     * </code>
      *
      * @param regEx       the regular expression to replace in the given input
      * @param input       the input to scan

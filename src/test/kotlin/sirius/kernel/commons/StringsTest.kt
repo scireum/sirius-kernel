@@ -425,5 +425,12 @@ class StringsTest {
             )
         )
 
+        assertEquals(
+            "bold\nmove",
+            Strings.cleanup(
+                "<strong>bold</strong><br />move",
+                StringCleanup::htmlToPlainText
+            )
+        )
     }
 }
