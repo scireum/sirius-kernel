@@ -572,7 +572,7 @@ public class StringCleanup {
 
                 // Remove any other tags, decode entities and trim
                 String normalizedLine = Strings.cleanup(lineText,
-                                                        StringCleanup::removeXml,
+                                                        StringCleanup::replaceXml,
                                                         StringCleanup::decodeHtmlEntities,
                                                         StringCleanup::reduceWhitespace,
                                                         StringCleanup::trim);
