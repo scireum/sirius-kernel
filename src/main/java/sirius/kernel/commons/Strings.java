@@ -18,8 +18,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -864,23 +862,5 @@ public class Strings {
         }
 
         return sb.toString();
-    }
-
-    /**
-     * Iterates over all lines of the given text and applies the given consumer for each line.
-     * <p>
-     * This method works independent on the end-of-line characters used in the given text.
-     *
-     * @param text         the text to iterate over
-     * @param lineConsumer the consumer to be applied for each line. The first parameter is the line number (starting at 1), the second is the corresponding line text.
-     */
-    public static void iterateLines(String text, BiConsumer<Integer, String> lineConsumer) {
-        if (isEmpty(text)) {
-            return;
-        }
-        AtomicInteger lineNumber = new AtomicInteger(0);
-        text.lines().forEach(line -> {
-            lineConsumer.accept(lineNumber.incrementAndGet(), line);
-        });
     }
 }

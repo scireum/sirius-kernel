@@ -563,8 +563,8 @@ public class StringCleanup {
             // Iterates the lines to clean them up properly, preserving the line breaks converted above,
             // as the RegEx used by removeXml would detect and clean them.
             StringBuilder builder = new StringBuilder();
-            Strings.iterateLines(normalizedText, (lineNumber, lineText) -> {
-                if (lineNumber > 1) {
+            normalizedText.lines().forEach(lineText -> {
+                if (!builder.isEmpty()) {
                     builder.append("\n");
                 }
 
