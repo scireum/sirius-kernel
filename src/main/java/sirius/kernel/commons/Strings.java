@@ -872,7 +872,7 @@ public class Strings {
      * This method works independent on the end-of-line characters used in the given text.
      *
      * @param text         the text to iterate over
-     * @param lineConsumer the consumer to be applied for each line. The first parameter is the line number (starting at 1),
+     * @param lineConsumer the consumer to be applied for each line. The first parameter is the line number (starting at 1), the second is the corresponding line text.
      */
     public static void iterateLines(String text, BiConsumer<Integer, String> lineConsumer) {
         try (Scanner scanner = new Scanner(text)) {
