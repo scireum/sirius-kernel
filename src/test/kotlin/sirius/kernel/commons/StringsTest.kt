@@ -445,5 +445,21 @@ class StringsTest {
                 StringCleanup::htmlToPlainText
             )
         )
+
+        assertEquals(
+            "Span 1 Span 2",
+            Strings.cleanup(
+                "<span>Span 1</span>\n<span>Span 2</span>",
+                StringCleanup::htmlToPlainText
+            )
+        )
+
+        assertEquals(
+            "\nLine 1 Line 2 Line 3",
+            Strings.cleanup(
+                "<p>Line 1\nLine 2\nLine 3</p>",
+                StringCleanup::htmlToPlainText
+            )
+        )
     }
 }
