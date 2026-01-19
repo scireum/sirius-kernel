@@ -550,7 +550,7 @@ public class StringCleanup {
         if (PATTERN_STRIP_XML.matcher(input).find()) {
             // Start joining all lines. A browser does not recognize line breaks in the HTML source as these
             // are just whitespaces. Handling of actual HTML line breaks happens in the following lines.
-            String normalizedText = input.lines().collect(Collectors.joining());
+            String normalizedText = input.lines().collect(Collectors.joining(" "));
 
             // Replace br tags with line breaks
             normalizedText = PATTERN_BR_TAG.matcher(normalizedText).replaceAll("\n");
