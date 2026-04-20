@@ -108,6 +108,15 @@ public class ParallelTaskExecutor {
         executor.close();
     }
 
+    /**
+     * Retrieves the current count of tasks being managed by the executor.
+     *
+     * @return the number of tasks currently tracked by the executor
+     */
+    public int getTaskCount() {
+        return taskCount.get();
+    }
+
     private void startProcessing() {
         Thread.startVirtualThread(() -> {
             while (isActive()) {
