@@ -74,16 +74,20 @@ public class ParallelTaskExecutor {
      * @return {@code true} if the task was successfully submitted, {@code false} otherwise
      */
     public boolean submitTask(Runnable task) {
-        return taskQueue.offer(() -> {
+        taskCount.incrementAndGet();
+        boolean isSubmitted = taskQueue.offer(() -> {
             try {
                 CallContext.setCurrent(currentContext);
-                taskCount.incrementAndGet();
                 task.run();
             } finally {
                 taskCount.decrementAndGet();
                 semaphore.release();
             }
         });
+        if (!isSubmitted) {
+            taskCount.decrementAndGet();
+        }
+        return isSubmitted;
     }
 
     /**
@@ -103,9 +107,18 @@ public class ParallelTaskExecutor {
             if (taskQueue.isEmpty() && taskCount.get() == 0) {
                 break;
             }
-            Wait.millis(500);
+            Wait.millis(200);
         }
         executor.close();
+    }
+
+    /**
+     * Retrieves the current count of tasks being managed by the executor.
+     *
+     * @return the number of tasks currently tracked by the executor
+     */
+    public int getTaskCount() {
+        return taskCount.get();
     }
 
     private void startProcessing() {
