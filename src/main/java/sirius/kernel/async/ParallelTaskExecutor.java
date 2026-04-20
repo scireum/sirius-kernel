@@ -75,7 +75,7 @@ public class ParallelTaskExecutor {
      */
     public boolean submitTask(Runnable task) {
         taskCount.incrementAndGet();
-        return taskQueue.offer(() -> {
+        boolean isSubmitted = taskQueue.offer(() -> {
             try {
                 CallContext.setCurrent(currentContext);
                 task.run();
@@ -84,6 +84,10 @@ public class ParallelTaskExecutor {
                 semaphore.release();
             }
         });
+        if (!isSubmitted) {
+            taskCount.decrementAndGet();
+        }
+        return isSubmitted;
     }
 
     /**
