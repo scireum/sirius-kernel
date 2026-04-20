@@ -103,7 +103,7 @@ public class ParallelTaskExecutor {
             if (taskQueue.isEmpty() && taskCount.get() == 0) {
                 break;
             }
-            Wait.millis(500);
+            Wait.millis(200);
         }
         executor.close();
     }
