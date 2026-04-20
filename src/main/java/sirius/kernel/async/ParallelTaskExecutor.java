@@ -74,10 +74,10 @@ public class ParallelTaskExecutor {
      * @return {@code true} if the task was successfully submitted, {@code false} otherwise
      */
     public boolean submitTask(Runnable task) {
+        taskCount.incrementAndGet();
         return taskQueue.offer(() -> {
             try {
                 CallContext.setCurrent(currentContext);
-                taskCount.incrementAndGet();
                 task.run();
             } finally {
                 taskCount.decrementAndGet();
