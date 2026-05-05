@@ -6,16 +6,20 @@ version: 2
 updates:
 - package-ecosystem: maven
   directory: "/"
+  registries:
+    - scireum-mvn
   schedule:
     interval: daily
   ignore:
     # ignore Maven APIs/SPIs
     - dependency-name: org.apache.maven:*
-    # ignore sirius libs as we want to use current dev versions
-    - dependency-name: com.scireum:*
   labels:
     - "⬆️ Dependencies"
     - "🛠️ Maintenance"
+  groups:
+    sirius:
+      patterns:
+        - "com.scireum:sirius-*"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
