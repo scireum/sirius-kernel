@@ -721,12 +721,12 @@ public class NLS {
     private static DateTimeFormatter safeGetDateTimeFormat(String language,
                                                            Map<String, DateTimeFormatter> formatters,
                                                            String nlsProperty) {
-        if (Strings.isEmpty(language)) {
-            return formatters.computeIfAbsent(getCurrentLanguage(),
-                                              effectiveLanguage -> DateTimeFormatter.ofPattern(get(nlsProperty,
+        String givenOrCurrentLanguage = Strings.isEmpty(language) ? getCurrentLanguage() : language;
+        return formatters.computeIfAbsent(givenOrCurrentLanguage,
+                                          effectiveLanguage -> DateTimeFormatter.ofPattern(get(nlsProperty,
+                                                                                               effectiveLanguage),
+                                                                                           Locale.forLanguageTag(
                                                                                                    effectiveLanguage)));
-        }
-        return formatters.computeIfAbsent(language, ignored -> DateTimeFormatter.ofPattern(get(nlsProperty, language)));
     }
 
     /**
