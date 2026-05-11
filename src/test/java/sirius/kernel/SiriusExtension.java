@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import sirius.kernel.async.CallContext;
 
 /**
- * JUnit 5 extension to support Sirius framework lifecycle. Annotated test classes will be provisioned with
+ * JUnit 5 extension to support the Sirius framework lifecycle. Annotated test classes will be provisioned with
  * a running framework and a cleared {@link CallContext} before each test.
  * <p>
  * Note: This currently does not support {@link sirius.kernel.Scenario scenarios}.
