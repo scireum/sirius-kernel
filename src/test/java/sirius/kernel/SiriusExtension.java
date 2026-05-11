@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import sirius.kernel.async.CallContext;
 
 /**
- * JUnit 5 extension to support Sirius framework lifecycle. Annotated test classes will be provisioned with
+ * JUnit 5 extension to support the Sirius framework lifecycle. Annotated test classes will be provisioned with
  * a running framework and a cleared {@link CallContext} before each test.
  * <p>
  * Note: This currently does not support {@link sirius.kernel.Scenario scenarios}.
@@ -23,6 +23,13 @@ public class SiriusExtension implements BeforeAllCallback, BeforeEachCallback {
 
     @Override
     public void beforeAll(ExtensionContext context) {
+        // Allow setting restricted HTTP headers, like `Origin:` … Only very few tests actually need this, but it is
+        // required to set the property before any HttpURLConnection is created, so we do it here globally unless
+        // the JVM was already configured explicitly.
+        if (System.getProperty("sun.net.http.allowRestrictedHeaders") == null) {
+            System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
+        }
+
         TestHelper.setUp(SiriusExtension.class);
     }
 
