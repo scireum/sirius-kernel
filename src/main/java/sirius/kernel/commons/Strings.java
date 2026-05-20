@@ -805,7 +805,7 @@ public class Strings {
             sb.append(input);
         }
 
-        sb.append(padding.repeat(numberOfPaddings));
+        sb.repeat(padding, numberOfPaddings);
 
         if (left && input != null) {
             sb.append(input);

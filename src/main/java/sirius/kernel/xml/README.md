@@ -6,7 +6,7 @@ Provides ways of reading and writing XML data.
 
 The [XMLReader](XMLReader.java) provides a convenient way for processing large XML files. A set of handlers can
 be registered on node names. The reader will then parse given data using a memory efficient SAX parser. Once a
-node with a regisered handler is found, the sub DOM is parsed and sent to the handler as [StructuredNode](StructuredNode.java).
+node with a registered handler is found, the sub DOM is parsed and sent to the handler as [StructuredNode](StructuredNode.java).
 
 Using this approach, very large XML files can be processed with almost constant memory overhead.
 

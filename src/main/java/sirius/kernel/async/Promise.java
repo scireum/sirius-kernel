@@ -224,7 +224,7 @@ public class Promise<V> {
     /**
      * Returns the failure which was the reason for this promise to have failed.
      *
-     * @return the error which made this promise fail, or <tt>null</tt>  if the promnise is still running or not
+     * @return the error which made this promise fail, or <tt>null</tt>  if the promise is still running or not
      * completed yet.
      */
     public Throwable getFailure() {

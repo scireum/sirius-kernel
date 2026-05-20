@@ -491,7 +491,7 @@ public class Tokenizer extends Lookahead<Token> {
     /**
      * Determines if the given Char is a symbol character.
      * <p>
-     * By default these are all non-control characters, which don't match any other class (letter, digit, whitepsace)
+     * By default, these are all non-control characters, which don't match any other class (letter, digit, whitespace)
      *
      * @param ch the character to check
      * @return <tt>true</tt> if the given character is a valid symbol character, <tt>false</tt> otherwise
@@ -793,7 +793,7 @@ public class Tokenizer extends Lookahead<Token> {
     /**
      * Specifies if pipes are treat as brackets.
      *
-     * @param treatSinglePipeAsBracket <tt>true</tt> to treat pipes as bracked, <tt>false</tt> otherwise
+     * @param treatSinglePipeAsBracket <tt>true</tt> to treat pipes as bracket, <tt>false</tt> otherwise
      */
     public void setTreatSinglePipeAsBracket(boolean treatSinglePipeAsBracket) {
         this.treatSinglePipeAsBracket = treatSinglePipeAsBracket;

@@ -317,7 +317,7 @@ public class Timers implements Startable, Stoppable {
      * Executes all daily timers (implementing <tt>EveryDay</tt>) if applicable, or if outOfASchedule is <tt>true</tt>.
      *
      * @param currentHour determines the current hour. Most probably this will be wall-clock time. However, for
-     *                    out-of-schedule eecution, this can be set to any value.
+     *                    out-of-schedule execution, this can be set to any value.
      * @param forced      if <b>true</b>, the task will be executed even if it is not scheduled according to
      *                    {@link Orchestration#shouldRunDailyTask(String)}
      */

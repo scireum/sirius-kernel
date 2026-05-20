@@ -434,7 +434,7 @@ public class Setup {
         try {
             return ConfigFactory.parseMap(System.getenv(), "Environment").withFallback(config);
         } catch (Exception exception) {
-            Sirius.LOG.WARN("An error occured while reading the environment: %s (%s)",
+            Sirius.LOG.WARN("An error occurred while reading the environment: %s (%s)",
                             exception.getMessage(),
                             exception.getClass().getName());
             return config;

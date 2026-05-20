@@ -410,7 +410,7 @@ public class CallContext {
 
     private void invokeLazyLanguageInstaller() {
         // We obtain a local copy and set the field to null, to avoid a circular
-        // execution in case the language installer itself accesses getLang...
+        // execution in case the language installer itself accesses getLanguage...
         Consumer<CallContext> localCopy = this.lazyLanguageInstaller;
         if (localCopy != null) {
             this.lazyLanguageInstaller = null;

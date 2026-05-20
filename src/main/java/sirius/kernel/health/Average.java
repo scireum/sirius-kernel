@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Represents an average value over a given set of values.
  * <p>
- * Using the <tt>maxSamples</tt> can be used to implement something like a sliding avarage as the value is
+ * Using the <tt>maxSamples</tt> can be used to implement something like a sliding average as the value is
  * reset (computed) once the counter hits <tt>maxSamples</tt>.
  */
 public class Average {
@@ -28,7 +28,7 @@ public class Average {
 
     /**
      * Creates a new average which averages up to {@link #DEFAULT_MAX_SAMPLES} and then computes the effective
-     * avarage and resets the counter to 1 using that value.
+     * average and resets the counter to 1 using that value.
      */
     public Average() {
         this(DEFAULT_MAX_SAMPLES);
@@ -36,7 +36,7 @@ public class Average {
 
     /**
      * Creates a new average which averages up to <tt>maxSamples</tt> and then computes the effective
-     * avarage and resets the counter to 1 using that value.
+     * average and resets the counter to 1 using that value.
      *
      * @param maxSamples the max number of samples to use in order to build the average
      */

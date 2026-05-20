@@ -9,10 +9,10 @@
 package sirius.kernel.cache;
 
 /**
- * Permits to implement a cache coherence protocol.
+ * Permits implementing a cache coherence protocol.
  * <p>
  * {@link CoherentCache Coherent caches} created using {@link CacheManager#createCoherentCache(String)} will notify
- * an instace which is {@link sirius.kernel.di.std.Register registered} for this interface once a key needs to be
+ * an instance which is {@link sirius.kernel.di.std.Register registered} for this interface once a key needs to be
  * removed or if the cache is entirely cleared.
  * <p>
  * The coherence implementation must broadcast this information to all nodes of a cluster and call

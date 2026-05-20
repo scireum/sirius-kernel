@@ -6,7 +6,7 @@
 SIRIUS not only supports *dependency injection* but it takes it to the next level. 
 It embraces a programming style called **Discovery Based Programming** which permits 
 to provide services that discover their users at runtime. Please refer to the
- [Dependency Injection Microkernel](../src/main/java/sirius/kernel/di) for further informaton.
+ [Dependency Injection Microkernel](../src/main/java/sirius/kernel/di) for further information.
 
 ## KISS
 Keep it simple and stupid: No classloader ticks. No magic implicit variables coming from god knows where. 
@@ -17,7 +17,7 @@ By providing loose coupling via IoC-Patterns (inversion of control) like discove
 SIRIUS permits to write modular, maintainable and testable software with clear responsibilities. 
     
 ## Use your IDE
-SIRIUS can be started in any IDE/Debugger just like any normal Java appplication 
+SIRIUS can be started in any IDE/Debugger just like any normal Java application 
 ([Setup](../src/main/java/sirius/kernel/Setup.java) is actually a valid main class). As no classloader or bytecode 
 magic is used, class reloading in the VM works a treat. To further save precious developer time, the framework starts 
 ultra fast. Having a server up and running in less than two seconds drives productivity above level 9000!

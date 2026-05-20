@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * Helperclass for handling files in Java 8.
+ * Provides helpers for handling files in Java 8.
  */
 public class Files {
 
@@ -143,7 +143,7 @@ public class Files {
      *
      * @param path the path to a file to parse
      * @return the filename without extension or <tt>null</tt> if the given path is empty, <tt>null</tt> or does not
-     * have a filename (ends with a sepratator).
+     * have a filename (ends with a separator).
      */
     @Nullable
     @SuppressWarnings("java:S2259")
