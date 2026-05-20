@@ -322,22 +322,6 @@ public class CallContext {
      * @param contextType the type of the sub-context to be returned.
      * @param <C>         the type of the sub-context
      * @return an instance of the given type. If no instance was available, a new one is created
-     * @deprecated use {@link #getOrCreateSubContext(Class)} instead.
-     */
-    @Nonnull
-    @Deprecated(since = "2023-01-04", forRemoval = true)
-    public <C extends SubContext> C get(@Nonnull Class<C> contextType) {
-        return getOrCreateSubContext(contextType);
-    }
-
-    /**
-     * Returns or creates the sub context of the given type.
-     * <p>
-     * The class of the sub context must provide a no-args constructor, as it will be instantiated if non existed.
-     *
-     * @param contextType the type of the sub-context to be returned.
-     * @param <C>         the type of the sub-context
-     * @return an instance of the given type. If no instance was available, a new one is created
      */
     @Nonnull
     @SuppressWarnings("unchecked")
@@ -357,22 +341,6 @@ public class CallContext {
                                                     contextType.getName())
                             .handle();
         }
-    }
-
-    /**
-     * Installs the given sub context.
-     * <p>
-     * This should only be used if required (e.g. in test environments to replace/mock objects). Otherwise, a
-     * call to {@link #get(Class)} will initialize the requested sub context.
-     *
-     * @param contextType the type of the context to set
-     * @param instance    the instance to set
-     * @param <C>         the type of the sub-context
-     * @deprecated use {@link #setSubContext(Class, SubContext)} instead.
-     */
-    @Deprecated(since = "2023-01-04", forRemoval = true)
-    public <C extends SubContext> void set(@Nonnull Class<C> contextType, @Nonnull C instance) {
-        setSubContext(contextType, instance);
     }
 
     /**
@@ -440,17 +408,6 @@ public class CallContext {
         return language;
     }
 
-    /**
-     * Returns the current language determined for the current thread.
-     *
-     * @return a two-letter language code used for the current thread.
-     * @deprecated call {@link #getLanguage()} instead.
-     */
-    @Deprecated
-    public final String getLang() {
-        return getLanguage();
-    }
-
     private void invokeLazyLanguageInstaller() {
         // We obtain a local copy and set the field to null, to avoid a circular
         // execution in case the language installer itself accesses getLang...
@@ -479,18 +436,6 @@ public class CallContext {
     }
 
     /**
-     * Returns the current fallback language determined for the current thread.
-     *
-     * @return a two-letter language code used for the current thread.
-     * @deprecated call {@link #getFallbackLang()} instead.
-     */
-    @Nullable
-    @Deprecated
-    public final String getFallbackLang() {
-        return getFallbackLanguage();
-    }
-
-    /**
      * Sets the current language for the current thread.
      * <p>
      * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
@@ -506,20 +451,6 @@ public class CallContext {
     }
 
     /**
-     * Sets the current language for the current thread.
-     * <p>
-     * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
-     * </p>
-     *
-     * @param language the two-letter language code for this thread.
-     * @deprecated call {@link #setLanguage(String)} instead.
-     */
-    @Deprecated
-    public final void setLang(@Nullable String language) {
-        setLanguage(language);
-    }
-
-    /**
      * Sets the current language for the current thread, only if no other language has been set already.
      * <p>
      * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
@@ -531,20 +462,6 @@ public class CallContext {
         if (Strings.isEmpty(this.language)) {
             setLanguage(language);
         }
-    }
-
-    /**
-     * Sets the current language for the current thread, only if no other language has been set already.
-     * <p>
-     * If <tt>null</tt> or an empty string is passed in, the language will not be changed.
-     * </p>
-     *
-     * @param language the two-letter language code for this thread.
-     * @deprecated call {@link #setLanguageIfEmpty(String)} instead.
-     */
-    @Deprecated
-    public final void setLangIfEmpty(@Nullable String language) {
-        setLanguageIfEmpty(language);
     }
 
     /**
@@ -567,26 +484,6 @@ public class CallContext {
     }
 
     /**
-     * Adds a language supplier.
-     * <p>
-     * In certain circumstances the current language might be influenced by something which is hard to compute.
-     * For example a web request in <b>sirius-web</b> might either provide a user with a language attached via
-     * its session, or it might contain a language header which itself isn't quite easy to parse.
-     * <p>
-     * Worst of all, in many cases, the current language might not be used at all.
-     * <p>
-     * Therefore, we permit lazy computations which are only evaluated as required.
-     *
-     * @param languageInstaller a callback which installs the appropriate language into the given call context
-     *                          (is passed again to support {@link #fork() forking}).
-     * @deprecated call {@link #deferredSetLanguage(Consumer)} instead.
-     */
-    @Deprecated
-    public final void deferredSetLang(@Nonnull Consumer<CallContext> languageInstaller) {
-        deferredSetLanguage(languageInstaller);
-    }
-
-    /**
      * Sets the language back to <tt>null</tt>.
      * <p>
      * This method should only be used to re-initialize the language. Use {@link #setLanguage(String)} to specify a new language.
@@ -596,35 +493,12 @@ public class CallContext {
     }
 
     /**
-     * Sets the lang back to <tt>null</tt>.
-     * <p>
-     * This method should only be used to re-initialize the language. Use {@link #setLanguage(String)} to specify a new language.
-     *
-     * @deprecated call {@link #resetLanguage()} instead.
-     */
-    @Deprecated
-    public final void resetLang() {
-        resetLanguage();
-    }
-
-    /**
      * Sets the current fallback language for the current thread.
      *
      * @param fallbackLanguage the two-letter language code for this thread.
      */
     public void setFallbackLanguage(@Nullable String fallbackLanguage) {
         this.fallbackLanguage = fallbackLanguage;
-    }
-
-    /**
-     * Sets the current fallback language for the current thread.
-     *
-     * @param fallbackLanguage the two-letter language code for this thread.
-     * @deprecated call {@link #setFallbackLanguage(String)} instead.
-     */
-    @Deprecated
-    public final void setFallbackLang(@Nullable String fallbackLanguage) {
-        setFallbackLanguage(fallbackLanguage);
     }
 
     @Override

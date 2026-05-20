@@ -119,19 +119,6 @@ public class NLS {
     }
 
     /**
-     * Returns the currently active language as two-letter code.
-     *
-     * @return a two-letter code of the currently active language, as defined in
-     * {@link sirius.kernel.async.CallContext#getLanguage()}
-     * @deprecated call {@link #getCurrentLanguage()} instead.
-     */
-    @Nonnull
-    @Deprecated
-    public static String getCurrentLang() {
-        return getCurrentLanguage();
-    }
-
-    /**
      * Returns the two-letter code of the default language. Provided via the config in {@code nls.defaultLanguage}
      * <p>
      * If this is set to "auto" the default language will be the system language.
@@ -1370,34 +1357,6 @@ public class NLS {
      */
     public static String convertDuration(Duration duration) {
         return convertDuration(duration, true, true);
-    }
-
-    /**
-     * Converts a given time range in milliseconds to a human-readable format using the current language
-     *
-     * @param duration       the duration in milliseconds
-     * @param includeSeconds determines whether to include seconds or to ignore everything below minutes
-     * @param includeMillis  determines whether to include milliseconds or to ignore everything below seconds
-     * @return a string representation of the given duration in days, hours, minutes and,
-     * if enabled, seconds and milliseconds
-     */
-    @Deprecated(forRemoval = true)
-    public static String convertDuration(long duration, boolean includeSeconds, boolean includeMillis) {
-        return convertDuration(Duration.ofMillis(duration), includeSeconds, includeMillis);
-    }
-
-    /**
-     * Converts the given duration to a human-readable format including seconds and milliseconds using the current language
-     * <p>
-     * This is a boilerplate method for {@link #convertDuration(long, boolean, boolean)} with
-     * <tt>includeSeconds</tt> and <tt>includeMillis</tt> set to <tt>true</tt>.
-     *
-     * @param duration the duration in milliseconds
-     * @return a string representation of the given duration in days, hours, minutes, seconds and milliseconds
-     */
-    @Deprecated(forRemoval = true)
-    public static String convertDuration(long duration) {
-        return convertDuration(Duration.ofMillis(duration));
     }
 
     private static void appendDurationValue(StringBuilder result, String key, long value) {
