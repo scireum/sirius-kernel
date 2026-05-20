@@ -39,7 +39,8 @@ steps:
   - name: cron_report_failures
     image: plugins/slack
     settings:
-      webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
+      webhook:
+        from_secret: scireum_dev_mio
       channel: scireum-dev
     when:
       status:
@@ -69,7 +70,8 @@ steps:
   - name: notify-tag-build
     image: plugins/slack
     settings:
-      webhook: https://memoio.com/endpoint/hook/4b17b22e54124c53ab2e550cf3311461cba7c66a1e3756fa8d17e7dc17a48dbb
+      webhook:
+        from_secret: scireum_dev_mio
       channel: scireum-dev
       template: "A new version is available: **{{Repo.Name}}**: [{{Build.Tag}}](https://github.com/scireum/sirius-kernel/releases/tag/{{Build.Tag}})"
     when:
