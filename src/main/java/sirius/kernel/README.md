@@ -10,11 +10,11 @@ if necessary (e.g. system tenants).
 * [Start](Startable.java)/[Stop](Stoppable.java) Facility\
 All startable tasks will be started on system startup. All stoppable tasks will be invoked
 on system shutdown. Once completed, all killable tasks will be invoked to *really* stop them
-if they didn't respont to their stop call.
+if they didn't respond to their stop call.
 
 * [Docker Facility](DockerHelper.java)\
 Starts/Stops docker containers. This is mainly used for test- and development systems and
-cann start required docker containers (databases, storage systems ..).\
+can start required docker containers (databases, storage systems ..).\
 Use **docker.file** to specify a *docker-compose* file which will be started. Specify
 a **docker.project** so that all containers keep their name (for dev environments).
 Otherwise each start will launch a new set of containers which is suitable for test runs.\

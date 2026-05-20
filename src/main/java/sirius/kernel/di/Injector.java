@@ -96,7 +96,7 @@ public class Injector {
     private static void loadClass(Matcher matcher) {
         String relativePath = matcher.group();
         String className = relativePath.substring(0, relativePath.length() - 6).replace("/", ".");
-        if (!shoudLoadClass(className)) {
+        if (!shouldLoadClass(className)) {
             return;
         }
         try {
@@ -156,7 +156,7 @@ public class Injector {
         }
     }
 
-    private static boolean shoudLoadClass(String className) {
+    private static boolean shouldLoadClass(String className) {
         if (packageFilter.isEmpty()) {
             return true;
         }

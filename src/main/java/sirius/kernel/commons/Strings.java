@@ -280,56 +280,6 @@ public class Strings {
     }
 
     /**
-     * Returns if the given string is an HTTP(S) URL.
-     *
-     * @param value the string to check
-     * @return <tt>true</tt> if the given string is an HTTP(S) URL, <tt>false</tt> otherwise
-     * @deprecated use {@link Urls#isHttpUrl(String)} instead.
-     */
-    @Deprecated(since = "2025-06-11", forRemoval = true)
-    public static boolean isHttpUrl(@Nullable String value) {
-        return Urls.isHttpUrl(value);
-    }
-
-    /**
-     * Returns if the given string is an HTTPS URL, explicitly excluding unencrypted HTTP URLs.
-     *
-     * @param value the string to check
-     * @return <tt>true</tt> if the given string is an HTTPS URL, <tt>false</tt> otherwise
-     * @deprecated use {@link Urls#isHttpsUrl(String)} instead.
-     */
-    @Deprecated(since = "2025-06-11", forRemoval = true)
-    public static boolean isHttpsUrl(@Nullable String value) {
-        return Urls.isHttpsUrl(value);
-    }
-
-    /**
-     * Returns a url encoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
-     *
-     * @param value the value to be encoded.
-     * @return a url encoded representation of value, using UTF-8 as character encoding.
-     * @deprecated use {@link Urls#encode(String)} instead.
-     */
-    @Nullable
-    @Deprecated(since = "2025-06-11", forRemoval = true)
-    public static String urlEncode(@Nullable String value) {
-        return Urls.encode(value);
-    }
-
-    /**
-     * Returns a url decoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
-     *
-     * @param value the value to be decoded.
-     * @return a url decoded representation of value, using UTF-8 as character encoding.
-     * @deprecated use {@link Urls#decode(String)} instead.
-     */
-    @Nullable
-    @Deprecated(since = "2025-06-11", forRemoval = true)
-    public static String urlDecode(@Nullable String value) {
-        return Urls.decode(value);
-    }
-
-    /**
      * Splits the given string at the first occurrence of the separator.
      * <p>
      * If the given input is empty, a tuple with <tt>null</tt> as first and second component will be returned.
@@ -855,7 +805,7 @@ public class Strings {
             sb.append(input);
         }
 
-        sb.append(padding.repeat(numberOfPaddings));
+        sb.repeat(padding, numberOfPaddings);
 
         if (left && input != null) {
             sb.append(input);

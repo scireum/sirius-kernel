@@ -100,7 +100,7 @@ public class AutoTransformLoadAction implements ClassLoadAction {
                 throw Exceptions.handle()
                                 .to(Log.SYSTEM)
                                 .error(exception.getCause())
-                                .withSystemErrorMessage("Failed to transform %s (%s) to %s - An error occured when"
+                                .withSystemErrorMessage("Failed to transform %s (%s) to %s - An error occurred when"
                                                         + " invoking the constructor: %s (%s)",
                                                         source,
                                                         sourceType,
@@ -110,7 +110,7 @@ public class AutoTransformLoadAction implements ClassLoadAction {
                 throw Exceptions.handle()
                                 .to(Log.SYSTEM)
                                 .error(exception)
-                                .withSystemErrorMessage("Failed to transform %s (%s) to %s - An error occured when"
+                                .withSystemErrorMessage("Failed to transform %s (%s) to %s - An error occurred when"
                                                         + " invoking the constructor: %s (%s)",
                                                         source,
                                                         sourceType,

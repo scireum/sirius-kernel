@@ -36,7 +36,7 @@ public interface EndOfDayTask {
     /**
      * Returns a short name which is used for logging.
      * <p>
-     * Note that the name shoudln't contain any whitespace so that the task can be started out of schedule by
+     * Note that the name shouldn't contain any whitespace so that the task can be started out of schedule by
      * invoking the {@link sirius.kernel.health.console.EndOfDayCommand eod command} in the console.
      *
      * @return the name of the task

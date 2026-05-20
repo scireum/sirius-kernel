@@ -199,7 +199,7 @@ public class Sirius {
         }
         LOG.INFO("Enabled %d of %d frameworks...", numEnabled, total);
         // Although customizations are loaded in setupConfiguration, we output the status here,
-        // as this seems more intiutive for the customer (the poor guy reading the logs...)
+        // as this seems more intuitive for the customer (the poor guy reading the logs...)
         LOG.INFO("Active Customizations: %s", customizations);
 
         frameworks = frameworkStatus;

@@ -22,7 +22,7 @@ class Reflections {
          * @param functionName of the function which is about to be called
          * @param args the arguments used to call the function. No argument may be null!
          * @return the result of the called function
-         * @throws any execption which may be called by the given function
+         * @throws any exception which may be called by the given function
          */
         fun <T : Any> callPrivateMethod(instance: T, functionName: String, vararg args: Any): Any? {
             try {

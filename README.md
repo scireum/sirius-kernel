@@ -95,18 +95,13 @@ To set up which customizations are enabled in what order specify an array for *s
 
 ## Testing
 
-Tests are based on **spock** and written in **Groovy**, a base specification providing a proper setup of the
-system can be found in [BaseSpecification](src/test/java/sirius/kernel/BaseSpecification.groovy).
+Tests are based on **jUnit** and written in **Kotlin**, using `kotlin.test.*` for assertions and `MockK` for mocking.
 
 Our **golden rule** for tests is:
-> _No matter if you start the whole test suite, a single specification or just
-as single test (method) - the tests have to function independently of their surroundings. Therefore, a test
+> _No matter if you start the whole test suite, a single test class/bundle or just
+a single test (method) - the tests have to function independently of their surroundings. Therefore, a test
 has to either succeed in all three scenarios or it must fail each time. Everything else indicates an invalid test
 setup._
-
-Each module and application should provide its own test suite as subclass of
-[ScenarioSuite](src/test/java/sirius/kernel/ScenarioSuite.java).
-See [TestSuite](src/test/java/TestSuite.java) as an example.
 
 For testing, we heavily rely on **Docker** (especially when external systems like databases are required).
 SIRIUS has a build-in helper to start and stop **docker-compose** setups.

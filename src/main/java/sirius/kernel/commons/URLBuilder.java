@@ -124,40 +124,6 @@ public class URLBuilder {
     }
 
     /**
-     * Adds a path part to the URL.
-     * <p>
-     * Once the first parameter has been added, the path can no longer be modified. Also, the part itself can (but
-     * shouldn't) contain parameters, usually led by an initial question mark.
-     *
-     * @param uriPartsToAdd the URI part to add. This should not contain a leading '/' as it is added automatically. If
-     *                      an array (vararg) is given, all components are appended to the internal {@link
-     *                      StringBuilder} without any additional characters. If this contains a '?' to add parameters,
-     *                      no more parts can be added.
-     * @return the builder itself for fluent method calls
-     * @deprecated use {@link #addSafePart(String)} or {@link #addSafeParts(String...)} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public URLBuilder addPart(@Nonnull String... uriPartsToAdd) {
-        url.append(PATH_SEPARATOR);
-        for (String uriPart : uriPartsToAdd) {
-            if (Strings.isFilled(uriPart)) {
-                if (questionMark.isToggled()) {
-                    throw new IllegalStateException(Strings.apply(
-                            "Cannot add '%s'! Parameters were already added to: '%s'.",
-                            uriPart,
-                            url));
-                }
-                if (uriPart.contains(QUERY_SEPARATOR)) {
-                    questionMark.toggle();
-                }
-                url.append(uriPart);
-            }
-        }
-
-        return this;
-    }
-
-    /**
      * Adds a parameter to the URL.
      *
      * @param key   the name of the parameter

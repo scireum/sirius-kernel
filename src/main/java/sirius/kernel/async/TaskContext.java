@@ -169,7 +169,7 @@ public class TaskContext implements SubContext {
     /**
      * Increments the given performance counter by one and supplies a loop duration in milliseconds.
      * <p>
-     * The avarage value will be computed for the given counter and gives the user a rough estimate what the current
+     * The average value will be computed for the given counter and gives the user a rough estimate what the current
      * task is doing.
      * <p>
      * Note that the default implementation will simply ignore the provided timings.
@@ -184,7 +184,7 @@ public class TaskContext implements SubContext {
     /**
      * Increments the given performance counter by one and supplies a loop duration in milliseconds.
      * <p>
-     * The avarage value will be computed for the given counter and gives the user a rough estimate what the current
+     * The average value will be computed for the given counter and gives the user a rough estimate what the current
      * task is doing.
      * <p>
      * Note that the default implementation will simply ignore the provided timings.

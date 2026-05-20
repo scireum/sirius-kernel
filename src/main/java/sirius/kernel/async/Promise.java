@@ -224,7 +224,7 @@ public class Promise<V> {
     /**
      * Returns the failure which was the reason for this promise to have failed.
      *
-     * @return the error which made this promise fail, or <tt>null</tt>  if the promnise is still running or not
+     * @return the error which made this promise fail, or <tt>null</tt>  if the promise is still running or not
      * completed yet.
      */
     public Throwable getFailure() {
@@ -317,19 +317,6 @@ public class Promise<V> {
                 future.fail(throwable);
             }
         });
-    }
-
-    /**
-     * Returns this promise as a future.
-     *
-     * @return this promise as future
-     * @deprecated Usage of this method is discouraged. Wrap and use {@link CombinedFuture#asFuture()}} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public Future asFuture() {
-        CombinedFuture result = new CombinedFuture();
-        result.add(this);
-        return result.asFuture();
     }
 
     /**

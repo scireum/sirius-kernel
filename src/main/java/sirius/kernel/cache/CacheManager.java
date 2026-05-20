@@ -223,8 +223,8 @@ public class CacheManager {
      */
     public static void clearCoherentCacheLocally(String cacheName) {
         ManagedCache<?, ?> cache = caches.get(cacheName);
-        if (cache instanceof CoherentCache) {
-            ((CoherentCache<?>) cache).clearLocal();
+        if (cache instanceof CoherentCache<?> coherentCache) {
+            coherentCache.clearLocal();
         }
     }
 
@@ -250,8 +250,8 @@ public class CacheManager {
      */
     public static void removeCoherentCacheKeyLocally(String cacheName, String key) {
         ManagedCache<?, ?> cache = caches.get(cacheName);
-        if (cache instanceof CoherentCache) {
-            ((CoherentCache<?>) cache).removeLocal(key);
+        if (cache instanceof CoherentCache<?> coherentCache) {
+            coherentCache.removeLocal(key);
         }
     }
 
@@ -282,8 +282,8 @@ public class CacheManager {
      */
     public static void coherentCacheRemoveAllLocally(String cacheName, String discriminator, String testInput) {
         ManagedCache<?, ?> cache = caches.get(cacheName);
-        if (cache instanceof CoherentCache) {
-            ((CoherentCache<?>) cache).removeAllLocal(discriminator, testInput);
+        if (cache instanceof CoherentCache<?> coherentCache) {
+            coherentCache.removeAllLocal(discriminator, testInput);
         }
     }
 

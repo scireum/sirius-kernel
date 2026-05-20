@@ -18,17 +18,17 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Provides a simple reader which parses given CSV (comma separated values) data into rows.
+ * Provides a simple reader which parses given CSV (comma-separated values) data into rows.
  * <p>
  * By default <tt>;</tt> is used to separate columns and a line break (either Windows or Unix) is used
  * to separate rows. Also columns can be enclosed in quotations, especially if line breaks occur within
- * a value. The default character used to signal quaotation is <tt>&quot;</tt>. Note that the quotation symbol has to
+ * a value. The default character used to signal quotation is <tt>&quot;</tt>. Note that the quotation symbol has to
  * be
  * the first non-whitespace character in the column to be detected as such (or the very first character if
- * {@link #notIgnoringWhitespaces()} was called during initialisation).
+ * {@link #notIgnoringWhitespaces()} was called during initialization).
  * <p>
- * Furthermore escaping can be used to embed a column separator or a quotation character in a column value.
- * By default <tt>\</tt> is used as escape character.
+ * Furthermore, escaping can be used to embed a column separator or a quotation character in a column value.
+ * By default <tt>\</tt> is used as an escape character.
  * <p>
  * Empty columns will be represented as empty strings. Values will not be trimmed, as this can be easily achieved
  * using the {@link Values} which is used to represent a parsed row.
@@ -36,7 +36,7 @@ import java.util.function.Consumer;
  * An example use case would be:
  * {@code new CSVReader(someInput).execute(row -&gt; doSomethingSmartPerRow(row)); }
  * <p>
- * Note that this class checks the {@link TaskContext} during execution. Therefore if the underlying task is cancelled,
+ * Note that this class checks the {@link TaskContext} during execution. Therefore if the underlying task is canceled,
  * the parser will stop after the current row has been processed.
  */
 public class CSVReader {
@@ -156,7 +156,7 @@ public class CSVReader {
         }
     }
 
-    /*
+    /**
      * Consumes a windows or unix style line break.
      */
     private void consumeNewLine() throws IOException {
@@ -168,16 +168,16 @@ public class CSVReader {
         }
     }
 
-    /*
+    /**
      * Fills the internal buffer by reading from the stream.
      */
     private void read() throws IOException {
         buffer = input.read();
     }
 
-    /*
+    /**
      * Reads a single row from the stream. This might be multiple lines from the
-     * input as quotet columns may contain line breaks.
+     * input as quoted columns may contain line breaks.
      */
     private void readRow() throws IOException {
         List<String> row = new ArrayList<>();
@@ -193,7 +193,7 @@ public class CSVReader {
         }
     }
 
-    /*
+    /**
      * Reads a single column.
      */
     private String readField() throws IOException {
@@ -246,7 +246,7 @@ public class CSVReader {
         }
     }
 
-    /*
+    /**
      * Determines if the current buffer value should be added to the field (column) content.
      */
     private boolean shouldContinueField(boolean inQuote) throws IOException {
@@ -265,14 +265,14 @@ public class CSVReader {
         }
     }
 
-    /*
+    /**
      * Determines if the current buffer indicates a line break.
      */
     private boolean isAtNewline() {
         return buffer == '\r' || buffer == '\n';
     }
 
-    /*
+    /**
      * Determines if we reached the end of the steam / reader.
      */
     public boolean isEOF() {
