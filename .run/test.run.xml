@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="test" type="JUnit" factoryName="JUnit">
+    <module name="sirius-kernel" />
+    <option name="PACKAGE_NAME" value="" />
+    <option name="MAIN_CLASS_NAME" value="" />
+    <option name="METHOD_NAME" value="" />
+    <option name="TEST_OBJECT" value="tags" />
+    <option name="VM_PARAMETERS" value="-ea -Dtest.excluded.groups=nightly" />
+    <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+    <tag value="!nightly" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
