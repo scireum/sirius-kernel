@@ -8,8 +8,8 @@
 
 package sirius.kernel.nls
 
-import org.junit.Assert.assertThrows
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Context
@@ -77,7 +77,7 @@ class FormatterTest {
     fun `format fails when using unknown parameter`() {
         val pattern = "Test \${foo}"
 
-        assertThrows(IllegalArgumentException::class.java) {
+        assertThrows<IllegalArgumentException> {
             Formatter.create(pattern).smartFormat()
         }
     }
@@ -86,7 +86,7 @@ class FormatterTest {
     fun `format fails for missing curly bracket`() {
         val pattern = "Test \${foo"
 
-        assertThrows(IllegalArgumentException::class.java) {
+        assertThrows<IllegalArgumentException> {
             Formatter.create(pattern).smartFormat()
         }
     }
@@ -95,7 +95,7 @@ class FormatterTest {
     fun `format fails for missing square bracket`() {
         val pattern = "Test [\${foo}"
 
-        assertThrows(IllegalArgumentException::class.java) {
+        assertThrows<IllegalArgumentException> {
             Formatter.create(pattern).smartFormat()
         }
     }
@@ -104,7 +104,7 @@ class FormatterTest {
     fun `smartFormat fails for additional square bracket`() {
         val pattern = "Test [\${foo}]]"
 
-        assertThrows(IllegalArgumentException::class.java) {
+        assertThrows<IllegalArgumentException> {
             Formatter.create(pattern).smartFormat()
         }
     }
