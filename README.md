@@ -103,9 +103,9 @@ a single test (method) - the tests have to function independently of their surro
 has to either succeed in all three scenarios or it must fail each time. Everything else indicates an invalid test
 setup._
 
+Tests which require a running SIRIUS framework should use [`SiriusExtension`](src/test/java/sirius/kernel/SiriusExtension.java).
+
 For testing, we heavily rely on **Docker** (especially when external systems like databases are required).
 SIRIUS has a build-in helper to start and stop **docker-compose** setups.
 See [DockerHelper](src/main/java/sirius/kernel/DockerHelper.java) for a list of supported configuration
-settings or refer the [test setup](https://github.com/scireum/sirius-db/tree/main/src/test/resources)
-of [sirius-db](https://github.com/scireum/sirius-db) and its
-[TestSuite](https://github.com/scireum/sirius-db/blob/main/src/test/java/TestSuite.java) as an elaborate example.
+settings or refer the [test setup](https://github.com/scireum/sirius-db/tree/main/src/test/resources) of [sirius-db](https://github.com/scireum/sirius-db) as an elaborate example.
