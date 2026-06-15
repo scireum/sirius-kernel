@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.9.8</version>
+            <version>4.10.2</version>
         </dependency>
 
         <!-- Required logging bridge to make slf4j log to our logging system -->
