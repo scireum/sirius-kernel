@@ -9,7 +9,7 @@ jobs:
       image: scireum/sirius-build-jdk24
     steps:
       - name: Checkout project
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.0
 
       - name: Cache Maven dependencies
         uses: actions/cache@v5
