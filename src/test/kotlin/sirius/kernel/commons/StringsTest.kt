@@ -35,6 +35,29 @@ class StringsTest {
     }
 
     @Test
+    fun ifFilled() {
+        var consumed: String? = null
+        Strings.ifFilled("Test") { consumed = it }
+        assertEquals("Test", consumed)
+
+        consumed = null
+        Strings.ifFilled(" ") { consumed = it }
+        assertEquals(" ", consumed)
+
+        consumed = null
+        Strings.ifFilled(42) { consumed = it }
+        assertEquals("42", consumed)
+
+        consumed = null
+        Strings.ifFilled(null) { consumed = it }
+        assertNull(consumed)
+
+        consumed = null
+        Strings.ifFilled("") { consumed = it }
+        assertNull(consumed)
+    }
+
+    @Test
     fun areAllEmpty() {
         assertTrue { Strings.areAllEmpty(null, null) }
         assertTrue { Strings.areAllEmpty("", "") }
