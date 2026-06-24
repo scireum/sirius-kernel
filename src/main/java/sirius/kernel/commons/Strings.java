@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -112,6 +113,18 @@ public class Strings {
             return false;
         }
         return string.toString() != null && !string.toString().isEmpty();
+    }
+
+    /**
+     * Executes the given consumer if the string representation of the given object is neither "" nor <tt>null</tt>.
+     *
+     * @param string         the object which is to be checked
+     * @param stringConsumer the consumer to be executed if the string is filled
+     */
+    public static void ifFilled(@Nullable Object string, @Nonnull Consumer<String> stringConsumer) {
+        if (isFilled(string)) {
+            stringConsumer.accept(string.toString());
+        }
     }
 
     /**
