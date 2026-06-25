@@ -1,7 +1,5 @@
 ---
-scireum_volumes: &scireum_volumes
-  - name: docker_socket
-    path: /var/run/docker.sock
+scireum_m2_volumes: &scireum_m2_volumes
   - name: m2
     path: /root/.m2
 
@@ -20,7 +18,7 @@ steps:
     image: scireum/sirius-build-jdk24
     commands:
       - mvn clean compile
-    volumes: *scireum_volumes
+    volumes: *scireum_m2_volumes
     when:
       branch:
         - main
@@ -31,7 +29,7 @@ steps:
     image: scireum/sirius-build-jdk24
     commands:
       - mvn clean test
-    volumes: *scireum_volumes
+    volumes: *scireum_m2_volumes
     when:
       event:
         - cron
@@ -52,7 +50,7 @@ steps:
     image: scireum/sirius-build-jdk24
     commands:
       - mvn clean test -Dtest.excluded.groups=nightly
-    volumes: *scireum_volumes
+    volumes: *scireum_m2_volumes
     when:
       event:
         - pull_request
@@ -62,7 +60,7 @@ steps:
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
       - mvn clean deploy -DskipTests
-    volumes: *scireum_volumes
+    volumes: *scireum_m2_volumes
     when:
       event:
         - tag
@@ -83,15 +81,12 @@ steps:
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
       - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.projectKey=${DRONE_REPO_NAME}
-    volumes: *scireum_volumes
+    volumes: *scireum_m2_volumes
     when:
       event:
         - tag
 
 volumes:
-  - name: docker_socket
-    host:
-      path: /var/run/docker.sock
   - name: m2
     host:
       path: /root/.m2
