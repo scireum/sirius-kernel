@@ -9,14 +9,14 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: mheap/github-action-required-labels@v5.5.2
+      - uses: mheap/github-action-required-labels@v5.6.0
         with:
           mode: minimum
           count: 1
           labels: "💣 BREAKING CHANGE, 🧬 Enhancement, 🐛 Bugfix, 🛠️ Maintenance, ⬆️ Dependencies"
           add_comment: true
           message: "This PR can only be merged after at least one of our categorizing labels has been added: {{ provided }}"
-      - uses: mheap/github-action-required-labels@v5.5.2
+      - uses: mheap/github-action-required-labels@v5.6.0
         with:
           mode: exactly
           count: 0
