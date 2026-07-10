@@ -11,6 +11,11 @@ package sirius.kernel.commons;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import sirius.kernel.nls.NLS;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -46,6 +51,7 @@ import java.util.function.Supplier;
 /// @see NumberFormat
 /// @see BigDecimal
 @Immutable
+@JsonSerialize(using = Amount.JacksonSerializer.class)
 public class Amount extends Number implements Comparable<Amount> {
 
     @Serial
@@ -262,6 +268,11 @@ public class Amount extends Number implements Comparable<Amount> {
     /// Unwraps the internally used <tt>BigDecimal</tt> with rounding like in [#toMachineString()] applied.
     /// This is used for Jackson Object Mapping.
     ///
+    /// Note that Jackson 3 ignores `@JsonValue` on subclasses of [Number] (the standard number serializer takes
+    /// precedence), therefore [JacksonSerializer] is registered via `@JsonSerialize` on the class, which is consulted
+    /// before the standard handling. The annotation is kept for documentation purposes and in case Jackson restores its
+    /// precedence.
+    ///
     /// @return the internally used <tt>BigDecimal</tt> with rounding applied
     @Nullable
     @JsonValue
@@ -270,6 +281,27 @@ public class Amount extends Number implements Comparable<Amount> {
             return getAmount();
         } else {
             return round(2, RoundingMode.HALF_UP).getAmount();
+        }
+    }
+
+    /// Serializes an [Amount] as its rounded <tt>BigDecimal</tt> value (or <tt>null</tt> for [#NOTHING]), replicating
+    /// the `@JsonValue` behavior of Jackson 2 which no longer applies to subclasses of [Number] in Jackson 3.
+    public static class JacksonSerializer extends ValueSerializer<Amount> {
+        /**
+         * @param value     Value to serialize; can <b>not</b> be null.
+         * @param generator Generator used to output resulting JSON content
+         * @param context   Context that can be used to get serializers for
+         *                  serializing Objects value contains, if any.
+         * @throws JacksonException when the serialization fails
+         */
+        @Override
+        public void serialize(Amount value, JsonGenerator generator, SerializationContext context) {
+            BigDecimal roundedAmount = value.getRoundedAmount();
+            if (roundedAmount == null) {
+                generator.writeNull();
+            } else {
+                generator.writeNumber(roundedAmount);
+            }
         }
     }
 
