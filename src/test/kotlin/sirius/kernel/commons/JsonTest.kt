@@ -423,6 +423,15 @@ class JsonTest {
     }
 
     @Test
+    fun `Amount serialization handles NOTHING and unrounded values`() {
+        // pins the behavior of the explicit Amount serializer in Json.MAPPER which replaces the
+        // @JsonValue handling that Jackson 3 no longer applies to subclasses of Number
+        assertEquals("null", Json.MAPPER.writeValueAsString(Amount.NOTHING))
+        assertEquals("1.23", Json.MAPPER.writeValueAsString(Amount.of(BigDecimal("1.23456789"))))
+        assertEquals("1.23456789", Json.MAPPER.writeValueAsString(Amount.ofRounded(BigDecimal("1.23456789"))))
+    }
+
+    @Test
     fun `Read Amount from POJONode`() {
         val inputAmount = Amount.ofRounded(BigDecimal("1.23456789"))
         val objectNode = Json.createObject().putPOJO("amount", inputAmount)
