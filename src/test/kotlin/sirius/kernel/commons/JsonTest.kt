@@ -8,11 +8,11 @@
 
 package sirius.kernel.commons
 
-import com.fasterxml.jackson.core.JsonPointer
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.ObjectNode
+import tools.jackson.core.JsonPointer
+import tools.jackson.core.JacksonException
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.ArrayNode
+import tools.jackson.databind.node.ObjectNode
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -50,7 +50,7 @@ class JsonTest {
         val node = Json.parseObject(json)
         assertEquals(2, node.size())
         assertEquals(123, node["foo"].asInt())
-        assertEquals("baz", node["bar"].asText())
+        assertEquals("baz", node["bar"].asString())
     }
 
     @Test
@@ -59,13 +59,13 @@ class JsonTest {
         val node = Json.parseObject(json)
         assertEquals(2, node.size())
         assertEquals(123, node["foo"].asInt())
-        assertEquals("baz", node["bar"].asText())
+        assertEquals("baz", node["bar"].asString())
     }
 
     @Test
     fun `exception is thrown when parsing invalid object`() {
         val invalidJson = "[1, 2, 3]"
-        assertThrows(JsonProcessingException::class.java) {
+        assertThrows(JacksonException::class.java) {
             Json.tryParseObject(invalidJson)
         }
     }
@@ -83,7 +83,7 @@ class JsonTest {
     @Test
     fun `exception is thrown when parsing invalid array`() {
         val invalidJson = """{ "foo": 123, "bar": "baz" }"""
-        assertThrows(JsonProcessingException::class.java) {
+        assertThrows(JacksonException::class.java) {
             Json.tryParseArray(invalidJson)
         }
     }
@@ -160,7 +160,7 @@ class JsonTest {
 
         val presentObject: Optional<ObjectNode> = Json.tryGetObjectAtIndex(node, 0)
         assertTrue(presentObject.isPresent)
-        assertEquals("Alice", presentObject.get().get("name").asText())
+        assertEquals("Alice", presentObject.get().get("name").asString())
 
         val notAnObject: Optional<ObjectNode> = Json.tryGetObjectAtIndex(node, 1)
         assertTrue(!notAnObject.isPresent)
@@ -176,7 +176,7 @@ class JsonTest {
 
         val presentObject: Optional<ObjectNode> = Json.tryGetObject(node, "foo")
         assertTrue(presentObject.isPresent)
-        assertEquals("Alice", presentObject.get().get("name").asText())
+        assertEquals("Alice", presentObject.get().get("name").asString())
 
         val notAnObject: Optional<ObjectNode> = Json.tryGetObject(node, "bar")
         assertTrue(!notAnObject.isPresent)
@@ -192,7 +192,7 @@ class JsonTest {
 
         val presentObject: Optional<ObjectNode> = Json.tryGetObjectAt(node, Json.createPointer("foo"))
         assertTrue(presentObject.isPresent)
-        assertEquals("Alice", presentObject.get().get("name").asText())
+        assertEquals("Alice", presentObject.get().get("name").asString())
 
         val notAnObject: Optional<ObjectNode> = Json.tryGetObjectAt(node, Json.createPointer("bar"))
         assertTrue(!notAnObject.isPresent)
@@ -282,7 +282,7 @@ class JsonTest {
     @Test
     fun `tryGetArrayAt works with arrays as POJO Nodes`() {
         val node = Json.createObject()
-            .set<ObjectNode>("nested", Json.createObject().putPOJO("foo", listOf(1, 2, 3)).put("bar", 123))
+            .set("nested", Json.createObject().putPOJO("foo", listOf(1, 2, 3)).put("bar", 123))
 
         val presentArray: Optional<ArrayNode> = Json.tryGetArrayAt(node, Json.createPointer("nested/foo"))
         assertTrue(presentArray.isPresent)
@@ -334,7 +334,7 @@ class JsonTest {
 
         val presentValue: Optional<JsonNode> = Json.tryGetAt(node, JsonPointer.valueOf("/foo/0/name"))
         assertTrue(presentValue.isPresent)
-        assertEquals("Alice", presentValue.get().asText())
+        assertEquals("Alice", presentValue.get().asString())
 
         val nullValue: Optional<JsonNode> = Json.tryGetAt(node, JsonPointer.valueOf("/bar"))
         assertTrue(!nullValue.isPresent)
@@ -367,7 +367,9 @@ class JsonTest {
         val parsedAmount = Json.getValueAmount(node, "number")
         assertEquals(Amount.ofRounded(BigDecimal.valueOf(1.23456789)), parsedAmount)
 
-        val outputJson = Json.createObject().putPOJO("number", parsedAmount).toString()
+        // Jackson 3: node.toString() no longer serializes POJO nodes via databind (and thus ignores
+        // custom serializers); Json.write must be used instead.
+        val outputJson = Json.write(Json.createObject().putPOJO("number", parsedAmount))
         assertEquals(outputJson, inputJson)
     }
 
@@ -420,6 +422,15 @@ class JsonTest {
         val jsonString = Json.MAPPER.writeValueAsString(inputAmount)
         val parsedAmount = Json.MAPPER.convertValue(jsonString, Amount::class.java)
         assertEquals(inputAmount, parsedAmount)
+    }
+
+    @Test
+    fun `Amount serialization handles NOTHING and unrounded values`() {
+        // pins the behavior of the explicit Amount serializer in Json.MAPPER which replaces the
+        // @JsonValue handling that Jackson 3 no longer applies to subclasses of Number
+        assertEquals("null", Json.MAPPER.writeValueAsString(Amount.NOTHING))
+        assertEquals("1.23", Json.MAPPER.writeValueAsString(Amount.of(BigDecimal("1.23456789"))))
+        assertEquals("1.23456789", Json.MAPPER.writeValueAsString(Amount.ofRounded(BigDecimal("1.23456789"))))
     }
 
     @Test
