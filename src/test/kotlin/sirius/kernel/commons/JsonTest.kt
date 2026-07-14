@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import tools.jackson.core.JacksonException
 import tools.jackson.core.JsonPointer
 import tools.jackson.databind.JsonNode
+import tools.jackson.databind.exc.JsonNodeException
 import tools.jackson.databind.node.ArrayNode
 import tools.jackson.databind.node.ObjectNode
 import java.math.BigDecimal
@@ -441,6 +442,102 @@ class JsonTest {
     @Test
     fun `empty Amount is suppressed by JsonInclude NON_EMPTY like in Jackson 2`() {
         assertEquals("{}", Json.MAPPER.writeValueAsString(NonEmptyAmountHolder()))
+    }
+
+    /**
+     * The following tests document how the Jackson 3 scalar accessors behave for filled, non-matching,
+     * null and missing properties, as this differs notably from Jackson 2 whose accessors (asText(),
+     * textValue(), longValue(), ...) leniently returned "", null, 0 or false for all null/missing/mismatch
+     * cases:
+     * <ul>
+     * <li>xxxValue() is strict: any missing property or type mismatch throws; only stringValue()
+     * treats an explicit JSON null as a legitimate value and returns null.</li>
+     * <li>asXxx() coerces: missing properties and JSON null leniently yield "", 0 or false, and
+     * convertible values (numeric strings, number-to-boolean, ...) are converted - but a failed
+     * coercion of an actual value throws.</li>
+     * <li>the default-taking variants (xxxValue(default), asXxx(default)) and the Optional variants
+     * (xxxValueOpt()) never throw and correspond to the lenient Jackson 2 behavior.</li>
+     * </ul>
+     */
+    private val accessorTestNode =
+        Json.parseObject("""{ "string": "foo", "number": 42, "numberString": "42", "bool": true, "null": null }""")
+
+    @Test
+    fun `documents string accessor behavior for filled, mismatching, null and missing properties`() {
+        // filled, matching: value is returned
+        assertEquals("foo", accessorTestNode.path("string").stringValue())
+        assertEquals("foo", accessorTestNode.path("string").asString())
+
+        // filled, non-matching: stringValue() is strict, asString() coerces scalars but not containers
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("number").stringValue() }
+        assertEquals("42", accessorTestNode.path("number").asString())
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.asString() }
+
+        // JSON null: a legitimate value for stringValue(), an empty string for asString()
+        assertEquals(null, accessorTestNode.path("null").stringValue())
+        assertEquals("", accessorTestNode.path("null").asString())
+
+        // missing: stringValue() throws, asString() coerces leniently
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("missing").stringValue() }
+        assertEquals("", accessorTestNode.path("missing").asString())
+
+        // default-taking and Optional variants never throw
+        assertEquals(null, accessorTestNode.path("missing").stringValue(null))
+        assertEquals("fallback", accessorTestNode.path("missing").stringValue("fallback"))
+        assertEquals("foo", accessorTestNode.path("string").stringValueOpt().get())
+        assertTrue(accessorTestNode.path("missing").stringValueOpt().isEmpty)
+    }
+
+    @Test
+    fun `documents numeric accessor behavior for filled, mismatching, null and missing properties`() {
+        // filled, matching: value is returned
+        assertEquals(42L, accessorTestNode.path("number").longValue())
+        assertEquals(42L, accessorTestNode.path("number").asLong())
+
+        // filled, non-matching: longValue() is strict even for numeric strings, asLong() converts
+        // them but throws for non-numeric values
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("numberString").longValue() }
+        assertEquals(42L, accessorTestNode.path("numberString").asLong())
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("string").asLong() }
+
+        // JSON null and missing: longValue() cannot represent them and throws, asLong() yields 0
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("null").longValue() }
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("missing").longValue() }
+        assertEquals(0L, accessorTestNode.path("null").asLong())
+        assertEquals(0L, accessorTestNode.path("missing").asLong())
+
+        // default-taking and Optional variants never throw
+        assertEquals(0L, accessorTestNode.path("missing").longValue(0L))
+        assertEquals(-1L, accessorTestNode.path("null").longValue(-1L))
+        assertEquals(42L, accessorTestNode.path("number").longValueOpt().asLong)
+        assertTrue(accessorTestNode.path("null").longValueOpt().isEmpty)
+        assertTrue(accessorTestNode.path("missing").longValueOpt().isEmpty)
+    }
+
+    @Test
+    fun `documents boolean accessor behavior for filled, mismatching, null and missing properties`() {
+        // filled, matching: value is returned
+        assertEquals(true, accessorTestNode.path("bool").booleanValue())
+        assertEquals(true, accessorTestNode.path("bool").asBoolean())
+
+        // filled, non-matching: booleanValue() only accepts actual booleans; asBoolean() converts
+        // "true"/"false" strings and numbers (0 = false, everything else = true) but throws for
+        // other strings
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("number").booleanValue() }
+        assertEquals(true, accessorTestNode.path("number").asBoolean())
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("string").asBoolean() }
+
+        // JSON null and missing: booleanValue() throws, asBoolean() yields false
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("null").booleanValue() }
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("missing").booleanValue() }
+        assertEquals(false, accessorTestNode.path("null").asBoolean())
+        assertEquals(false, accessorTestNode.path("missing").asBoolean())
+
+        // default-taking and Optional variants never throw
+        assertEquals(true, accessorTestNode.path("missing").booleanValue(true))
+        assertEquals(false, accessorTestNode.path("null").booleanValue(false))
+        assertEquals(true, accessorTestNode.path("bool").booleanValueOpt().get())
+        assertTrue(accessorTestNode.path("missing").booleanValueOpt().isEmpty)
     }
 
     @Test
