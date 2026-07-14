@@ -303,6 +303,13 @@ public class Amount extends Number implements Comparable<Amount> {
                 generator.writeNumber(roundedAmount);
             }
         }
+
+        /// Considers [#NOTHING] as empty, so that `@JsonInclude(NON_EMPTY)` suppresses empty amounts
+        /// like the `@JsonValue` based serialization of Jackson 2 did.
+        @Override
+        public boolean isEmpty(SerializationContext context, Amount value) {
+            return value == null || value.isEmpty();
+        }
     }
 
     @Override

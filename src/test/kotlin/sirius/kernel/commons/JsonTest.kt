@@ -8,6 +8,7 @@
 
 package sirius.kernel.commons
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import tools.jackson.core.JacksonException
@@ -429,6 +430,17 @@ class JsonTest {
         assertEquals("null", Json.MAPPER.writeValueAsString(Amount.NOTHING))
         assertEquals("1.23", Json.MAPPER.writeValueAsString(Amount.of(BigDecimal("1.23456789"))))
         assertEquals("1.23456789", Json.MAPPER.writeValueAsString(Amount.ofRounded(BigDecimal("1.23456789"))))
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private class NonEmptyAmountHolder {
+        @Suppress("unused")
+        val amount: Amount = Amount.NOTHING
+    }
+
+    @Test
+    fun `empty Amount is suppressed by JsonInclude NON_EMPTY like in Jackson 2`() {
+        assertEquals("{}", Json.MAPPER.writeValueAsString(NonEmptyAmountHolder()))
     }
 
     @Test
