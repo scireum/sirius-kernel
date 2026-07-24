@@ -5,18 +5,14 @@ on:
     branches: [ "main" ]
     tags:
       - "*.*.*"
-    
+
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7.0.1
-        if: startsWith(github.ref, 'refs/tags/')
-
-      - name: Release
-        uses: softprops/action-gh-release@v3.0.2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          generate_release_notes: true
+      - name: Create release if none exists
+        run: gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" || gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
