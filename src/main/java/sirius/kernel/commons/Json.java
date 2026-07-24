@@ -8,20 +8,21 @@
 
 package sirius.kernel.commons;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonPointer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.POJONode;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonPointer;
+import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.POJONode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,16 +58,17 @@ public class Json {
      * <p>
      * Note that this mapper is configured to allow single quotes and unquoted field names when parsing JSON strings.
      */
-    public static final ObjectMapper MAPPER =
-            new ObjectMapper().configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-                              .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
-                              .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                              .registerModule(new JavaTimeModule());
-
-    static {
-        MAPPER.getFactory()
-              .setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(25_000_000).build());
-    }
+    public static final ObjectMapper MAPPER = JsonMapper.builder(JsonFactory.builderWithJackson2Defaults()
+                                                                            .enable(JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES,
+                                                                                    JsonReadFeature.ALLOW_SINGLE_QUOTES)
+                                                                            .streamReadConstraints(StreamReadConstraints.builder()
+                                                                                                                        .maxStringLength(
+                                                                                                                                25_000_000)
+                                                                                                                        .build())
+                                                                            .build())
+                                                        .configureForJackson2()
+                                                        .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                                                        .build();
 
     private Json() {
     }
@@ -126,7 +128,7 @@ public class Json {
     public static ObjectNode parseObject(String json) {
         try {
             return tryParseObject(json);
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw Exceptions.handle(LOG, exception);
         }
     }
@@ -136,9 +138,9 @@ public class Json {
      *
      * @param json the JSON string to parse
      * @return the parsed JSON string as object node
-     * @throws JsonProcessingException in case of a malformed JSON string
+     * @throws JacksonException in case of a malformed JSON string
      */
-    public static ObjectNode tryParseObject(String json) throws JsonProcessingException {
+    public static ObjectNode tryParseObject(String json) throws JacksonException {
         return MAPPER.readValue(json, ObjectNode.class);
     }
 
@@ -151,7 +153,7 @@ public class Json {
     public static ArrayNode parseArray(String json) {
         try {
             return tryParseArray(json);
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw Exceptions.handle(LOG, exception);
         }
     }
@@ -161,9 +163,9 @@ public class Json {
      *
      * @param json the JSON string to parse
      * @return the parsed JSON string as array node
-     * @throws JsonProcessingException in case of a malformed JSON string
+     * @throws JacksonException in case of a malformed JSON string
      */
-    public static ArrayNode tryParseArray(String json) throws JsonProcessingException {
+    public static ArrayNode tryParseArray(String json) throws JacksonException {
         return MAPPER.readValue(json, ArrayNode.class);
     }
 
@@ -176,7 +178,7 @@ public class Json {
     public static String write(JsonNode objectNode) {
         try {
             return tryWrite(objectNode);
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw Exceptions.handle(LOG, exception);
         }
     }
@@ -186,9 +188,9 @@ public class Json {
      *
      * @param objectNode the node to convert
      * @return the JSON string representing the given node
-     * @throws JsonProcessingException in case the given node cannot be converted
+     * @throws JacksonException in case the given node cannot be converted
      */
-    public static String tryWrite(JsonNode objectNode) throws JsonProcessingException {
+    public static String tryWrite(JsonNode objectNode) throws JacksonException {
         return MAPPER.writeValueAsString(objectNode);
     }
 
@@ -201,7 +203,7 @@ public class Json {
     public static String writePretty(JsonNode objectNode) {
         try {
             return tryWritePretty(objectNode);
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw Exceptions.handle(LOG, exception);
         }
     }
@@ -211,9 +213,9 @@ public class Json {
      *
      * @param objectNode the node to convert
      * @return the pretty printed JSON string representing the given node
-     * @throws JsonProcessingException in case the given node cannot be converted
+     * @throws JacksonException in case the given node cannot be converted
      */
-    public static String tryWritePretty(JsonNode objectNode) throws JsonProcessingException {
+    public static String tryWritePretty(JsonNode objectNode) throws JacksonException {
         return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(objectNode);
     }
 
@@ -532,10 +534,10 @@ public class Json {
             return Optional.empty();
         }
         if (node.isNumber() || node.isBoolean()) {
-            return Optional.of(node.asText());
+            return Optional.of(node.asString());
         }
-        if (node.isTextual()) {
-            return Optional.of(node.textValue());
+        if (node.isString()) {
+            return Optional.of(node.stringValue());
         }
         return Optional.empty();
     }
@@ -557,8 +559,8 @@ public class Json {
         if (node.isNumber()) {
             return Amount.ofRounded(node.decimalValue());
         }
-        if (node.isTextual()) {
-            return Amount.ofMachineString(node.textValue());
+        if (node.isString()) {
+            return Amount.ofMachineString(node.stringValue());
         }
         if (node.isPojo()) {
             return tryGetFromPojoNode(node, Amount.class).orElse(Amount.NOTHING);
@@ -580,11 +582,11 @@ public class Json {
         if (node != null && node.isPojo()) {
             return tryGetFromPojoNode(node, LocalDate.class);
         }
-        if (node == null || node.isNull() || !node.isTextual()) {
+        if (node == null || node.isNull() || !node.isString()) {
             return Optional.empty();
         }
         try {
-            return Optional.of(LocalDate.parse(node.textValue(), DateTimeFormatter.ISO_DATE));
+            return Optional.of(LocalDate.parse(node.stringValue(), DateTimeFormatter.ISO_DATE));
         } catch (DateTimeParseException exception) {
             return Optional.empty();
         }
@@ -605,11 +607,11 @@ public class Json {
         if (node != null && node.isPojo()) {
             return tryGetFromPojoNode(node, LocalDateTime.class);
         }
-        if (node == null || node.isNull() || !node.isTextual()) {
+        if (node == null || node.isNull() || !node.isString()) {
             return Optional.empty();
         }
         try {
-            return Optional.of(LocalDateTime.parse(node.textValue(), DateTimeFormatter.ISO_DATE_TIME));
+            return Optional.of(LocalDateTime.parse(node.stringValue(), DateTimeFormatter.ISO_DATE_TIME));
         } catch (DateTimeParseException exception) {
             return Optional.empty();
         }

@@ -8,13 +8,15 @@
 
 package sirius.kernel.commons
 
-import com.fasterxml.jackson.core.JsonPointer
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.annotation.JsonInclude
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import tools.jackson.core.JacksonException
+import tools.jackson.core.JsonPointer
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.exc.JsonNodeException
+import tools.jackson.databind.node.ArrayNode
+import tools.jackson.databind.node.ObjectNode
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -50,7 +52,7 @@ class JsonTest {
         val node = Json.parseObject(json)
         assertEquals(2, node.size())
         assertEquals(123, node["foo"].asInt())
-        assertEquals("baz", node["bar"].asText())
+        assertEquals("baz", node["bar"].asString())
     }
 
     @Test
@@ -59,13 +61,13 @@ class JsonTest {
         val node = Json.parseObject(json)
         assertEquals(2, node.size())
         assertEquals(123, node["foo"].asInt())
-        assertEquals("baz", node["bar"].asText())
+        assertEquals("baz", node["bar"].asString())
     }
 
     @Test
     fun `exception is thrown when parsing invalid object`() {
         val invalidJson = "[1, 2, 3]"
-        assertThrows(JsonProcessingException::class.java) {
+        assertThrows(JacksonException::class.java) {
             Json.tryParseObject(invalidJson)
         }
     }
@@ -83,7 +85,7 @@ class JsonTest {
     @Test
     fun `exception is thrown when parsing invalid array`() {
         val invalidJson = """{ "foo": 123, "bar": "baz" }"""
-        assertThrows(JsonProcessingException::class.java) {
+        assertThrows(JacksonException::class.java) {
             Json.tryParseArray(invalidJson)
         }
     }
@@ -160,7 +162,7 @@ class JsonTest {
 
         val presentObject: Optional<ObjectNode> = Json.tryGetObjectAtIndex(node, 0)
         assertTrue(presentObject.isPresent)
-        assertEquals("Alice", presentObject.get().get("name").asText())
+        assertEquals("Alice", presentObject.get().get("name").asString())
 
         val notAnObject: Optional<ObjectNode> = Json.tryGetObjectAtIndex(node, 1)
         assertTrue(!notAnObject.isPresent)
@@ -176,7 +178,7 @@ class JsonTest {
 
         val presentObject: Optional<ObjectNode> = Json.tryGetObject(node, "foo")
         assertTrue(presentObject.isPresent)
-        assertEquals("Alice", presentObject.get().get("name").asText())
+        assertEquals("Alice", presentObject.get().get("name").asString())
 
         val notAnObject: Optional<ObjectNode> = Json.tryGetObject(node, "bar")
         assertTrue(!notAnObject.isPresent)
@@ -192,7 +194,7 @@ class JsonTest {
 
         val presentObject: Optional<ObjectNode> = Json.tryGetObjectAt(node, Json.createPointer("foo"))
         assertTrue(presentObject.isPresent)
-        assertEquals("Alice", presentObject.get().get("name").asText())
+        assertEquals("Alice", presentObject.get().get("name").asString())
 
         val notAnObject: Optional<ObjectNode> = Json.tryGetObjectAt(node, Json.createPointer("bar"))
         assertTrue(!notAnObject.isPresent)
@@ -282,7 +284,7 @@ class JsonTest {
     @Test
     fun `tryGetArrayAt works with arrays as POJO Nodes`() {
         val node = Json.createObject()
-            .set<ObjectNode>("nested", Json.createObject().putPOJO("foo", listOf(1, 2, 3)).put("bar", 123))
+            .set("nested", Json.createObject().putPOJO("foo", listOf(1, 2, 3)).put("bar", 123))
 
         val presentArray: Optional<ArrayNode> = Json.tryGetArrayAt(node, Json.createPointer("nested/foo"))
         assertTrue(presentArray.isPresent)
@@ -334,7 +336,7 @@ class JsonTest {
 
         val presentValue: Optional<JsonNode> = Json.tryGetAt(node, JsonPointer.valueOf("/foo/0/name"))
         assertTrue(presentValue.isPresent)
-        assertEquals("Alice", presentValue.get().asText())
+        assertEquals("Alice", presentValue.get().asString())
 
         val nullValue: Optional<JsonNode> = Json.tryGetAt(node, JsonPointer.valueOf("/bar"))
         assertTrue(!nullValue.isPresent)
@@ -420,6 +422,122 @@ class JsonTest {
         val jsonString = Json.MAPPER.writeValueAsString(inputAmount)
         val parsedAmount = Json.MAPPER.convertValue(jsonString, Amount::class.java)
         assertEquals(inputAmount, parsedAmount)
+    }
+
+    @Test
+    fun `Amount serialization handles NOTHING and unrounded values`() {
+        // pins the behavior of the explicit Amount serializer in Json.MAPPER which replaces the
+        // @JsonValue handling that Jackson 3 no longer applies to subclasses of Number
+        assertEquals("null", Json.MAPPER.writeValueAsString(Amount.NOTHING))
+        assertEquals("1.23", Json.MAPPER.writeValueAsString(Amount.of(BigDecimal("1.23456789"))))
+        assertEquals("1.23456789", Json.MAPPER.writeValueAsString(Amount.ofRounded(BigDecimal("1.23456789"))))
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private class NonEmptyAmountHolder {
+        @Suppress("unused")
+        val amount: Amount = Amount.NOTHING
+    }
+
+    @Test
+    fun `empty Amount is suppressed by JsonInclude NON_EMPTY like in Jackson 2`() {
+        assertEquals("{}", Json.MAPPER.writeValueAsString(NonEmptyAmountHolder()))
+    }
+
+    /**
+     * The following tests document how the Jackson 3 scalar accessors behave for filled, non-matching,
+     * null and missing properties, as this differs notably from Jackson 2 whose accessors (asText(),
+     * textValue(), longValue(), ...) leniently returned "", null, 0 or false for all null/missing/mismatch
+     * cases:
+     * <ul>
+     * <li>xxxValue() is strict: any missing property or type mismatch throws; only stringValue()
+     * treats an explicit JSON null as a legitimate value and returns null.</li>
+     * <li>asXxx() coerces: missing properties and JSON null leniently yield "", 0 or false, and
+     * convertible values (numeric strings, number-to-boolean, ...) are converted - but a failed
+     * coercion of an actual value throws.</li>
+     * <li>the default-taking variants (xxxValue(default), asXxx(default)) and the Optional variants
+     * (xxxValueOpt()) never throw and correspond to the lenient Jackson 2 behavior.</li>
+     * </ul>
+     */
+    private val accessorTestNode =
+        Json.parseObject("""{ "string": "foo", "number": 42, "numberString": "42", "bool": true, "null": null }""")
+
+    @Test
+    fun `documents string accessor behavior for filled, mismatching, null and missing properties`() {
+        // filled, matching: value is returned
+        assertEquals("foo", accessorTestNode.path("string").stringValue())
+        assertEquals("foo", accessorTestNode.path("string").asString())
+
+        // filled, non-matching: stringValue() is strict, asString() coerces scalars but not containers
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("number").stringValue() }
+        assertEquals("42", accessorTestNode.path("number").asString())
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.asString() }
+
+        // JSON null: a legitimate value for stringValue(), an empty string for asString()
+        assertEquals(null, accessorTestNode.path("null").stringValue())
+        assertEquals("", accessorTestNode.path("null").asString())
+
+        // missing: stringValue() throws, asString() coerces leniently
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("missing").stringValue() }
+        assertEquals("", accessorTestNode.path("missing").asString())
+
+        // default-taking and Optional variants never throw
+        assertEquals(null, accessorTestNode.path("missing").stringValue(null))
+        assertEquals("fallback", accessorTestNode.path("missing").stringValue("fallback"))
+        assertEquals("foo", accessorTestNode.path("string").stringValueOpt().get())
+        assertTrue(accessorTestNode.path("missing").stringValueOpt().isEmpty)
+    }
+
+    @Test
+    fun `documents numeric accessor behavior for filled, mismatching, null and missing properties`() {
+        // filled, matching: value is returned
+        assertEquals(42L, accessorTestNode.path("number").longValue())
+        assertEquals(42L, accessorTestNode.path("number").asLong())
+
+        // filled, non-matching: longValue() is strict even for numeric strings, asLong() converts
+        // them but throws for non-numeric values
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("numberString").longValue() }
+        assertEquals(42L, accessorTestNode.path("numberString").asLong())
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("string").asLong() }
+
+        // JSON null and missing: longValue() cannot represent them and throws, asLong() yields 0
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("null").longValue() }
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("missing").longValue() }
+        assertEquals(0L, accessorTestNode.path("null").asLong())
+        assertEquals(0L, accessorTestNode.path("missing").asLong())
+
+        // default-taking and Optional variants never throw
+        assertEquals(0L, accessorTestNode.path("missing").longValue(0L))
+        assertEquals(-1L, accessorTestNode.path("null").longValue(-1L))
+        assertEquals(42L, accessorTestNode.path("number").longValueOpt().asLong)
+        assertTrue(accessorTestNode.path("null").longValueOpt().isEmpty)
+        assertTrue(accessorTestNode.path("missing").longValueOpt().isEmpty)
+    }
+
+    @Test
+    fun `documents boolean accessor behavior for filled, mismatching, null and missing properties`() {
+        // filled, matching: value is returned
+        assertEquals(true, accessorTestNode.path("bool").booleanValue())
+        assertEquals(true, accessorTestNode.path("bool").asBoolean())
+
+        // filled, non-matching: booleanValue() only accepts actual booleans; asBoolean() converts
+        // "true"/"false" strings and numbers (0 = false, everything else = true) but throws for
+        // other strings
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("number").booleanValue() }
+        assertEquals(true, accessorTestNode.path("number").asBoolean())
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("string").asBoolean() }
+
+        // JSON null and missing: booleanValue() throws, asBoolean() yields false
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("null").booleanValue() }
+        assertThrows(JsonNodeException::class.java) { accessorTestNode.path("missing").booleanValue() }
+        assertEquals(false, accessorTestNode.path("null").asBoolean())
+        assertEquals(false, accessorTestNode.path("missing").asBoolean())
+
+        // default-taking and Optional variants never throw
+        assertEquals(true, accessorTestNode.path("missing").booleanValue(true))
+        assertEquals(false, accessorTestNode.path("null").booleanValue(false))
+        assertEquals(true, accessorTestNode.path("bool").booleanValueOpt().get())
+        assertTrue(accessorTestNode.path("missing").booleanValueOpt().isEmpty)
     }
 
     @Test
