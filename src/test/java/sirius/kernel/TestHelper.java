@@ -36,8 +36,13 @@ public class TestHelper {
      */
     public static void setUp(Class<?> testClass) {
         if (frameworkStarter == null) {
-            frameworkStarter = testClass;
             Sirius.start(new Setup(Setup.Mode.TEST, Sirius.class.getClassLoader()));
+
+            // Only mark the framework as started once the startup actually succeeded. Otherwise a failed startup
+            // would leave a marker behind which makes performTearDown() run at the end of the launcher session and
+            // thus bury the original error under a misleading secondary failure...
+            frameworkStarter = testClass;
+
             NLS.setDefaultLanguage("de");
 
             Injector.context()
