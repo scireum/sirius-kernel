@@ -11,9 +11,6 @@ package sirius.kernel;
 import sirius.kernel.di.Injector;
 import sirius.kernel.nls.NLS;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Initializes and stops Sirius as part of the tests.
  */
@@ -43,6 +40,7 @@ public class TestHelper {
             Injector.context()
                     .getPriorizedParts(TestLifecycleParticipant.class)
                     .forEach(TestLifecycleParticipant::beforeTests);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> tearDown(testClass)));
         }
     }
 
@@ -60,39 +58,14 @@ public class TestHelper {
     /**
      * Performs the framework termination. This can be used from test extensions before a fresh framework instance
      * will to be started.
-     * <p>
-     * Note that this reports <b>all</b> failing {@link TestLifecycleParticipant participants} instead of stopping at
-     * the first one, as a single build usually wants to learn about every problem at once. The framework is stopped
-     * in any case, even if a participant fails.
-     *
-     * @throws RuntimeException if one or more {@link TestLifecycleParticipant participants} failed. Additional
-     *                          failures are attached as suppressed exceptions.
      */
     public static void performTearDown() {
-        if (frameworkStarter == null) {
-            // The framework was never started (e.g. a test run without any test requiring it)...
-            return;
-        }
+        Injector.context()
+                .getPriorizedParts(TestLifecycleParticipant.class)
+                .forEach(TestLifecycleParticipant::afterTests);
+        Sirius.stop();
 
-        try {
-            List<RuntimeException> failures = new ArrayList<>();
-            for (TestLifecycleParticipant participant : Injector.context()
-                                                                .getPriorizedParts(TestLifecycleParticipant.class)) {
-                try {
-                    participant.afterTests();
-                } catch (RuntimeException failure) {
-                    failures.add(failure);
-                }
-            }
+        frameworkStarter = null;
 
-            if (!failures.isEmpty()) {
-                RuntimeException firstFailure = failures.getFirst();
-                failures.stream().skip(1).forEach(firstFailure::addSuppressed);
-                throw firstFailure;
-            }
-        } finally {
-            Sirius.stop();
-            frameworkStarter = null;
-        }
     }
 }
