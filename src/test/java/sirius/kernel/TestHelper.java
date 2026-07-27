@@ -58,8 +58,9 @@ public class TestHelper {
     }
 
     /**
-     * Performs the framework termination. This can be used from test extensions before a fresh framework instance
-     * will to be started.
+     /**
+      * Performs the framework termination. This can be used from test extensions before a fresh framework instance
+      * will be started.
      * <p>
      * Note that this reports <b>all</b> failing {@link TestLifecycleParticipant participants} instead of stopping at
      * the first one, as a single build usually wants to learn about every problem at once. The framework is stopped
