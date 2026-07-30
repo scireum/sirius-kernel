@@ -15,6 +15,7 @@ import org.junit.jupiter.params.converter.ConvertWith
 import org.junit.jupiter.params.provider.CsvSource
 import sirius.kernel.SiriusExtension
 import sirius.kernel.async.CallContext
+import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -389,5 +390,12 @@ class AmountTest {
         result: String,
     ) {
         assertEquals(result, a.fetchAmountWithoutTrailingZeros()?.toPlainString())
+    }
+
+    @Test
+    fun `hashCode() works as expected`() {
+        val a = Amount.of(1)
+        val b = Amount.ofRounded(BigDecimal(1))
+        assertEquals(b.hashCode(), a.hashCode())
     }
 }
