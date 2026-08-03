@@ -656,7 +656,8 @@ public class Amount extends Number implements Comparable<Amount> {
 
     @Override
     public int hashCode() {
-        return value != null ? value.hashCode() : 0;
+        BigDecimal valueWithoutTrailingZeros = fetchAmountWithoutTrailingZeros();
+        return valueWithoutTrailingZeros != null ? valueWithoutTrailingZeros.hashCode() : 0;
     }
 
     /// Compares this amount against the given amount and returns the one with the lower value.
