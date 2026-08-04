@@ -25,6 +25,10 @@ by [sirius-web](https://github.com/scireum/sirius-web) which provides implementa
 to read and write JSON data. This way services can be created which are capable of reading and
 writing both.
 
+[JsonNodeStructuredOutput](JsonNodeStructuredOutput.java) implements the same interface but keeps the result
+in memory as a `JsonNode` instead of writing it out. Code which describes a payload via a **StructuredOutput**
+can therefore also be used where the payload is needed as a value rather than as a response.
+
 ## Webservices
 
 To call XML based REST services the [XMLCall](XMLCall.java) can be used which sends and/or
