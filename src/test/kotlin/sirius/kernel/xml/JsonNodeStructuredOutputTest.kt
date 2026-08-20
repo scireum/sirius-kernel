@@ -76,11 +76,14 @@ internal class JsonNodeStructuredOutputTest {
         val node = JsonNodeStructuredOutput.collect { output ->
             output.propertyIfFilled("kept", 42)
             output.propertyIfFilled("skipped", null)
+            output.propertyIfFilled("blank", "")
             output.nullsafeProperty("emptied", null)
         }
 
         assertEquals(42, node.path("kept").asInt())
         assertFalse(node.has("skipped"), "the property is absent rather than null")
+        // the test is for null alone, not Strings.isFilled -- an empty string is a value and is written out
+        assertTrue(node.has("blank"), "an empty string is kept")
         assertEquals("", node.path("emptied").asString(), "whereas nullsafeProperty writes an empty string")
     }
 

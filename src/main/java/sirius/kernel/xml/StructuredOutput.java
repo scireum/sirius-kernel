@@ -109,6 +109,12 @@ public interface StructuredOutput {
      * this leaves the property out of the output altogether. That is the appropriate choice wherever an empty string is
      * not a value the reader would accept - a field documented as an optional number or timestamp being the common
      * case, as a consumer otherwise finds the field present and parses a number out of {@code ""}.
+     * <p>
+     * Despite the name, the test is for <tt>null</tt> alone and <b>not</b>
+     * {@link sirius.kernel.commons.Strings#isFilled(Object)}: an empty string is a value here and is written out. A
+     * caller which wants those omitted too has to normalise them to <tt>null</tt> itself. Widening the test would
+     * silently drop elements from documents that existing callers already produce, which is why the narrower meaning
+     * is kept and stated here rather than inferred from the name.
      *
      * @param name the name of the property
      * @param data the value of the property, or <tt>null</tt> to omit the property entirely
