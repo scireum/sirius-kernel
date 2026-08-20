@@ -101,6 +101,22 @@ public interface StructuredOutput {
     StructuredOutput nullsafeProperty(@Nonnull String name, @Nullable Object data);
 
     /**
+     * Adds a property to the current object, unless there is no value for it.
+     * <p>
+     * This will create a property only if the specified data object is not null. Else no property is created.
+     * <p>
+     * In contrast to {@link #nullsafeProperty(String, Object)}, which represents a missing value as an empty string,
+     * this leaves the property out of the output altogether. That is the appropriate choice wherever an empty string is
+     * not a value the reader would accept - a field documented as an optional number or timestamp being the common
+     * case, as a consumer otherwise finds the field present and parses a number out of {@code ""}.
+     *
+     * @param name the name of the property
+     * @param data the value of the property, or <tt>null</tt> to omit the property entirely
+     * @return the output itself for fluent method calls
+     */
+    StructuredOutput propertyIfFilled(@Nonnull String name, @Nullable Object data);
+
+    /**
      * Starts an array with is added to the current object as "name".
      *
      * @param name the name of the array

@@ -16,6 +16,7 @@ import sirius.kernel.commons.Json
 import sirius.kernel.commons.NumberFormat
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -68,6 +69,19 @@ internal class JsonNodeStructuredOutputTest {
 
         assertTrue(node.has("value"), "the property is present")
         assertTrue(node.path("value").isNull, "and it is null")
+    }
+
+    @Test
+    fun `A property which is not filled is left out entirely`() {
+        val node = JsonNodeStructuredOutput.collect { output ->
+            output.propertyIfFilled("kept", 42)
+            output.propertyIfFilled("skipped", null)
+            output.nullsafeProperty("emptied", null)
+        }
+
+        assertEquals(42, node.path("kept").asInt())
+        assertFalse(node.has("skipped"), "the property is absent rather than null")
+        assertEquals("", node.path("emptied").asString(), "whereas nullsafeProperty writes an empty string")
     }
 
     @Test
