@@ -84,7 +84,9 @@ internal class JsonNodeStructuredOutputTest {
         assertFalse(node.has("skipped"), "the property is absent rather than null")
         // the test is for null alone, not Strings.isFilled -- an empty string is a value and is written out
         assertTrue(node.has("blank"), "an empty string is kept")
-        assertEquals("", node.path("emptied").asString(), "whereas nullsafeProperty writes an empty string")
+        // has() first: a missing node answers asString() with "" as well, so the value alone proves nothing
+        assertTrue(node.has("emptied"), "whereas nullsafeProperty writes the property")
+        assertEquals("", node.path("emptied").asString(), "and writes it as an empty string")
     }
 
     @Test
