@@ -43,6 +43,16 @@ public class Strings {
     private static final String ELLIPSIS = "…";
 
     /**
+     * Names the omission indicator used by {@link #shorten(String, int)}.
+     */
+    private static final String DEFAULT_OMISSION_INDICATOR = "...";
+
+    /**
+     * Defines how many chars {@link #shorten(String, int)} may give up to reach a word boundary.
+     */
+    private static final int DEFAULT_MAX_CUTBACK = 10;
+
+    /**
      * Contains the marker/signal which should be used to depict that the string has been truncated.
      */
     private static final String TRUNCATED_SIGNAL = ELLIPSIS + "[" + ELLIPSIS + "]" + ELLIPSIS;
@@ -682,29 +692,86 @@ public class Strings {
     }
 
     /**
-     * Shortens a string to the given number of chars,
-     * cutting of at most half of the string and adding ... if something has been cut of.
+     * Shortens a string which is longer than the given number of chars, cutting back to a word boundary if one is
+     * within reach and appending <tt>...</tt> to signal the omission.
+     * <p>
+     * Note that <tt>maxUnshortenedLength</tt> is the length up to which a string is returned unchanged, not the length
+     * of the result: a shortened string is cut one char short of it and then carries the three chars of the omission
+     * indicator, so the result may be two chars longer. Use
+     * {@link #shorten(String, int, int, String)} to give the result an upper bound instead.
      *
-     * @param string   string to be cut of
-     * @param numChars new maximum length of string
-     * @return the shortened string
+     * @param string               the string to shorten
+     * @param maxUnshortenedLength the length up to which the string is returned unchanged
+     * @return the given string if it is not longer than <tt>maxUnshortenedLength</tt>, otherwise a shortened one
+     * @see #shorten(String, int, int, String)
      * @see Strings#limit(Object, int)
      * @see Strings#limit(Object, int, boolean)
      */
-    public static String shorten(String string, int numChars) {
+    public static String shorten(String string, int maxUnshortenedLength) {
         if (isEmpty(string)) {
             return "";
         }
-        if (string.length() <= numChars) {
+        if (string.length() <= maxUnshortenedLength) {
             return string;
         }
-        int index = numChars - 1;
-        int maxCutoff = Math.min(string.length() / 2, 10);
-        while (numChars > 0 && Character.isLetterOrDigit(string.charAt(index)) && maxCutoff > 0) {
-            index--;
-            maxCutoff--;
+        if (maxUnshortenedLength <= 0) {
+            // nothing of the string can be kept, and computing the cut index would overflow for the smallest int
+            return DEFAULT_OMISSION_INDICATOR;
         }
-        return string.substring(0, index) + "...";
+
+        return cutBackToWordBoundary(string, maxUnshortenedLength - 1, DEFAULT_MAX_CUTBACK, DEFAULT_OMISSION_INDICATOR);
+    }
+
+    /**
+     * Shortens a string to at most the given number of chars, cutting back to a word boundary if one is within reach
+     * and appending the given indicator to signal the omission.
+     * <p>
+     * In contrast to {@link #shorten(String, int)}, the length of the indicator is reserved, so the result never
+     * exceeds <tt>maxLength</tt> -- unless <tt>maxLength</tt> leaves no room for the indicator at all, in which case
+     * the indicator alone is returned.
+     *
+     * @param string            the string to shorten
+     * @param maxLength         the maximum length of the result, including the omission indicator
+     * @param maxCutback        how many chars may be given up to reach a word boundary; never more than half of the
+     *                          string, and a longer word is cut through rather than dropped. Zero or less cuts
+     *                          wherever the length lands, without looking for a boundary at all
+     * @param omissionIndicator the string to append if something was left out, e.g. <tt>...</tt> or <tt>…</tt>
+     * @return the given string if it is not longer than <tt>maxLength</tt>, otherwise a shortened one
+     * @see #shorten(String, int)
+     */
+    public static String shorten(String string, int maxLength, int maxCutback, @Nonnull String omissionIndicator) {
+        if (isEmpty(string)) {
+            return "";
+        }
+        if (string.length() <= maxLength) {
+            return string;
+        }
+        if (maxLength <= omissionIndicator.length()) {
+            // there is no room for anything but the indicator, and the cut index would overflow for the smallest int
+            return omissionIndicator;
+        }
+
+        return cutBackToWordBoundary(string, maxLength - omissionIndicator.length(), maxCutback, omissionIndicator);
+    }
+
+    /**
+     * Cuts the given string at the given index, moving back to a word boundary if one is within reach.
+     *
+     * @param string            the string to cut
+     * @param cutIndex          the index to cut at, before looking for a word boundary
+     * @param maxCutback        how many chars may be given up to reach a word boundary
+     * @param omissionIndicator the string to append to signal the omission
+     * @return the cut string with the indicator appended
+     */
+    private static String cutBackToWordBoundary(String string, int cutIndex, int maxCutback, String omissionIndicator) {
+        int index = Math.max(0, cutIndex);
+        int remainingCutback = Math.min(string.length() / 2, maxCutback);
+        while (index > 0 && Character.isLetterOrDigit(string.charAt(index)) && remainingCutback > 0) {
+            index--;
+            remainingCutback--;
+        }
+
+        return string.substring(0, index) + omissionIndicator;
     }
 
     /**

@@ -369,6 +369,84 @@ class StringsTest {
     }
 
     @Test
+    fun shorten() {
+        assertEquals("", Strings.shorten(null, 10))
+        assertEquals("", Strings.shorten("", 10))
+        assertEquals("ABCDE", Strings.shorten("ABCDE", 10))
+        assertEquals("ABCDE", Strings.shorten("ABCDE", 5))
+        // cuts back to the word boundary, which is within reach
+        assertEquals("Das ist ein Satz...", Strings.shorten("Das ist ein Satz mit Wortgrenzen", 20))
+        // no boundary within reach, so the word is cut through
+        assertEquals("Die Daten...", Strings.shorten("Die Datenbankarchitektur ist komplex", 20))
+    }
+
+    @Test
+    fun `shorten keeps its result two chars longer than the given length`() {
+        // the length is the one up to which a string is left alone, not the length of the result: callers rely on
+        // this, so it is pinned here rather than quietly corrected
+        val shortened = Strings.shorten("a b c d e f g h i j k l m n o p", 10)
+
+        assertEquals(12, shortened.length)
+        assertTrue { shortened.endsWith("...") }
+    }
+
+    @Test
+    fun `shorten survives a length shorter than the word it cuts`() {
+        // walking back to a boundary must not run off the start of the string
+        assertEquals("...", Strings.shorten("abcdef", 3))
+        assertEquals("...", Strings.shorten("abc", 0))
+        assertEquals("...", Strings.shorten("abc", -5))
+        // the smallest int makes the cut index overflow into a large positive one
+        assertEquals("...", Strings.shorten("abcdef", Int.MIN_VALUE))
+    }
+
+    @Test
+    fun `shorten with options never exceeds the given length`() {
+        assertEquals("", Strings.shorten(null, 10, 10, "…"))
+        assertEquals("", Strings.shorten("", 10, 10, "…"))
+        assertEquals("ABCDE", Strings.shorten("ABCDE", 10, 10, "…"))
+
+        val shortened = Strings.shorten("a b c d e f g h i j k l m n o p", 10, 10, "…")
+
+        assertEquals(10, shortened.length)
+        assertTrue { shortened.endsWith("…") }
+    }
+
+    @Test
+    fun `shorten with options honours the given omission indicator`() {
+        assertEquals("Das ist ein Satz…", Strings.shorten("Das ist ein Satz mit Wortgrenzen", 18, 10, "…"))
+        assertEquals(
+            "Das ist ein Satz [more]",
+            Strings.shorten("Das ist ein Satz mit Wortgrenzen", 23, 10, " [more]")
+        )
+    }
+
+    @Test
+    fun `shorten with options honours the given cutback`() {
+        // 'Wortgrenzen' is 11 chars, so it is only reached with a cutback allowing for it
+        assertEquals("Das ist ein Satz mit…", Strings.shorten("Das ist ein Satz mit Wortgrenzen hier", 28, 11, "…"))
+        assertEquals(
+            "Das ist ein Satz mit Wortgre…",
+            Strings.shorten("Das ist ein Satz mit Wortgrenzen hier", 29, 0, "…")
+        )
+    }
+
+    @Test
+    fun `shorten with options returns the indicator when there is no room for anything else`() {
+        assertEquals("…", Strings.shorten("abcdef", 1, 10, "…"))
+        assertEquals("...", Strings.shorten("abcdef", 1, 10, "..."))
+        assertEquals("…", Strings.shorten("abcdef", 0, 10, "…"))
+        // the smallest int makes the cut index overflow into a large positive one
+        assertEquals("…", Strings.shorten("abcdef", Int.MIN_VALUE, 10, "…"))
+    }
+
+    @Test
+    fun `shorten with options treats a cutback of zero or less as no cutback at all`() {
+        assertEquals("Das ist ein Satz mi…", Strings.shorten("Das ist ein Satz mit Wortgrenzen", 20, 0, "…"))
+        assertEquals("Das ist ein Satz mi…", Strings.shorten("Das ist ein Satz mit Wortgrenzen", 20, -5, "…"))
+    }
+
+    @Test
     fun truncateMiddle() {
         assertEquals("", Strings.truncateMiddle(null, 4, 4))
         assertEquals("", Strings.truncateMiddle(null, -4, 4))
