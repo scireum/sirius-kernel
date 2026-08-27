@@ -48,7 +48,7 @@ public class Strings {
     private static final String DEFAULT_OMISSION_INDICATOR = "...";
 
     /**
-     * Determines how many chars {@link #shorten(String, int)} may give up to reach a word boundary.
+     * Defines how many chars {@link #shorten(String, int)} may give up to reach a word boundary.
      */
     private static final int DEFAULT_MAX_CUTBACK = 10;
 
