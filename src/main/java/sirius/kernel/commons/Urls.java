@@ -77,7 +77,7 @@ public class Urls {
     /**
      * Returns a URL path segment representing the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
      * <p>
-     * Other than {@link #encode(String)}, spaces become <tt>%20</tt> rather than <tt>+</tt>, as a <tt>+</tt> within a
+     * Unlike {@link #encode(String)}, spaces become <tt>%20</tt> rather than <tt>+</tt>, as a <tt>+</tt> within a
      * path is a literal character.
      *
      * @param value the value to be encoded.
