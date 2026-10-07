@@ -75,6 +75,23 @@ public class Urls {
     }
 
     /**
+     * Returns a URL path segment representing the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
+     * <p>
+     * Unlike {@link #encode(String)}, spaces become <tt>%20</tt> rather than <tt>+</tt>, as a <tt>+</tt> within a
+     * path is a literal character.
+     *
+     * @param value the value to be encoded.
+     * @return a URL path segment representing value, using UTF-8 as character encoding.
+     */
+    @Nullable
+    public static String encodePathSegment(@Nullable String value) {
+        if (Strings.isFilled(value)) {
+            return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
+        }
+        return value;
+    }
+
+    /**
      * Returns a URL-decoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
      *
      * @param value the value to be decoded.
