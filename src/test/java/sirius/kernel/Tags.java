@@ -16,7 +16,7 @@ public class Tags {
     /**
      * Tag value to express that nightly-only test execution is wished.
      * <p>
-     * See also: .drone.yml with exemplary maven call: -Dtest.excluded.groups=nightly
+     * See also: .github/workflows/pull-request.yml with exemplary maven call: -Dtest.excluded.groups=nightly
      */
     public static final String NIGHTLY = "nightly";
 }
