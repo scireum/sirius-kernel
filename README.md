@@ -1,6 +1,6 @@
 # sirius-kernel
 ![sirius](docs/sirius.jpg)
-[![Build Status](https://drone.scireum.com/api/badges/scireum/sirius-kernel/status.svg?ref=refs/heads/main)](https://drone.scireum.com/scireum/sirius-kernel)
+[![Build Status](https://github.com/scireum/sirius-kernel/actions/workflows/push-master.yml/badge.svg?branch=main)](https://github.com/scireum/sirius-kernel/actions/workflows/push-master.yml)
 
 Welcome to the **kernel module** of the SIRIUS OpenSource framework created by [scireum GmbH](https://www.scireum.de).
 To learn more about what SIRIUS is please refer to the following links:

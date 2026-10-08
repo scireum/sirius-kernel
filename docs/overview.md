@@ -67,7 +67,7 @@ More about the image can be found on GitHub: [scireum/docker-sirius-runtime](htt
 ### docker-sirius-build
 
 Contains a Docker image which is be used to build SIRIUS modules or SIRIUS based applications.
-This can be used for Docker based CI systems (like *Drone*).
+This can be used for Docker based CI systems (like *GitHub Actions*).
 
 More about the image can be found on GitHub: [scireum/docker-sirius-build](https://github.com/scireum/docker-sirius-build).
 

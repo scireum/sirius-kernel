@@ -1,26 +1,25 @@
 name: Compile on push to main branch
+
 on:
   push:
     branches:
       - main
+
 jobs:
   compile:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+
     container:
       image: scireum/sirius-build-jdk26
+      volumes:
+        - /root/.m2:/root/.m2
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
     steps:
       - name: Checkout project
         uses: actions/checkout@v7.0.1
-
-      - name: Cache Maven dependencies
-        uses: actions/cache@v6.1.0
-        with:
-          path: |
-            ~/.m2/repository
-            /root/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
 
       - name: Compile project
         run: mvn clean compile

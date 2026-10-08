@@ -1,0 +1,35 @@
+name: Deploy on Tag
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Linux, X64]
+
+    container:
+      image: scireum/sirius-build-jdk26
+      volumes:
+        - /root/.m2:/root/.m2
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v7.0.1
+
+      - name: Replace version in pom.xml
+        run: sed -i "s/DEVELOPMENT-SNAPSHOT/$GITHUB_REF_NAME/g" pom.xml
+
+      - name: Deploy project
+        run: mvn clean deploy -DskipTests -Daether.connector.basic.parallelPut=false
+
+      - name: Notify scireum-dev MIO about new version
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "channel": "scireum-dev",
+            "text": "A new version is available: **${{ github.event.repository.name }}**: [${{ github.ref_name }}](https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }})"
+          }' ${{ secrets.MEMOIO_SCIREUM_DEV }}
