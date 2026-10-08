@@ -9,6 +9,11 @@ jobs:
   deploy:
     runs-on: [self-hosted, Linux, X64]
 
+    # sirius-parent reads the build number and commit from these variables
+    env:
+      DRONE_BUILD_NUMBER: ${{ github.run_number }}
+      DRONE_COMMIT: ${{ github.sha }}
+
     container:
       image: scireum/sirius-build-jdk26
       volumes:
