@@ -255,6 +255,18 @@ class ValueTest {
     }
 
     @Test
+    fun `asOptionalBoolean accepts true, false, 1 and 0 only`() {
+        assertEquals(Optional.of(true), Value.of(true).asOptionalBoolean())
+        assertEquals(Optional.of(true), Value.of(" TRUE ").asOptionalBoolean())
+        assertEquals(Optional.of(true), Value.of("1").asOptionalBoolean())
+        assertEquals(Optional.of(false), Value.of("false").asOptionalBoolean())
+        assertEquals(Optional.of(false), Value.of(0).asOptionalBoolean())
+        assertEquals(Optional.empty(), Value.EMPTY.asOptionalBoolean())
+        assertEquals(Optional.empty(), Value.of(" ").asOptionalBoolean())
+        assertEquals(Optional.empty(), Value.of("yes").asOptionalBoolean())
+    }
+
+    @Test
     fun `append properly handles empty and null`() {
         assertEquals("x", Value.EMPTY.append(" ", "x").toString())
         assertEquals("x", Value.of("x").append(" ", null).asString())
