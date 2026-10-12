@@ -341,6 +341,26 @@ public class Value {
     }
 
     /**
+     * Returns the internal value wrapped as Optional while expecting it to be a boolean.
+     * <p>
+     * Next to a {@link Boolean}, the strings {@code "true"} and {@code "1"} as well as {@code "false"} and {@code "0"}
+     * are accepted, ignoring case and surrounding whitespace. If the value is empty or any other string, an empty
+     * Optional will be returned.
+     *
+     * @return the internal value wrapped as Optional or an empty Optional if the value is not filled or non-boolean
+     */
+    @Nonnull
+    public Optional<Boolean> asOptionalBoolean() {
+        if (isEmptyString()) {
+            return Optional.empty();
+        }
+        if (data instanceof Boolean booleanValue) {
+            return Optional.of(booleanValue);
+        }
+        return parseWithoutNLS(String.valueOf(data).trim());
+    }
+
+    /**
      * Returns the internal value wrapped as Optional.
      * <p>
      * If the value is empty, an empty Optional will be returned.
