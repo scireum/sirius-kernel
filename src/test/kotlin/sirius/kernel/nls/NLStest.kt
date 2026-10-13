@@ -483,4 +483,23 @@ class NLSTest {
         val resultSecondary = NLS.quoteSecondary("test", "en")
         assertEquals("‘test’", resultSecondary)
     }
+
+    @ParameterizedTest
+    @CsvSource(value = ["de,(leer)", "en,(empty)"])
+    fun `valueOrPlaceholder() names a missing value in the given language`(language: String, placeholder: String) {
+        assertEquals(placeholder, NLS.valueOrPlaceholder(null, language))
+        assertEquals(placeholder, NLS.valueOrPlaceholder("", language))
+    }
+
+    @Test
+    fun `valueOrPlaceholder() names a missing value in the current language`() {
+        CallContext.getCurrent().language = "de"
+        assertEquals("(leer)", NLS.valueOrPlaceholder(null))
+    }
+
+    @Test
+    fun `valueOrPlaceholder() returns a filled value unchanged, even if it consists of whitespace`() {
+        assertEquals("Armaturen", NLS.valueOrPlaceholder("Armaturen", "de"))
+        assertEquals("   ", NLS.valueOrPlaceholder("   ", "de"))
+    }
 }
