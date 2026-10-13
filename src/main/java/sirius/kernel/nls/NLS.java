@@ -913,6 +913,37 @@ public class NLS {
     }
 
     /**
+     * Returns the given value, or a placeholder naming it as missing in the current language if it is empty.
+     *
+     * @param value the value to show
+     * @return the value itself, or the placeholder if it is empty
+     * @see #valueOrPlaceholder(String, String)
+     */
+    public static String valueOrPlaceholder(@Nullable String value) {
+        return valueOrPlaceholder(value, getCurrentLanguage());
+    }
+
+    /**
+     * Returns the given value, or a placeholder naming it as missing in the given language if it is empty.
+     * <p>
+     * A text containing an empty value otherwise drops it silently, such as an empty entry within an enumeration,
+     * which then reads as a stray separator. The placeholder, e.g. <tt>(leer)</tt>, is maintained as
+     * <tt>NLS.emptyValue</tt> including its brackets, as how a missing value is marked is a convention of the
+     * language rather than of the caller.
+     * <p>
+     * The value is taken as it is: only <tt>null</tt> and an empty string count as empty, whereas one consisting of
+     * whitespace is returned unchanged. A value which is no string yet is to be rendered beforehand, e.g. via
+     * {@link #toUserString(Object, String)}, which also trims it.
+     *
+     * @param value    the value to show
+     * @param language a two-letter language code for which the placeholder is requested
+     * @return the value itself, or the placeholder if it is empty
+     */
+    public static String valueOrPlaceholder(@Nullable String value, String language) {
+        return Strings.isFilled(value) ? value : get("NLS.emptyValue", language);
+    }
+
+    /**
      * Converts dates to a "human" (e.g. "today", "yesterday") format.
      * <p>
      * The following texts are supported:
