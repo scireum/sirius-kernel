@@ -63,6 +63,8 @@ class UrlsTest {
 
     @Test
     fun encode() {
+        assertEquals("hello+world", Urls.encode("hello world"))
+        assertEquals("hello%2Bworld", Urls.encode("hello+world"))
         assertEquals("A%3FTEST%26B%C3%84%C3%96%C3%9C", Urls.encode("A?TEST&BÄÖÜ"))
     }
 
@@ -87,6 +89,7 @@ class UrlsTest {
     @Test
     fun decode() {
         assertEquals("A?TEST&BÄÖÜ", Urls.decode("A%3FTEST%26B%C3%84%C3%96%C3%9C"))
+        assertEquals("A B C", Urls.decode("A+B%20C"))
     }
 
     @Test
