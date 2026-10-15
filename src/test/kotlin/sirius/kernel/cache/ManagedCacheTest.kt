@@ -23,10 +23,9 @@ import kotlin.test.assertNotEquals
  * Tests the [ManagedCache] class.
  */
 @ExtendWith(SiriusExtension::class)
-@NightlyTest
 class ManagedCacheTest {
 
-    @Test
+    @NightlyTest
     fun `test run eviction removes old entries`() {
         val cache: ManagedCache<String, String> = ManagedCache("test-cache", null, null)
         cache.put("key1", "value1")
@@ -60,14 +59,16 @@ class ManagedCacheTest {
     @Test
     fun `removeAll works as expected`() {
         val cache: ManagedCache<String, Tuple<String, String>> = ManagedCache("test-cache", null, null)
-        cache.addRemover("FIRST",
-                { key, entry ->
-                    Strings.areEqual(key, entry.getValue()?.getFirst())
-                })
-        cache.addRemover("SECOND",
-                { key, entry ->
-                    Strings.areEqual(key, entry.getValue()?.getSecond())
-                })
+        cache.addRemover(
+            "FIRST",
+            { key, entry ->
+                Strings.areEqual(key, entry.getValue()?.getFirst())
+            })
+        cache.addRemover(
+            "SECOND",
+            { key, entry ->
+                Strings.areEqual(key, entry.getValue()?.getSecond())
+            })
         cache.put("A", Tuple.create("0", "0"))
         cache.put("B", Tuple.create("1", "2"))
         cache.put("C", Tuple.create("2", "1"))
@@ -95,28 +96,28 @@ class ManagedCacheTest {
 
         // defines a remover, that allows to define a key value, which should not be removed
         cache.addRemover("FILTER")
-                .filter(
-                        { selector, entry ->
-                            entry.getKey() != selector
-                        }
-                )
-                .map(
-                        // get value of managed cache
-                        { entry ->
-                            entry.getValue()
-                        }
-                )
-                .map(
-                        // add key + value of the cache Entry, for example: "E" + 12345
-                        { selector, value ->
-                            value + selector
-                        }
-                ).removeIf(
-                        // if the resulting string, f.E. "E12345" is larger than 5, remove entry
-                        { x ->
-                            x.length > 5
-                        }
-                )
+            .filter(
+                { selector, entry ->
+                    entry.getKey() != selector
+                }
+            )
+            .map(
+                // get value of managed cache
+                { entry ->
+                    entry.getValue()
+                }
+            )
+            .map(
+                // add key + value of the cache Entry, for example: "E" + 12345
+                { selector, value ->
+                    value + selector
+                }
+            ).removeIf(
+                // if the resulting string, f.E. "E12345" is larger than 5, remove entry
+                { x ->
+                    x.length > 5
+                }
+            )
 
         cache.removeAll("FILTER", "A")
 
@@ -137,11 +138,11 @@ class ManagedCacheTest {
         cache.put("Key5", Tuple.create("5", "E"))
 
         cache.addValueBasedRemover("REMOVE_ALWAYS")
-                .removeAlways({ selector, tuple ->
-                    tuple.getSecond() == selector
-                }).removeIf({ _ ->
-                    false
-                })
+            .removeAlways({ selector, tuple ->
+                tuple.getSecond() == selector
+            }).removeIf({ _ ->
+                false
+            })
 
         cache.removeAll("REMOVE_ALWAYS", "C")
         cache.removeAll("REMOVE_ALWAYS", "B")
@@ -153,7 +154,7 @@ class ManagedCacheTest {
         assertNotEquals(null, cache.get("Key5"))
     }
 
-    @Test
+    @NightlyTest
     fun `a removal listener is correctly invoked upon eviction`() {
         var invoked = false
         val cache: ManagedCache<String, String> = ManagedCache("test-cache", null, null)
