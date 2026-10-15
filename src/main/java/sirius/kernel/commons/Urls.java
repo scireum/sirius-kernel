@@ -62,6 +62,11 @@ public class Urls {
 
     /**
      * Returns a URL-encoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
+     * <p>
+     * Note that a space is encoded as <tt>+</tt> rather than <tt>%20</tt> and a literal <tt>+</tt> as <tt>%2B</tt>.
+     * This follows the <tt>application/x-www-form-urlencoded</tt> format used for query strings, which is also what
+     * {@link #decode(String)} expects. Therefore, this method is meant for query parameters and must not be used for
+     * paths, where a <tt>+</tt> is a literal character (use {@link #encodePathSegment(String)} instead).
      *
      * @param value the value to be encoded.
      * @return a URL-encoded representation of value, using UTF-8 as character encoding.
@@ -93,6 +98,12 @@ public class Urls {
 
     /**
      * Returns a URL-decoded representation of the given <tt>value</tt> with <tt>UTF-8</tt> as character encoding.
+     * <p>
+     * Note that both <tt>%20</tt> and <tt>+</tt> are decoded into a space. This follows the
+     * <tt>application/x-www-form-urlencoded</tt> format used for query strings, which is also what
+     * {@link #encode(String)} produces (a space becomes <tt>+</tt>, a literal <tt>+</tt> becomes <tt>%2B</tt>).
+     * Therefore, this method is meant for query parameters and must not be used for paths, where a <tt>+</tt> is a
+     * literal character (see {@link #encodePathSegment(String)}).
      *
      * @param value the value to be decoded.
      * @return a URL-decoded representation of value, using UTF-8 as character encoding.
