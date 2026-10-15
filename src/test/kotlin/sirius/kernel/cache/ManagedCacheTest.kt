@@ -23,10 +23,9 @@ import kotlin.test.assertNotEquals
  * Tests the [ManagedCache] class.
  */
 @ExtendWith(SiriusExtension::class)
-@NightlyTest
 class ManagedCacheTest {
 
-    @Test
+    @NightlyTest
     fun `test run eviction removes old entries`() {
         val cache: ManagedCache<String, String> = ManagedCache("test-cache", null, null)
         cache.put("key1", "value1")
@@ -155,7 +154,7 @@ class ManagedCacheTest {
         assertNotEquals(null, cache.get("Key5"))
     }
 
-    @Test
+    @NightlyTest
     fun `a removal listener is correctly invoked upon eviction`() {
         var invoked = false
         val cache: ManagedCache<String, String> = ManagedCache("test-cache", null, null)
