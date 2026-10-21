@@ -3,15 +3,22 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 version: 2
+
+# private Maven repositories (no credentials required for download)
 registries:
   scireum-mvn:
     type: maven-repository
     url: https://mvn.scireum.com
+  scireum-mvn-closed:
+    type: maven-repository
+    url: https://mvn-closed.scireum.com
+
 updates:
 - package-ecosystem: maven
   directory: "/"
   registries:
     - scireum-mvn
+    - scireum-mvn-closed
   schedule:
     interval: daily
   cooldown:
