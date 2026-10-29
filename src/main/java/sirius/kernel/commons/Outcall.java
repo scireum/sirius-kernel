@@ -477,7 +477,7 @@ public class Outcall {
             setReadTimeout(readTimeout);
         }
 
-        maxAdditionalConnections = Math.max(0, extension.get("maxAdditionalConnections").asInt(0));
+        maxAdditionalConnections = extension.getConfig().getInt("maxAdditionalConnections");
 
         return this;
     }
@@ -636,7 +636,7 @@ public class Outcall {
         try {
             return client.send(request, HttpResponse.BodyHandlers.ofInputStream());
         } catch (IOException exception) {
-            if (maxAdditionalConnections == 0 || clientSelector == null || !isConcurrentStreamLimitReached(exception)) {
+            if (maxAdditionalConnections <= 0 || clientSelector == null || !isConcurrentStreamLimitReached(exception)) {
                 throw exception;
             }
             return sendViaAdditionalClient(exception);
