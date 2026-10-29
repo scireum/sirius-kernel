@@ -14,6 +14,7 @@ import sirius.kernel.async.Operation;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Log;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.io.IOExceptionSkipLog;
 import sirius.kernel.nls.NLS;
@@ -54,10 +55,12 @@ import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Base64;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -119,6 +122,8 @@ public class Outcall {
 
     private static final String DEFAULT_CLIENT_SELECTOR = "_default_";
 
+    private static final Log LOG = Log.get("outcall");
+
     /**
      * Keeps track of hosts for which we ran into a connect-timeout.
      * <p>
@@ -157,12 +162,30 @@ public class Outcall {
      */
     private static final Map<String, HttpClient> cachedHttpClients = new ConcurrentHashMap<>();
 
+    /**
+     * Contains additional clients per <tt>clientSelector</tt>, which are used once the HTTP/2 connection of the
+     * cached client has reached its limit of concurrent streams.
+     * <p>
+     * The JDK client only maintains a single HTTP/2 connection per origin, and neither waits for a free stream nor
+     * opens another connection once the limit (<tt>SETTINGS_MAX_CONCURRENT_STREAMS</tt>) of the server is reached.
+     * Therefore, we open another connection by using another client, if permitted via
+     * <tt>maxAdditionalConnections</tt> (see {@link #withConfiguredTimeout(String, String)}).
+     */
+    private static final Map<String, List<HttpClient>> additionalHttpClients = new ConcurrentHashMap<>();
+
+    /**
+     * Contains the message of the exception thrown by the JDK client if the limit of concurrent HTTP/2 streams is
+     * reached. As the JDK doesn't provide a dedicated exception type for this, we have to match the message.
+     */
+    private static final String TOO_MANY_CONCURRENT_STREAMS = "too many concurrent streams";
+
     private static final int MAX_REDIRECTS = 5;
 
     private String clientSelector = DEFAULT_CLIENT_SELECTOR;
     private HttpClient client;
     private HttpRequest request;
     private String blacklistId;
+    private int maxAdditionalConnections;
     private HttpClient.Builder clientBuilder;
     private final HttpRequest.Builder requestBuilder;
     private HttpResponse<InputStream> response;
@@ -428,6 +451,14 @@ public class Outcall {
      * Sets the connect-timeout and read-timeout to the values specified in the config block http.outcall.timeouts.*
      * where * equals the configKey parameter.
      * <p>
+     * If the block permits <tt>maxAdditionalConnections</tt>, a request which fails because the HTTP/2 connection of
+     * the client has reached its limit of concurrent streams is sent via one of up to this many additional clients
+     * (and therefore connections) instead. If these are exhausted as well, the request fails as before. Slow responses
+     * on any of these connections are still handled by the timeouts and the blacklist. As the additional clients are
+     * cached per client selector, this has no effect if the client isn't cached (see
+     * {@link #CLIENT_SELECTOR_NO_CACHE}). This should only be used for servers which permit few concurrent streams and
+     * accept additional connections.
+     * <p>
      * See the http.outcall.timeouts block in component-050-kernel.conf for reference.
      *
      * @param clientSelector the selector used to cache the underlying {@link HttpClient} to facilitate connection pooling
@@ -446,6 +477,8 @@ public class Outcall {
         if (!Duration.ZERO.equals(readTimeout)) {
             setReadTimeout(readTimeout);
         }
+
+        maxAdditionalConnections = Math.max(0, extension.get("maxAdditionalConnections").asInt(0));
 
         return this;
     }
@@ -579,13 +612,85 @@ public class Outcall {
             }
         }
 
-        HttpClient.Builder builder =
-                clientBuilder != null ? clientBuilder : HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
-        HttpClient result = builder.build();
+        HttpClient result = buildClient();
         if (clientSelector != null) {
             cachedHttpClients.put(clientSelector, result);
         }
         return result;
+    }
+
+    private HttpClient buildClient() {
+        HttpClient.Builder builder =
+                clientBuilder != null ? clientBuilder : HttpClient.newBuilder().connectTimeout(defaultConnectTimeout);
+        return builder.build();
+    }
+
+    /**
+     * Sends the request using the current client.
+     * <p>
+     * If the HTTP/2 connection of the client has reached its limit of concurrent streams and additional connections
+     * are permitted (see {@link #withConfiguredTimeout(String, String)}), the request is sent via an additional
+     * client (and therefore via another connection). As the stream could not be reserved, the request has not been
+     * sent yet and can safely be sent again.
+     */
+    private HttpResponse<InputStream> sendRequest() throws IOException, InterruptedException {
+        try {
+            return client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (IOException exception) {
+            if (maxAdditionalConnections == 0 || clientSelector == null || !isConcurrentStreamLimitReached(exception)) {
+                throw exception;
+            }
+            return sendViaAdditionalClient(exception);
+        }
+    }
+
+    private HttpResponse<InputStream> sendViaAdditionalClient(IOException streamLimitException)
+            throws IOException, InterruptedException {
+        List<HttpClient> clients =
+                additionalHttpClients.computeIfAbsent(clientSelector, ignored -> new CopyOnWriteArrayList<>());
+        int triedClients = 0;
+        while (true) {
+            while (triedClients < clients.size()) {
+                try {
+                    client = clients.get(triedClients++);
+                    return client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                } catch (IOException exception) {
+                    if (!isConcurrentStreamLimitReached(exception)) {
+                        throw exception;
+                    }
+                }
+            }
+
+            synchronized (clients) {
+                if (triedClients < clients.size()) {
+                    // Another thread has added a client in the meantime, which might still have free streams...
+                    continue;
+                }
+                if (clients.size() >= maxAdditionalConnections) {
+                    throw streamLimitException;
+                }
+                client = buildClient();
+                clients.add(client);
+                LOG.INFO("Opened additional connection %s of %s for client selector '%s' (%s) as the limit of "
+                         + "concurrent HTTP/2 streams was reached.",
+                         clients.size(),
+                         maxAdditionalConnections,
+                         clientSelector,
+                         request.uri().getHost());
+            }
+            return client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        }
+    }
+
+    private static boolean isConcurrentStreamLimitReached(IOException exception) {
+        Throwable current = exception;
+        while (current != null) {
+            if (current.getMessage() != null && current.getMessage().contains(TOO_MANY_CONCURRENT_STREAMS)) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     private void performRequest() throws IOException {
@@ -595,7 +700,7 @@ public class Outcall {
                                                  client.connectTimeout()
                                                        .orElse(defaultConnectTimeout)
                                                        .plusSeconds(1))) {
-            response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            response = sendRequest();
             if (oAuthTokenRefresher != null && isUnauthorized(response.statusCode())) {
                 oAuthTokenRefresher.run();
                 oAuthTokenRefresher = null;
