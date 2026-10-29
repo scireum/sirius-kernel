@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import java.net.CookieManager;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
