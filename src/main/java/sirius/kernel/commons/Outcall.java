@@ -649,7 +649,8 @@ public class Outcall {
                 additionalHttpClients.computeIfAbsent(clientSelector, ignored -> new CopyOnWriteArrayList<>());
         int triedClients = 0;
         while (true) {
-            while (triedClients < clients.size()) {
+            // The list is shared per client selector, but the limit is configured per call...
+            while (triedClients < Math.min(clients.size(), maxAdditionalConnections)) {
                 try {
                     client = clients.get(triedClients++);
                     return client.send(request, HttpResponse.BodyHandlers.ofInputStream());
@@ -661,15 +662,14 @@ public class Outcall {
             }
 
             synchronized (clients) {
-                if (triedClients < clients.size()) {
+                if (triedClients < Math.min(clients.size(), maxAdditionalConnections)) {
                     // Another thread has added a client in the meantime, which might still have free streams...
                     continue;
                 }
                 if (clients.size() >= maxAdditionalConnections) {
                     throw streamLimitException;
                 }
-                client = buildClient();
-                clients.add(client);
+                clients.add(buildClient());
                 LOG.INFO("Opened additional connection %s of %s for client selector '%s' (%s) as the limit of "
                          + "concurrent HTTP/2 streams was reached.",
                          clients.size(),
@@ -677,7 +677,7 @@ public class Outcall {
                          clientSelector,
                          request.uri().getHost());
             }
-            return client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            // The new client is tried by the loop above, as another thread might occupy its streams first...
         }
     }
 
