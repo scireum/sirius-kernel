@@ -169,6 +169,9 @@ public class Outcall {
      * opens another connection once the limit (<tt>SETTINGS_MAX_CONCURRENT_STREAMS</tt>) of the server is reached.
      * Therefore, we open another connection by using another client, if permitted via
      * <tt>maxAdditionalConnections</tt> (see {@link #withConfiguredTimeout(String, String)}).
+     * <p>
+     * Just like the cached clients, these are kept until the JVM is restarted. Each client maintains its own
+     * connection pool and selector thread, but the number of clients per selector is bounded by the config.
      */
     private static final Map<String, List<HttpClient>> additionalHttpClients = new ConcurrentHashMap<>();
 
@@ -455,8 +458,12 @@ public class Outcall {
      * (and therefore connections) instead. If these are exhausted as well, the request fails as before. Slow responses
      * on any of these connections are still handled by the timeouts and the blacklist. As the additional clients are
      * cached per client selector, this has no effect if the client isn't cached (see
-     * {@link #CLIENT_SELECTOR_NO_CACHE}). This should only be used for servers which permit few concurrent streams and
-     * accept additional connections.
+     * {@link #CLIENT_SELECTOR_NO_CACHE}, which also applies to the deprecated {@link #withConfiguredTimeout(String)}).
+     * Note that the given client selector is only applied if a <tt>connectTimeout</tt> is configured.
+     * <p>
+     * As this bypasses the limit chosen by the server (permitting up to <tt>maxAdditionalConnections + 1</tt> times
+     * its concurrent streams), this should only be enabled in coordination with the operator of the server, using a
+     * small value. It doesn't replace failing fast if the server is overloaded.
      * <p>
      * See the http.outcall.timeouts block in component-050-kernel.conf for reference.
      *
@@ -652,8 +659,9 @@ public class Outcall {
             // The list is shared per client selector, but the limit is configured per call...
             while (triedClients < Math.min(clients.size(), maxAdditionalConnections)) {
                 try {
-                    client = clients.get(triedClients++);
-                    return client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                    // Keep the cached client in the field, so that redirects and retries start with it again...
+                    HttpClient additionalClient = clients.get(triedClients++);
+                    return additionalClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
                 } catch (IOException exception) {
                     if (!isConcurrentStreamLimitReached(exception)) {
                         throw exception;
