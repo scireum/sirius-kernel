@@ -60,6 +60,40 @@ class URLBuilderTest {
     }
 
     @Test
+    fun `trailing slash of baseURL can be kept`() {
+        var urlBuilder = URLBuilder("http://sirius-lib.net/example/", true)
+        assertEquals("http://sirius-lib.net/example/", urlBuilder.build())
+
+        urlBuilder = URLBuilder("http://sirius-lib.net/example", true)
+        assertEquals("http://sirius-lib.net/example", urlBuilder.build())
+
+        urlBuilder = URLBuilder("http://sirius-lib.net/example/", false)
+        assertEquals("http://sirius-lib.net/example", urlBuilder.build())
+    }
+
+    @Test
+    fun `parts and parameters can be added to baseURL with kept trailing slash`() {
+        var urlBuilder = URLBuilder("http://sirius-lib.net/example/", true)
+        urlBuilder.addSafePart("file.jpg")
+        assertEquals("http://sirius-lib.net/example/file.jpg", urlBuilder.build())
+
+        urlBuilder = URLBuilder("http://sirius-lib.net/example/", true)
+        urlBuilder.addParameter("test", "value")
+        assertEquals("http://sirius-lib.net/example/?test=value", urlBuilder.build())
+    }
+
+    @Test
+    fun `parts and parameters can be added to baseURL with removed trailing slash`() {
+        var urlBuilder = URLBuilder("http://sirius-lib.net/example/")
+        urlBuilder.addSafePart("file.jpg")
+        assertEquals("http://sirius-lib.net/example/file.jpg", urlBuilder.build())
+
+        urlBuilder = URLBuilder("http://sirius-lib.net/example/")
+        urlBuilder.addParameter("test", "value")
+        assertEquals("http://sirius-lib.net/example?test=value", urlBuilder.build())
+    }
+
+    @Test
     fun `baseURL creation with protocol and host constructor is working`() {
         var urlBuilder = URLBuilder(URLBuilder.PROTOCOL_HTTP, "sirius-lib.net")
         assertEquals("http://sirius-lib.net", urlBuilder.build())
