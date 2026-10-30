@@ -43,18 +43,35 @@ public class URLBuilder {
 
     /**
      * Creates a new instance pre-filled with the given baseURL.
+     * <p>
+     * A trailing '/' of the base URL is removed. Use {@link #URLBuilder(String, boolean)} to keep it.
      *
-     * @param baseURL the base URL to stat with in a form like <tt>http://somehost.com</tt> or
+     * @param baseURL the base URL to start with in a form like <tt>http://somehost.com</tt> or
      *                <tt>http://somehost.com?some=parameter</tt>
      */
     public URLBuilder(@Nonnull String baseURL) {
+        this(baseURL, false);
+    }
+
+    /**
+     * Creates a new instance pre-filled with the given baseURL.
+     * <p>
+     * Keeping the trailing '/' is meant for endpoints which require it and get parameters appended directly, like
+     * <tt>http://somehost.com/endpoint/?some=parameter</tt>. Parts added via {@link #addSafePart(String)} still
+     * don't result in a double '/'.
+     *
+     * @param baseURL           the base URL to start with in a form like <tt>http://somehost.com</tt> or
+     *                          <tt>http://somehost.com?some=parameter</tt>
+     * @param keepTrailingSlash <tt>true</tt> to keep a trailing '/' of the base URL, <tt>false</tt> to remove it
+     */
+    public URLBuilder(@Nonnull String baseURL, boolean keepTrailingSlash) {
         url = new StringBuilder();
 
         if (baseURL.contains(QUERY_SEPARATOR)) {
             questionMark.toggle();
         }
 
-        if (baseURL.endsWith(PATH_SEPARATOR)) {
+        if (baseURL.endsWith(PATH_SEPARATOR) && !keepTrailingSlash) {
             url.append(baseURL, 0, baseURL.length() - 1);
         } else {
             url.append(baseURL);
