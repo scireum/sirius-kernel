@@ -23,74 +23,55 @@ class URLBuilderTest {
         assertEquals("http://sirius-lib.net", urlBuilder.build())
 
         urlBuilder = URLBuilder("http://sirius-lib.net/")
-        assertEquals("http://sirius-lib.net", urlBuilder.build())
+        assertEquals("http://sirius-lib.net/", urlBuilder.build())
 
         urlBuilder = URLBuilder("sirius-lib.net")
         assertEquals("sirius-lib.net", urlBuilder.build())
 
         urlBuilder = URLBuilder("sirius-lib.net/")
-        assertEquals("sirius-lib.net", urlBuilder.build())
+        assertEquals("sirius-lib.net/", urlBuilder.build())
 
         urlBuilder = URLBuilder("www.sirius-lib.net")
         assertEquals("www.sirius-lib.net", urlBuilder.build())
 
         urlBuilder = URLBuilder("www.sirius-lib.net/")
-        assertEquals("www.sirius-lib.net", urlBuilder.build())
+        assertEquals("www.sirius-lib.net/", urlBuilder.build())
 
         urlBuilder = URLBuilder("www.sirius-lib.net/example")
         assertEquals("www.sirius-lib.net/example", urlBuilder.build())
 
         urlBuilder = URLBuilder("www.sirius-lib.net/example/")
-        assertEquals("www.sirius-lib.net/example", urlBuilder.build())
+        assertEquals("www.sirius-lib.net/example/", urlBuilder.build())
 
         urlBuilder = URLBuilder("http://www.sirius-lib.net")
         assertEquals("http://www.sirius-lib.net", urlBuilder.build())
 
         urlBuilder = URLBuilder("http://www.sirius-lib.net/")
-        assertEquals("http://www.sirius-lib.net", urlBuilder.build())
+        assertEquals("http://www.sirius-lib.net/", urlBuilder.build())
 
         urlBuilder = URLBuilder("localhost:80")
         assertEquals("localhost:80", urlBuilder.build())
 
         urlBuilder = URLBuilder("localhost:80/")
-        assertEquals("localhost:80", urlBuilder.build())
+        assertEquals("localhost:80/", urlBuilder.build())
 
         urlBuilder = URLBuilder("127.0.0.1:80/")
-        assertEquals("127.0.0.1:80", urlBuilder.build())
+        assertEquals("127.0.0.1:80/", urlBuilder.build())
     }
 
     @Test
-    fun `trailing slash of baseURL can be kept`() {
-        var urlBuilder = URLBuilder("http://sirius-lib.net/example/", true)
-        assertEquals("http://sirius-lib.net/example/", urlBuilder.build())
-
-        urlBuilder = URLBuilder("http://sirius-lib.net/example", true)
-        assertEquals("http://sirius-lib.net/example", urlBuilder.build())
-
-        urlBuilder = URLBuilder("http://sirius-lib.net/example/", false)
-        assertEquals("http://sirius-lib.net/example", urlBuilder.build())
-    }
-
-    @Test
-    fun `parts and parameters can be added to baseURL with kept trailing slash`() {
-        var urlBuilder = URLBuilder("http://sirius-lib.net/example/", true)
-        urlBuilder.addSafePart("file.jpg")
-        assertEquals("http://sirius-lib.net/example/file.jpg", urlBuilder.build())
-
-        urlBuilder = URLBuilder("http://sirius-lib.net/example/", true)
-        urlBuilder.addParameter("test", "value")
-        assertEquals("http://sirius-lib.net/example/?test=value", urlBuilder.build())
-    }
-
-    @Test
-    fun `parts and parameters can be added to baseURL with removed trailing slash`() {
+    fun `parts and parameters can be added to baseURL with trailing slash`() {
         var urlBuilder = URLBuilder("http://sirius-lib.net/example/")
         urlBuilder.addSafePart("file.jpg")
         assertEquals("http://sirius-lib.net/example/file.jpg", urlBuilder.build())
 
         urlBuilder = URLBuilder("http://sirius-lib.net/example/")
+        urlBuilder.addSafePart("/file.jpg")
+        assertEquals("http://sirius-lib.net/example/file.jpg", urlBuilder.build())
+
+        urlBuilder = URLBuilder("http://sirius-lib.net/example/")
         urlBuilder.addParameter("test", "value")
-        assertEquals("http://sirius-lib.net/example?test=value", urlBuilder.build())
+        assertEquals("http://sirius-lib.net/example/?test=value", urlBuilder.build())
     }
 
     @Test
