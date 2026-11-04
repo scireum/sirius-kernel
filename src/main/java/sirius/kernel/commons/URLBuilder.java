@@ -43,8 +43,11 @@ public class URLBuilder {
 
     /**
      * Creates a new instance pre-filled with the given baseURL.
+     * <p>
+     * The base URL is used as given, including a trailing '/'. Parts added via {@link #addSafePart(String)} still
+     * don't result in a double '/'.
      *
-     * @param baseURL the base URL to stat with in a form like <tt>http://somehost.com</tt> or
+     * @param baseURL the base URL to start with in a form like <tt>http://somehost.com</tt> or
      *                <tt>http://somehost.com?some=parameter</tt>
      */
     public URLBuilder(@Nonnull String baseURL) {
@@ -54,11 +57,7 @@ public class URLBuilder {
             questionMark.toggle();
         }
 
-        if (baseURL.endsWith(PATH_SEPARATOR)) {
-            url.append(baseURL, 0, baseURL.length() - 1);
-        } else {
-            url.append(baseURL);
-        }
+        url.append(baseURL);
     }
 
     /**
