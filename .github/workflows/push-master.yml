@@ -10,7 +10,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
 
     container:
-      image: scireum/sirius-build-jdk26
+      image: scireum/sirius-build-jdk27
       volumes:
         - /root/.m2:/root/.m2
       credentials:
