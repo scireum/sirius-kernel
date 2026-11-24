@@ -86,34 +86,6 @@ public class Settings {
     /**
      * Returns the {@link Value} defined for the given key.
      * <p>
-     * This is the same as {@link #get(String)}. It was the way to bypass the automatic translation which
-     * {@link Extension} used to apply in {@link #get(String)}; since that is gone, there is nothing left to bypass.
-     * <p>
-     * Note that if this config is <tt>strict</tt>, an error is logged if the requested path does not exist. However,
-     * no exception will be thrown.
-     *
-     * @param path the access path to retrieve the value
-     * @return the value wrapping the contents for the given path. This will never be <tt>null</tt>,
-     * but might be empty: {@link Value#isNull()}
-     * @deprecated Use {@link #get(String)}
-     */
-    @Nonnull
-    @Deprecated
-    public Value getRaw(String path) {
-        try {
-            return Value.of(getConfig().getAnyRef(path));
-        } catch (ConfigException exception) {
-            if (strict) {
-                Exceptions.handle(exception);
-            }
-
-            return Value.EMPTY;
-        }
-    }
-
-    /**
-     * Returns the {@link Value} defined for the given key.
-     * <p>
      * Note that if this config is <tt>strict</tt>, an error is logged if the requested path does not exist. However,
      * no exception will be thrown.
      *
@@ -123,8 +95,15 @@ public class Settings {
      */
     @Nonnull
     public Value get(String path) {
-        // the implementation stays in getRaw until it is removed, so that subclasses overriding either keep working
-        return getRaw(path);
+        try {
+            return Value.of(getConfig().getAnyRef(path));
+        } catch (ConfigException exception) {
+            if (strict) {
+                Exceptions.handle(exception);
+            }
+
+            return Value.EMPTY;
+        }
     }
 
     /**
