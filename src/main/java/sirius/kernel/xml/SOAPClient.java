@@ -385,7 +385,7 @@ public class SOAPClient {
         } catch (SOAPFaultException | HandledException exception) {
             throw exception;
         } catch (IOExceptionSkipLog exception) {
-            return handleIOExceptionSkipLog(watch, action, effectiveEndpoint, exception);
+            return handleIOExceptionSkipLog(action, effectiveEndpoint, exception);
         } catch (Exception exception) {
             return handleGeneralFault(watch, action, effectiveEndpoint, exception);
         }
@@ -507,8 +507,7 @@ public class SOAPClient {
                                               .handle());
     }
 
-    private StructuredNode handleIOExceptionSkipLog(Watch watch,
-                                                    String action,
+    private StructuredNode handleIOExceptionSkipLog(String action,
                                                     URL effectiveEndpoint,
                                                     IOExceptionSkipLog exception) {
         throw exceptionFilter.apply(Exceptions.createHandled()
