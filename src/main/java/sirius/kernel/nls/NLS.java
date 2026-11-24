@@ -100,7 +100,6 @@ public class NLS {
     private static final long SECOND = 1000;
     private static final long MINUTE = 60 * SECOND;
     private static final long HOUR = 60 * MINUTE;
-    private static final long DAY = 24 * HOUR;
 
     private static final String[] UNITS = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
 
