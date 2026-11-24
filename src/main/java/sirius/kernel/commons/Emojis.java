@@ -94,14 +94,65 @@ public class Emojis {
     /**
      * Checks whether the given {@code string} contains only emojis with additional whitespace characters.
      * <p>
-     * Note that pure whitespace strings will return <tt>false</tt>.
+     * Whitespace refers to all characters accepted by {@link Character#isWhitespace(char)}, such as blanks, tabs, line
+     * breaks or the ideographic space, as well as the non-breaking spaces (e.g. U+00A0), which are common in text
+     * coming from HTML or rich text editors. Note that pure whitespace strings will return <tt>false</tt>.
      *
      * @param string the string to check
      * @return <tt>true</tt> if the string contains only emojis and whitespace, <tt>false</tt> otherwise
      * @see #onlyContainsEmojis(String)
      */
     public static boolean onlyContainsEmojisWithWhitespace(String string) {
-        return onlyContainsEmojis(string.replaceAll("\\s", ""));
+        if (Strings.isEmpty(string)) {
+            return false;
+        }
+
+        boolean emojiFound = false;
+        Matcher matcher = GRAPHEME_CLUSTER.matcher(string);
+        while (matcher.find()) {
+            String cluster = matcher.group();
+            int emojiStart = skipWhitespace(cluster);
+            if (emojiStart == cluster.length()) {
+                continue;
+            }
+            if (!isEmojiCluster(cluster.substring(emojiStart))) {
+                return false;
+            }
+            emojiFound = true;
+        }
+
+        return emojiFound;
+    }
+
+    /**
+     * Determines the index of the first non-whitespace character in the given grapheme cluster.
+     * <p>
+     * A cluster can start with whitespace and continue with something else, as a stray emoji modifier or variation
+     * selector attaches to a preceding blank. Note that "\r\n" forms a single cluster.
+     *
+     * @param cluster a single extended grapheme cluster
+     * @return the index of the first non-whitespace character, or the length of the cluster if it is whitespace only
+     */
+    private static int skipWhitespace(String cluster) {
+        int index = 0;
+        while (index < cluster.length() && isWhitespace(cluster.charAt(index))) {
+            index++;
+        }
+        return index;
+    }
+
+    /**
+     * Determines whether the given character is whitespace, including non-breaking spaces.
+     * <p>
+     * {@link Character#isWhitespace(char)} deliberately excludes the non-breaking spaces (e.g. U+00A0), which only
+     * {@link Character#isSpaceChar(char)} accepts. All of these characters lie in the Basic Multilingual Plane, so
+     * checking chars suffices.
+     *
+     * @param character the character to check
+     * @return <tt>true</tt> if the character is whitespace, <tt>false</tt> otherwise
+     */
+    private static boolean isWhitespace(char character) {
+        return Character.isWhitespace(character) || Character.isSpaceChar(character);
     }
 
     /**

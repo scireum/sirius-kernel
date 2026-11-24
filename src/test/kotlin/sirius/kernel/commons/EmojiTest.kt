@@ -171,6 +171,29 @@ class EmojiTest {
     }
 
     @Test
+    fun acceptsUnicodeWhitespaceBetweenEmojis() {
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👍\t👍") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👍\n👍") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👍\r\n👍\r\n") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👍\u000B👍") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👍\u2009👍") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👍\u3000👍") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👍\u00A0👍") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👍\u202F👍") }
+        assertFalse { Emojis.onlyContainsEmojisWithWhitespace("\u00A0\u3000") }
+        assertFalse { Emojis.onlyContainsEmojisWithWhitespace("\r\n") }
+        assertFalse { Emojis.onlyContainsEmojisWithWhitespace("👍 1") }
+        assertFalse { Emojis.onlyContainsEmojisWithWhitespace(null) }
+    }
+
+    @Test
+    fun acceptsStrayModifiersAfterWhitespace() {
+        // A modifier attaches to a preceding blank, forming a single grapheme cluster
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace("👍 🏽") }
+        assertTrue { Emojis.onlyContainsEmojisWithWhitespace(" 🏽") }
+    }
+
+    @Test
     fun treatsTextPresentationSequencesAsText() {
         // U+FE0E (variation selector 15) requests text instead of emoji presentation, U+FE0F requests an emoji
         assertFalse { Emojis.isEmoji("\u2764\uFE0E") }
