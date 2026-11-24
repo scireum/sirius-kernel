@@ -8,6 +8,7 @@
 
 package sirius.kernel.commons
 
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -144,6 +145,29 @@ class EmojiTest {
         assertEquals("Version 2.0 ", Emojis.removeEmojis("Version 2.0 🎉"))
         assertEquals("Order #1 costs 20 € *now*", Emojis.removeEmojis("Order #1 costs 20 € *now*"))
         assertEquals(" first", Emojis.removeEmojis("1️⃣ first"))
+    }
+
+    @Test
+    fun detectsEmojisOfRecentUnicodeVersions() {
+        // Added in Unicode / Emoji 17.0, after the former emoji table was last generated. Detection follows the
+        // Unicode version of the running JDK, so the test is skipped on a JDK which doesn't know these code points yet.
+        Assumptions.assumeTrue(Character.isDefined(0x1FACD), "The running JDK does not support Unicode 17.0")
+        assertTrue { Emojis.isEmoji("🫍") }
+        assertTrue { Emojis.isEmoji("🪊") }
+        assertEquals("Orca ", Emojis.removeEmojis("Orca 🫍"))
+    }
+
+    @Test
+    fun treatsDigitsWithCombiningMarksAsText() {
+        assertFalse { Emojis.isEmoji("1\u0301") }
+        assertFalse { Emojis.containsEmoji("1\u0301") }
+    }
+
+    @Test
+    fun keepsStraySkinToneModifiersWithTheirBaseCharacter() {
+        // A skin tone modifier after a regular letter is a malformed sequence and belongs to that letter
+        assertFalse { Emojis.isEmoji("x🏾") }
+        assertEquals("x🏾", Emojis.removeEmojis("x🏾"))
     }
 
     @Test
