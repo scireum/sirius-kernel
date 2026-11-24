@@ -14,7 +14,6 @@ import sirius.kernel.commons.Explain;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
