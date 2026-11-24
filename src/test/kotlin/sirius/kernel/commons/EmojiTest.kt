@@ -138,4 +138,21 @@ class EmojiTest {
         assertFalse { Emojis.onlyContainsEmojis("123") }
         assertEquals(0, Emojis.countEmojis("Order #1 costs 20 € *now*"))
     }
+
+    @Test
+    fun keepsPlainDigitsAndSymbolsWhenRemovingEmojis() {
+        assertEquals("Version 2.0 ", Emojis.removeEmojis("Version 2.0 🎉"))
+        assertEquals("Order #1 costs 20 € *now*", Emojis.removeEmojis("Order #1 costs 20 € *now*"))
+        assertEquals(" first", Emojis.removeEmojis("1️⃣ first"))
+    }
+
+    @Test
+    fun treatsTextPresentationSequencesAsText() {
+        // U+FE0E (variation selector 15) requests text instead of emoji presentation, U+FE0F requests an emoji
+        assertFalse { Emojis.isEmoji("\u2764\uFE0E") }
+        assertFalse { Emojis.isEmoji("😀\uFE0E") }
+        assertFalse { Emojis.onlyContainsEmojis("\u2194\uFE0E") }
+        assertEquals("I \u2764\uFE0E it", Emojis.removeEmojis("I \u2764\uFE0E it"))
+        assertTrue { Emojis.isEmoji("\u2764\uFE0F") }
+    }
 }
