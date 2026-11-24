@@ -9,8 +9,6 @@
 package sirius.kernel.settings;
 
 import com.typesafe.config.ConfigObject;
-import sirius.kernel.Sirius;
-import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
@@ -18,7 +16,6 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
-import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,6 +23,9 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  * Represents an extension loaded via the {@link Settings} framework.
+ * <p>
+ * Values are returned as they are configured. A value which is to be shown to a user, such as a <tt>$key</tt> to
+ * translate or a map of translations, is read with {@link #getTranslatedString(String, String)}.
  */
 public class Extension extends Settings implements Comparable<Extension> {
 
@@ -66,28 +66,6 @@ public class Extension extends Settings implements Comparable<Extension> {
         } else {
             return config.withFallback(fallback);
         }
-    }
-
-    @Override
-    @Nonnull
-    public Value get(String path) {
-        // This method will be removed soon so that the original behaviour of Settings.get takes its place.
-        // Automatic translation will then be replaced by manual using getTranslatedString.
-        Value value = getRaw(path);
-        if (value.isFilled() && value.is(String.class)) {
-            if (!Sirius.isProd() && value.asString().startsWith("$") && !value.startsWith("${")) {
-                Log.SYSTEM.WARN(
-                        "Extension.get with automatic translation was used for %s of %s for key %s\n%s\n\nThis has been deprecated. use getTranslatedString as automatic translation will be disabled.",
-                        getId(),
-                        getType(),
-                        path,
-                        ExecutionPoint.snapshot());
-            }
-
-            return Value.of(NLS.smartGet(value.asString(), null));
-        }
-
-        return value;
     }
 
     @Override
