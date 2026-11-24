@@ -332,7 +332,7 @@ public class Settings {
     @SuppressWarnings("unchecked")
     @Nonnull
     public String getTranslatedString(String key, @Nullable String language) {
-        Value value = getRaw(key);
+        Value value = get(key);
         if (value.isFilled() && value.is(String.class)) {
             return NLS.smartGet(value.asString(), language);
         }
