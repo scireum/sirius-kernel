@@ -168,7 +168,7 @@ public class ConfigBuilder {
             StringBuilder scopeStringBuilder = new StringBuilder();
 
             for (Variable variable : variables.values()) {
-                if (variablesStringBuilder.length() > 0) {
+                if (!variablesStringBuilder.isEmpty()) {
                     variablesStringBuilder.append("\n");
                 }
 
@@ -178,13 +178,13 @@ public class ConfigBuilder {
             for (Scope scope : scopes.values()) {
                 // If the scope has only one variable, the scope will be collapsed and can reside with the variables
                 if (scope.hasOnlyOneVariable()) {
-                    if (variablesStringBuilder.length() > 0) {
+                    if (!variablesStringBuilder.isEmpty()) {
                         variablesStringBuilder.append("\n");
                     }
 
                     variablesStringBuilder.append(scope);
                 } else {
-                    if (scopeStringBuilder.length() > 0) {
+                    if (!scopeStringBuilder.isEmpty()) {
                         scopeStringBuilder.append("\n\n");
                     }
 

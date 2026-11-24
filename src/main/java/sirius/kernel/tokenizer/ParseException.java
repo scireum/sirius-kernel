@@ -61,7 +61,7 @@ public class ParseException extends Exception {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (ParseError error : errors) {
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.append("\n");
             }
             sb.append(error);

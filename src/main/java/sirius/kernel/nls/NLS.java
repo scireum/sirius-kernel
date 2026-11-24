@@ -1391,7 +1391,7 @@ public class NLS {
     }
 
     private static void appendDurationValue(StringBuilder result, String key, long value) {
-        if (result.length() > 0) {
+        if (!result.isEmpty()) {
             result.append(", ");
         }
         result.append(get(key, (int) value));
