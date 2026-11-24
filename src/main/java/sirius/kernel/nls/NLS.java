@@ -328,25 +328,24 @@ public class NLS {
             return value;
         }
 
-        if (numeric == 0) {
-            if (versions.length == 3) {
-                return versions[0].trim();
-            } else {
-                return Formatter.create(versions[1].trim()).set("count", formatter.apply(0)).format();
-            }
-        } else if (numeric == 1) {
-            if (versions.length == 3) {
-                return versions[1].trim();
-            } else {
-                return versions[0].trim();
-            }
-        } else {
-            if (versions.length == 3) {
-                return Formatter.create(versions[2].trim()).set("count", formatter.apply(numeric)).format();
-            } else {
-                return Formatter.create(versions[1].trim()).set("count", formatter.apply(numeric)).format();
-            }
-        }
+        boolean providesZeroVersion = versions.length == 3;
+        return switch (numeric) {
+            case 0 -> providesZeroVersion ? versions[0].trim() : formatCount(versions[1], formatter, 0);
+            case 1 -> providesZeroVersion ? versions[1].trim() : versions[0].trim();
+            default -> formatCount(versions[providesZeroVersion ? 2 : 1], formatter, numeric);
+        };
+    }
+
+    /**
+     * Fills the <tt>${count}</tt> placeholder of the given translation version with the formatted numeric.
+     *
+     * @param version   the version of a numeric translation, as selected by the caller
+     * @param formatter the formatter used to format the numeric
+     * @param numeric   the numeric to insert as count
+     * @return the translation with the count filled in
+     */
+    private static String formatCount(String version, Function<Integer, String> formatter, int numeric) {
+        return Formatter.create(version.trim()).set("count", formatter.apply(numeric)).format();
     }
 
     /**
