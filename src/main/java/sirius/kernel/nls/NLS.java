@@ -1235,15 +1235,26 @@ public class NLS {
                 return BigDecimal.valueOf(result);
             }
 
-            try {
-                return BigDecimal.valueOf(getDecimalFormat(language).parse(value).doubleValue());
-            } catch (ParseException exception) {
-                Exceptions.ignore(exception);
-                return BigDecimal.valueOf(Double.valueOf(value));
-            }
+            return parseLocalizedDecimal(value, language);
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
                                                exception);
+        }
+    }
+
+    /**
+     * Parses the given value using the decimal format of the given language.
+     * <p>
+     * If the localized format cannot parse the value, it is handed to {@link Double#valueOf(String)} as a last resort.
+     *
+     * @throws NumberFormatException if neither attempt can parse the value
+     */
+    private static BigDecimal parseLocalizedDecimal(String value, String language) {
+        try {
+            return BigDecimal.valueOf(getDecimalFormat(language).parse(value).doubleValue());
+        } catch (ParseException exception) {
+            Exceptions.ignore(exception);
+            return BigDecimal.valueOf(Double.valueOf(value));
         }
     }
 
