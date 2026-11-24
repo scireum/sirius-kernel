@@ -56,7 +56,7 @@ public class AutoTransformLoadAction implements ClassLoadAction {
 
             try {
                 findConstructor();
-            } catch (NoSuchMethodException exception) {
+            } catch (NoSuchMethodException _) {
                 Log.SYSTEM.WARN("The class %s which is marked with @AutoTransform does neither provide a"
                                 + " suitable single arg constructor nor a no-arg constructor! This will most probably"
                                 + " fail at runtime!", getClass().getName());

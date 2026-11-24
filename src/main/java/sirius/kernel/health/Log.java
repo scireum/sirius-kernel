@@ -209,7 +209,7 @@ public class Log {
                                                         this,
                                                         caller,
                                                         Thread.currentThread().getName()));
-                } catch (Exception exception) {
+                } catch (Exception _) {
                     // Ignored - if we can't log s.th. let's just give up...
                 }
             }

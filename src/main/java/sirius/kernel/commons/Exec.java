@@ -168,7 +168,7 @@ public class Exec {
     public static String exec(String command, boolean ignoreExitCodes, Duration opTimeout, @Nullable File directory)
             throws ExecException {
         StringBuilder logger = new StringBuilder();
-        try (Operation operation = new Operation(() -> command, opTimeout)) {
+        try (Operation _ = new Operation(() -> command, opTimeout)) {
             Process process = new ProcessBuilder().command(parseCommandToArray(command))
                                                   .directory(directory)
                                                   .redirectErrorStream(true)

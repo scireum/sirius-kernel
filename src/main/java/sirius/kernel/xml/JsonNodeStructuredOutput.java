@@ -169,7 +169,7 @@ public class JsonNodeStructuredOutput extends AbstractStructuredOutput {
 
         try {
             put(name, NODES.numberNode(new BigDecimal(formattedAmount)));
-        } catch (NumberFormatException exception) {
+        } catch (NumberFormatException _) {
             put(name, NODES.stringNode(formattedAmount));
         }
     }

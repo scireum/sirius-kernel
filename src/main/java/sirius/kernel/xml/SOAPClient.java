@@ -346,8 +346,8 @@ public class SOAPClient {
         Watch watch = Watch.start();
         URL effectiveEndpoint = customEndpoints.getOrDefault(action, endpoint);
 
-        try (Operation op = new Operation(() -> Strings.apply("SOAP %s -> %s", action, effectiveEndpoint),
-                                          Duration.ofSeconds(15))) {
+        try (Operation _ = new Operation(() -> Strings.apply("SOAP %s -> %s", action, effectiveEndpoint),
+                                         Duration.ofSeconds(15))) {
             XMLCall call =
                     XMLCall.to(effectiveEndpoint.toURI(), contentTypeHeader).withFineLogger(LOG, isDebugLogActive);
             call.getOutcall().withConfiguredTimeout(clientSelector, SOAP_TIMEOUT_CONFIG_KEY);
