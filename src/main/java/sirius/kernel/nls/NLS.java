@@ -100,7 +100,6 @@ public class NLS {
     private static final long SECOND = 1000;
     private static final long MINUTE = 60 * SECOND;
     private static final long HOUR = 60 * MINUTE;
-    private static final long DAY = 24 * HOUR;
 
     private static final String[] UNITS = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
 
@@ -329,25 +328,24 @@ public class NLS {
             return value;
         }
 
-        if (numeric == 0) {
-            if (versions.length == 3) {
-                return versions[0].trim();
-            } else {
-                return Formatter.create(versions[1].trim()).set("count", formatter.apply(0)).format();
-            }
-        } else if (numeric == 1) {
-            if (versions.length == 3) {
-                return versions[1].trim();
-            } else {
-                return versions[0].trim();
-            }
-        } else {
-            if (versions.length == 3) {
-                return Formatter.create(versions[2].trim()).set("count", formatter.apply(numeric)).format();
-            } else {
-                return Formatter.create(versions[1].trim()).set("count", formatter.apply(numeric)).format();
-            }
-        }
+        boolean providesZeroVersion = versions.length == 3;
+        return switch (numeric) {
+            case 0 -> providesZeroVersion ? versions[0].trim() : formatCount(versions[1], formatter, 0);
+            case 1 -> providesZeroVersion ? versions[1].trim() : versions[0].trim();
+            default -> formatCount(versions[providesZeroVersion ? 2 : 1], formatter, numeric);
+        };
+    }
+
+    /**
+     * Fills the <tt>${count}</tt> placeholder of the given translation version with the formatted numeric.
+     *
+     * @param version   the version of a numeric translation, as selected by the caller
+     * @param formatter the formatter used to format the numeric
+     * @param numeric   the numeric to insert as count
+     * @return the translation with the count filled in
+     */
+    private static String formatCount(String version, Function<Integer, String> formatter, int numeric) {
+        return Formatter.create(version.trim()).set("count", formatter.apply(numeric)).format();
     }
 
     /**
@@ -1237,15 +1235,26 @@ public class NLS {
                 return BigDecimal.valueOf(result);
             }
 
-            try {
-                return BigDecimal.valueOf(getDecimalFormat(language).parse(value).doubleValue());
-            } catch (ParseException exception) {
-                Exceptions.ignore(exception);
-                return BigDecimal.valueOf(Double.valueOf(value));
-            }
+            return parseLocalizedDecimal(value, language);
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(fmtr("NLS.errInvalidDecimalNumber").set("value", value).format(),
                                                exception);
+        }
+    }
+
+    /**
+     * Parses the given value using the decimal format of the given language.
+     * <p>
+     * If the localized format cannot parse the value, it is handed to {@link Double#valueOf(String)} as a last resort.
+     *
+     * @throws NumberFormatException if neither attempt can parse the value
+     */
+    private static BigDecimal parseLocalizedDecimal(String value, String language) {
+        try {
+            return BigDecimal.valueOf(getDecimalFormat(language).parse(value).doubleValue());
+        } catch (ParseException exception) {
+            Exceptions.ignore(exception);
+            return BigDecimal.valueOf(Double.valueOf(value));
         }
     }
 
@@ -1391,7 +1400,7 @@ public class NLS {
     }
 
     private static void appendDurationValue(StringBuilder result, String key, long value) {
-        if (result.length() > 0) {
+        if (!result.isEmpty()) {
             result.append(", ");
         }
         result.append(get(key, (int) value));

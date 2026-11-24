@@ -419,6 +419,7 @@ public class CallContext {
             } catch (Exception exception) {
                 Exceptions.handle()
                           .to(Log.SYSTEM)
+                          .error(exception)
                           .withSystemErrorMessage("An error occurred while computing the current language: %s (%s)")
                           .handle();
             }

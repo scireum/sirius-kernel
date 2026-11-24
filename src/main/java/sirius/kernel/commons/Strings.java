@@ -93,6 +93,14 @@ public class Strings {
                                                     'w',
                                                     'z'};
 
+    /**
+     * Provides the random numbers for {@link #generateCode(int)}.
+     * <p>
+     * A single instance is shared, as creating a new one per call is expensive and, depending on the platform, may
+     * even block while gathering entropy. SecureRandom is thread-safe.
+     */
+    private static final SecureRandom CODE_RANDOM = new SecureRandom();
+
     /*
      * All methods are static, therefore no instances need to be created.
      */
@@ -557,9 +565,8 @@ public class Strings {
      */
     public static String generateCode(int length) {
         StringBuilder sb = new StringBuilder();
-        SecureRandom rnd = new SecureRandom();
         for (int i = 0; i < length; i++) {
-            sb.append(VALID_CODE_CHARS[rnd.nextInt(VALID_CODE_CHARS.length)]);
+            sb.append(VALID_CODE_CHARS[CODE_RANDOM.nextInt(VALID_CODE_CHARS.length)]);
         }
         return sb.toString();
     }

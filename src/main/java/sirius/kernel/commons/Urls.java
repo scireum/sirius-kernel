@@ -55,7 +55,7 @@ public class Urls {
 
         try {
             return checker.test(URI.create(value).toURL());
-        } catch (Exception exception) {
+        } catch (Exception _) {
             return false;
         }
     }

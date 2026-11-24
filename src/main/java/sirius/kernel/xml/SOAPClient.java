@@ -346,8 +346,8 @@ public class SOAPClient {
         Watch watch = Watch.start();
         URL effectiveEndpoint = customEndpoints.getOrDefault(action, endpoint);
 
-        try (Operation op = new Operation(() -> Strings.apply("SOAP %s -> %s", action, effectiveEndpoint),
-                                          Duration.ofSeconds(15))) {
+        try (Operation _ = new Operation(() -> Strings.apply("SOAP %s -> %s", action, effectiveEndpoint),
+                                         Duration.ofSeconds(15))) {
             XMLCall call =
                     XMLCall.to(effectiveEndpoint.toURI(), contentTypeHeader).withFineLogger(LOG, isDebugLogActive);
             call.getOutcall().withConfiguredTimeout(clientSelector, SOAP_TIMEOUT_CONFIG_KEY);
@@ -385,7 +385,7 @@ public class SOAPClient {
         } catch (SOAPFaultException | HandledException exception) {
             throw exception;
         } catch (IOExceptionSkipLog exception) {
-            return handleIOExceptionSkipLog(watch, action, effectiveEndpoint, exception);
+            return handleIOExceptionSkipLog(action, effectiveEndpoint, exception);
         } catch (Exception exception) {
             return handleGeneralFault(watch, action, effectiveEndpoint, exception);
         }
@@ -507,8 +507,7 @@ public class SOAPClient {
                                               .handle());
     }
 
-    private StructuredNode handleIOExceptionSkipLog(Watch watch,
-                                                    String action,
+    private StructuredNode handleIOExceptionSkipLog(String action,
                                                     URL effectiveEndpoint,
                                                     IOExceptionSkipLog exception) {
         throw exceptionFilter.apply(Exceptions.createHandled()

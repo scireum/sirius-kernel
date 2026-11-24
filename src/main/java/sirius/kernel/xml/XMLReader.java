@@ -64,7 +64,7 @@ public class XMLReader extends DefaultHandler {
      */
     public XMLReader() {
         try {
-            DocumentBuilderFactory documentBuilderFactory = XmlUtil.createSecurityAwareDocumentBuilderFactory();;
+            DocumentBuilderFactory documentBuilderFactory = XmlUtil.createSecurityAwareDocumentBuilderFactory();
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
             taskContext = TaskContext.get();
         } catch (ParserConfigurationException exception) {
@@ -198,7 +198,7 @@ public class XMLReader extends DefaultHandler {
             reader.parse(new InputSource(stream));
         } catch (ParserConfigurationException | SAXException exception) {
             throw new IOException(exception);
-        } catch (UserInterruptException exception) {
+        } catch (UserInterruptException _) {
             // IGNORED - this is used to cancel parsing if the used tried to
             // cancel a process.
         }

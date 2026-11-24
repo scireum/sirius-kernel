@@ -587,7 +587,7 @@ public class Json {
         }
         try {
             return Optional.of(LocalDate.parse(node.stringValue(), DateTimeFormatter.ISO_DATE));
-        } catch (DateTimeParseException exception) {
+        } catch (DateTimeParseException _) {
             return Optional.empty();
         }
     }
@@ -612,7 +612,7 @@ public class Json {
         }
         try {
             return Optional.of(LocalDateTime.parse(node.stringValue(), DateTimeFormatter.ISO_DATE_TIME));
-        } catch (DateTimeParseException exception) {
+        } catch (DateTimeParseException _) {
             return Optional.empty();
         }
     }

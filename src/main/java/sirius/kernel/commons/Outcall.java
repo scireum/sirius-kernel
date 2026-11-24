@@ -702,11 +702,8 @@ public class Outcall {
 
     private void performRequest() throws IOException {
         Watch watch = Watch.start();
-        try (Operation operation = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri()
-                                                                                                        .getPath(),
-                                                 client.connectTimeout()
-                                                       .orElse(defaultConnectTimeout)
-                                                       .plusSeconds(1))) {
+        try (Operation _ = new Operation(() -> "Outcall to " + request.uri().getHost() + request.uri().getPath(),
+                                         client.connectTimeout().orElse(defaultConnectTimeout).plusSeconds(1))) {
             response = sendRequest();
             if (oAuthTokenRefresher != null && isUnauthorized(response.statusCode())) {
                 oAuthTokenRefresher.run();

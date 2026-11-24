@@ -262,7 +262,7 @@ public class Tuple<F, S> {
     public static <K, V> Collector<Tuple<K, V>, MultiMap<K, V>, MultiMap<K, V>> toMultiMap(Supplier<MultiMap<K, V>> supplier) {
         return Collector.of(supplier,
                             (map, tuple) -> map.put(tuple.getFirst(), tuple.getSecond()),
-                            (a, b) -> a.merge(b),
+                            MultiMap::merge,
                             Function.identity(),
                             Collector.Characteristics.IDENTITY_FINISH);
     }
