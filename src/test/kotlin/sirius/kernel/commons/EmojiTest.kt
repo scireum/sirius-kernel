@@ -106,4 +106,36 @@ class EmojiTest {
         assertEquals("Hallo  Wie geht's?", Emojis.removeEmojis("Hallo 🙂 Wie geht's?"))
         assertEquals("Hallo  Wie geht's?", Emojis.removeEmojis("Hallo 🙂👋 Wie geht's?"))
     }
+
+    @Test
+    fun detectsKeycapsFlagsAndTagSequences() {
+        assertTrue { Emojis.isEmoji("1️⃣") }
+        assertTrue { Emojis.isEmoji("#️⃣") }
+        assertTrue { Emojis.isEmoji("*️⃣") }
+        assertTrue { Emojis.isEmoji("🇩🇪") }
+        assertTrue { Emojis.isEmoji("🏳️‍🌈") }
+        assertTrue { Emojis.isEmoji("🏴󠁧󠁢󠁳󠁣󠁴󠁿") }
+        assertFalse { Emojis.isEmoji("🇩🇪🇫🇷") }
+        assertEquals(2, Emojis.countEmojis("🇩🇪🇫🇷"))
+        assertEquals(3, Emojis.countEmojis("1️⃣2️⃣3️⃣"))
+    }
+
+    @Test
+    fun treatsTextStyleSymbolsAsEmojis() {
+        assertTrue { Emojis.isEmoji("©") }
+        assertTrue { Emojis.isEmoji("™") }
+        assertTrue { Emojis.isEmoji("❤") }
+        assertTrue { Emojis.isEmoji("❤️") }
+        assertEquals(1, Emojis.countEmojis("Copyright © scireum"))
+    }
+
+    @Test
+    fun doesNotTreatPlainDigitsAndSymbolsAsEmojis() {
+        assertFalse { Emojis.isEmoji("1") }
+        assertFalse { Emojis.isEmoji("#") }
+        assertFalse { Emojis.isEmoji("*") }
+        assertFalse { Emojis.containsEmoji("Call 0800 123") }
+        assertFalse { Emojis.onlyContainsEmojis("123") }
+        assertEquals(0, Emojis.countEmojis("Order #1 costs 20 € *now*"))
+    }
 }
